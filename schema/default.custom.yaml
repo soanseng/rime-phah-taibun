@@ -1,0 +1,4 @@
+# default.custom.yaml — 拍台文預設配置
+patch:
+  schema_list:
+    - schema: phah_taibun

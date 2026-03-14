@@ -1,0 +1,113 @@
+# Rime schema — 拍台文 Phah Tâi-bûn
+# Taiwanese Hokkien input method with mixed Han-Lo output
+
+schema:
+  schema_id: phah_taibun
+  name: "拍台文"
+  version: "0.1.0"
+  author:
+    - "拍台文開發團隊"
+  description: |
+    台語輸入法方案 — 漢羅混寫輸出
+    支援 POJ/TL 雙拼音系統、聲調可省略
+    候選區顯示拼音註解
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 台文, ABC ]
+  - name: full_shape
+    states: [ 半形, 全形 ]
+  - name: output_mode
+    reset: 0
+    states: [ 漢羅TL, 漢羅POJ, 全羅TL, 全羅POJ ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - echo_translator
+    - punct_translator
+    - script_translator
+    - reverse_lookup_translator
+    - table_translator@custom_phrase
+    - lua_translator@phah_taibun_help
+    - lua_translator@phah_taibun_date
+    - lua_translator@phah_taibun_symbols
+    - lua_translator@phah_taibun_wildcard
+  filters:
+    - lua_filter@phah_taibun_filter
+    - lua_filter@phah_taibun_lookup
+    - uniquifier
+
+speller:
+  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890-"
+  initials: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '"
+  algebra:
+    # === 聲調完全可省略 ===
+    - derive/[1-9]$//
+
+    # === POJ → TL 對應 ===
+    - derive/^ts/ch/
+    - derive/^tsh/chh/
+    - derive/^j/l/
+    - derive/ing/eng/
+    - derive/ik/ek/
+    - derive/ua/oa/
+    - derive/ue/oe/
+    - derive/oo/ou/
+    - derive/nn/ⁿ/
+
+    # === 進一步模糊 ===
+    - derive/ph/f/
+    - derive/nng/ng/
+    - derive/h$//
+
+    # === 簡拼 ===
+    - abbrev/^([ptkmnbglsjhiuc]g?s?h?h?).*/$1/
+
+translator:
+  dictionary: phah_taibun
+  prism: phah_taibun
+  spelling_hints: 5
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
+
+reverse_lookup:
+  dictionary: luna_pinyin
+  prefix: "~"
+  suffix: "'"
+  tips: "〔華語反查〕"
+
+custom_phrase:
+  dictionary: ""
+  user_dict: phah_taibun_custom
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "~[a-z]*'?$"
