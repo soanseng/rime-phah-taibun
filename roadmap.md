@@ -160,5 +160,5 @@
 
 ### 不建議的替代方案
 - **全部用 Lua**：Lua 缺乏 CSV 解析、Unicode 正規化等工具，不適合做資料前處理
-- **用 Go 做資料處理**：過度工程化，Python 的 csv/re/yaml 生態完全夠用，而且你如果想微調規則時改 Python 腳本比改 Go 快得多
+- **用 Go 做資料處理**：過度工程化，Python 的 csv/re/yaml 生態完全夠用，微調規則時改 Python 腳本也比改 Go 快得多
 - **用 Node.js**：沒有特別優勢，而且意傳的工具鏈是 Python

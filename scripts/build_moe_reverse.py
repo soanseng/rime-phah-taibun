@@ -29,12 +29,14 @@ def parse_moe_entries(csvfile: TextIO) -> list[dict]:
         wen_bai = row.get("文白屬性", "0").strip()
         if not word or not reading:
             continue
-        entries.append({
-            "word": word,
-            "reading": reading,
-            "moe_id": moe_id,
-            "wen_bai": wen_bai,
-        })
+        entries.append(
+            {
+                "word": word,
+                "reading": reading,
+                "moe_id": moe_id,
+                "wen_bai": wen_bai,
+            }
+        )
     return entries
 
 
