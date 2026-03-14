@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 拍台文開發團隊
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 資料授權說明
+
+本專案的程式碼（scripts/、lua/、schema/*.schema.yaml）採用 MIT 授權。
+生成的字典資料因包含上游資料，需遵守各自授權條款：
+
+| 檔案 | 上游資料 | 授權 |
+|------|----------|------|
+| phah_taibun.dict.yaml | iTaigi (CC0) + 台華線頂 (CC BY-SA 4.0) | CC BY-SA 4.0 |
+| phah_taibun_reverse.dict.yaml | 教育部台語辭典 (CC BY-ND 3.0) | CC BY-ND 3.0 |
+| hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
+| icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
+| ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |
+
+Lua 模組架構參考 rime-liur (ryanwuson/rime-liur)，
+原作者聲明「本專案基於開源授權發佈，歡迎使用和改進」。

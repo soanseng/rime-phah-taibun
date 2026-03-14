@@ -578,11 +578,11 @@ Phase 2 再移植 rime-liur 的 Lua 造詞模組。
 ## 8. 待決事項
 
 - [x] LKK 用字表：已自動從 Google Sheets 下載 CSV（字表 + 數字用法）
-- [ ] 授權選擇：MIT vs Apache-2.0 vs CC BY-SA
+- [x] 授權選擇：MIT（程式碼）+ CC BY-SA 4.0（主字典）+ CC BY-ND 3.0（反查字典）
 - [x] 楊允言詞頻：已自動下載，JSON 格式（1,093 檔），已用 extract_ungian_freq.py 提取 93K 詞頻
 - [x] ~~意傳 `rime_taigi_poj_hanlo` 的字典生成邏輯深入分析~~ — repo 已刪除，改用 LKK CSV + nmtl 語料
 - [x] 意傳 `khin1siann1-hun1sik4` 的分詞規則提取 — 111 條輕聲規則已用 parse_lighttone.py 解析
-- [ ] rime-liur Lua 模組授權確認（README 寫「開源授權」，需確認具體 license）
+- [x] rime-liur Lua 模組授權確認：README 聲明「本專案基於開源授權發佈，歡迎使用和改進」，已標註出處
 - [ ] 字咍字型 IVS 對照表提取（Phase 2）
 - [ ] 與李江却基金會確認 LKK 用字表在輸入法中使用的授權
 - [ ] `tai5-uan5_gian5-gi2_kang1-ku7` 在 Arch Linux 上的安裝測試

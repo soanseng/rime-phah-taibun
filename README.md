@@ -104,8 +104,12 @@ uv run python scripts/build_all.py
 | [教育部辭典](https://github.com/g0v/moedict-data-twblg) | CC BY-ND 3.0 | 反查字典 |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 詞頻統計 |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻 |
-| [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源 | Lua 模組移植參考 |
+| [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源（「歡迎使用和改進」） | Lua 模組架構參考 |
 
 ## 授權
 
-待決定（MIT / Apache-2.0 / CC BY-SA）
+- **程式碼**（scripts/、lua/、schema/*.schema.yaml）：[MIT License](LICENSE)
+- **主字典** phah_taibun.dict.yaml：CC BY-SA 4.0（繼承台華線頂）
+- **反查字典** phah_taibun_reverse.dict.yaml：CC BY-ND 3.0（繼承教育部辭典）
+
+詳見 [LICENSE](LICENSE)。
