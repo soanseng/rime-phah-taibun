@@ -1,9 +1,12 @@
 """Heuristic frequency weighting for Rime dictionary entries.
 
-Assigns weights based on source authority, word length, and cross-source overlap.
+Assigns weights based on source authority, word length, cross-source overlap,
+and optional corpus frequency data.
 """
 
+import math
 import unicodedata
+from pathlib import Path
 
 SOURCE_WEIGHTS = {
     "moe": 1000,  # L1: 教育部辭典
@@ -54,17 +57,51 @@ def word_length_modifier(hanlo: str) -> float:
     return 0.6
 
 
-def compute_weights(entries: list[dict]) -> list[dict]:
+def load_corpus_frequencies(freq_path: Path) -> dict[str, int]:
+    """Load corpus frequency table from TSV file.
+
+    Args:
+        freq_path: Path to TSV with word\\tcount format
+
+    Returns:
+        Dict mapping words to frequency counts
+    """
+    if not freq_path.exists():
+        return {}
+    result: dict[str, int] = {}
+    with open(freq_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                try:
+                    result[parts[0]] = int(parts[1])
+                except ValueError:
+                    continue
+    return result
+
+
+def compute_weights(
+    entries: list[dict],
+    corpus_freq: dict[str, int] | None = None,
+) -> list[dict]:
     """Compute final frequency weights for dictionary entries.
 
-    Combines source authority, word length modifier, and cross-source overlap bonus.
+    Combines source authority, word length modifier, cross-source overlap bonus,
+    and optional corpus frequency boost.
 
     Args:
         entries: List of dicts with hanlo, rime_key, source fields
+        corpus_freq: Optional dict mapping kip_input to corpus occurrence counts
 
     Returns:
         Deduplicated list with computed 'weight' field (int)
     """
+    if corpus_freq is None:
+        corpus_freq = {}
+
     # Count how many sources each (hanlo, rime_key) pair appears in
     key_sources: dict[tuple[str, str], set[str]] = {}
     for entry in entries:
@@ -86,7 +123,14 @@ def compute_weights(entries: list[dict]) -> list[dict]:
         base = assign_source_weight(entry["source"])
         length_mod = word_length_modifier(entry["hanlo"])
         overlap_bonus = 1.1 ** (len(key_sources[key]) - 1)
-        entry["weight"] = int(base * length_mod * overlap_bonus)
+
+        # Corpus frequency boost: log-scale boost if word appears in corpus
+        corpus_boost = 1.0
+        kip = entry.get("kip_input", "")
+        if kip and kip in corpus_freq:
+            corpus_boost = 1.0 + math.log10(1 + corpus_freq[kip]) * 0.2
+
+        entry["weight"] = int(base * length_mod * overlap_bonus * corpus_boost)
         result.append(entry)
 
     return result
