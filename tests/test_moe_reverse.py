@@ -10,7 +10,7 @@ class TestParseMoeEntries:
 
     @staticmethod
     def sample_csv():
-        return "主編碼,屬性,詞目,音讀,文白屬性,部首\n" '1,1,一,tsi̍t,4,一\n' '2,1,一,it,0,一\n' '3,1,一下,tsi̍t-ē,0,一\n'
+        return "主編碼,屬性,詞目,音讀,文白屬性,部首\n1,1,一,tsi̍t,4,一\n2,1,一,it,0,一\n3,1,一下,tsi̍t-ē,0,一\n"
 
     def test_basic_parse(self):
         entries = parse_moe_entries(io.StringIO(self.sample_csv()))
@@ -35,12 +35,7 @@ class TestLoadDefinitions:
 
     @staticmethod
     def sample_definitions_csv():
-        return (
-            "釋義總序號,主編碼,釋義順序,詞性代號,釋義\n"
-            "1,1,1,15,數目。\n"
-            "2,1,2,6,全部的、整個的。\n"
-            "3,3,1,6,稍微。\n"
-        )
+        return "釋義總序號,主編碼,釋義順序,詞性代號,釋義\n1,1,1,15,數目。\n2,1,2,6,全部的、整個的。\n3,3,1,6,稍微。\n"
 
     def test_basic_load(self):
         defs = load_definitions(io.StringIO(self.sample_definitions_csv()))

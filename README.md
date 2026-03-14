@@ -20,35 +20,60 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 
 ## 安裝
 
+### 支援平台
+
+| 平台 | 輸入法框架 | Rime 使用者目錄 |
+|------|-----------|----------------|
+| Linux | fcitx5-rime | `~/.local/share/fcitx5/rime/` |
+| Linux | ibus-rime | `~/.config/ibus/rime/` |
+| macOS | 鼠鬚管 Squirrel | `~/Library/Rime/` |
+
 ### 前置需求
 
-- [Rime 輸入法引擎](https://rime.im/)（fcitx5-rime / ibus-rime / 鼠鬚管）
-- Python 3.10+（資料前處理用）
+- [Rime 輸入法引擎](https://rime.im/)
+- Python 3.10+（建置字典用）
 - [uv](https://docs.astral.sh/uv/)（Python 套件管理）
+- Git
 
-### 快速安裝
+### 從原始碼建置
 
 ```bash
 # 1. Clone 專案
-git clone https://github.com/user/rime-phah-taibun.git
+git clone https://github.com/soanseng/rime-phah-taibun.git
 cd rime-phah-taibun
 
 # 2. 安裝 Python 依賴
 uv sync
 
-# 3. 下載外部資料（18 個語言資源，約 2GB）
+# 3. 下載外部資料（20 個語言資源，約 2GB，需要幾分鐘）
 chmod +x scripts/download_resources.sh
 ./scripts/download_resources.sh
 
 # 4. 建置字典（處理 CSV → Rime 字典格式）
 uv run python scripts/build_all.py
 
-# 5. 安裝到 Rime
+# 5. 安裝到 Rime（自動偵測使用者目錄）
+chmod +x install.sh
 ./install.sh
-# 或指定路徑：./install.sh ~/.local/share/fcitx5/rime
+# 或手動指定路徑：
+#   ./install.sh ~/.local/share/fcitx5/rime
+#   ./install.sh ~/.config/ibus/rime
+#   ./install.sh ~/Library/Rime
 ```
 
-安裝完成後，在輸入法設定中重新部署 Rime。
+### 重新部署
+
+安裝完成後必須重新部署 Rime，輸入法方案才會生效：
+
+- **fcitx5-rime**：右鍵系統匣圖示 → 重新部署
+- **ibus-rime**：執行 `ibus restart`
+- **鼠鬚管**：點選選單列圖示 → 重新部署
+
+部署完成後，在輸入法選單中選擇「拍台文」即可開始使用。
+
+### 建議字體
+
+安裝 [芫荽 iansui](https://github.com/ChhoeTaigi/iansui)（SIL OFL 授權）可獲得最佳台文顯示效果。
 
 ## 快捷鍵
 
