@@ -106,6 +106,15 @@ uv run python scripts/build_all.py
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源（「歡迎使用和改進」） | Lua 模組架構參考 |
 
+## 致謝
+
+- [李江却台語文教基金會](https://www.tgb.org.tw/) — 漢羅用字規範（LKK 用字表），為本方案的漢羅混寫輸出提供核心依據
+- [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 整合多本辭典的開放資料平台
+- [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
+- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 反查字典資料
+- [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫與詞頻資料
+- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus 臺華平行新聞語料
+
 ## 授權
 
 - **程式碼**（scripts/、lua/、schema/*.schema.yaml）：[MIT License](LICENSE)
