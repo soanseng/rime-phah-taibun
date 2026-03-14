@@ -1,0 +1,37 @@
+# 外部資料（不進 repo，用 scripts/download_resources.sh 重新下載）
+data/
+
+# Rime 編譯產物
+*.bin
+*.userdb/
+sync/
+
+# Python / uv
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+
+# LKK 原始 HTML（已複製到 data/）
+LKK*.html
+
+# IDE
+.vscode/
+.idea/
+
+# Generated dictionary files (regenerate with scripts/)
+schema/phah_taibun.dict.yaml
+schema/hanlo_rules.yaml
+
+# Test/coverage artifacts
+.coverage
+.pytest_cache/
+
+# Claude scheduled tasks
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
