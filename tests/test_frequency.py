@@ -1,6 +1,11 @@
 """Tests for heuristic frequency weighting."""
 
-from scripts.build_frequency import assign_source_weight, compute_weights, word_length_modifier
+from scripts.build_frequency import (
+    assign_source_weight,
+    compute_weights,
+    load_corpus_frequencies,
+    word_length_modifier,
+)
 
 
 class TestAssignSourceWeight:
@@ -71,3 +76,44 @@ class TestComputeWeights:
         ]
         result = compute_weights(entries)
         assert result[0]["hoabun"] == "我"
+
+
+class TestLoadCorpusFrequencies:
+    """Load corpus frequency TSV into a lookup dict."""
+
+    def test_basic_load(self, tmp_path):
+        freq_file = tmp_path / "freq.tsv"
+        freq_file.write_text("gua2\t100\nbeh4\t50\n")
+        result = load_corpus_frequencies(freq_file)
+        assert result["gua2"] == 100
+        assert result["beh4"] == 50
+
+    def test_empty_file(self, tmp_path):
+        freq_file = tmp_path / "freq.tsv"
+        freq_file.write_text("")
+        result = load_corpus_frequencies(freq_file)
+        assert len(result) == 0
+
+    def test_nonexistent_file(self, tmp_path):
+        result = load_corpus_frequencies(tmp_path / "missing.tsv")
+        assert len(result) == 0
+
+
+class TestComputeWeightsWithCorpus:
+    """Corpus frequency boost in compute_weights."""
+
+    def test_corpus_boost(self):
+        entries = [
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "kip_input": "tsiah8-png7"},
+        ]
+        corpus_freq = {"tsiah8-png7": 50}
+        result = compute_weights(entries, corpus_freq=corpus_freq)
+        result_no_corpus = compute_weights(entries)
+        assert result[0]["weight"] > result_no_corpus[0]["weight"]
+
+    def test_no_corpus_same_as_before(self):
+        entries = [
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi"},
+        ]
+        result = compute_weights(entries)
+        assert result[0]["weight"] == 960
