@@ -579,13 +579,13 @@ Phase 2 再移植 rime-liur 的 Lua 造詞模組。
 
 - [x] LKK 用字表：已自動從 Google Sheets 下載 CSV（字表 + 數字用法）
 - [ ] 授權選擇：MIT vs Apache-2.0 vs CC BY-SA
-- [x] 楊允言詞頻：已自動下載 Ungian_2009_KIPsupin repo，待確認 yaml 格式
+- [x] 楊允言詞頻：已自動下載，JSON 格式（1,093 檔），已用 extract_ungian_freq.py 提取 93K 詞頻
 - [x] ~~意傳 `rime_taigi_poj_hanlo` 的字典生成邏輯深入分析~~ — repo 已刪除，改用 LKK CSV + nmtl 語料
-- [ ] 意傳 `khin1siann1-hun1sik4` 的分詞規則提取
+- [x] 意傳 `khin1siann1-hun1sik4` 的分詞規則提取 — 111 條輕聲規則已用 parse_lighttone.py 解析
 - [ ] rime-liur Lua 模組授權確認（README 寫「開源授權」，需確認具體 license）
 - [ ] 字咍字型 IVS 對照表提取（Phase 2）
 - [ ] 與李江却基金會確認 LKK 用字表在輸入法中使用的授權
 - [ ] `tai5-uan5_gian5-gi2_kang1-ku7` 在 Arch Linux 上的安裝測試
-- [ ] iCorpus 新聞語料（icorpus_ka1_han3-ji7）的詞頻提取方法確認
-- [ ] nmtl_2006_dadwt 漢羅文學語料的格式分析，提取漢羅書寫統計
-- [ ] KipSutianDataMirror 與現有 moedict-data-twblg 的差異比對與整合策略
+- [x] iCorpus 新聞語料：已用 extract_icorpus_freq.py 提取 57K 詞、302K tokens
+- [x] nmtl_2006_dadwt 格式分析：2,169 篇 .tbk 純文字（POJ），含 25M nmtl.json 已對齊版
+- [x] KipSutianDataMirror 比對：65K 條目（含解說、例句、又音），比 moedict 的 27K 多 2.4 倍，已建 build_kipsutian_reverse.py
