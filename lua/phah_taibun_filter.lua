@@ -2,11 +2,15 @@
 -- 核心過濾器：候選拼音註解 + 輸出模式切換 + 漢羅轉換
 -- 參考 rime-liur (ryanwuson/rime-liur) 模組架構
 --
--- output_mode switch states:
---   0 = 漢羅TL (default): Han-Lo mixed text, TL annotation
---   1 = 漢羅POJ: Han-Lo mixed text, POJ annotation
---   2 = 全羅TL: Full romanization in TL
---   3 = 全羅POJ: Full romanization in POJ
+-- Output mode is determined by two boolean switches:
+--   full_romanization: off=漢羅 (Han-Lo mixed), on=全羅 (full romanization)
+--   poj_mode:          off=TL,                   on=POJ
+--
+-- Combinations:
+--   漢羅TL (default): full_romanization=off, poj_mode=off
+--   漢羅POJ:          full_romanization=off, poj_mode=on
+--   全羅TL:           full_romanization=on,  poj_mode=off
+--   全羅POJ:          full_romanization=on,  poj_mode=on
 
 local M = {}
 
@@ -30,18 +34,23 @@ local function tl_to_poj(tl_text)
 end
 
 -- Get the current output mode from Rime context
--- Returns 0-3 based on output_mode switch state
+-- Returns 0-3 based on two boolean switches:
+--   0 = 漢羅TL, 1 = 漢羅POJ, 2 = 全羅TL, 3 = 全羅POJ
 local function get_output_mode(env)
   local context = env.engine.context
   if not context then
     return 0
   end
-  -- Rime multi-state switches: check option name with index suffix
-  -- output_mode is defined with 4 states in schema
-  if context:get_option("output_mode") then
+  local full_roman = context:get_option("full_romanization")
+  local poj = context:get_option("poj_mode")
+  if full_roman and poj then
+    return 3  -- 全羅POJ
+  elseif full_roman then
+    return 2  -- 全羅TL
+  elseif poj then
     return 1  -- 漢羅POJ
   end
-  return 0  -- Default: 漢羅TL
+  return 0  -- 漢羅TL (default)
 end
 
 -- Reference to data module (loaded in init)
