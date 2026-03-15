@@ -12,7 +12,12 @@ SOURCE_WEIGHTS = {
     "moe": 1000,  # L1: 教育部辭典
     "itaigi": 800,  # L2: iTaigi (群眾驗證)
     "taihoa": 500,  # L3: 台華線頂
-    "taijit": 200,  # L4: 台日大辭典
+    "maryknoll": 300,  # L4: Maryknoll 台英辭典
+    "embree": 300,  # L4: Embree 台英辭典
+    "kamjitian": 250,  # L4: 甘字典
+    "taijit": 200,  # L5: 台日大辭典
+    "pehoe": 200,  # L5: 台灣白話基礎語句
+    "sitbut": 200,  # L5: 台灣實物名彙
 }
 DEFAULT_WEIGHT = 100
 

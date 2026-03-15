@@ -7,8 +7,10 @@ from scripts.convert_chhoetaigi import (
     convert_chhoetaigi,
     dedup_entries,
     main,
+    parse_generic_csv,
     parse_itaigi_csv,
     parse_taihoa_csv,
+    source_name_from_filename,
     strip_tone_numbers,
     write_rime_dict,
 )
@@ -258,6 +260,123 @@ class TestConvertWithCorpusFreq:
         assert w_yes["去"] == w_no["去"]
 
 
+class TestParseGenericCsv:
+    """Parse generic ChhoeTaigi CSVs with column name fallbacks."""
+
+    def test_basic_parse_with_kip_columns(self):
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            "tsiah8-png7,食飯,吃飯\n"
+            "khi3,去,去\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "maryknoll")
+        assert len(entries) == 2
+        assert entries[0]["hanlo"] == "食飯"
+        assert entries[0]["kip_input"] == "tsiah8-png7"
+        assert entries[0]["rime_key"] == "tsiah png"
+        assert entries[0]["hoabun"] == "吃飯"
+        assert entries[0]["source"] == "maryknoll"
+
+    def test_fallback_to_poj_columns(self):
+        """When KipInput/HanLoTaibunKip are missing, use Poj columns."""
+        csv_data = (
+            "PojInput,HanLoTaibunPoj,HoaBun\n"
+            "chiah8-png7,食飯,吃飯\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
+        assert len(entries) == 1
+        assert entries[0]["hanlo"] == "食飯"
+        assert entries[0]["kip_input"] == "chiah8-png7"
+        assert entries[0]["source"] == "kamjitian"
+
+    def test_prefers_kip_over_poj(self):
+        """When both KipInput and PojInput exist, use KipInput."""
+        csv_data = (
+            "KipInput,PojInput,HanLoTaibunKip,HanLoTaibunPoj,HoaBun\n"
+            "tsiah8-png7,chiah8-png7,食飯kip,食飯poj,吃飯\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "embree")
+        assert len(entries) == 1
+        assert entries[0]["kip_input"] == "tsiah8-png7"
+        assert entries[0]["hanlo"] == "食飯kip"
+
+    def test_skips_rows_without_pronunciation(self):
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            ",食飯,吃飯\n"
+            "khi3,去,去\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        assert len(entries) == 1
+
+    def test_skips_rows_without_hanlo(self):
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            "tsiah8-png7,,吃飯\n"
+            "khi3,去,去\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        assert len(entries) == 1
+
+    def test_handles_slash_variants(self):
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            "tsiah8/sit8,食,吃\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "pehoe")
+        assert len(entries) == 2
+        kips = [e["kip_input"] for e in entries]
+        assert "tsiah8" in kips
+        assert "sit8" in kips
+
+    def test_source_name_preserved(self):
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "sitbut")
+        assert entries[0]["source"] == "sitbut"
+
+    def test_empty_hoabun_is_ok(self):
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "embree")
+        assert len(entries) == 1
+        assert entries[0]["hoabun"] == ""
+
+
+class TestSourceNameFromFilename:
+    """Map ChhoeTaigi CSV filenames to source identifiers."""
+
+    def test_known_filenames(self):
+        assert source_name_from_filename("ChhoeTaigi_KamJitian.csv") == "kamjitian"
+        assert source_name_from_filename("ChhoeTaigi_MaryknollTaiengSutian.csv") == "maryknoll"
+        assert source_name_from_filename("ChhoeTaigi_EmbreeTaiengSutian.csv") == "embree"
+        assert source_name_from_filename("ChhoeTaigi_TaijitToaSutian.csv") == "taijit"
+        assert source_name_from_filename("ChhoeTaigi_KauiokpooTaigiSutian.csv") == "moe"
+        assert source_name_from_filename("ChhoeTaigi_TaioanPehoeKichhooGiku.csv") == "pehoe"
+        assert source_name_from_filename("ChhoeTaigi_TaioanSitbutMialui.csv") == "sitbut"
+
+    def test_unknown_filename(self):
+        assert source_name_from_filename("ChhoeTaigi_SomethingElse.csv") is None
+
+    def test_itaigi_and_taihoa(self):
+        assert source_name_from_filename("ChhoeTaigi_iTaigiHoataiTuichiautian.csv") == "itaigi"
+        assert source_name_from_filename("ChhoeTaigi_TaihoaSoanntengTuichiautian.csv") == "taihoa"
+
+
+class TestConvertWithGenericPaths:
+    """End-to-end conversion with generic CSV paths."""
+
+    def test_generic_paths_included(self, tmp_path):
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
+        csv_path = tmp_path / "generic.csv"
+        csv_path.write_text(csv_data, encoding="utf-8")
+        output = tmp_path / "output.dict.yaml"
+        convert_chhoetaigi(
+            itaigi_paths=[], taihoa_paths=[], output_path=output,
+            generic_paths=[(csv_path, "maryknoll")],
+        )
+        content = output.read_text()
+        assert "去\tkhi" in content
+
+
 class TestConvertCli:
     """Test CLI entry point."""
 
@@ -270,3 +389,21 @@ class TestConvertCli:
         out_dir = tmp_path / "output"
         main(["--input", str(tmp_path), "--output", str(out_dir)])
         assert (out_dir / "phah_taibun.dict.yaml").exists()
+
+    def test_cli_auto_discovers_generic_csvs(self, tmp_path):
+        """CLI should auto-discover additional ChhoeTaigi CSVs."""
+        db_dir = tmp_path / "ChhoeTaigiDatabase"
+        db_dir.mkdir()
+        # Create an iTaigi CSV (known special)
+        itaigi_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
+        itaigi = db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
+        itaigi.write_text(itaigi_data, encoding="utf-8")
+        # Create a generic CSV (should be auto-discovered)
+        generic_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\n"
+        generic = db_dir / "ChhoeTaigi_KamJitian.csv"
+        generic.write_text(generic_data, encoding="utf-8")
+        out_dir = tmp_path / "output"
+        main(["--input", str(tmp_path), "--output", str(out_dir)])
+        content = (out_dir / "phah_taibun.dict.yaml").read_text()
+        assert "去" in content
+        assert "食飯" in content
