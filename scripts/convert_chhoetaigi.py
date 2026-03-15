@@ -1,7 +1,8 @@
 """Convert ChhoeTaigi CSV dictionaries to Rime dict.yaml format.
 
-Reads iTaigi (CC0) and 台華線頂 (CC BY-SA) CSVs, extracts pronunciation
-and Han-Lo writing data, and outputs Rime-compatible dictionary entries.
+Reads iTaigi (CC0), 台華線頂 (CC BY-SA), and additional ChhoeTaigi CSVs,
+extracts pronunciation and Han-Lo writing data, and outputs Rime-compatible
+dictionary entries.
 """
 
 import argparse
@@ -10,6 +11,18 @@ import re
 import sys
 from pathlib import Path
 from typing import TextIO
+
+CSV_SOURCE_MAP = {
+    "iTaigiHoataiTuichiautian": "itaigi",
+    "TaihoaSoanntengTuichiautian": "taihoa",
+    "KauiokpooTaigiSutian": "moe",
+    "TaijitToaSutian": "taijit",
+    "MaryknollTaiengSutian": "maryknoll",
+    "EmbreeTaiengSutian": "embree",
+    "KamJitian": "kamjitian",
+    "TaioanPehoeKichhooGiku": "pehoe",
+    "TaioanSitbutMialui": "sitbut",
+}
 
 
 def strip_tone_numbers(kip_input: str, delimiter: str = "-") -> str:
@@ -128,6 +141,62 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
     return entries
 
 
+def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
+    """Parse a generic ChhoeTaigi CSV into structured dictionary entries.
+
+    Handles CSVs with varying column names by trying KipInput first,
+    then falling back to PojInput. Similarly tries HanLoTaibunKip
+    before HanLoTaibunPoj.
+
+    Args:
+        csvfile: File-like object containing CSV data
+        source_name: Source identifier for the entries (e.g. "maryknoll")
+
+    Returns:
+        List of dicts with keys: hanlo, kip_input, rime_key, hoabun, source
+    """
+    entries = []
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        # Try KipInput, fall back to PojInput
+        kip_raw = row.get("KipInput", "").strip()
+        if not kip_raw:
+            kip_raw = row.get("PojInput", "").strip()
+        # Try HanLoTaibunKip, fall back to HanLoTaibunPoj
+        hanlo = row.get("HanLoTaibunKip", "").strip()
+        if not hanlo:
+            hanlo = row.get("HanLoTaibunPoj", "").strip()
+        hoabun = row.get("HoaBun", "").strip()
+        if not kip_raw or not hanlo:
+            continue
+        for kip in clean_kip_input(kip_raw):
+            entries.append(
+                {
+                    "hanlo": hanlo,
+                    "kip_input": kip,
+                    "rime_key": strip_tone_numbers(kip, delimiter=" "),
+                    "hoabun": hoabun,
+                    "source": source_name,
+                }
+            )
+    return entries
+
+
+def source_name_from_filename(filename: str) -> str | None:
+    """Extract the source name from a ChhoeTaigi CSV filename.
+
+    Args:
+        filename: CSV filename like "ChhoeTaigi_KamJitian.csv"
+
+    Returns:
+        Source name string or None if filename doesn't match any known CSV
+    """
+    for key, source in CSV_SOURCE_MAP.items():
+        if key in filename:
+            return source
+    return None
+
+
 def dedup_entries(entries: list[dict]) -> list[dict]:
     """Remove duplicate entries with same hanlo and rime_key.
 
@@ -171,6 +240,7 @@ def convert_chhoetaigi(
     taihoa_paths: list[Path],
     output_path: Path,
     corpus_freq: dict[str, int] | None = None,
+    generic_paths: list[tuple[Path, str]] | None = None,
 ) -> None:
     """Convert ChhoeTaigi CSV files to Rime dict.yaml.
 
@@ -181,6 +251,7 @@ def convert_chhoetaigi(
         taihoa_paths: Paths to 台華線頂 CSV files
         output_path: Path to write output dict.yaml
         corpus_freq: Optional merged corpus frequency dict (kip_input → count)
+        generic_paths: Optional list of (path, source_name) tuples for additional CSVs
     """
     try:
         from scripts.build_frequency import compute_weights
@@ -194,6 +265,9 @@ def convert_chhoetaigi(
     for path in taihoa_paths:
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_taihoa_csv(f))
+    for path, source_name in generic_paths or []:
+        with open(path, encoding="utf-8-sig") as f:
+            all_entries.extend(parse_generic_csv(f, source_name))
     weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
     write_rime_dict(weighted, output_path)
 
@@ -227,7 +301,17 @@ def main(argv: list[str] | None = None) -> None:
     itaigi_paths = [itaigi] if itaigi.exists() else []
     taihoa_paths = [taihoa] if taihoa.exists() else []
 
-    if not itaigi_paths and not taihoa_paths:
+    # Auto-discover additional CSVs
+    known_special = {itaigi.name, taihoa.name}
+    generic_paths: list[tuple[Path, str]] = []
+    for csv_path in sorted(data_dir.glob("ChhoeTaigi_*.csv")):
+        if csv_path.name in known_special:
+            continue
+        source = source_name_from_filename(csv_path.name)
+        if source is not None:
+            generic_paths.append((csv_path, source))
+
+    if not itaigi_paths and not taihoa_paths and not generic_paths:
         print(f"Error: No CSV files found in {data_dir}", file=sys.stderr)
         sys.exit(1)
 
@@ -242,7 +326,10 @@ def main(argv: list[str] | None = None) -> None:
 
     args.output.mkdir(parents=True, exist_ok=True)
     output_path = args.output / "phah_taibun.dict.yaml"
-    convert_chhoetaigi(itaigi_paths, taihoa_paths, output_path, corpus_freq=corpus_freq)
+    convert_chhoetaigi(
+        itaigi_paths, taihoa_paths, output_path,
+        corpus_freq=corpus_freq, generic_paths=generic_paths,
+    )
     print(f"Written: {output_path}")
 
 
