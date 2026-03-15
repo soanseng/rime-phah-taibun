@@ -77,11 +77,39 @@ def count_ungian_frequencies(json_dir: Path) -> Counter:
     return freq
 
 
+def write_ungian_sentences(json_dir: Path, output_path: Path) -> int:
+    """Write tokenized KIP sentences from Ungian JSON files.
+
+    Args:
+        json_dir: Root directory containing Ungian JSON files
+        output_path: Output file path for sentences (one per line)
+
+    Returns:
+        Count of sentences written
+    """
+    count = 0
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as out:
+        for json_file in sorted(json_dir.rglob("*.json")):
+            try:
+                with open(json_file, encoding="utf-8") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                continue
+            for kip_line in parse_ungian_json(data):
+                tokens = extract_kip_tokens(kip_line)
+                if tokens:
+                    out.write(" ".join(tokens) + "\n")
+                    count += 1
+    return count
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for Ungian frequency extraction."""
     parser = argparse.ArgumentParser(description="Extract word frequencies from Ungian literary corpus")
     parser.add_argument("--input", type=Path, required=True, help="Path to Ungian_2009_KIPsupin directory")
     parser.add_argument("--output", type=Path, required=True, help="Output TSV path")
+    parser.add_argument("--sentences", type=Path, default=None, help="Output tokenized sentences file")
     args = parser.parse_args(argv)
 
     json_dir = args.input / "JSON格式資料"
@@ -96,6 +124,10 @@ def main(argv: list[str] | None = None) -> None:
             f.write(f"{word}\t{count}\n")
 
     print(f"Extracted {len(freq)} unique words, {sum(freq.values())} total tokens")
+
+    if args.sentences:
+        sent_count = write_ungian_sentences(json_dir, args.sentences)
+        print(f"Wrote {sent_count} sentences to {args.sentences}")
 
 
 if __name__ == "__main__":

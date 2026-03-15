@@ -3,7 +3,12 @@
 import json
 from collections import Counter
 
-from scripts.extract_ungian_freq import count_ungian_frequencies, extract_kip_tokens, parse_ungian_json
+from scripts.extract_ungian_freq import (
+    count_ungian_frequencies,
+    extract_kip_tokens,
+    parse_ungian_json,
+    write_ungian_sentences,
+)
 
 SAMPLE_JSON = {
     "作者": "Test Author",
@@ -70,3 +75,35 @@ class TestCountUngianFrequencies:
     def test_empty_dir(self, tmp_path):
         freq = count_ungian_frequencies(tmp_path)
         assert len(freq) == 0
+
+
+class TestSentenceOutput:
+    """Write tokenized sentences from Ungian JSON files."""
+
+    def test_writes_sentences(self, tmp_path):
+        json_dir = tmp_path / "json"
+        json_dir.mkdir()
+        data = {"資料": [{"段": [["漢字text", "kip2 romanization3"]]}]}
+        (json_dir / "test.json").write_text(
+            json.dumps(data, ensure_ascii=False), encoding="utf-8"
+        )
+        output = tmp_path / "sentences.txt"
+        count = write_ungian_sentences(json_dir, output)
+        assert count == 1
+        lines = output.read_text(encoding="utf-8").strip().splitlines()
+        assert len(lines) == 1
+        assert "kip2" in lines[0]
+        assert "romanization3" in lines[0]
+
+    def test_skips_empty_lines(self, tmp_path):
+        json_dir = tmp_path / "json"
+        json_dir.mkdir()
+        data = {"資料": [{"段": [["只有漢字", ""]]}]}
+        (json_dir / "test.json").write_text(
+            json.dumps(data, ensure_ascii=False), encoding="utf-8"
+        )
+        output = tmp_path / "sentences.txt"
+        count = write_ungian_sentences(json_dir, output)
+        assert count == 0
+        content = output.read_text(encoding="utf-8").strip()
+        assert content == ""
