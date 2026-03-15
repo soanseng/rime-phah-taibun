@@ -154,7 +154,36 @@ macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](ht
 
 ### 建議字體
 
-安裝 [芫荽 iansui](https://github.com/ChhoeTaigi/iansui)（SIL OFL 授權）可獲得最佳台文顯示效果，特別是方音符號和特殊台文漢字。
+安裝 [芫荽 iansui](https://github.com/ChhoeTaigi/iansui) 可獲得最佳台文顯示效果，特別是方音符號和特殊台文漢字。Linux 安裝時會自動下載。
+
+安裝字體後，需設定輸入法候選區使用 iansui：
+
+| 平台 | 設定方式 |
+|------|---------|
+| **fcitx5** (Linux) | 在 `~/.config/fcitx5/conf/classicui.conf` 加入 `Font="Iansui 12"` |
+| **ibus** (Linux) | ibus 偏好設定 → 外觀 → 字型 → 選擇「Iansui」 |
+| **鼠鬚管** (macOS) | 在 `~/Library/Rime/squirrel.custom.yaml` 加入字體設定（見下方） |
+| **小狼毫** (Windows) | 在 `%AppData%\Rime\weasel.custom.yaml` 加入字體設定（見下方） |
+
+<details>
+<summary>macOS 鼠鬚管 squirrel.custom.yaml</summary>
+
+```yaml
+patch:
+  style/font_face: "Iansui"
+  style/font_point: 18
+```
+</details>
+
+<details>
+<summary>Windows 小狼毫 weasel.custom.yaml</summary>
+
+```yaml
+patch:
+  style/font_face: "Iansui"
+  style/font_point: 14
+```
+</details>
 
 ## 快捷鍵
 
