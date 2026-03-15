@@ -224,13 +224,19 @@ function M.func(input, env)
         new_comment = " [" .. formatted .. "]"
       end
 
+      -- LKK lo-type 候選排前面（如 ê、kah 等應為羅馬字的詞）
+      local lo_boost = 0
+      if new_text ~= text then
+        lo_boost = 5.0
+      end
+
       -- Boost quality for longer matches (multi-character phrases)
       local text_len = utf8_len(new_text)
-      local boost = 0
+      local boost = lo_boost
       if text_len >= 4 then
-        boost = 1.0    -- 4+ chars: strong boost (e.g., 無要緊, tshit-thô)
+        boost = boost + 1.0
       elseif text_len >= 2 then
-        boost = 0.5    -- 2-3 chars: moderate boost (e.g., 食飯, 我去)
+        boost = boost + 0.5
       end
 
       if new_text ~= text or new_comment ~= comment or boost > 0 then

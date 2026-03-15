@@ -88,13 +88,30 @@ end
 function M.func(key, env)
   local context = env.engine.context
 
-  -- Only active when composing in 全羅 mode
   if not context:is_composing() and not context:has_menu() then
     return 2  -- kNoop
   end
   if key:release() then return 2 end
-  if not context:get_option("full_romanization") then
-    return 2  -- kNoop, let normal processing handle non-全羅 modes
+
+  local full_roman = context:get_option("full_romanization")
+
+  -- ============================================================
+  -- Shift+Space：漢羅模式下強制輸出羅馬字（任何模式皆可）
+  -- ============================================================
+  if key:repr() == "Shift+space" then
+    local cand = context:get_selected_candidate()
+    local roman = extract_roman(cand, env)
+    if roman then
+      env.engine:commit_text(roman)
+      context:clear()
+      return 1  -- kAccepted
+    end
+    return 2
+  end
+
+  -- 以下只在全羅模式下攔截
+  if not full_roman then
+    return 2  -- kNoop, let normal processing handle 漢羅 modes
   end
 
   local kc = key.keycode
