@@ -38,6 +38,7 @@ engine:
     - key_binder
     - speller
     - punctuator
+    - lua_processor@*phah_taibun_commit
     - selector
     - navigator
     - fluency_editor
@@ -69,9 +70,9 @@ engine:
     - uniquifier
 
 speller:
-  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890-"
+  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890"
   initials: zyxwvutsrqponmlkjihgfedcba
-  delimiter: " '"
+  delimiter: " '-"
   algebra:
     # === 聲調完全可省略 ===
     - derive/[1-9]$//
@@ -115,6 +116,10 @@ custom_phrase:
   enable_completion: false
   enable_sentence: false
   initial_quality: 1
+
+menu:
+  page_size: 10
+  select_keys: "asdfghjkl;"
 
 punctuator:
   import_preset: default

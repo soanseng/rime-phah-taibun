@@ -298,6 +298,19 @@ elif [ "$RIME_FRAMEWORK" = "ibus" ]; then
     fi
 fi
 
+# ============================================================
+# Step 5: 確認 menu 設定（select_keys 避免與聲調數字衝突）
+# ============================================================
+if [ -f "$RIME_DIR/default.custom.yaml" ]; then
+    if ! grep -q 'select_keys' "$RIME_DIR/default.custom.yaml"; then
+        cat >> "$RIME_DIR/default.custom.yaml" <<'MENU'
+  menu/page_size: 10
+  menu/select_keys: "asdfghjkl;"
+MENU
+        echo -e "  ${GREEN}[ok]${NC} 已加入 select_keys 設定（避免與聲調 1-8 衝突）"
+    fi
+fi
+
 echo
 echo "======================================"
 echo -e "${GREEN}  拍台文 Phah Tai-bun 安裝完成！${NC}"
