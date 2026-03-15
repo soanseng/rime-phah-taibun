@@ -67,6 +67,7 @@ engine:
     - lua_filter@*phah_taibun_lookup
     - lua_filter@*phah_taibun_synonym
     - lua_filter@*phah_taibun_long_word
+    - reverse_lookup_filter@phah_taibun_reverse_lookup
     - simplifier@emoji
     - uniquifier
 
@@ -139,6 +140,7 @@ recognizer:
   patterns:
     reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
     wildcard: "^\\?[a-z0-9]*$"
+    phrase: "^;[a-z0-9]*$"
 
 phah_taibun_select_char:
   first_key: bracketleft
@@ -156,6 +158,13 @@ melt_eng:
   initial_quality: 0.5
   comment_format:
     - xform/.*//
+
+phah_taibun_reverse_lookup:
+  tags: [ reverse_lookup ]
+  overwrite_comment: true
+  dictionary: phah_taibun
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
 
 emoji:
   option_name: emoji

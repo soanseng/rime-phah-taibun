@@ -49,31 +49,41 @@ macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](ht
 
 ### Windows Weasel 安裝
 
-Windows 使用者需先安裝 [小狼毫 Weasel](https://rime.im/download/)，然後手動複製檔案：
+Windows 使用者需先安裝 [小狼毫 Weasel](https://rime.im/download/)。
 
-1. 下載或 clone 本專案：
-   ```
-   git clone https://github.com/soanseng/rime-phah-taibun.git
-   ```
+#### 自動安裝（推薦）
 
-2. 找到 Rime 使用者目錄（通常在 `%AppData%\Rime`）：
-   - 右鍵小狼毫系統匣圖示 → 用戶文件夾
+```
+git clone https://github.com/soanseng/rime-phah-taibun.git
+cd rime-phah-taibun
+powershell -ExecutionPolicy Bypass -File scripts\install_windows.ps1
+```
 
-3. 複製以下檔案到使用者目錄：
+安裝腳本會自動：
+1. 複製方案檔和 Lua 腳本到 `%AppData%\Rime`
+2. 註冊拍台文到方案清單（不覆蓋現有方案）
+3. 下載芫荽 iansui 字體
+4. 提示手動重新部署
+
+#### 手動安裝
+
+如果 PowerShell 腳本無法執行，也可以手動安裝：
+
+1. 下載或 clone 本專案
+2. 找到 Rime 使用者目錄：右鍵小狼毫系統匣圖示 → 用戶文件夾（通常在 `%AppData%\Rime`）
+3. 複製以下檔案：
    ```
-   schema/phah_taibun.schema.yaml    → %AppData%\Rime\
-   schema/phah_taibun.dict.yaml      → %AppData%\Rime\
+   schema/phah_taibun.schema.yaml       → %AppData%\Rime\
+   schema/phah_taibun.dict.yaml         → %AppData%\Rime\
    schema/phah_taibun_reverse.dict.yaml → %AppData%\Rime\
-   schema/hanlo_rules.yaml           → %AppData%\Rime\
-   schema/lighttone_rules.json       → %AppData%\Rime\
-   schema/default.custom.yaml        → %AppData%\Rime\
-   lua/*                             → %AppData%\Rime\lua\
-   rime.lua                          → %AppData%\Rime\
+   schema/hanlo_rules.yaml              → %AppData%\Rime\
+   schema/lighttone_rules.json          → %AppData%\Rime\
+   lua/phah_taibun_*.lua                → %AppData%\Rime\lua\
+   rime.lua                             → %AppData%\Rime\
    ```
-
-4. 右鍵小狼毫圖示 → 重新部署
-
-5. 在輸入法選單中選擇「拍台文(台)」
+4. 編輯 `%AppData%\Rime\default.custom.yaml`，在 `schema_list` 中加入 `- schema: phah_taibun`
+5. 右鍵小狼毫圖示 → 重新部署
+6. 在輸入法選單中選擇「拍台文(台)」
 
 > **注意**：如果你已有 `default.custom.yaml`，請手動將 `phah_taibun` 加入 `schema_list` 而非直接覆蓋。
 >

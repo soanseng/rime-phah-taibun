@@ -129,12 +129,13 @@ cd rime-phah-taibun
 
 | 平台 | 輸入法框架 | 安裝指令 |
 |------|-----------|---------|
-| Linux | fcitx5-rime | `./install.sh` （自動偵測） |
-| Linux | ibus-rime | `./install.sh` （自動偵測） |
-| macOS | 鼠鬚管 Squirrel | `./install.sh` （自動偵測） |
-| 手動指定 | 任意平台 | `./install.sh ~/.local/share/fcitx5/rime` |
+| Linux | fcitx5-rime | `./install.sh`（自動偵測） |
+| Linux | ibus-rime | `./install.sh`（自動偵測） |
+| macOS | 鼠鬚管 Squirrel | `./install.sh`（自動偵測） |
+| Windows | 小狼毫 Weasel | `powershell -ExecutionPolicy Bypass -File scripts\install_windows.ps1` |
 
 macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](https://rime.im/download/) 下載。
+Windows 需先安裝[小狼毫 Weasel](https://rime.im/download/)。
 
 ### 重新部署
 
@@ -354,7 +355,6 @@ uv run ruff format scripts/ tests/                     # 格式化
 ## TODO
 
 - [ ] 製作 GIF 動畫教學（基本輸入、輸出模式切換、注音反查、萬用查字等）
-- [ ] Windows 小狼毫安裝腳本
 - [ ] 文白讀切換功能（phah_taibun_synonym）
 
 ## 授權

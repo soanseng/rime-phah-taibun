@@ -156,4 +156,63 @@ function M.format_romanization(roman)
   return table.concat(parts, "-")
 end
 
+-- ============================================================
+-- Mandarin→Taiwanese mapping (hoabun_map.txt)
+-- ============================================================
+local _hoabun_map = nil
+
+local function find_hoabun_map_path()
+  local dirs = {}
+  if rime_api then
+    local user_dir = rime_api.get_user_data_dir()
+    if user_dir then table.insert(dirs, user_dir) end
+    local shared_dir = rime_api.get_shared_data_dir()
+    if shared_dir then table.insert(dirs, shared_dir) end
+  end
+  for _, dir in ipairs(dirs) do
+    local path = dir .. "/hoabun_map.txt"
+    local f = io.open(path, "r")
+    if f then
+      f:close()
+      return path
+    end
+  end
+  return nil
+end
+
+-- Load and cache hoabun_map (華→台 mapping)
+function M.get_hoabun_map()
+  if _hoabun_map then
+    return _hoabun_map
+  end
+
+  local path = find_hoabun_map_path()
+  if not path then
+    _hoabun_map = {}
+    return _hoabun_map
+  end
+
+  local f = io.open(path, "r")
+  if not f then
+    _hoabun_map = {}
+    return _hoabun_map
+  end
+
+  _hoabun_map = {}
+  for line in f:lines() do
+    local mandarin, kip = line:match("^(.+)\t(.+)$")
+    if mandarin and kip then
+      _hoabun_map[mandarin] = kip
+    end
+  end
+  f:close()
+  return _hoabun_map
+end
+
+-- Look up a Mandarin word → Taiwanese TL code
+function M.hoabun_to_tl(word)
+  local map = M.get_hoabun_map()
+  return map[word]
+end
+
 return M

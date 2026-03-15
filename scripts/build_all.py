@@ -185,6 +185,15 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print("SKIP: No reverse dict source found")
 
+    # Step 5b: Build Mandarin→Taiwanese mapping (hoabun_map.txt)
+    if chhoetaigi_dir.exists():
+        steps_ok &= run_step(
+            "Build Mandarin→Taiwanese mapping (hoabun_map.txt)",
+            [python, "scripts/build_hoabun_map.py",
+             "--input", str(chhoetaigi_dir),
+             "--output", str(out / "hoabun_map.txt")],
+        )
+
     # Step 6: Validate
     dict_yaml = out / "phah_taibun.dict.yaml"
     if dict_yaml.exists():
