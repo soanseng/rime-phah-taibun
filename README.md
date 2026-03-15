@@ -351,6 +351,12 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
 - [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 以詞定字、長詞優先等 UX 功能參考
 
+## TODO
+
+- [ ] 製作 GIF 動畫教學（基本輸入、輸出模式切換、注音反查、萬用查字等）
+- [ ] Windows 小狼毫安裝腳本
+- [ ] 文白讀切換功能（phah_taibun_synonym）
+
 ## 授權
 
 詳見 [LICENSE](LICENSE)。

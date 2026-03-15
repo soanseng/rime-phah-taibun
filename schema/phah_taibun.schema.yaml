@@ -38,8 +38,8 @@ engine:
     - recognizer
     - key_binder
     - speller
-    - punctuator
     - lua_processor@*phah_taibun_commit
+    - punctuator
     - selector
     - navigator
     - fluency_editor
@@ -121,7 +121,7 @@ custom_phrase:
 
 menu:
   page_size: 10
-  select_keys: "asdfghjkl;"
+  alternative_select_keys: "asdfghjkl;"
 
 punctuator:
   import_preset: default

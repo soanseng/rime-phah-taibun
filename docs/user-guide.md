@@ -668,3 +668,7 @@ cd rime-phah-taibun
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — 多語料庫資料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具
+
+---
+
+*最後更新：2026-03-15*

@@ -9,6 +9,7 @@ function M.init(env)
     env.name_space = env.name_space:gsub("^*", "")
     env.first_key = config:get_string(env.name_space .. "/first_key")
     env.last_key = config:get_string(env.name_space .. "/last_key")
+    env.page_size = config:get_int("menu/page_size") or 5
 end
 
 function M.func(key, env)
@@ -20,6 +21,17 @@ function M.func(key, env)
         and (context:is_composing() or context:has_menu())
         and (env.first_key or env.last_key)
     then
+        -- Check if we're on page 2+ — pass through for paging
+        if key:repr() == env.first_key or key:repr() == env.last_key then
+            local comp = context.composition
+            if not comp:empty() then
+                local seg = comp:back()
+                if seg.selected_index >= env.page_size then
+                    return 2  -- kNoop, let key_binder handle paging
+                end
+            end
+        end
+
         local input = context.input
         local selected_candidate = context:get_selected_candidate()
         selected_candidate = selected_candidate and selected_candidate.text or input
