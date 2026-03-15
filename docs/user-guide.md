@@ -600,19 +600,19 @@ cd rime-phah-taibun
 
 ## 資料來源與致謝
 
-| 資料 | 授權 | 用途 |
-|------|------|------|
-| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | CC0 / CC BY-SA 4.0 | 主字典（9 本辭典，170K 條目） |
-| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 已授權使用 | 漢羅轉換規則 |
-| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 反查字典 + 例句語料 |
-| [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 新聞語料詞頻 |
-| [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻 |
-| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 待確認 | 國小台語課本詞頻 |
-| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 待確認 | 日常高頻詞彙 |
-| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 待確認 | 台語文學語料 |
-| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 待確認 | 歷史 POJ 語料 |
-| [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源 | Lua 模組架構參考 |
-| [rime-ice](https://github.com/iDvel/rime-ice) | GPL-3.0 | UX 功能參考 |
+| 資料 | 用途 |
+|------|------|
+| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（9 本辭典，170K 條目） |
+| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
+| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 反查字典 + 例句語料 |
+| [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 新聞語料詞頻 |
+| [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 文學語料詞頻 |
+| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻 |
+| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙 |
+| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料 |
+| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料 |
+| [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
+| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考 |
 
 **致謝：**
 
