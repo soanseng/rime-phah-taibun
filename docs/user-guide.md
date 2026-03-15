@@ -203,10 +203,20 @@ POJ 輸入: goa ai li  → 我愛你（同樣結果）
 
 ### 全羅輸出
 
-切換到全羅模式後，所有候選都以羅馬字輸出，適合：
+切換到全羅模式後，候選清單仍顯示漢羅文字（方便辨識），但確定選字後輸出全羅拼音（帶 Unicode 調符）。適合：
 - 純羅馬字書寫
 - 教學用途（讓學生看到完整拼音）
 - 不確定漢字時的替代方案
+
+### 強制輸出羅馬字
+
+在漢羅模式下，臨時需要某個候選的羅馬拼音？按 `Shift+Space` 即可輸出帶調符的全羅拼音，不需要切換模式。
+
+```
+候選: 食飯 [tsia̍h-pn̄g]
+按 Space       → 送出「食飯」（漢字）
+按 Shift+Space → 送出「tsia̍h-pn̄g」（羅馬字）
+```
 
 ### 模式切換
 
@@ -436,6 +446,7 @@ o͘  ⁿ
 | 按鍵 | 功能 |
 |------|------|
 | `Space` | 確認選字 |
+| `Shift+Space` | 強制輸出羅馬字（帶調符，任何模式皆可） |
 | `Enter` | 直接送出拼音原文 |
 | `Ctrl+Enter` | 送出轉換後的文字 |
 | `Backspace` | 還原上一步 |
@@ -519,7 +530,7 @@ ls ~/Library/Rime/lua/phah_taibun_*.lua
 dir %AppData%\Rime\lua\phah_taibun_*.lua
 ```
 
-應該要有 12 個 `phah_taibun_*.lua` 檔案。
+應該要有 13 個 `phah_taibun_*.lua` 檔案。
 
 ### 華語反查 `~` 沒有反應
 
@@ -592,7 +603,7 @@ cd rime-phah-taibun
 | 資料 | 授權 | 用途 |
 |------|------|------|
 | [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | CC0 / CC BY-SA 4.0 | 主字典（9 本辭典，170K 條目） |
-| [LKK 用字表](https://www.tgb.org.tw/) | 已授權使用 | 漢羅轉換規則 |
+| [LKK 用字表](https://docs.google.com/spreadsheets/d/e/2PACX-1vR6sABIf13wvn95hKApMWmEYYD-vDL62mVAYBE1jycBRTkiJQush3-HCkkaPMSsv2cOcPZ0blNODFpx/pubhtml) | 已授權使用 | 漢羅轉換規則 |
 | [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 反查字典 + 例句語料 |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 新聞語料詞頻 |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻 |
