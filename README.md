@@ -1,6 +1,16 @@
 # 拍台文 Phah Tai-bun
 
+[![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Dict Entries](https://img.shields.io/badge/dict-170K%20entries-green?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-12%20modules-orange?style=flat-square)](#)
+[![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#支援平台)
+
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
+
+> **[使用說明 User Guide](https://soanseng.github.io/rime-phah-taibun/)**
 
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 
