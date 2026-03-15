@@ -618,7 +618,7 @@ return M
 - [x] 意傳 `khin1siann1-hun1sik4` 的分詞規則提取 — 111 條輕聲規則已用 parse_lighttone.py 解析
 - [x] rime-liur Lua 模組授權確認：README 聲明「本專案基於開源授權發佈，歡迎使用和改進」，已標註出處
 - [ ] 字咍字型 IVS 對照表提取（Phase 2）
-- [ ] 與李江却基金會確認 LKK 用字表在輸入法中使用的授權
+- [x] 與李江却基金會確認 LKK 用字表在輸入法中使用的授權 — 已確認可使用，需註明出處
 - [ ] `tai5-uan5_gian5-gi2_kang1-ku7` 在 Arch Linux 上的安裝測試
 - [x] iCorpus 新聞語料：已用 extract_icorpus_freq.py 提取 57K 詞、302K tokens
 - [x] nmtl_2006_dadwt 格式分析：2,169 篇 .tbk 純文字（POJ），含 25M nmtl.json 已對齊版
