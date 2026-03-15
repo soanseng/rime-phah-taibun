@@ -300,7 +300,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | 資料 | 授權 | 用途 |
 |------|------|------|
 | [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | CC0 / CC BY-SA 4.0 | 主字典（iTaigi + 台華線頂） |
-| [LKK 用字表](https://docs.google.com/spreadsheets/d/e/2PACX-1vR6sABIf13wvn95hKApMWmEYYD-vDL62mVAYBE1jycBRTkiJQush3-HCkkaPMSsv2cOcPZ0blNODFpx/pubhtml) | 已授權使用（需註明出處） | 漢羅轉換規則 |
+| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 已授權使用（需註明出處） | 漢羅轉換規則 |
 | [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 反查字典（65K 條目） |
 | [教育部辭典 (g0v)](https://github.com/g0v/moedict-data-twblg) | CC BY-ND 3.0 | 反查字典 fallback |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 詞頻統計（57K 詞） |

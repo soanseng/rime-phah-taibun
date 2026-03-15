@@ -603,7 +603,7 @@ cd rime-phah-taibun
 | 資料 | 授權 | 用途 |
 |------|------|------|
 | [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | CC0 / CC BY-SA 4.0 | 主字典（9 本辭典，170K 條目） |
-| [LKK 用字表](https://docs.google.com/spreadsheets/d/e/2PACX-1vR6sABIf13wvn95hKApMWmEYYD-vDL62mVAYBE1jycBRTkiJQush3-HCkkaPMSsv2cOcPZ0blNODFpx/pubhtml) | 已授權使用 | 漢羅轉換規則 |
+| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 已授權使用 | 漢羅轉換規則 |
 | [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 反查字典 + 例句語料 |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 新聞語料詞頻 |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻 |
