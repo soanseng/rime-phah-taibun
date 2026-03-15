@@ -262,7 +262,9 @@ else
 fi
 
 # 芫荽 iansui 字體（台文特殊漢字、方音符號正確顯示需要）
+IANSUI_INSTALLED=false
 if fc-list 2>/dev/null | grep -qi "iansui\|芫荽"; then
+    IANSUI_INSTALLED=true
     echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體"
 else
     echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
@@ -271,6 +273,7 @@ else
     IANSUI_URL="https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf"
     if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
         fc-cache -f "$FONT_DIR" 2>/dev/null || true
+        IANSUI_INSTALLED=true
         echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
     else
         echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
@@ -355,6 +358,29 @@ done
 echo
 echo "切換輸入法：Ctrl+\` 或 Ctrl+Shift+\`"
 echo
+
+# 字體設定提示
+if [ "$IANSUI_INSTALLED" = true ]; then
+    CLASSICUI_CONF="$HOME/.config/fcitx5/conf/classicui.conf"
+    if [ "$RIME_FRAMEWORK" = "fcitx5" ]; then
+        if [ -f "$CLASSICUI_CONF" ] && grep -q "Font=.*[Ii]ansui" "$CLASSICUI_CONF" 2>/dev/null; then
+            : # 已設定
+        else
+            echo -e "${YELLOW}【字體設定】${NC}"
+            echo "  建議將候選區字體設為「芫荽 Iansui」以正確顯示台文特殊漢字："
+            echo
+            echo "  在 $CLASSICUI_CONF 加入："
+            echo -e "    ${GREEN}Font=\"Iansui 12\"${NC}"
+            echo
+        fi
+    elif [ "$RIME_FRAMEWORK" = "ibus" ]; then
+        echo -e "${YELLOW}【字體設定】${NC}"
+        echo "  建議在 ibus 偏好設定中將候選區字體設為「Iansui」"
+        echo "  以正確顯示台文特殊漢字和方音符號。"
+        echo
+    fi
+fi
+
 echo "如遇問題，請到 GitHub 回報："
 echo "  https://github.com/soanseng/rime-phah-taibun"
 echo
