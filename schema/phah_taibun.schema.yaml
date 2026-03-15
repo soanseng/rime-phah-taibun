@@ -8,6 +8,7 @@ schema:
   author:
     - "拍台文開發團隊"
   dependencies:
+    - bopomofo_tw
     - melt_eng
   description: |
     台語輸入法方案 — 漢羅混寫輸出
@@ -104,10 +105,11 @@ translator:
     - "xform/^(.*)$/ [$1]/"
 
 reverse_lookup:
-  dictionary: luna_pinyin
+  dictionary: terra_pinyin
+  prism: bopomofo_tw
   prefix: "~"
   suffix: "'"
-  tips: "〔華語反查〕"
+  tips: "〔注音反查〕"
 
 custom_phrase:
   dictionary: ""
@@ -135,7 +137,7 @@ key_binder:
 recognizer:
   import_preset: default
   patterns:
-    reverse_lookup: "~[a-z]*'?$"
+    reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
     wildcard: "^\\?[a-z0-9]*$"
 
 phah_taibun_select_char:

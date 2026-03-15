@@ -248,14 +248,14 @@ if [ -d "$RIME_SHARED" ]; then
         fi
     done
 
-    # 華語反查需要 luna_pinyin 字典
-    if [ -f "$RIME_SHARED/luna_pinyin.schema.yaml" ] || [ -f "$RIME_DIR/luna_pinyin.schema.yaml" ]; then
-        echo -e "  ${GREEN}[ok]${NC} luna_pinyin（華語反查字典）"
+    # 注音反查需要 bopomofo_tw 字典
+    if [ -f "$RIME_SHARED/bopomofo_tw.schema.yaml" ] || [ -f "$RIME_DIR/bopomofo_tw.schema.yaml" ]; then
+        echo -e "  ${GREEN}[ok]${NC} bopomofo_tw（注音反查字典）"
     else
-        echo -e "  ${YELLOW}[warn]${NC} 找不到 luna_pinyin 字典，華語反查功能將無法使用"
+        echo -e "  ${YELLOW}[warn]${NC} 找不到 bopomofo_tw 字典，注音反查功能將無法使用"
         echo -e "         安裝方式："
-        echo -e "           Arch:   sudo pacman -S rime-luna-pinyin"
-        echo -e "           Debian: sudo apt install librime-data-luna-pinyin"
+        echo -e "           Arch:   sudo pacman -S librime-data"
+        echo -e "           Debian: sudo apt install librime-data-bopomofo"
     fi
 else
     echo -e "  ${YELLOW}[warn]${NC} 找不到 $RIME_SHARED，可能缺少 rime-data 套件"

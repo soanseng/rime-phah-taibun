@@ -11,7 +11,7 @@
 ### 安裝需求
 
 - [Rime 輸入法引擎](https://rime.im/)（fcitx5-rime、ibus-rime、鼠鬚管 或小狼毫）
-- `luna_pinyin` 方案（華語反查需要，大部分 Rime 安裝已內建）
+- `bopomofo_tw` 方案（注音反查需要，大部分 Rime 安裝已內建）
 - Git
 
 > Python 和 uv 只有在需要從原始資料重新建置字典時才需要，一般使用者不需要。
@@ -30,7 +30,7 @@ cd rime-phah-taibun
 1. 偵測你的輸入法框架（fcitx5-rime、ibus-rime 或鼠鬚管）
 2. 複製方案檔、字典、Lua 模組到 Rime 使用者目錄
 3. 註冊「拍台文」到方案清單（不會覆蓋你現有的方案）
-4. 檢查反查所需的 `luna_pinyin` 方案是否存在
+4. 檢查反查所需的 `bopomofo_tw` 方案是否存在
 5. 觸發 Rime 重新部署
 
 安裝完成後，在輸入法選單中選擇「拍台文(台)」即可使用。
@@ -316,25 +316,25 @@ POJ 輸入: goa ai li  → 我愛你（同樣結果）
 
 ---
 
-## 六、華語反查
+## 六、注音反查
 
-不知道台語怎麼講？按 `~` 進入反查模式，用漢語拼音輸入華語，查看台語讀音。
+不知道台語怎麼講？按 `~` 進入反查模式，用注音輸入華語，查看台語讀音。
 
 **用法：**
 
-1. 按 `~` 進入反查模式（候選區顯示「〔華語反查〕」）
-2. 用漢語拼音打華語
+1. 按 `~` 進入反查模式（候選區顯示「〔注音反查〕」）
+2. 用注音打華語（使用標準注音鍵盤配置）
 3. 候選區顯示對應的台語讀音
 
 ```
-~chi fan    → 食飯 tsia̍h-pn̄g
-~piao liang → 媠 suí
-~xue xiao   → 學校 ha̍k-hāu
+~ㄔ ㄈㄢˋ     → 食飯 tsia̍h-pn̄g
+~ㄆㄧㄠˋ ㄌㄧㄤˋ → 媠 suí
+~ㄒㄩㄝˊ ㄒㄧㄠˋ → 學校 ha̍k-hāu
 ```
 
 按 `'`（單引號）或 `Escape` 結束反查模式。
 
-> 反查功能需要 `luna_pinyin` 方案。如果反查沒反應，請確認已安裝 `librime-data` 或 `luna_pinyin` 方案。
+> 反查功能需要 `bopomofo_tw` 方案。如果反查沒反應，請確認已安裝 `librime-data` 或 `bopomofo_tw` 方案。
 
 ---
 
@@ -475,7 +475,7 @@ vvjit → 2026年3月15 拜六
 | 按鍵 | 功能 | 說明 |
 |------|------|------|
 | `F4` | 方案選單 | 切換輸出模式（漢羅/全羅、TL/POJ）、開關 emoji |
-| `~` | 華語反查 | 用漢語拼音查台語讀音 |
+| `~` | 注音反查 | 用注音輸入華語查台語讀音 |
 | `` ` `` | 符號選單 | 台羅調號、方音符號、台文標點 |
 | `?` | 萬用字元 | 代替不確定的聲母，列出所有可能 |
 | `;` | 造詞模式 | 逐字輸入組合新詞 |
@@ -576,16 +576,16 @@ dir %AppData%\Rime\lua\phah_taibun_*.lua
 
 應該要有 13 個 `phah_taibun_*.lua` 檔案。
 
-### 華語反查 `~` 沒有反應
+### 注音反查 `~` 沒有反應
 
-反查依賴 `luna_pinyin` 方案，確認已安裝：
+反查依賴 `bopomofo_tw` 方案，確認已安裝：
 
 ```bash
 # Linux
-ls /usr/share/rime-data/luna_pinyin.schema.yaml
+ls /usr/share/rime-data/bopomofo_tw.schema.yaml
 
 # macOS
-ls /Library/Input\ Methods/Squirrel.app/Contents/SharedSupport/luna_pinyin.schema.yaml
+ls /Library/Input\ Methods/Squirrel.app/Contents/SharedSupport/bopomofo_tw.schema.yaml
 ```
 
 若未安裝，安裝 `librime-data` 套件：
@@ -595,7 +595,7 @@ ls /Library/Input\ Methods/Squirrel.app/Contents/SharedSupport/luna_pinyin.schem
 sudo pacman -S librime-data
 
 # Ubuntu/Debian
-sudo apt install librime-data-luna-pinyin
+sudo apt install librime-data-bopomofo
 
 # macOS (透過鼠鬚管安裝即包含)
 ```

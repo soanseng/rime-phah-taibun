@@ -21,7 +21,7 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 - **聲調可省略**：打 `gua beh khi` 就能找到「我 beh 去」
 - **拼音註解**：候選區永遠顯示讀音，邊打邊學
 - **多種輸出模式**：漢羅TL、漢羅POJ、全羅TL、全羅POJ 一鍵切換
-- **華語反查**：不知道台語怎麼講？用拼音打華語就能查到台語讀音
+- **注音反查**：不知道台語怎麼講？用注音打華語就能查到台語讀音
 - **萬用字元**：拼音不確定？用 `?` 代替，列出所有可能
 - **以詞定字**：按 `[` 取首字、`]` 取尾字，從詞組精準選字
 - **長詞優先**：自動提升多字詞排序，減少逐字選字
@@ -58,13 +58,13 @@ POJ 輸入: goa ai li  → 我愛你（同樣結果）
 省略聲調: gua beh khi     → 我 beh 去（同樣結果）
 ```
 
-### 華語反查台語
+### 注音反查台語
 
-按 `~` 進入反查模式，用漢語拼音輸入華語，查看台語讀音：
+按 `~` 進入反查模式，用注音輸入華語，查看台語讀音：
 
 ```
-~chi fan  → 食飯 tsia̍h-pn̄g
-~piao liang → 媠 suí
+~ㄔ ㄈㄢˋ  → 食飯 tsia̍h-pn̄g
+~ㄆㄧㄠˋ ㄌㄧㄤˋ → 媠 suí
 ```
 
 ### 萬用字元 `?`
@@ -120,7 +120,7 @@ cd rime-phah-taibun
 1. 偵測你的輸入法框架（fcitx5-rime 或 ibus-rime）
 2. 複製方案檔、字典、Lua 模組到 Rime 使用者目錄
 3. 註冊「拍台文」到方案清單（不會覆蓋你現有的方案）
-4. 檢查反查所需的 `luna_pinyin` 方案是否存在
+4. 檢查反查所需的 `bopomofo_tw` 方案是否存在
 5. 觸發 Rime 重新部署
 
 安裝完成後，在輸入法選單中選擇「拍台文」即可使用。
@@ -147,7 +147,7 @@ macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](ht
 ### 前置需求
 
 - [Rime 輸入法引擎](https://rime.im/)（fcitx5-rime、ibus-rime 或鼠鬚管）
-- `luna_pinyin` 方案（華語反查需要，大部分 Rime 安裝已內建）
+- `bopomofo_tw` 方案（注音反查需要，大部分 Rime 安裝已內建）
 - Git
 
 > Python 和 uv 只有在需要從原始資料重新建置字典時才需要，一般使用者不需要。
@@ -191,7 +191,7 @@ patch:
 |------|------|------|
 | `F4` | 方案選單 | 切換輸出模式（漢羅TL/漢羅POJ/全羅TL/全羅POJ） |
 | `Ctrl+Shift+T` | 快速切換 | 循環切換輸出模式 |
-| `~` | 華語反查 | 用漢語拼音查台語讀音 |
+| `~` | 注音反查 | 用注音輸入華語查台語讀音 |
 | `` ` `` | 符號選單 | 台羅調號、方音符號、台文標點 |
 | `?` | 萬用字元 | 代替不確定的聲母，列出所有可能 |
 | `;` | 造詞模式 | 逐字輸入組合新詞 |
@@ -220,13 +220,11 @@ ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
 ```
 應該要有 13 個 `phah_taibun_*.lua` 檔案。
 
-### 華語反查 `~` 沒有反應
+### 注音反查 `~` 沒有反應
 
-反查依賴 `luna_pinyin` 方案，確認已安裝：
+反查依賴 `bopomofo_tw` 方案，確認已安裝：
 ```bash
-ls /usr/share/rime-data/luna_pinyin.schema.yaml
-# 或
-ls ~/.local/share/fcitx5/rime/luna_pinyin.schema.yaml
+ls /usr/share/rime-data/bopomofo_tw.schema.yaml
 ```
 
 若未安裝，安裝 `librime-data` 套件：
@@ -235,7 +233,7 @@ ls ~/.local/share/fcitx5/rime/luna_pinyin.schema.yaml
 sudo pacman -S librime-data
 
 # Ubuntu/Debian
-sudo apt install librime-data-luna-pinyin
+sudo apt install librime-data-bopomofo
 ```
 
 ### Lua 錯誤導致候選區異常
