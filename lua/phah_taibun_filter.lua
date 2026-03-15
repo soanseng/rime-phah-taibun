@@ -96,9 +96,11 @@ local function apply_hanlo_rules(text, raw_roman)
     return text
   end
 
+  local fmt = data_mod.format_romanization
+
   -- Check the whole word/phrase first
   if is_lo_type(text) then
-    return raw_roman
+    return fmt and fmt(raw_roman) or raw_roman
   end
 
   -- For multi-character text, check each character
@@ -124,12 +126,14 @@ local function apply_hanlo_rules(text, raw_roman)
     return text
   end
 
-  -- Check each character: if "lo" type, replace with romanization
+  -- Check each character: if "lo" type, replace with romanization (with diacritics)
   local result_parts = {}
   local changed = false
   for i, char in ipairs(chars) do
     if is_lo_type(char) then
-      table.insert(result_parts, syllables[i])
+      local syl = syllables[i]
+      if fmt then syl = fmt(syl) end
+      table.insert(result_parts, syl)
       changed = true
     else
       table.insert(result_parts, char)
@@ -153,6 +157,9 @@ function M.func(input, env)
     -- Extract the raw romanization from Rime's auto-comment
     -- Rime formats it as " [romanization]" via comment_format xform
     local raw_roman = comment:match("%[(.-)%]") or ""
+
+    -- Convert tone numbers to diacritics for display (e.g. "gua2" → "guá")
+    local fmt = data_mod and data_mod.format_romanization or nil
 
     if mode == 2 or mode == 3 then
       -- 全羅模式：候選清單顯示漢羅（跟漢羅模式一樣），確定後由 processor 輸出全羅拼音
@@ -182,8 +189,9 @@ function M.func(input, env)
         end
 
         -- text = 漢羅 (顯示在候選清單)
-        -- comment = [roman] (全羅拼音，由 phah_taibun_commit processor 用來輸出)
-        local display_comment = " [" .. roman .. "]"
+        -- comment = [roman] (全羅拼音，調符版，由 phah_taibun_commit processor 用來輸出)
+        local display_roman = fmt and fmt(roman) or roman
+        local display_comment = " [" .. display_roman .. "]"
         local new_cand = Candidate(cand.type, cand.start, cand._end, display_text, display_comment)
         new_cand.quality = cand.quality + boost
         new_cand.preedit = cand.preedit
@@ -209,9 +217,11 @@ function M.func(input, env)
         new_text = tl_to_poj(new_text)
       end
 
+      -- Convert comment to diacritics
       local new_comment = comment
-      if display_roman ~= "" and display_roman ~= raw_roman then
-        new_comment = " [" .. display_roman .. "]"
+      if display_roman ~= "" then
+        local formatted = fmt and fmt(display_roman) or display_roman
+        new_comment = " [" .. formatted .. "]"
       end
 
       -- Boost quality for longer matches (multi-character phrases)

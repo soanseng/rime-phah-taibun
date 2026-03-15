@@ -71,10 +71,10 @@ class TestParseItaigiCsv:
         assert first["hoabun"] == "討厭"
 
     def test_rime_key_generated(self, itaigi_csv_content):
-        """Each entry should have a toneless space-separated rime_key."""
+        """Each entry should have a space-separated rime_key with tone numbers."""
         entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
         first = entries[0]
-        assert first["rime_key"] == "sian neh"
+        assert first["rime_key"] == "sian7 neh"
 
     def test_source_tagged(self, itaigi_csv_content):
         entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
@@ -93,7 +93,7 @@ class TestParseTaihoaCsv:
         first = entries[0]
         assert first["hanlo"] == "á無"
         assert first["kip_input"] == "a2-bo5"
-        assert first["rime_key"] == "a bo"
+        assert first["rime_key"] == "a2 bo5"
         assert first["hoabun"] == "不然"
 
     def test_source_tagged(self, taihoa_csv_content):
@@ -118,14 +118,14 @@ class TestDedupEntries:
             {
                 "hanlo": "食飯",
                 "kip_input": "tsiah8-png7",
-                "rime_key": "tsiah png",
+                "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
                 "source": "itaigi",
             },
             {
                 "hanlo": "食飯",
                 "kip_input": "tsiah8-png7",
-                "rime_key": "tsiah png",
+                "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
                 "source": "taihoa",
             },
@@ -135,8 +135,8 @@ class TestDedupEntries:
 
     def test_keeps_different_pronunciations(self):
         entries = [
-            {"hanlo": "食", "kip_input": "tsiah8", "rime_key": "tsiah", "hoabun": "吃", "source": "itaigi"},
-            {"hanlo": "食", "kip_input": "sit8", "rime_key": "sit", "hoabun": "吃", "source": "itaigi"},
+            {"hanlo": "食", "kip_input": "tsiah8", "rime_key": "tsiah8", "hoabun": "吃", "source": "itaigi"},
+            {"hanlo": "食", "kip_input": "sit8", "rime_key": "sit8", "hoabun": "吃", "source": "itaigi"},
         ]
         result = dedup_entries(entries)
         assert len(result) == 2
@@ -146,14 +146,14 @@ class TestDedupEntries:
             {
                 "hanlo": "食飯",
                 "kip_input": "tsiah8-png7",
-                "rime_key": "tsiah png",
+                "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
                 "source": "itaigi",
             },
             {
                 "hanlo": "食餐",
                 "kip_input": "tsiah8-png7",
-                "rime_key": "tsiah png",
+                "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
                 "source": "itaigi",
             },
@@ -176,12 +176,12 @@ class TestWriteRimeDict:
 
     def test_entries_written(self, tmp_path):
         entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah png", "weight": 500},
+            {"hanlo": "食飯", "rime_key": "tsiah8 png7", "weight": 500},
         ]
         outfile = tmp_path / "test.dict.yaml"
         write_rime_dict(entries, outfile)
         content = outfile.read_text()
-        assert "食飯\ttsiah png\t500" in content
+        assert "食飯\ttsiah8 png7\t500" in content
 
     def test_tab_separated(self, tmp_path):
         entries = [
@@ -206,7 +206,7 @@ class TestConvertPipeline:
         convert_chhoetaigi(itaigi_paths=[csv_file], taihoa_paths=[], output_path=output)
         content = output.read_text()
         assert "name: phah_taibun" in content
-        assert "𤺪呢\tsian neh" in content
+        assert "𤺪呢\tsian7 neh" in content
 
     def test_merges_multiple_sources(self, tmp_path, itaigi_csv_content, taihoa_csv_content):
         itaigi_file = tmp_path / "itaigi.csv"
@@ -273,7 +273,7 @@ class TestParseGenericCsv:
         assert len(entries) == 2
         assert entries[0]["hanlo"] == "食飯"
         assert entries[0]["kip_input"] == "tsiah8-png7"
-        assert entries[0]["rime_key"] == "tsiah png"
+        assert entries[0]["rime_key"] == "tsiah8 png7"
         assert entries[0]["hoabun"] == "吃飯"
         assert entries[0]["source"] == "maryknoll"
 
@@ -374,7 +374,7 @@ class TestConvertWithGenericPaths:
             generic_paths=[(csv_path, "maryknoll")],
         )
         content = output.read_text()
-        assert "去\tkhi" in content
+        assert "去\tkhi3" in content
 
 
 class TestConvertCli:
