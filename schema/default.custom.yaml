@@ -1,4 +1,5 @@
-# default.custom.yaml — 拍台文預設配置
+# default.custom.yaml — 拍台文
+# 使用 @next 附加到現有方案列表，不會覆蓋其他輸入法
 patch:
-  schema_list:
-    - schema: phah_taibun
+  schema_list/@next:
+    schema: phah_taibun
