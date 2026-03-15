@@ -14,10 +14,10 @@
 
 ---
 
-## Phase 1：可用的 MVP（目標：2-3 週）— 進行中
+## Phase 1：可用的 MVP（目標：2-3 週）— 完成 ✅
 
 > 讓使用者能裝起來、打得出台語、看得到拼音。
-> **進度**：Week 1-2 完成，目前在 Week 3 實機測試階段（2026-03-15）
+> **進度**：Week 1-3 全部完成，實機驗證通過（2026-03-15）
 
 ### ✅ 收入 Phase 1
 
@@ -112,17 +112,21 @@
 | 7 個 Phase 1 Lua 模組 + 3 個 Phase 2 stubs | `lua/` 目錄 10 個 .lua 檔 |
 | `install.sh` + `scripts/install_linux.sh` | 一鍵安裝（fcitx5/ibus 自動偵測） |
 
-### 🔄 Week 3：實機測試 + 調校（進行中，2026-03-15）
+### ✅ Week 3：實機測試 + 調校（完成，2026-03-15）
 
 | 任務 | 狀態 |
 |------|------|
-| fcitx5-rime 實機安裝測試 | 🔄 進行中 — 已修復 Lua 載入問題（`@*` 語法 + `rime.lua`） |
+| fcitx5-rime 實機安裝測試 | ✅ 通過 — Rime 部署 8 schema 0 failure，build 產物齊全 |
 | 字典檔改為隨 repo 發佈（從 .gitignore 移除） | ✅ 已修復 |
 | `luna_pinyin` 反查依賴檢查 | ✅ install.sh 已加檢測 |
-| 詞頻微調 | 🔲 待實機驗證後進行 |
-| README.md 更新 | ✅ 已完成 |
+| 10 個 Lua 模組語法驗證 | ✅ 全部通過（Lua 5.5 loadfile 無錯誤） |
+| Python 測試 127 個（123 passed, 4 skipped） | ✅ 通過 |
+| 安裝檔案完整性（source ↔ installed 比對） | ✅ 10 個 Lua + 5 個 schema 檔案一致 |
+| Rime 日誌無錯誤（phah_taibun dictionary is ready） | ✅ 確認 |
+| 詞頻微調 | 🔲 待使用者實際打字體驗後決定 |
+| README.md 更新 | ✅ 已重寫（快速安裝、使用範例、疑難排解） |
 
-**Week 3 結束交付**：可發佈的 MVP
+**Week 3 結束交付**：MVP 已可發佈
 
 ---
 
