@@ -5,6 +5,7 @@ poj_to_tl(), tokenizes, and produces frequency counts and sentence lists.
 """
 
 import argparse
+import json
 import sys
 from collections import Counter
 from pathlib import Path
@@ -18,13 +19,13 @@ except ModuleNotFoundError:
 
 
 def extract_pojbh_sentences(data_dir: Path) -> tuple[list[str], Counter]:
-    """Extract tokenized sentences and word frequencies from POJ text files.
+    """Extract tokenized sentences and word frequencies from POJ corpus.
 
-    Recursively finds all .txt files in data_dir, converts POJ to TL,
-    tokenizes each line, and aggregates results.
+    Tries pojbh.json first (structured JSON with tailo field containing POJ lines),
+    then falls back to reading .txt files recursively.
 
     Args:
-        data_dir: Directory containing .txt files in POJ romanization
+        data_dir: Directory containing POJ corpus data
 
     Returns:
         Tuple of (list of space-joined tokenized sentences, word frequency Counter)
@@ -32,9 +33,39 @@ def extract_pojbh_sentences(data_dir: Path) -> tuple[list[str], Counter]:
     freq: Counter[str] = Counter()
     sentences: list[str] = []
 
+    # Try pojbh.json first
+    json_path = data_dir / "pojbh.json"
+    if json_path.exists():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                for record in data:
+                    if not isinstance(record, dict):
+                        continue
+                    tailo = record.get("tailo", [])
+                    if not isinstance(tailo, list):
+                        continue
+                    for line in tailo:
+                        if not isinstance(line, str) or not line.strip():
+                            continue
+                        tl_line = poj_to_tl(line)
+                        tokens = tokenize_tl_line(tl_line)
+                        if tokens:
+                            sentences.append(" ".join(tokens))
+                            freq.update(tokens)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            pass
+        if sentences:
+            return sentences, freq
+
+    # Fallback: .txt files
     txt_files = sorted(data_dir.rglob("*.txt"))
     for txt_file in txt_files:
-        text = txt_file.read_text(encoding="utf-8")
+        try:
+            text = txt_file.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
         for line in text.splitlines():
             tl_line = poj_to_tl(line)
             tokens = tokenize_tl_line(tl_line)
