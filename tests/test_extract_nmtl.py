@@ -10,8 +10,10 @@ from scripts.extract_nmtl import (
 
 
 SAMPLE_JSON = [
-    {"漢羅": "伊去學校讀冊", "音標": "I1 khi3 hak8-hau7 thak8-chheh"},
-    {"漢羅": "有一个少年人", "音標": "U7 chit8 e5 siau3-lian5-lang5"},
+    {"資料": [
+        ["伊去學校讀冊", "I1 khi3 hak8-hau7 thak8-chheh"],
+        ["有一个少年人", "U7 chit8 e5 siau3-lian5-lang5"],
+    ]},
 ]
 
 
@@ -28,7 +30,7 @@ class TestExtractNmtlSentencesJson:
         assert freq["chit8"] >= 1
 
     def test_json_with_empty_sound(self, tmp_path):
-        data = [{"漢羅": "只有漢字", "音標": ""}]
+        data = [{"資料": [["只有漢字", ""]]}]
         json_file = tmp_path / "nmtl.json"
         json_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
@@ -36,8 +38,8 @@ class TestExtractNmtlSentencesJson:
         assert len(sentences) == 0
         assert len(freq) == 0
 
-    def test_json_missing_sound_key(self, tmp_path):
-        """Records without 音標 key are skipped."""
+    def test_json_missing_data_key(self, tmp_path):
+        """Records without 資料 key are skipped."""
         data = [{"漢羅": "只有漢字"}]
         json_file = tmp_path / "nmtl.json"
         json_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
@@ -77,7 +79,7 @@ class TestExtractNmtlSentencesTxt:
         """When nmtl.json exists, txt files are ignored."""
         json_file = tmp_path / "nmtl.json"
         json_file.write_text(
-            json.dumps([{"漢羅": "A", "音標": "khi3"}], ensure_ascii=False),
+            json.dumps([{"資料": [["A", "khi3"]]}], ensure_ascii=False),
             encoding="utf-8",
         )
         txt_file = tmp_path / "extra.txt"
