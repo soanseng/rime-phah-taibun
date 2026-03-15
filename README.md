@@ -297,21 +297,21 @@ uv run ruff format scripts/ tests/                     # 格式化
 
 ## 資料來源
 
-| 資料 | 授權 | 用途 |
-|------|------|------|
-| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | CC0 / CC BY-SA 4.0 | 主字典（iTaigi + 台華線頂） |
-| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 已授權使用（需註明出處） | 漢羅轉換規則 |
-| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 反查字典（65K 條目） |
-| [教育部辭典 (g0v)](https://github.com/g0v/moedict-data-twblg) | CC BY-ND 3.0 | 反查字典 fallback |
-| [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 詞頻統計（57K 詞） |
-| [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻（93K 詞） |
-| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 待確認 | 國小台語課本詞頻（1K 詞） |
-| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 待確認 | 日常高頻詞彙（2.8K 詞） |
-| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 待確認 | 台語文學語料（2K+ 篇） |
-| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 例句語料 + 反查字典 |
-| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 待確認 | 歷史 POJ 語料（POJ→TL 轉換） |
-| [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源 | Lua 模組架構參考 |
-| [rime-ice](https://github.com/iDvel/rime-ice) | GPL-3.0 | UX 功能參考（以詞定字、長詞優先、emoji） |
+| 資料 | 用途 |
+|------|------|
+| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（iTaigi + 台華線頂） |
+| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
+| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 反查字典（65K 條目） |
+| [教育部辭典 (g0v)](https://github.com/g0v/moedict-data-twblg) | 反查字典 fallback |
+| [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 詞頻統計（57K 詞） |
+| [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 文學語料詞頻（93K 詞） |
+| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻（1K 詞） |
+| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙（2.8K 詞） |
+| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料（2K+ 篇） |
+| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 例句語料 + 反查字典 |
+| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料（POJ→TL 轉換） |
+| [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
+| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先、emoji） |
 
 ## 致謝
 
@@ -323,11 +323,3 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
 - [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 以詞定字、長詞優先等 UX 功能參考
-
-## 授權
-
-- **程式碼**（scripts/、lua/、schema/*.schema.yaml）：[MIT License](LICENSE)
-- **主字典** phah_taibun.dict.yaml：CC BY-SA 4.0（繼承台華線頂）
-- **反查字典** phah_taibun_reverse.dict.yaml：CC BY-ND 3.0（繼承教育部辭典）
-
-詳見 [LICENSE](LICENSE)。
