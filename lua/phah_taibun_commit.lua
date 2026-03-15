@@ -238,15 +238,29 @@ function M.func(key, env)
   end
 
   -- ============================================================
-  -- BACKSLASH \：force romanization output (any mode)
+  -- BACKSLASH \：toggle output mode for current candidate
+  --   漢羅 mode + \ → output full romanization (全羅)
+  --   全羅 mode + \ → output Han-Lo mixed text (漢羅)
   -- ============================================================
   if key:repr() == "backslash" then
+    local full_roman = context:get_option("full_romanization")
     local cand = context:get_selected_candidate()
-    local roman = extract_roman(cand, env)
-    if roman then
-      env.engine:commit_text(roman)
-      context:clear()
-      return 1  -- kAccepted
+    if cand then
+      if full_roman then
+        -- 全羅 mode: output the Han-Lo display text (cand.text)
+        -- In 全羅 mode, filter sets cand.text to Han-Lo display text
+        env.engine:commit_text(cand.text)
+        context:clear()
+        return 1  -- kAccepted
+      else
+        -- 漢羅 mode: output full romanization
+        local roman = extract_roman(cand, env)
+        if roman then
+          env.engine:commit_text(roman)
+          context:clear()
+          return 1  -- kAccepted
+        end
+      end
     end
     return 2
   end
