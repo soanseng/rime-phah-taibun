@@ -76,36 +76,8 @@ echo
 echo -e "${YELLOW}※ 若有自訂設定尚未備份，請按 Ctrl+C 終止${NC}"
 echo
 
-# 自定義設定檔選項
-if [ -f "$RIME_DIR/default.custom.yaml" ]; then
-    echo -e "${YELLOW}偵測到現有的 default.custom.yaml${NC}"
-    echo
-    echo "1. 保留（推薦）- 保留現有設定，僅安裝方案檔"
-    echo "2. 覆蓋 - 使用拍台文預設設定（會清除您的自訂設定）"
-    echo
-
-    while true; do
-        read -p "請輸入選項 (1 或 2): " customChoice < /dev/tty
-        case $customChoice in
-            1)
-                KEEP_DEFAULT_CUSTOM=true
-                echo -e "${GREEN}已選擇：保留自定義設定檔${NC}"
-                break
-                ;;
-            2)
-                KEEP_DEFAULT_CUSTOM=false
-                echo -e "${GREEN}已選擇：覆蓋自定義設定檔${NC}"
-                break
-                ;;
-            *)
-                echo -e "${RED}請輸入 1 或 2${NC}"
-                ;;
-        esac
-    done
-    echo
-else
-    KEEP_DEFAULT_CUSTOM=false
-fi
+# 不再覆蓋 default.custom.yaml，改為智慧附加
+# 見下方 Step 1b
 
 # ============================================================
 # Step 2: 複製方案檔
@@ -122,11 +94,6 @@ SCHEMA_FILES=(
     "hanlo_rules.yaml"
     "lighttone_rules.json"
 )
-
-# default.custom.yaml 根據選擇處理
-if [ "$KEEP_DEFAULT_CUSTOM" = false ]; then
-    SCHEMA_FILES+=("default.custom.yaml")
-fi
 
 for file in "${SCHEMA_FILES[@]}"; do
     src="$PROJ_DIR/schema/$file"
@@ -177,6 +144,44 @@ fi
 if [ -f "$PROJ_DIR/rime.lua" ]; then
     cp -f "$PROJ_DIR/rime.lua" "$RIME_DIR/rime.lua"
     echo -e "  ${GREEN}[ok]${NC} rime.lua（模組註冊）"
+fi
+
+echo
+
+# ============================================================
+# Step 3b: 將 phah_taibun 加入 schema_list（不覆蓋現有方案）
+# ============================================================
+echo "[ Step 2b: 註冊輸入法方案 ]"
+echo
+
+DEFAULT_CUSTOM="$RIME_DIR/default.custom.yaml"
+
+if [ -f "$DEFAULT_CUSTOM" ] && grep -q "phah_taibun" "$DEFAULT_CUSTOM"; then
+    echo -e "  ${GREEN}[ok]${NC} phah_taibun 已在 schema_list 中"
+elif [ -f "$DEFAULT_CUSTOM" ]; then
+    # 現有 default.custom.yaml — 附加 phah_taibun 到 schema_list
+    if grep -q "schema_list:" "$DEFAULT_CUSTOM"; then
+        # schema_list 已存在，在其下方附加
+        sed -i '/schema_list:/a\    - schema: phah_taibun' "$DEFAULT_CUSTOM"
+        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 附加到現有 schema_list"
+    else
+        # 有 default.custom.yaml 但沒有 schema_list — 加入 patch
+        cat >> "$DEFAULT_CUSTOM" <<'YAML'
+
+  schema_list/@next:
+    schema: phah_taibun
+YAML
+        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 加入 default.custom.yaml"
+    fi
+else
+    # 沒有 default.custom.yaml — 建立新檔，使用 @next 語法附加（不覆蓋預設方案）
+    cat > "$DEFAULT_CUSTOM" <<'YAML'
+# default.custom.yaml — 拍台文自動產生
+patch:
+  schema_list/@next:
+    schema: phah_taibun
+YAML
+    echo -e "  ${GREEN}[ok]${NC} 建立 default.custom.yaml（附加模式，保留預設方案）"
 fi
 
 echo
