@@ -1,11 +1,18 @@
 """Build all Rime dictionary files from downloaded data sources.
 
 Orchestrates the full preprocessing pipeline:
-1. Extract word frequencies from iCorpus + Ungian corpora
-2. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
-3. Parse LKK rules → hanlo_rules.yaml
-4. Build MOE reverse dictionary
-5. Validate generated files
+1. Extract word frequencies + sentences from iCorpus corpus
+2. Extract word frequencies + sentences from Ungian corpus
+3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
+4. Parse LKK rules → hanlo_rules.yaml
+4b. Parse light-tone rules → lighttone_rules.json
+5. Build reverse dictionary (KipSutian or MOE fallback)
+6. Validate generated dictionary
+7. Extract nmtl literary corpus sentences + frequencies
+8. Extract KipSutian example sentences
+9. Extract Khin-hoan POJ texts (with POJ→TL conversion)
+10. Build bigram phrases from all corpora
+11. Re-validate dictionary (with new phrases)
 
 Usage:
     uv run python scripts/build_all.py
@@ -54,24 +61,36 @@ def main(argv: list[str] | None = None) -> None:
     python = sys.executable
     steps_ok = True
 
-    # Step 1: Extract iCorpus frequencies
+    # Pre-define output paths for corpus extractors (used in Steps 3 and 7-10)
+    nmtl_freq = data / "nmtl_freq.tsv"
+    nmtl_sentences = data / "nmtl_sentences.txt"
+    kipsutian_sent_freq = data / "kipsutian_sent_freq.tsv"
+    kipsutian_sentences = data / "kipsutian_sentences.txt"
+    pojbh_freq = data / "pojbh_freq.tsv"
+    pojbh_sentences = data / "pojbh_sentences.txt"
+
+    # Step 1: Extract iCorpus frequencies + sentences
     icorpus_file = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改音標.txt"
     icorpus_freq = data / "icorpus_freq.tsv"
+    icorpus_sentences = data / "icorpus_sentences.txt"
     if icorpus_file.exists():
         steps_ok &= run_step(
             "Extract iCorpus word frequencies",
-            [python, "scripts/extract_icorpus_freq.py", "--input", str(icorpus_file), "--output", str(icorpus_freq)],
+            [python, "scripts/extract_icorpus_freq.py", "--input", str(icorpus_file),
+             "--output", str(icorpus_freq), "--sentences", str(icorpus_sentences)],
         )
     else:
         print(f"SKIP: iCorpus not found at {icorpus_file}")
 
-    # Step 2: Extract Ungian frequencies
+    # Step 2: Extract Ungian frequencies + sentences
     ungian_dir = data / "Ungian_2009_KIPsupin"
     ungian_freq = data / "ungian_freq.tsv"
+    ungian_sentences = data / "ungian_sentences.txt"
     if ungian_dir.exists():
         steps_ok &= run_step(
             "Extract Ungian literary corpus frequencies",
-            [python, "scripts/extract_ungian_freq.py", "--input", str(ungian_dir), "--output", str(ungian_freq)],
+            [python, "scripts/extract_ungian_freq.py", "--input", str(ungian_dir),
+             "--output", str(ungian_freq), "--sentences", str(ungian_sentences)],
         )
     else:
         print(f"SKIP: Ungian data not found at {ungian_dir}")
@@ -81,7 +100,7 @@ def main(argv: list[str] | None = None) -> None:
     if chhoetaigi_dir.exists():
         convert_cmd = [python, "scripts/convert_chhoetaigi.py", "--input", str(chhoetaigi_dir), "--output", str(out)]
         # Attach extracted corpus frequency TSVs if available
-        freq_files = [f for f in [icorpus_freq, ungian_freq] if f.exists()]
+        freq_files = [f for f in [icorpus_freq, ungian_freq, nmtl_freq, kipsutian_sent_freq, pojbh_freq] if f.exists()]
         if freq_files:
             convert_cmd.append("--corpus-freq")
             convert_cmd.extend(str(f) for f in freq_files)
@@ -143,6 +162,65 @@ def main(argv: list[str] | None = None) -> None:
     if dict_yaml.exists():
         steps_ok &= run_step(
             "Validate generated dictionary",
+            [python, "scripts/validate_dict.py", str(dict_yaml)],
+        )
+
+    # Step 7: Extract nmtl literary corpus sentences + frequencies
+    nmtl_dir = data / "nmtl_2006_dadwt"
+    if nmtl_dir.exists():
+        steps_ok &= run_step(
+            "Extract nmtl literary corpus",
+            [python, "scripts/extract_nmtl.py", "--input", str(nmtl_dir),
+             "--output", str(nmtl_freq), "--sentences", str(nmtl_sentences)],
+        )
+    else:
+        print(f"SKIP: nmtl data not found at {nmtl_dir}")
+
+    # Step 8: Extract KipSutian example sentences
+    if kipsutian_csv and kipsutian_csv.exists():
+        steps_ok &= run_step(
+            "Extract KipSutian example sentences",
+            [python, "scripts/extract_kipsutian_sentences.py", "--input", str(kipsutian_csv),
+             "--output", str(kipsutian_sent_freq), "--sentences", str(kipsutian_sentences)],
+        )
+
+    # Step 9: Extract Khin-hoan POJ texts (with POJ→TL conversion)
+    pojbh_dir = data / "Khin-hoan_2010_pojbh"
+    if pojbh_dir.exists():
+        steps_ok &= run_step(
+            "Extract Khin-hoan POJ texts (with POJ→TL conversion)",
+            [python, "scripts/extract_pojbh.py", "--input", str(pojbh_dir),
+             "--output", str(pojbh_freq), "--sentences", str(pojbh_sentences)],
+        )
+    else:
+        print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
+
+    # Step 10: Build bigram phrases from all corpora
+    sentence_files = [f for f in [
+        icorpus_sentences, ungian_sentences, nmtl_sentences,
+        kipsutian_sentences, pojbh_sentences,
+    ] if f.exists()]
+    dict_yaml = out / "phah_taibun.dict.yaml"
+    if sentence_files and dict_yaml.exists():
+        phrase_output = data / "new_phrases.txt"
+        steps_ok &= run_step(
+            "Build bigram phrases from all corpora",
+            [python, "scripts/build_phrases.py",
+             "--dict", str(dict_yaml),
+             "--sentences"] + [str(f) for f in sentence_files] +
+            ["--output", str(phrase_output), "--min-count", "5"],
+        )
+        # Append new phrases to dict.yaml
+        if phrase_output.exists() and phrase_output.stat().st_size > 0:
+            with open(dict_yaml, "a", encoding="utf-8") as out_f:
+                with open(phrase_output, encoding="utf-8") as in_f:
+                    out_f.write(in_f.read())
+            print(f"  Appended phrases from {phrase_output}")
+
+    # Step 11: Re-validate dictionary (with new phrases)
+    if dict_yaml.exists():
+        steps_ok &= run_step(
+            "Re-validate dictionary (with new phrases)",
             [python, "scripts/validate_dict.py", str(dict_yaml)],
         )
 
