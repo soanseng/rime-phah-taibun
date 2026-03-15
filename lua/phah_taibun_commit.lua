@@ -96,9 +96,9 @@ function M.func(key, env)
   local full_roman = context:get_option("full_romanization")
 
   -- ============================================================
-  -- Shift+Space：漢羅模式下強制輸出羅馬字（任何模式皆可）
+  -- 反斜線 \：強制輸出羅馬字（任何模式皆可）
   -- ============================================================
-  if key:repr() == "Shift+space" then
+  if key:repr() == "backslash" then
     local cand = context:get_selected_candidate()
     local roman = extract_roman(cand, env)
     if roman then

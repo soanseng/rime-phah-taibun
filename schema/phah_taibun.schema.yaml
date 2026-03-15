@@ -136,6 +136,7 @@ recognizer:
   import_preset: default
   patterns:
     reverse_lookup: "~[a-z]*'?$"
+    wildcard: "^\\?[a-z0-9]*$"
 
 phah_taibun_select_char:
   first_key: bracketleft
