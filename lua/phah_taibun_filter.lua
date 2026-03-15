@@ -59,6 +59,16 @@ function M.init(env)
   end
 end
 
+-- Count UTF-8 characters (not bytes)
+local function utf8_len(s)
+  if not s or s == "" then return 0 end
+  local count = 0
+  for _ in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    count = count + 1
+  end
+  return count
+end
+
 -- Check if a word should be displayed as romanization (lo) per hanlo_rules
 -- Returns true if the word is classified as "lo" type
 local function is_lo_type(word)
@@ -142,8 +152,17 @@ function M.func(input, env)
         roman = tl_to_poj(roman)
       end
       if roman and roman ~= "" then
+        -- Boost quality for multi-syllable phrases
+        local syllable_count = 1
+        for _ in roman:gmatch(" ") do syllable_count = syllable_count + 1 end
+        local boost = 0
+        if syllable_count >= 3 then
+          boost = 1.0
+        elseif syllable_count >= 2 then
+          boost = 0.5
+        end
         local new_cand = Candidate(cand.type, cand.start, cand._end, roman, comment)
-        new_cand.quality = cand.quality
+        new_cand.quality = cand.quality + boost
         new_cand.preedit = cand.preedit
         yield(new_cand)
       else
@@ -172,9 +191,18 @@ function M.func(input, env)
         new_comment = " [" .. display_roman .. "]"
       end
 
-      if new_text ~= text or new_comment ~= comment then
+      -- Boost quality for longer matches (multi-character phrases)
+      local text_len = utf8_len(new_text)
+      local boost = 0
+      if text_len >= 4 then
+        boost = 1.0    -- 4+ chars: strong boost (e.g., 無要緊, tshit-thô)
+      elseif text_len >= 2 then
+        boost = 0.5    -- 2-3 chars: moderate boost (e.g., 食飯, 我去)
+      end
+
+      if new_text ~= text or new_comment ~= comment or boost > 0 then
         local new_cand = Candidate(cand.type, cand.start, cand._end, new_text, new_comment)
-        new_cand.quality = cand.quality
+        new_cand.quality = cand.quality + boost
         new_cand.preedit = cand.preedit
         yield(new_cand)
       else
