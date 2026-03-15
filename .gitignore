@@ -21,10 +21,6 @@ LKK*.html
 .vscode/
 .idea/
 
-# Generated dictionary files (regenerate with scripts/)
-schema/phah_taibun.dict.yaml
-schema/hanlo_rules.yaml
-
 # Test/coverage artifacts
 .coverage
 .pytest_cache/

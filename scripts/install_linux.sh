@@ -70,7 +70,7 @@ echo
 # ============================================================
 echo "本工具將執行以下作業："
 echo "  1. 複製方案檔（schema/*.yaml）到 Rime 資料夾"
-echo "  2. 複製 Lua 腳本（lua/*.lua）到 Rime Lua 資料夾"
+echo "  2. 複製 Lua 腳本（lua/*.lua + rime.lua）到 Rime 資料夾"
 echo "  3. 部署 RIME（自動重新編譯）"
 echo
 echo -e "${YELLOW}※ 若有自訂設定尚未備份，請按 Ctrl+C 終止${NC}"
@@ -120,6 +120,7 @@ SCHEMA_FILES=(
     "phah_taibun.dict.yaml"
     "phah_taibun_reverse.dict.yaml"
     "hanlo_rules.yaml"
+    "lighttone_rules.json"
 )
 
 # default.custom.yaml 根據選擇處理
@@ -133,7 +134,7 @@ for file in "${SCHEMA_FILES[@]}"; do
         cp -f "$src" "$RIME_DIR/$file"
         echo -e "  ${GREEN}[ok]${NC} $file"
     else
-        echo -e "  ${YELLOW}[skip]${NC} $file（不存在）"
+        echo -e "  ${RED}[miss]${NC} $file（不存在：$src）"
     fi
 done
 
@@ -172,11 +173,20 @@ if [ "$LUA_COUNT" -eq 0 ]; then
     echo -e "  ${YELLOW}[skip]${NC} 沒有找到 Lua 腳本"
 fi
 
+# 複製 rime.lua 模組註冊檔（舊版 librime-lua 相容）
+if [ -f "$PROJ_DIR/rime.lua" ]; then
+    cp -f "$PROJ_DIR/rime.lua" "$RIME_DIR/rime.lua"
+    echo -e "  ${GREEN}[ok]${NC} rime.lua（模組註冊）"
+fi
+
 echo
 
 # ============================================================
-# Step 4: 建立共用 rime 預設檔案的符號連結
+# Step 4: 建立共用 rime 預設檔案的符號連結 + 檢查依賴
 # ============================================================
+echo "[ Step 3: 檢查系統依賴 ]"
+echo
+
 RIME_SHARED="/usr/share/rime-data"
 if [ -d "$RIME_SHARED" ]; then
     for preset in default.yaml key_bindings.yaml punctuation.yaml; do
@@ -184,12 +194,26 @@ if [ -d "$RIME_SHARED" ]; then
             ln -sf "$RIME_SHARED/$preset" "$RIME_DIR/$preset"
         fi
     done
+
+    # 華語反查需要 luna_pinyin 字典
+    if [ -f "$RIME_SHARED/luna_pinyin.schema.yaml" ] || [ -f "$RIME_DIR/luna_pinyin.schema.yaml" ]; then
+        echo -e "  ${GREEN}[ok]${NC} luna_pinyin（華語反查字典）"
+    else
+        echo -e "  ${YELLOW}[warn]${NC} 找不到 luna_pinyin 字典，華語反查功能將無法使用"
+        echo -e "         安裝方式："
+        echo -e "           Arch:   sudo pacman -S rime-luna-pinyin"
+        echo -e "           Debian: sudo apt install librime-data-luna-pinyin"
+    fi
+else
+    echo -e "  ${YELLOW}[warn]${NC} 找不到 $RIME_SHARED，可能缺少 rime-data 套件"
 fi
+
+echo
 
 # ============================================================
 # Step 5: 部署 RIME
 # ============================================================
-echo "[ Step 3: 部署 RIME ]"
+echo "[ Step 4: 部署 RIME ]"
 echo
 
 if [ "$RIME_FRAMEWORK" = "fcitx5" ]; then
@@ -236,5 +260,5 @@ echo
 echo "切換輸入法：Ctrl+\` 或 Ctrl+Shift+\`"
 echo
 echo "如遇問題，請到 GitHub 回報："
-echo "  https://github.com/scipio/rime-phah-taibun"
+echo "  https://github.com/soanseng/rime-phah-taibun"
 echo

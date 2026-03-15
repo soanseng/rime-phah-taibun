@@ -170,6 +170,7 @@ def convert_chhoetaigi(
     itaigi_paths: list[Path],
     taihoa_paths: list[Path],
     output_path: Path,
+    corpus_freq: dict[str, int] | None = None,
 ) -> None:
     """Convert ChhoeTaigi CSV files to Rime dict.yaml.
 
@@ -179,6 +180,7 @@ def convert_chhoetaigi(
         itaigi_paths: Paths to iTaigi CSV files
         taihoa_paths: Paths to 台華線頂 CSV files
         output_path: Path to write output dict.yaml
+        corpus_freq: Optional merged corpus frequency dict (kip_input → count)
     """
     try:
         from scripts.build_frequency import compute_weights
@@ -192,15 +194,27 @@ def convert_chhoetaigi(
     for path in taihoa_paths:
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_taihoa_csv(f))
-    weighted = compute_weights(all_entries)
+    weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
     write_rime_dict(weighted, output_path)
 
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for ChhoeTaigi dictionary conversion."""
+    try:
+        from scripts.build_frequency import load_corpus_frequencies
+    except ModuleNotFoundError:
+        from build_frequency import load_corpus_frequencies
+
     parser = argparse.ArgumentParser(description="Convert ChhoeTaigi CSV to Rime dict.yaml")
     parser.add_argument("--input", type=Path, required=True, help="Path to ChhoeTaigiDatabase directory")
     parser.add_argument("--output", type=Path, required=True, help="Output directory for dict.yaml files")
+    parser.add_argument(
+        "--corpus-freq",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="Paths to corpus frequency TSV files (word\\tcount)",
+    )
     args = parser.parse_args(argv)
 
     data_dir = args.input / "ChhoeTaigiDatabase"
@@ -217,9 +231,18 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Error: No CSV files found in {data_dir}", file=sys.stderr)
         sys.exit(1)
 
+    # Merge corpus frequency files
+    corpus_freq: dict[str, int] | None = None
+    if args.corpus_freq:
+        corpus_freq = {}
+        for freq_path in args.corpus_freq:
+            freqs = load_corpus_frequencies(freq_path)
+            for word, count in freqs.items():
+                corpus_freq[word] = corpus_freq.get(word, 0) + count
+
     args.output.mkdir(parents=True, exist_ok=True)
     output_path = args.output / "phah_taibun.dict.yaml"
-    convert_chhoetaigi(itaigi_paths, taihoa_paths, output_path)
+    convert_chhoetaigi(itaigi_paths, taihoa_paths, output_path, corpus_freq=corpus_freq)
     print(f"Written: {output_path}")
 
 

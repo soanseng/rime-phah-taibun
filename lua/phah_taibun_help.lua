@@ -14,8 +14,11 @@ function M.func(input, seg, env)
       { "Ctrl+Shift+T", "切換輸出模式（漢羅/全羅）" },
       { "~", "華語拼音反查台語" },
       { "`", "符號選單（調號/方音/標點）" },
+      { "?", "萬用查字（?iah → tsiah, siah...）" },
+      { ";", "造詞模式（;拼音 → 組詞）" },
       { ",,h", "本說明" },
       { ",,jit", "台語日期時間" },
+      { ",,sp", "簡拼提示表" },
     }
     for _, item in ipairs(help_items) do
       local cand = Candidate("help", seg.start, seg._end, item[1], item[2])

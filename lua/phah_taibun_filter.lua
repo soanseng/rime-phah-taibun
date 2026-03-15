@@ -1,5 +1,5 @@
 -- phah_taibun_filter.lua
--- 核心過濾器：候選拼音註解 + 輸出模式切換
+-- 核心過濾器：候選拼音註解 + 輸出模式切換 + 漢羅轉換
 -- 參考 rime-liur (ryanwuson/rime-liur) 模組架構
 --
 -- output_mode switch states:
@@ -44,8 +44,84 @@ local function get_output_mode(env)
   return 0  -- Default: 漢羅TL
 end
 
+-- Reference to data module (loaded in init)
+local data_mod = nil
+
 function M.init(env)
   env.name_space = env.name_space or ""
+
+  -- Load hanlo_rules data module
+  if not data_mod then
+    local ok, mod = pcall(require, "phah_taibun_data")
+    if ok and mod then
+      data_mod = mod
+    end
+  end
+end
+
+-- Check if a word should be displayed as romanization (lo) per hanlo_rules
+-- Returns true if the word is classified as "lo" type
+local function is_lo_type(word)
+  if not data_mod then
+    return false
+  end
+  local htype = data_mod.get_hanlo_type(word)
+  return htype == "lo"
+end
+
+-- Replace Han characters with romanization for words classified as "lo"
+-- For single characters/words: check the whole word
+-- For phrases: check each character individually
+local function apply_hanlo_rules(text, raw_roman)
+  if not data_mod or not raw_roman or raw_roman == "" then
+    return text
+  end
+
+  -- Check the whole word/phrase first
+  if is_lo_type(text) then
+    return raw_roman
+  end
+
+  -- For multi-character text, check each character
+  -- Split romanization by hyphens/spaces to match individual characters
+  local chars = {}
+  for char in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    table.insert(chars, char)
+  end
+
+  -- If single character, we already checked above
+  if #chars <= 1 then
+    return text
+  end
+
+  -- Split romanization syllables (hyphen-separated or space-separated)
+  local syllables = {}
+  for syl in raw_roman:gmatch("[^%s%-]+") do
+    table.insert(syllables, syl)
+  end
+
+  -- If syllable count doesn't match character count, keep original
+  if #syllables ~= #chars then
+    return text
+  end
+
+  -- Check each character: if "lo" type, replace with romanization
+  local result_parts = {}
+  local changed = false
+  for i, char in ipairs(chars) do
+    if is_lo_type(char) then
+      table.insert(result_parts, syllables[i])
+      changed = true
+    else
+      table.insert(result_parts, char)
+    end
+  end
+
+  if changed then
+    return table.concat(result_parts, "")
+  end
+
+  return text
 end
 
 function M.func(input, env)
@@ -57,7 +133,7 @@ function M.func(input, env)
 
     -- Extract the raw romanization from Rime's auto-comment
     -- Rime formats it as " [romanization]" via comment_format xform
-    local raw_roman = comment:match("%[(.-)%]") or comment
+    local raw_roman = comment:match("%[(.-)%]") or ""
 
     if mode == 2 or mode == 3 then
       -- 全羅模式：replace text with full romanization
@@ -74,17 +150,34 @@ function M.func(input, env)
         yield(cand)
       end
     else
-      -- 漢羅模式：keep text, enhance comment
-      if mode == 1 and raw_roman then
+      -- 漢羅模式：apply hanlo_rules to determine Han vs Lo output
+      local new_text = text
+      if raw_roman ~= "" then
+        new_text = apply_hanlo_rules(text, raw_roman)
+      end
+
+      local display_roman = raw_roman
+      if mode == 1 and raw_roman ~= "" then
         -- POJ mode: convert TL annotation to POJ
-        local poj_roman = tl_to_poj(raw_roman)
-        local new_comment = " [" .. poj_roman .. "]"
-        local new_cand = Candidate(cand.type, cand.start, cand._end, text, new_comment)
+        display_roman = tl_to_poj(raw_roman)
+      end
+
+      -- If mode 1 (POJ) and text changed to romanization, convert that too
+      if mode == 1 and new_text ~= text then
+        new_text = tl_to_poj(new_text)
+      end
+
+      local new_comment = comment
+      if display_roman ~= "" and display_roman ~= raw_roman then
+        new_comment = " [" .. display_roman .. "]"
+      end
+
+      if new_text ~= text or new_comment ~= comment then
+        local new_cand = Candidate(cand.type, cand.start, cand._end, new_text, new_comment)
         new_cand.quality = cand.quality
         new_cand.preedit = cand.preedit
         yield(new_cand)
       else
-        -- TL mode (default): pass through with Rime's auto-comment
         yield(cand)
       end
     end

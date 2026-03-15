@@ -218,6 +218,46 @@ class TestConvertPipeline:
         assert "á無" in content
 
 
+class TestConvertWithCorpusFreq:
+    """Corpus frequency data should boost weights for matching entries."""
+
+    def test_corpus_freq_boosts_weight(self, tmp_path):
+        from scripts.build_frequency import load_corpus_frequencies
+
+        csv_content = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            "tsiah8-png7,食飯,吃飯\n"
+            "khi3,去,去\n"
+        )
+        csv_path = tmp_path / "itaigi.csv"
+        csv_path.write_text(csv_content, encoding="utf-8-sig")
+        freq_path = tmp_path / "corpus_freq.tsv"
+        freq_path.write_text("tsiah8-png7\t50\n", encoding="utf-8")
+        corpus_freq = load_corpus_frequencies(freq_path)
+
+        out_no_freq = tmp_path / "no_freq.yaml"
+        convert_chhoetaigi([csv_path], [], out_no_freq)
+
+        out_with_freq = tmp_path / "with_freq.yaml"
+        convert_chhoetaigi([csv_path], [], out_with_freq, corpus_freq=corpus_freq)
+
+        def get_weights(path):
+            weights = {}
+            for line in path.read_text().splitlines():
+                if "\t" in line and not line.startswith(
+                    ("#", "-", "name", "version", "sort", "use_preset", "...")
+                ):
+                    parts = line.split("\t")
+                    if len(parts) >= 3:
+                        weights[parts[0]] = int(parts[2])
+            return weights
+
+        w_no = get_weights(out_no_freq)
+        w_yes = get_weights(out_with_freq)
+        assert w_yes["食飯"] > w_no["食飯"]
+        assert w_yes["去"] == w_no["去"]
+
+
 class TestConvertCli:
     """Test CLI entry point."""
 
