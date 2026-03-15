@@ -76,6 +76,32 @@ echo
 echo -e "${YELLOW}※ 若有自訂設定尚未備份，請按 Ctrl+C 終止${NC}"
 echo
 
+# ============================================================
+# 偵測現有方案
+# ============================================================
+echo "[ 偵測現有方案 ]"
+echo
+
+EXISTING_SCHEMAS=()
+for schema_file in "$RIME_DIR"/*.schema.yaml; do
+    [ -f "$schema_file" ] || continue
+    schema_name=$(basename "$schema_file" .schema.yaml)
+    EXISTING_SCHEMAS+=("$schema_name")
+done
+
+if [ ${#EXISTING_SCHEMAS[@]} -gt 0 ]; then
+    echo -e "已安裝的輸入方案："
+    for s in "${EXISTING_SCHEMAS[@]}"; do
+        echo -e "  ${GREEN}•${NC} $s"
+    done
+    echo
+    echo -e "${GREEN}拍台文只會安裝 phah_taibun_* 檔案，不會覆蓋現有方案${NC}"
+else
+    echo -e "未偵測到現有方案（首次安裝）"
+fi
+
+echo
+
 # 檢查現有 default.custom.yaml 中是否已有 phah_taibun
 NEED_REGISTER=true
 if [ -f "$RIME_DIR/default.custom.yaml" ]; then
@@ -135,8 +161,9 @@ echo
 
 mkdir -p "$RIME_DIR/lua"
 
+# 只複製 phah_taibun_* 開頭的 Lua 檔案，避免覆蓋其他方案的模組
 LUA_COUNT=0
-for src in "$PROJ_DIR"/lua/*.lua; do
+for src in "$PROJ_DIR"/lua/phah_taibun_*.lua; do
     [ -f "$src" ] || continue
     filename=$(basename "$src")
     cp -f "$src" "$RIME_DIR/lua/$filename"
@@ -151,6 +178,10 @@ fi
 # 合併 rime.lua 模組註冊檔（舊版 librime-lua 相容）
 if [ -f "$PROJ_DIR/rime.lua" ]; then
     if [ -f "$RIME_DIR/rime.lua" ]; then
+        # 備份現有 rime.lua
+        cp -f "$RIME_DIR/rime.lua" "$RIME_DIR/rime.lua.bak"
+        echo -e "  ${YELLOW}[備份]${NC} rime.lua → rime.lua.bak"
+
         # 已有 rime.lua，追加尚未註冊的拍台文模組
         MERGED=0
         while IFS= read -r line; do
@@ -179,6 +210,10 @@ fi
 # ============================================================
 if [ "$NEED_REGISTER" = true ]; then
     if [ -f "$RIME_DIR/default.custom.yaml" ]; then
+        # 備份現有 default.custom.yaml
+        cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
+        echo -e "  ${YELLOW}[備份]${NC} default.custom.yaml → default.custom.yaml.bak"
+
         # 追加 phah_taibun 到現有的 schema_list
         LAST_SCHEMA_LINE=$(grep -n '\- schema:' "$RIME_DIR/default.custom.yaml" | tail -1 | cut -d: -f1)
         if [ -n "$LAST_SCHEMA_LINE" ]; then
@@ -189,7 +224,7 @@ if [ "$NEED_REGISTER" = true ]; then
             # 沒有 schema_list，追加完整區塊
             printf '\n  schema_list/+:\n    - schema: phah_taibun\n' >> "$RIME_DIR/default.custom.yaml"
         fi
-        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 追加到 default.custom.yaml"
+        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 追加到 default.custom.yaml（保留現有方案）"
     else
         # 沒有 default.custom.yaml，複製專案的版本
         cp -f "$PROJ_DIR/schema/default.custom.yaml" "$RIME_DIR/default.custom.yaml"
@@ -273,7 +308,20 @@ echo "Rime 資料夾：$RIME_DIR"
 echo
 echo "已安裝："
 echo "  - 方案檔：${#SCHEMA_FILES[@]} 個"
-echo "  - Lua 腳本：${LUA_COUNT} 個"
+echo "  - Lua 腳本：${LUA_COUNT} 個（皆為 phah_taibun_* 命名）"
+echo
+
+# 顯示所有可用方案
+echo "可用的輸入方案："
+for schema_file in "$RIME_DIR"/*.schema.yaml; do
+    [ -f "$schema_file" ] || continue
+    schema_name=$(basename "$schema_file" .schema.yaml)
+    if [ "$schema_name" = "phah_taibun" ]; then
+        echo -e "  ${GREEN}•${NC} $schema_name（拍台文）← 新安裝"
+    else
+        echo -e "  •  $schema_name"
+    fi
+done
 echo
 echo "切換輸入法：Ctrl+\` 或 Ctrl+Shift+\`"
 echo
