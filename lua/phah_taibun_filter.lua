@@ -155,12 +155,22 @@ function M.func(input, env)
     local raw_roman = comment:match("%[(.-)%]") or ""
 
     if mode == 2 or mode == 3 then
-      -- 全羅模式：replace text with full romanization
+      -- 全羅模式：候選清單顯示漢羅（跟漢羅模式一樣），確定後由 processor 輸出全羅拼音
       local roman = raw_roman
       if mode == 3 then
         roman = tl_to_poj(roman)
       end
       if roman and roman ~= "" then
+        -- 候選清單顯示漢羅文字（套用 hanlo rules，跟漢羅模式相同）
+        local display_text = text
+        if raw_roman ~= "" then
+          display_text = apply_hanlo_rules(text, raw_roman)
+        end
+        -- POJ 模式下，漢羅文字中的羅馬字也要轉 POJ
+        if mode == 3 and display_text ~= text then
+          display_text = tl_to_poj(display_text)
+        end
+
         -- Boost quality for multi-syllable phrases
         local syllable_count = 1
         for _ in roman:gmatch(" ") do syllable_count = syllable_count + 1 end
@@ -170,7 +180,11 @@ function M.func(input, env)
         elseif syllable_count >= 2 then
           boost = 0.5
         end
-        local new_cand = Candidate(cand.type, cand.start, cand._end, roman, comment)
+
+        -- text = 漢羅 (顯示在候選清單)
+        -- comment = [roman] (全羅拼音，由 phah_taibun_commit processor 用來輸出)
+        local display_comment = " [" .. roman .. "]"
+        local new_cand = Candidate(cand.type, cand.start, cand._end, display_text, display_comment)
         new_cand.quality = cand.quality + boost
         new_cand.preedit = cand.preedit
         yield(new_cand)

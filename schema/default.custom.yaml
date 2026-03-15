@@ -3,3 +3,5 @@
 patch:
   schema_list/@next:
     schema: phah_taibun
+  menu/page_size: 10
+  menu/select_keys: "asdfghjkl;"
