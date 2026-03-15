@@ -183,7 +183,7 @@ phah_taibun_select_char:
   first_key: bracketleft
   last_key: bracketright
 
-long_word_filter:
+phah_taibun_long_word:
   count: 2
   idx: 4
 
