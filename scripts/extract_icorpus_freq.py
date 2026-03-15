@@ -68,11 +68,36 @@ def write_frequency_table(freq: Counter, output_path: Path) -> None:
             f.write(f"{word}\t{count}\n")
 
 
+def write_sentences(corpus_file: Path, output_path: Path) -> int:
+    """Write tokenized sentences to output file, one per line.
+
+    Reads the corpus line by line, tokenizes each using tokenize_tl_line(),
+    and writes space-joined tokens to output. Skips lines with no valid tokens.
+
+    Args:
+        corpus_file: Path to the input corpus text file
+        output_path: Path to write tokenized sentences
+
+    Returns:
+        Count of sentences written
+    """
+    count = 0
+    with open(corpus_file, encoding="utf-8") as f_in, open(output_path, "w", encoding="utf-8") as f_out:
+        for line in f_in:
+            tokens = tokenize_tl_line(line)
+            if not tokens:
+                continue
+            f_out.write(" ".join(tokens) + "\n")
+            count += 1
+    return count
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for iCorpus frequency extraction."""
     parser = argparse.ArgumentParser(description="Extract word frequencies from iCorpus TL data")
     parser.add_argument("--input", type=Path, required=True, help="Path to iCorpus TL text file")
     parser.add_argument("--output", type=Path, required=True, help="Output TSV path")
+    parser.add_argument("--sentences", type=Path, help="Output tokenized sentences file")
     args = parser.parse_args(argv)
 
     if not args.input.exists():
@@ -84,6 +109,11 @@ def main(argv: list[str] | None = None) -> None:
         freq = count_frequencies(f)
     write_frequency_table(freq, args.output)
     print(f"Extracted {len(freq)} unique words, {sum(freq.values())} total tokens")
+
+    if args.sentences:
+        args.sentences.parent.mkdir(parents=True, exist_ok=True)
+        sent_count = write_sentences(args.input, args.sentences)
+        print(f"Wrote {sent_count} tokenized sentences")
 
 
 if __name__ == "__main__":

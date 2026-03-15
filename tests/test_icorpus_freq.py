@@ -3,7 +3,7 @@
 import io
 from collections import Counter
 
-from scripts.extract_icorpus_freq import count_frequencies, tokenize_tl_line, write_frequency_table
+from scripts.extract_icorpus_freq import count_frequencies, tokenize_tl_line, write_frequency_table, write_sentences
 
 
 class TestTokenizeTlLine:
@@ -65,3 +65,32 @@ class TestWriteFrequencyTable:
         outfile = tmp_path / "freq.tsv"
         write_frequency_table(Counter(), outfile)
         assert outfile.read_text() == ""
+
+
+class TestSentenceOutput:
+    """Write tokenized sentences to output file."""
+
+    def test_writes_sentences(self, tmp_path):
+        corpus = tmp_path / "corpus.txt"
+        corpus.write_text("gua2 beh4 khi3\nlai5 tsiah8-png7\n", encoding="utf-8")
+        outfile = tmp_path / "sentences.txt"
+        count = write_sentences(corpus, outfile)
+        lines = outfile.read_text(encoding="utf-8").splitlines()
+        assert lines == ["gua2 beh4 khi3", "lai5 tsiah8-png7"]
+        assert count == 2
+
+    def test_skips_empty_lines(self, tmp_path):
+        corpus = tmp_path / "corpus.txt"
+        corpus.write_text("gua2 beh4\n\nOhio hello\n\nlai5\n", encoding="utf-8")
+        outfile = tmp_path / "sentences.txt"
+        count = write_sentences(corpus, outfile)
+        lines = outfile.read_text(encoding="utf-8").splitlines()
+        assert "" not in lines
+        assert len(lines) == 2
+
+    def test_returns_count(self, tmp_path):
+        corpus = tmp_path / "corpus.txt"
+        corpus.write_text("gua2\nbeh4\nkhi3\n", encoding="utf-8")
+        outfile = tmp_path / "sentences.txt"
+        count = write_sentences(corpus, outfile)
+        assert count == 3
