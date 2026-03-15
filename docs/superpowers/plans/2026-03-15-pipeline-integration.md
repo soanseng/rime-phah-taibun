@@ -1,6 +1,8 @@
 # Pipeline Integration: Connect All Extracted Data to Rime
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
+
+**Status:** COMPLETED (2026-03-15)
 
 **Goal:** Fix all gaps where Python scripts extract data that never reaches the actual Rime input method — connect corpus frequencies to dict weights, upgrade reverse dict to KipSutian 65K, implement real hanlo conversion in Lua filter, and replace all Lua stubs with functional modules.
 
@@ -22,7 +24,7 @@ The `build_frequency.py` already has `corpus_freq` parameter support in `compute
 - Modify: `tests/test_dict_conversion.py` — add test for corpus freq integration
 - Modify: `tests/test_frequency.py` — verify merged corpus loading
 
-- [ ] **Step 1: Write failing test for corpus freq passthrough**
+- [x] **Step 1: Write failing test for corpus freq passthrough**
 
 In `tests/test_dict_conversion.py`, add:
 
@@ -75,12 +77,12 @@ class TestConvertWithCorpusFreq:
         assert w_yes["去"] == w_no["去"]
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `uv run pytest tests/test_dict_conversion.py::TestConvertWithCorpusFreq -v`
 Expected: FAIL — `convert_chhoetaigi()` doesn't accept `corpus_freq` parameter
 
-- [ ] **Step 3: Add corpus_freq parameter to convert_chhoetaigi()**
+- [x] **Step 3: Add corpus_freq parameter to convert_chhoetaigi()**
 
 In `scripts/convert_chhoetaigi.py`, modify the function signature and body:
 
@@ -154,12 +156,12 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Written: {output_path}")
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `uv run pytest tests/test_dict_conversion.py::TestConvertWithCorpusFreq -v`
 Expected: PASS
 
-- [ ] **Step 5: Wire freq TSVs in build_all.py**
+- [x] **Step 5: Wire freq TSVs in build_all.py**
 
 In `scripts/build_all.py`, modify Step 3 to pass the extracted freq files:
 
@@ -180,12 +182,12 @@ In `scripts/build_all.py`, modify Step 3 to pass the extracted freq files:
         print(f"SKIP: ChhoeTaigi not found at {chhoetaigi_dir}")
 ```
 
-- [ ] **Step 6: Run full test suite**
+- [x] **Step 6: Run full test suite**
 
 Run: `uv run pytest -x -q`
 Expected: All tests pass
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/convert_chhoetaigi.py scripts/build_all.py tests/test_dict_conversion.py
@@ -202,7 +204,7 @@ Currently `build_all.py` only calls `build_moe_reverse.py` (24K entries). `build
 - Modify: `scripts/build_all.py:99-114` — add KipSutian step, use as primary reverse dict
 - No new tests needed — `tests/test_kipsutian_reverse.py` already has 3 tests
 
-- [ ] **Step 1: Update build_all.py to prefer KipSutian**
+- [x] **Step 1: Update build_all.py to prefer KipSutian**
 
 Replace the MOE reverse dict step in `build_all.py`:
 
@@ -240,12 +242,12 @@ Replace the MOE reverse dict step in `build_all.py`:
         print(f"SKIP: No reverse dict source found")
 ```
 
-- [ ] **Step 2: Run tests**
+- [x] **Step 2: Run tests**
 
 Run: `uv run pytest tests/test_kipsutian_reverse.py tests/test_moe_reverse.py -v`
 Expected: All pass
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/build_all.py
@@ -262,7 +264,7 @@ git commit -m "feat: upgrade reverse dict to KipSutian 65K entries"
 - Modify: `scripts/build_all.py` — add light-tone step
 - Modify: `scripts/install_linux.sh` — copy lighttone_rules.json
 
-- [ ] **Step 1: Add light-tone step to build_all.py**
+- [x] **Step 1: Add light-tone step to build_all.py**
 
 After the LKK rules step, add:
 
@@ -278,7 +280,7 @@ After the LKK rules step, add:
         print(f"SKIP: Light-tone CSV not found at {lighttone_csv}")
 ```
 
-- [ ] **Step 2: Add lighttone_rules.json to install script**
+- [x] **Step 2: Add lighttone_rules.json to install script**
 
 In `scripts/install_linux.sh`, add to SCHEMA_FILES array:
 
@@ -292,12 +294,12 @@ SCHEMA_FILES=(
 )
 ```
 
-- [ ] **Step 3: Run tests**
+- [x] **Step 3: Run tests**
 
 Run: `uv run pytest tests/test_lighttone.py -v`
 Expected: All 3 tests pass
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/build_all.py scripts/install_linux.sh
@@ -314,23 +316,23 @@ git commit -m "feat: add light-tone rules to build pipeline"
 - Delete: `scripts/build_reverse_dict.py`
 - Delete: `tests/test_reverse_dict.py`
 
-- [ ] **Step 1: Verify build_reverse_dict.py is not imported anywhere**
+- [x] **Step 1: Verify build_reverse_dict.py is not imported anywhere**
 
 Run: `grep -r "build_reverse_dict" scripts/ tests/ --include="*.py" -l`
 Expected: Only `scripts/build_reverse_dict.py` and `tests/test_reverse_dict.py`
 
-- [ ] **Step 2: Remove files**
+- [x] **Step 2: Remove files**
 
 ```bash
 rm scripts/build_reverse_dict.py tests/test_reverse_dict.py
 ```
 
-- [ ] **Step 3: Run full test suite to confirm no breakage**
+- [x] **Step 3: Run full test suite to confirm no breakage**
 
 Run: `uv run pytest -x -q`
 Expected: All pass (minus the 5 removed tests)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add -A scripts/build_reverse_dict.py tests/test_reverse_dict.py
@@ -343,7 +345,7 @@ git commit -m "chore: remove unused build_reverse_dict.py (replaced by build_moe
 
 Run the full pipeline to generate new dict files with corpus freq boosting and KipSutian reverse dict. This won't work on dev machines without the data/ directory, so check first.
 
-- [ ] **Step 1: Check if data directory exists**
+- [x] **Step 1: Check if data directory exists**
 
 ```bash
 ls data/ChhoeTaigiDatabase/ data/icorpus_ka1_han3-ji7/ data/KipSutianDataMirror/ 2>/dev/null
@@ -351,13 +353,13 @@ ls data/ChhoeTaigiDatabase/ data/icorpus_ka1_han3-ji7/ data/KipSutianDataMirror/
 
 If data exists, proceed. If not, skip this task (the dict files already in repo are usable).
 
-- [ ] **Step 2: Run full build**
+- [x] **Step 2: Run full build**
 
 ```bash
 uv run python scripts/build_all.py
 ```
 
-- [ ] **Step 3: Verify dict sizes are reasonable**
+- [x] **Step 3: Verify dict sizes are reasonable**
 
 ```bash
 wc -l schema/phah_taibun.dict.yaml schema/phah_taibun_reverse.dict.yaml schema/hanlo_rules.yaml
@@ -365,12 +367,12 @@ wc -l schema/phah_taibun.dict.yaml schema/phah_taibun_reverse.dict.yaml schema/h
 
 Expected: dict.yaml should have similar line count, reverse dict should jump from ~24K to ~65K lines.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `uv run pytest -x -q`
 Expected: All pass
 
-- [ ] **Step 5: Commit rebuilt dict files**
+- [x] **Step 5: Commit rebuilt dict files**
 
 ```bash
 git add schema/phah_taibun.dict.yaml schema/phah_taibun_reverse.dict.yaml schema/hanlo_rules.yaml schema/lighttone_rules.json
@@ -391,7 +393,7 @@ This is the **core differentiating feature** — the filter should use `phah_tai
 
 The strategy: In 漢羅 mode (0/1), for each candidate, check if the candidate text contains words marked as `lo` in hanlo_rules. If so, replace those parts with the romanization from the comment. For single-character candidates, this is straightforward. For multi-character, we iterate characters.
 
-- [ ] **Step 1: Implement hanlo conversion in filter**
+- [x] **Step 1: Implement hanlo conversion in filter**
 
 Replace `lua/phah_taibun_filter.lua` with full implementation:
 
@@ -539,7 +541,7 @@ end
 return M
 ```
 
-- [ ] **Step 2: Verify phah_taibun_data.lua is loaded in rime.lua**
+- [x] **Step 2: Verify phah_taibun_data.lua is loaded in rime.lua**
 
 Check `rime.lua` — `phah_taibun_data` is NOT listed. Add it:
 
@@ -549,7 +551,7 @@ phah_taibun_data     = require("phah_taibun_data")
 
 Note: The filter loads it via `require()` directly, but adding to `rime.lua` ensures it's available for other modules too.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add lua/phah_taibun_filter.lua rime.lua
@@ -565,7 +567,7 @@ Currently a passthrough. Should enhance candidates with additional reading infor
 **Files:**
 - Modify: `lua/phah_taibun_lookup.lua`
 
-- [ ] **Step 1: Implement real lookup filter**
+- [x] **Step 1: Implement real lookup filter**
 
 ```lua
 -- phah_taibun_lookup.lua
@@ -622,7 +624,7 @@ end
 return M
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lua/phah_taibun_lookup.lua
@@ -638,7 +640,7 @@ Currently uses `Translation()` which doesn't exist in Rime's Lua API. Rewrite to
 **Files:**
 - Modify: `lua/phah_taibun_wildcard.lua`
 
-- [ ] **Step 1: Rewrite wildcard with proper Rime API**
+- [x] **Step 1: Rewrite wildcard with proper Rime API**
 
 ```lua
 -- phah_taibun_wildcard.lua
@@ -696,7 +698,7 @@ return M
 
 Note: This simplified version shows expansions as text candidates. The user can see the possible syllables and re-type the correct one. A more advanced version using `mem:dict_lookup()` requires the `Memory` API which varies by librime-lua version.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lua/phah_taibun_wildcard.lua
@@ -712,7 +714,7 @@ Replace the stub with a real implementation. In Rime, the `;` trigger enters a s
 **Files:**
 - Modify: `lua/phah_taibun_phrase.lua`
 
-- [ ] **Step 1: Implement phrase composition mode**
+- [x] **Step 1: Implement phrase composition mode**
 
 ```lua
 -- phah_taibun_phrase.lua
@@ -755,7 +757,7 @@ end
 return M
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lua/phah_taibun_phrase.lua
@@ -771,7 +773,7 @@ Replace stub. This filter annotates candidates with literary/colloquial reading 
 **Files:**
 - Modify: `lua/phah_taibun_synonym.lua`
 
-- [ ] **Step 1: Implement literary/colloquial annotation**
+- [x] **Step 1: Implement literary/colloquial annotation**
 
 ```lua
 -- phah_taibun_synonym.lua
@@ -800,7 +802,7 @@ end
 return M
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lua/phah_taibun_synonym.lua
@@ -816,7 +818,7 @@ Replace stub. Shows abbreviated input hints in the comment field.
 **Files:**
 - Modify: `lua/phah_taibun_speedup.lua`
 
-- [ ] **Step 1: Implement abbreviation hints**
+- [x] **Step 1: Implement abbreviation hints**
 
 ```lua
 -- phah_taibun_speedup.lua
@@ -856,7 +858,7 @@ end
 return M
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lua/phah_taibun_speedup.lua
@@ -873,7 +875,7 @@ Ensure all modules are registered in `rime.lua` and referenced in the schema.
 - Modify: `rime.lua` — add missing `phah_taibun_data` require
 - Verify: `schema/phah_taibun.schema.yaml` — all modules referenced with `@*`
 
-- [ ] **Step 1: Update rime.lua**
+- [x] **Step 1: Update rime.lua**
 
 ```lua
 -- rime.lua
@@ -892,7 +894,7 @@ phah_taibun_synonym  = require("phah_taibun_synonym")
 phah_taibun_speedup  = require("phah_taibun_speedup")
 ```
 
-- [ ] **Step 2: Verify schema references**
+- [x] **Step 2: Verify schema references**
 
 The schema should have these translators and filters:
 
@@ -911,12 +913,12 @@ The schema should have these translators and filters:
     - uniquifier
 ```
 
-- [ ] **Step 3: Run full test suite**
+- [x] **Step 3: Run full test suite**
 
 Run: `uv run pytest -x -q`
 Expected: All pass
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add rime.lua schema/phah_taibun.schema.yaml
@@ -929,13 +931,13 @@ git commit -m "feat: register all Lua modules in rime.lua and schema"
 
 ### Task 13: Rebuild all dict files if data available
 
-- [ ] **Step 1: Run build pipeline**
+- [x] **Step 1: Run build pipeline**
 
 ```bash
 uv run python scripts/build_all.py 2>&1
 ```
 
-- [ ] **Step 2: Commit rebuilt files**
+- [x] **Step 2: Commit rebuilt files**
 
 ```bash
 git add schema/
@@ -951,11 +953,11 @@ Fix the misleading "已完成" markers to reflect reality.
 **Files:**
 - Modify: `roadmap.md`
 
-- [ ] **Step 1: Update Phase 2 status table**
+- [x] **Step 1: Update Phase 2 status table**
 
 Replace the Phase 2 table with accurate status reflecting what was actually done in this plan.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add roadmap.md

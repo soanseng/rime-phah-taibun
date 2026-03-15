@@ -1,6 +1,8 @@
 # Rime-Ice UX Adoption Implementation Plan
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
+
+**Status:** COMPLETED (2026-03-15)
 
 **Goal:** Port 5 rime-ice UX features into phah-taibun: 以詞定字, 長詞優先, editor key bindings, emoji, inline English.
 
@@ -17,7 +19,7 @@
 **Files:**
 - Create: `lua/phah_taibun_select_char.lua`
 
-- [ ] **Step 1: Write the Lua processor module**
+- [x] **Step 1: Write the Lua processor module**
 
 ```lua
 -- phah_taibun_select_char.lua
@@ -80,17 +82,17 @@ end
 return M
 ```
 
-- [ ] **Step 2: Verify Lua syntax**
+- [x] **Step 2: Verify Lua syntax**
 
 Run: `luac -p lua/phah_taibun_select_char.lua` (or `lua5.3 -e "loadfile('lua/phah_taibun_select_char.lua')"`)
 Expected: no output (clean syntax)
 
-- [ ] **Step 3: Run existing test suite to confirm no regressions**
+- [x] **Step 3: Run existing test suite to confirm no regressions**
 
 Run: `cd /home/scipio/Downloads/rime-phah-taibun && mise exec uv -- uv run pytest tests/test_lua_filter.py -v`
 Expected: All Lua syntax tests pass including the new file (parametrized glob picks it up automatically)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add lua/phah_taibun_select_char.lua
@@ -106,7 +108,7 @@ git commit -m "feat: add 以詞定字 select_char Lua processor"
 **Files:**
 - Create: `lua/phah_taibun_long_word.lua`
 
-- [ ] **Step 1: Write the Lua filter module**
+- [x] **Step 1: Write the Lua filter module**
 
 ```lua
 -- phah_taibun_long_word.lua
@@ -163,17 +165,17 @@ end
 return M
 ```
 
-- [ ] **Step 2: Verify Lua syntax**
+- [x] **Step 2: Verify Lua syntax**
 
 Run: `luac -p lua/phah_taibun_long_word.lua`
 Expected: no output (clean syntax)
 
-- [ ] **Step 3: Run test suite**
+- [x] **Step 3: Run test suite**
 
 Run: `cd /home/scipio/Downloads/rime-phah-taibun && mise exec uv -- uv run pytest tests/test_lua_filter.py -v`
 Expected: All Lua syntax tests pass including new file
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add lua/phah_taibun_long_word.lua
@@ -191,7 +193,7 @@ git commit -m "feat: add 長詞優先 long_word Lua filter"
 
 The final schema should look like this. Apply all changes in one edit:
 
-- [ ] **Step 1: Add `dependencies` to schema header**
+- [x] **Step 1: Add `dependencies` to schema header**
 
 After line 9 (`- "拍台文開發團隊"`), before `description:`, add:
 
@@ -200,7 +202,7 @@ After line 9 (`- "拍台文開發團隊"`), before `description:`, add:
     - melt_eng
 ```
 
-- [ ] **Step 2: Add emoji switch**
+- [x] **Step 2: Add emoji switch**
 
 After the `output_mode` switch (line 23), add:
 
@@ -210,7 +212,7 @@ After the `output_mode` switch (line 23), add:
     reset: 1
 ```
 
-- [ ] **Step 3: Update engine processors**
+- [x] **Step 3: Update engine processors**
 
 Replace the current processors block (lines 26-34) with:
 
@@ -230,7 +232,7 @@ engine:
 
 Note: `phah_taibun_select_char` goes AFTER `ascii_composer` so ASCII mode is handled first.
 
-- [ ] **Step 4: Update engine translators**
+- [x] **Step 4: Update engine translators**
 
 Add `table_translator@melt_eng` after `table_translator@custom_phrase`:
 
@@ -239,7 +241,7 @@ Add `table_translator@melt_eng` after `table_translator@custom_phrase`:
     - table_translator@melt_eng
 ```
 
-- [ ] **Step 5: Update engine filters**
+- [x] **Step 5: Update engine filters**
 
 Replace the current filters block with:
 
@@ -253,7 +255,7 @@ Replace the current filters block with:
     - uniquifier
 ```
 
-- [ ] **Step 6: Add new config sections at end of file**
+- [x] **Step 6: Add new config sections at end of file**
 
 Append after the `recognizer` section (after line 117):
 
@@ -303,17 +305,17 @@ key_binder:
 
 Note: this replaces the existing `key_binder: import_preset: default` (line 110-111) with the expanded version.
 
-- [ ] **Step 7: Validate YAML syntax**
+- [x] **Step 7: Validate YAML syntax**
 
 Run: `cd /home/scipio/Downloads/rime-phah-taibun && mise exec uv -- uv run python -c "import yaml; yaml.safe_load(open('schema/phah_taibun.schema.yaml'))"`
 Expected: No output (valid YAML)
 
-- [ ] **Step 8: Run full test suite**
+- [x] **Step 8: Run full test suite**
 
 Run: `cd /home/scipio/Downloads/rime-phah-taibun && mise exec uv -- uv run pytest tests/ -q`
 Expected: All tests pass (including schema validation tests in test_validate.py)
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add schema/phah_taibun.schema.yaml
@@ -335,7 +337,7 @@ git commit -m "feat: add rime-ice UX features to schema
 **Files:**
 - Modify: `rime.lua` (project root — the install script merges this into the user's Rime directory)
 
-- [ ] **Step 1: Add module registrations to repo's rime.lua**
+- [x] **Step 1: Add module registrations to repo's rime.lua**
 
 In `/home/scipio/Downloads/rime-phah-taibun/rime.lua`, append after `phah_taibun_speedup  = require("phah_taibun_speedup")`:
 
@@ -344,11 +346,11 @@ phah_taibun_select_char = require("phah_taibun_select_char")
 phah_taibun_long_word = require("phah_taibun_long_word")
 ```
 
-- [ ] **Step 2: Also update the deployed rime.lua**
+- [x] **Step 2: Also update the deployed rime.lua**
 
 In `~/.local/share/fcitx5/rime/rime.lua`, append the same two lines after the existing `phah_taibun_speedup` line.
 
-- [ ] **Step 3: Copy new files to Rime directory**
+- [x] **Step 3: Copy new files to Rime directory**
 
 ```bash
 cp lua/phah_taibun_select_char.lua ~/.local/share/fcitx5/rime/lua/
@@ -356,7 +358,7 @@ cp lua/phah_taibun_long_word.lua ~/.local/share/fcitx5/rime/lua/
 cp schema/phah_taibun.schema.yaml ~/.local/share/fcitx5/rime/
 ```
 
-- [ ] **Step 4: Deploy and verify**
+- [x] **Step 4: Deploy and verify**
 
 ```bash
 rime_deployer --build ~/.local/share/fcitx5/rime/ /usr/share/rime-data
@@ -364,12 +366,12 @@ rime_deployer --build ~/.local/share/fcitx5/rime/ /usr/share/rime-data
 
 Expected: Builds without errors. Check that `~/.local/share/fcitx5/rime/build/phah_taibun.prism.bin` is updated.
 
-- [ ] **Step 5: Run full test suite one final time**
+- [x] **Step 5: Run full test suite one final time**
 
 Run: `cd /home/scipio/Downloads/rime-phah-taibun && mise exec uv -- uv run pytest tests/ -q`
 Expected: All tests pass
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add rime.lua
@@ -384,7 +386,7 @@ git commit -m "feat: register select_char and long_word modules in rime.lua"
 
 **Files:** None (verification only)
 
-- [ ] **Step 1: Check emoji OpenCC files**
+- [x] **Step 1: Check emoji OpenCC files**
 
 ```bash
 ls ~/.local/share/fcitx5/rime/opencc/emoji.json ~/.local/share/fcitx5/rime/opencc/emoji.txt
@@ -392,7 +394,7 @@ ls ~/.local/share/fcitx5/rime/opencc/emoji.json ~/.local/share/fcitx5/rime/openc
 
 Expected: Both files exist (copied from rime-ice during earlier installation).
 
-- [ ] **Step 2: Check melt_eng dictionary**
+- [x] **Step 2: Check melt_eng dictionary**
 
 ```bash
 ls ~/.local/share/fcitx5/rime/melt_eng.dict.yaml ~/.local/share/fcitx5/rime/melt_eng.schema.yaml
@@ -400,7 +402,7 @@ ls ~/.local/share/fcitx5/rime/melt_eng.dict.yaml ~/.local/share/fcitx5/rime/melt
 
 Expected: Both files exist.
 
-- [ ] **Step 3: Check melt_eng is built**
+- [x] **Step 3: Check melt_eng is built**
 
 ```bash
 ls ~/.local/share/fcitx5/rime/build/melt_eng.*.bin 2>/dev/null || echo "melt_eng not built — will be built on first use"
@@ -408,7 +410,7 @@ ls ~/.local/share/fcitx5/rime/build/melt_eng.*.bin 2>/dev/null || echo "melt_eng
 
 Expected: Either bin files exist, or they'll be built when Rime deploys. If not built yet, the deploy in Task 4 Step 3 should have built them.
 
-- [ ] **Step 4: Manual smoke test**
+- [x] **Step 4: Manual smoke test**
 
 Switch to phah-taibun input method and verify:
 1. Type `tsiah-png` → see `食飯` candidate → press `[` → should commit `食`
