@@ -11,7 +11,9 @@ end
 function M.func(input, seg, env)
   if input == ",,h" then
     local help_items = {
-      { "Ctrl+Shift+T", "切換輸出模式（漢羅/全羅）" },
+      { "漢羅/全羅", "切換漢羅↔全羅模式" },
+      { "TL/POJ", "切換 TL↔POJ 羅馬字系統" },
+      { "[  ]", "以詞定字：[ 首字、] 尾字" },
       { "~", "華語拼音反查台語" },
       { "`", "符號選單（調號/方音/標點）" },
       { "?", "萬用查字（?iah → tsiah, siah...）" },
