@@ -3,7 +3,7 @@
 
 schema:
   schema_id: phah_taibun
-  name: "拍台文"
+  name: "拍台文(台)"
   version: "0.1.0"
   author:
     - "拍台文開發團隊"

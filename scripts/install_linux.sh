@@ -76,8 +76,16 @@ echo
 echo -e "${YELLOW}※ 若有自訂設定尚未備份，請按 Ctrl+C 終止${NC}"
 echo
 
-# 不再覆蓋 default.custom.yaml，改為智慧附加
-# 見下方 Step 1b
+# 檢查現有 default.custom.yaml 中是否已有 phah_taibun
+NEED_REGISTER=true
+if [ -f "$RIME_DIR/default.custom.yaml" ]; then
+    if grep -q 'phah_taibun' "$RIME_DIR/default.custom.yaml"; then
+        NEED_REGISTER=false
+        echo -e "${GREEN}default.custom.yaml 已含 phah_taibun 方案，跳過註冊${NC}"
+    else
+        echo -e "${YELLOW}偵測到現有的 default.custom.yaml，將追加拍台文方案（不會覆蓋現有設定）${NC}"
+    fi
+fi
 
 # ============================================================
 # Step 2: 複製方案檔
@@ -140,48 +148,53 @@ if [ "$LUA_COUNT" -eq 0 ]; then
     echo -e "  ${YELLOW}[skip]${NC} 沒有找到 Lua 腳本"
 fi
 
-# 複製 rime.lua 模組註冊檔（舊版 librime-lua 相容）
+# 合併 rime.lua 模組註冊檔（舊版 librime-lua 相容）
 if [ -f "$PROJ_DIR/rime.lua" ]; then
-    cp -f "$PROJ_DIR/rime.lua" "$RIME_DIR/rime.lua"
-    echo -e "  ${GREEN}[ok]${NC} rime.lua（模組註冊）"
+    if [ -f "$RIME_DIR/rime.lua" ]; then
+        # 已有 rime.lua，追加尚未註冊的拍台文模組
+        MERGED=0
+        while IFS= read -r line; do
+            # 跳過空行和註解
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*-- ]] && continue
+            # 檢查該行是否已存在
+            if ! grep -qF "$line" "$RIME_DIR/rime.lua"; then
+                echo "$line" >> "$RIME_DIR/rime.lua"
+                MERGED=$((MERGED + 1))
+            fi
+        done < "$PROJ_DIR/rime.lua"
+        if [ "$MERGED" -gt 0 ]; then
+            echo -e "  ${GREEN}[ok]${NC} rime.lua（追加 $MERGED 個模組，保留現有設定）"
+        else
+            echo -e "  ${GREEN}[ok]${NC} rime.lua（模組已註冊，無需變更）"
+        fi
+    else
+        # 沒有現有 rime.lua，直接複製
+        cp -f "$PROJ_DIR/rime.lua" "$RIME_DIR/rime.lua"
+        echo -e "  ${GREEN}[ok]${NC} rime.lua（模組註冊）"
+    fi
 fi
 
-echo
-
 # ============================================================
-# Step 3b: 將 phah_taibun 加入 schema_list（不覆蓋現有方案）
+# Step 2.5: 註冊方案到 default.custom.yaml
 # ============================================================
-echo "[ Step 2b: 註冊輸入法方案 ]"
-echo
-
-DEFAULT_CUSTOM="$RIME_DIR/default.custom.yaml"
-
-if [ -f "$DEFAULT_CUSTOM" ] && grep -q "phah_taibun" "$DEFAULT_CUSTOM"; then
-    echo -e "  ${GREEN}[ok]${NC} phah_taibun 已在 schema_list 中"
-elif [ -f "$DEFAULT_CUSTOM" ]; then
-    # 現有 default.custom.yaml — 附加 phah_taibun 到 schema_list
-    if grep -q "schema_list:" "$DEFAULT_CUSTOM"; then
-        # schema_list 已存在，在其下方附加
-        sed -i '/schema_list:/a\    - schema: phah_taibun' "$DEFAULT_CUSTOM"
-        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 附加到現有 schema_list"
+if [ "$NEED_REGISTER" = true ]; then
+    if [ -f "$RIME_DIR/default.custom.yaml" ]; then
+        # 追加 phah_taibun 到現有的 schema_list
+        LAST_SCHEMA_LINE=$(grep -n '\- schema:' "$RIME_DIR/default.custom.yaml" | tail -1 | cut -d: -f1)
+        if [ -n "$LAST_SCHEMA_LINE" ]; then
+            # 取得最後一個 schema 行，替換方案名為 phah_taibun 後插入其下方
+            NEW_LINE=$(sed -n "${LAST_SCHEMA_LINE}p" "$RIME_DIR/default.custom.yaml" | sed 's/- schema: .*/- schema: phah_taibun/')
+            sed -i "${LAST_SCHEMA_LINE}a\\${NEW_LINE}" "$RIME_DIR/default.custom.yaml"
+        else
+            # 沒有 schema_list，追加完整區塊
+            printf '\n  schema_list/+:\n    - schema: phah_taibun\n' >> "$RIME_DIR/default.custom.yaml"
+        fi
+        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 追加到 default.custom.yaml"
     else
-        # 有 default.custom.yaml 但沒有 schema_list — 加入 patch
-        cat >> "$DEFAULT_CUSTOM" <<'YAML'
-
-  schema_list/@next:
-    schema: phah_taibun
-YAML
-        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 加入 default.custom.yaml"
+        # 沒有 default.custom.yaml，複製專案的版本
+        cp -f "$PROJ_DIR/schema/default.custom.yaml" "$RIME_DIR/default.custom.yaml"
+        echo -e "  ${GREEN}[ok]${NC} default.custom.yaml（新建）"
     fi
-else
-    # 沒有 default.custom.yaml — 建立新檔，使用 @next 語法附加（不覆蓋預設方案）
-    cat > "$DEFAULT_CUSTOM" <<'YAML'
-# default.custom.yaml — 拍台文自動產生
-patch:
-  schema_list/@next:
-    schema: phah_taibun
-YAML
-    echo -e "  ${GREEN}[ok]${NC} 建立 default.custom.yaml（附加模式，保留預設方案）"
 fi
 
 echo
