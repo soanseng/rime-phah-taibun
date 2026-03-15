@@ -1,26 +1,56 @@
 -- phah_taibun_lookup.lua
 -- 查台語讀音 Ctrl+'
 -- 移植自 rime-liur (ryanwuson/rime-liur) 查碼模組
--- 選字後顯示 TL + POJ 讀音 + 華語對照
+-- 選字後顯示 TL + POJ 讀音對照
 
 local M = {}
+
+-- Simple TL to POJ conversion (same logic as filter)
+local function tl_to_poj(tl_text)
+  if not tl_text or tl_text == "" then
+    return tl_text
+  end
+  local result = tl_text
+  result = result:gsub("tsh", "chh")
+  result = result:gsub("ts", "ch")
+  result = result:gsub("ing([^a-z])", "eng%1")
+  result = result:gsub("ing$", "eng")
+  result = result:gsub("ik([^a-z])", "ek%1")
+  result = result:gsub("ik$", "ek")
+  result = result:gsub("ua", "oa")
+  result = result:gsub("ue", "oe")
+  return result
+end
 
 function M.init(env)
   env.name_space = env.name_space or ""
 end
 
--- 為候選附加台語讀音資訊
+-- Enhance candidates with dual TL+POJ annotation
 function M.func(input, env)
   for cand in input:iter() do
-    -- 取得候選的拼音（Rime 自動提供的 comment 已有拼音）
-    local text = cand.text or ""
     local comment = cand.comment or ""
 
-    -- 在 comment 中顯示讀音資訊
-    -- Rime 的 script_translator 已自動在 comment 附加拼音
-    -- 此模組可做額外增強（如加 POJ 版本），Phase 2 再擴充
+    -- Extract TL romanization from existing comment [...]
+    local tl_roman = comment:match("%[(.-)%]")
 
-    yield(cand)
+    if tl_roman and tl_roman ~= "" then
+      local poj_roman = tl_to_poj(tl_roman)
+
+      -- Only add dual annotation if POJ differs from TL
+      if poj_roman ~= tl_roman then
+        local new_comment = " [TL:" .. tl_roman .. " POJ:" .. poj_roman .. "]"
+        local new_cand = Candidate(cand.type, cand.start, cand._end, cand.text, new_comment)
+        new_cand.quality = cand.quality
+        new_cand.preedit = cand.preedit
+        yield(new_cand)
+      else
+        -- TL and POJ are the same, keep original comment
+        yield(cand)
+      end
+    else
+      yield(cand)
+    end
   end
 end
 

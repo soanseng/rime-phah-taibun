@@ -105,7 +105,10 @@ __pycache__/
 *.egg-info/
 ```
 
-注意：`uv.lock` 和 `pyproject.toml` 需要進 repo。
+注意：
+- `uv.lock` 和 `pyproject.toml` 需要進 repo
+- `schema/phah_taibun.dict.yaml` 和 `schema/hanlo_rules.yaml` **進 repo**（使用者 clone 即用，不需跑 build）
+- `rime.lua` **進 repo**（Lua 模組註冊檔）
 
 ### 2-0d. 資源重點檔案索引
 
@@ -379,9 +382,9 @@ engine:
     - script_translator          # 主翻譯器
     - reverse_lookup_translator  # 反查
     - table_translator@custom_phrase  # 使用者自訂
-    - lua_translator@phah_taibun_date  # 日期時間
+    - lua_translator@*phah_taibun_date  # 日期時間
   filters:
-    - lua_filter@phah_taibun_filter    # 核心：漢羅轉換 + 拼音註解
+    - lua_filter@*phah_taibun_filter    # 核心：漢羅轉換 + 拼音註解
     - uniquifier
 
 switches:
@@ -553,6 +556,37 @@ Phase 2 再移植 rime-liur 的 Lua 造詞模組。
 | `phah_taibun_phrase.lua` | 造詞模組 | 造詞模式 `;` | 2 |
 | `phah_taibun_synonym.lua` | 同音模組 | 文白讀切換 `'` | 2 |
 | `phah_taibun_speedup.lua` | 快打模組 | 簡拼提示 `,,sp` | 2 |
+
+## 6b. Rime Lua 模組載入
+
+Schema 引用 Lua 時用 `@*` 前綴（新式語法），同時提供 `rime.lua` 做舊版相容：
+
+```yaml
+# schema 中（新式，librime-lua >= 2021）
+- lua_translator@*phah_taibun_help    # → 自動載入 lua/phah_taibun_help.lua
+- lua_filter@*phah_taibun_filter      # → 自動載入 lua/phah_taibun_filter.lua
+```
+
+```lua
+-- rime.lua（舊式 fallback，放在 Rime 使用者資料夾根目錄）
+phah_taibun_filter = require("phah_taibun_filter")
+phah_taibun_help   = require("phah_taibun_help")
+```
+
+每個 Lua 模組必須回傳 `{init, func}` table：
+```lua
+local M = {}
+function M.init(env) end
+function M.func(input, seg, env) end  -- translator
+function M.func(input, env) end       -- filter
+return M
+```
+
+**新增 Phase 2 模組時的 checklist**：
+1. `lua/phah_taibun_xxx.lua` — 實作模組，回傳 `{init, func}` table
+2. `rime.lua` — 加 `phah_taibun_xxx = require("phah_taibun_xxx")`
+3. `schema/phah_taibun.schema.yaml` — engine 區加 `lua_translator@*phah_taibun_xxx` 或 `lua_filter@*phah_taibun_xxx`
+4. `scripts/install_linux.sh` — Lua 檔案複製已自動處理（glob `lua/*.lua`）
 
 ## 7. 測試策略
 

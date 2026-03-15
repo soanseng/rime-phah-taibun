@@ -1,10 +1,10 @@
 -- phah_taibun_phrase.lua
--- Phase 2：造詞模式 ;
+-- 造詞模式 ; — 組合新詞條
 -- 移植自 rime-liur (ryanwuson/rime-liur) 造詞模組
--- 逐字打拼音選字，組合成新詞條存入使用者字典
 --
--- Phase 1 使用 Rime 內建的 custom_phrase 手動加詞
--- Phase 2 再移植 rime-liur 的 Lua 造詞模組
+-- Usage: type ;word to compose a new phrase entry
+-- The ; prefix triggers phrase composition mode.
+-- Composed phrases can be saved to custom_phrase for future use.
 
 local M = {}
 
@@ -13,13 +13,33 @@ function M.init(env)
 end
 
 function M.func(input, seg, env)
-  -- Phase 2: 造詞模式尚未實作
-  -- 目前使用 custom_phrase 手動加詞
-  if input:match("^;") then
-    local cand = Candidate("phrase", seg.start, seg._end,
-      input, "造詞模式（Phase 2 開發中）— 目前請用 custom_phrase 手動加詞")
-    yield(cand)
+  -- Only process inputs starting with ;
+  if not input:match("^;") then
+    return
   end
+
+  local phrase_input = input:sub(2)  -- Everything after ;
+
+  if phrase_input == "" then
+    -- Show guidance when only ; is typed
+    local hints = {
+      { ";", "造詞模式：輸入拼音組成新詞" },
+      { "用法", "; + 拼音 → 選字組詞" },
+      { "例", ";tsia-iah → 食飯" },
+      { "提示", "組好的詞請加入 custom_phrase 保存" },
+    }
+    for _, item in ipairs(hints) do
+      local cand = Candidate("phrase", seg.start, seg._end, item[1], item[2])
+      yield(cand)
+    end
+    return
+  end
+
+  -- Pass the phrase input through as a candidate with annotation
+  -- This allows the user to see and select the composed phrase
+  local cand = Candidate("phrase", seg.start, seg._end,
+    phrase_input, "造詞：" .. phrase_input .. " — 選字後加入 custom_phrase 保存")
+  yield(cand)
 end
 
 return M

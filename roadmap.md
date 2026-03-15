@@ -14,9 +14,10 @@
 
 ---
 
-## Phase 1：可用的 MVP（目標：2-3 週）
+## Phase 1：可用的 MVP（目標：2-3 週）— 進行中
 
 > 讓使用者能裝起來、打得出台語、看得到拼音。
+> **進度**：Week 1-2 完成，目前在 Week 3 實機測試階段（2026-03-15）
 
 ### ✅ 收入 Phase 1
 
@@ -54,15 +55,19 @@
 
 > 使用者回饋驅動，精進輸入體驗。
 
-| 功能 | 觸發條件 |
-|------|---------|
-| LKK 用字表正式整合 | LKK CSV 已自動下載，待格式分析後整合 |
-| 楊允言詞頻精確化 | Ungian_2009 已下載，待格式分析後整合 |
-| 造詞模式 `;` | 移植 rime-liur 造詞模組，改寫為拼音流程 |
-| 同音字/文白讀切換 `'` | 移植 rime-liur 同音模組，取得文白讀標記資料後 |
-| 簡拼提示 `,,sp` | 移植 rime-liur 快打模組 |
-| IVS 標音輸出 | 確認字咍字型 IVS 對照表可提取後 |
-| 查讀音模式進階 | 整合教育部辭典例句、解說 |
+| 功能 | 狀態 | 說明 |
+|------|------|------|
+| LKK 漢羅規則 → Lua filter | ✅ 已整合 | hanlo_rules.yaml 893 條 → `phah_taibun_data.lua` 查表 → `phah_taibun_filter.lua` 漢羅轉換 |
+| Ungian/iCorpus 詞頻 → dict 權重 | ✅ 已整合 | 93K+57K 詞頻經 `--corpus-freq` 進入 `compute_weights()`，如 食飯 960→1446 |
+| KipSutian 反查字典 | ✅ 已整合 | `build_all.py` 優先使用 KipSutian 27K（含解說），MOE 為 fallback |
+| 輕聲規則 → build pipeline | ✅ 已整合 | `lighttone_rules.json` 111 條，隨 install 部署到 Rime |
+| 查讀音 TL+POJ 雙標註 | ✅ 已實作 | `phah_taibun_lookup.lua` 為候選加 `[TL:xxx POJ:yyy]` |
+| 萬用查字 `?` | ✅ 已實作 | `phah_taibun_wildcard.lua` 展開所有可能聲母匹配 |
+| 造詞模式 `;` | ✅ 基礎版 | `phah_taibun_phrase.lua` 基礎造詞引導，進階版需 per-syllable lookup |
+| 簡拼提示 `,,sp` | ✅ 已實作 | `phah_taibun_speedup.lua` 17 個聲母對照表 + 用法提示 |
+| 文白讀標記 | 🔲 scaffold | `phah_taibun_synonym.lua` 架構就位，需反查字典加入 wen_bai 欄位 |
+| IVS 標音輸出 | 🔲 待開始 | 確認字咍字型 IVS 對照表可提取後 |
+| 查讀音進階 | 🔲 待開始 | 整合教育部辭典例句、解說 |
 
 ## Phase 3：生態擴展（3-6 個月後）
 
@@ -82,48 +87,40 @@
 
 ## Phase 1 工作拆解
 
-### Week 0：環境準備 + 資源下載
+### ✅ Week 0：環境準備 + 資源下載（完成）
 
-| 任務 | 工時 | 輸出 |
-|------|------|------|
-| `scripts/download_resources.sh` 完成並執行 | 0.5天 | `data/` 下 18 個資源（17 repo + 1 Google Sheets CSV） |
-| 瀏覽各資源的關鍵檔案，確認格式無誤 | 0.5天 | 對各資料源的欄位、編碼、授權有具體理解 |
-| `uv sync` 安裝依賴 | 0.5天 | `pyproject.toml` + `uv.lock`（pyyaml, ruff, pytest 等） |
+| 任務 | 輸出 |
+|------|------|
+| `scripts/download_resources.sh` — 20 個資源全部下載 | `data/` 目錄完備 |
+| `uv sync` 安裝依賴 | `pyproject.toml` + `uv.lock` |
 
-**Week 0 結束交付**：所有原始資料就位、開發環境可用
+### ✅ Week 1：資料處理 + 字典生成（完成）
 
-### Week 1：資料處理 + 字典生成
+| 任務 | 輸出 |
+|------|------|
+| `convert_chhoetaigi.py` + `build_frequency.py` | `phah_taibun.dict.yaml`（2MB，含 Ungian + iCorpus 詞頻加權） |
+| `build_reverse_dict.py` + `build_kipsutian_reverse.py` | `phah_taibun_reverse.dict.yaml`（65K 條目） |
+| `parse_lkk_rules.py` | `hanlo_rules.yaml`（893 條漢羅分類） |
+| 131 個 Python 測試通過，71% 覆蓋率 | TDD 品質保證 |
 
-| 任務 | 工時 | 輸出 |
-|------|------|------|
-| `convert_chhoetaigi.py` 完成 | 2天 | `phah_taibun.dict.yaml` (~110K 筆) |
-| `build_frequency.py` 完成 | 1天 | 字典含啟發式權重 |
-| `build_reverse_dict.py` 完成 | 1天 | `phah_taibun_reverse.dict.yaml` |
-| 從 ChhoeTaigi HanLoTaibun 欄位提取初版漢羅規則 | 1天 | `hanlo_rules.yaml` (初版) |
+### ✅ Week 2：Schema + Lua 核心 + rime-liur 移植（完成）
 
-**Week 1 結束交付**：可部署的 Rime 字典檔（無 Lua，純字典匹配可用）
+| 任務 | 輸出 |
+|------|------|
+| `phah_taibun.schema.yaml` — POJ/TL 雙系統、`@*` Lua 載入語法 | 完整 schema |
+| `rime.lua` — 舊版 librime-lua 相容 | 模組註冊檔 |
+| 7 個 Phase 1 Lua 模組 + 3 個 Phase 2 stubs | `lua/` 目錄 10 個 .lua 檔 |
+| `install.sh` + `scripts/install_linux.sh` | 一鍵安裝（fcitx5/ibus 自動偵測） |
 
-### Week 2：Schema + Lua 核心 + rime-liur 移植
+### 🔄 Week 3：實機測試 + 調校（進行中，2026-03-15）
 
-| 任務 | 工時 | 輸出 |
-|------|------|------|
-| `phah_taibun.schema.yaml` 完成 | 1天 | POJ/TL 雙系統 algebra + 基本配置 |
-| `phah_taibun_filter.lua` 核心功能 | 2天 | 候選註解 + 漢羅轉換 + 輸出模式切換 |
-| `phah_taibun_reverse.lua` 反查 | 1天 | 注音/拼音→台語反查 |
-| 移植 rime-liur：查讀音 `phah_taibun_lookup.lua` | 0.5天 | `Ctrl+'` 顯示台語讀音 |
-| 移植 rime-liur：萬用查字 `phah_taibun_wildcard.lua` | 0.5天 | `?` 模糊拼音匹配 |
-| 移植 rime-liur：符號 + 說明 + 日期 | 0.5天 | `` ` `` 符號、`,,h` 說明、`,,jit` 日期 |
-
-**Week 2 結束交付**：功能完整的輸入法方案（含 7 個 Lua 模組）
-
-### Week 3：測試 + 調校 + 文件
-
-| 任務 | 工時 | 輸出 |
-|------|------|------|
-| fcitx5-rime 實機測試 | 2天 | Bug 修復、algebra 調整 |
-| 詞頻微調 | 1天 | 常用詞排序優化 |
-| README.md + 安裝說明 | 0.5天 | 使用者文件 |
-| install.sh 安裝腳本 | 0.5天 | 一鍵安裝 |
+| 任務 | 狀態 |
+|------|------|
+| fcitx5-rime 實機安裝測試 | 🔄 進行中 — 已修復 Lua 載入問題（`@*` 語法 + `rime.lua`） |
+| 字典檔改為隨 repo 發佈（從 .gitignore 移除） | ✅ 已修復 |
+| `luna_pinyin` 反查依賴檢查 | ✅ install.sh 已加檢測 |
+| 詞頻微調 | 🔲 待實機驗證後進行 |
+| README.md 更新 | ✅ 已完成 |
 
 **Week 3 結束交付**：可發佈的 MVP
 

@@ -44,13 +44,16 @@ engine:
     - script_translator
     - reverse_lookup_translator
     - table_translator@custom_phrase
-    - lua_translator@phah_taibun_help
-    - lua_translator@phah_taibun_date
-    - lua_translator@phah_taibun_symbols
-    - lua_translator@phah_taibun_wildcard
+    - lua_translator@*phah_taibun_help
+    - lua_translator@*phah_taibun_date
+    - lua_translator@*phah_taibun_symbols
+    - lua_translator@*phah_taibun_wildcard
+    - lua_translator@*phah_taibun_phrase
+    - lua_translator@*phah_taibun_speedup
   filters:
-    - lua_filter@phah_taibun_filter
-    - lua_filter@phah_taibun_lookup
+    - lua_filter@*phah_taibun_filter
+    - lua_filter@*phah_taibun_lookup
+    - lua_filter@*phah_taibun_synonym
     - uniquifier
 
 speller:

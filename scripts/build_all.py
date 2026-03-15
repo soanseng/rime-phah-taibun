@@ -76,12 +76,18 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: Ungian data not found at {ungian_dir}")
 
-    # Step 3: Convert ChhoeTaigi → dict.yaml
+    # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
+        convert_cmd = [python, "scripts/convert_chhoetaigi.py", "--input", str(chhoetaigi_dir), "--output", str(out)]
+        # Attach extracted corpus frequency TSVs if available
+        freq_files = [f for f in [icorpus_freq, ungian_freq] if f.exists()]
+        if freq_files:
+            convert_cmd.append("--corpus-freq")
+            convert_cmd.extend(str(f) for f in freq_files)
         steps_ok &= run_step(
             "Convert ChhoeTaigi CSVs to Rime dictionary",
-            [python, "scripts/convert_chhoetaigi.py", "--input", str(chhoetaigi_dir), "--output", str(out)],
+            convert_cmd,
         )
     else:
         print(f"SKIP: ChhoeTaigi not found at {chhoetaigi_dir}")
@@ -96,22 +102,41 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: LKK CSV not found at {lkk_csv}")
 
-    # Step 5: Build MOE reverse dictionary
-    moe_dir = data / "moedict-data-twblg" / "uni"
-    if moe_dir.exists():
+    # Step 4b: Parse light-tone rules
+    lighttone_csv = data / "khin1siann1-hun1sik4" / "輕聲詞資料" / "全部輕聲詞.csv"
+    if lighttone_csv.exists():
         steps_ok &= run_step(
-            "Build MOE reverse dictionary",
-            [
-                python,
-                "scripts/build_moe_reverse.py",
-                "--input",
-                str(moe_dir),
-                "--output",
-                str(out / "phah_taibun_reverse.dict.yaml"),
-            ],
+            "Parse light-tone rules → lighttone_rules.json",
+            [python, "scripts/parse_lighttone.py", "--input", str(lighttone_csv), "--output", str(out / "lighttone_rules.json")],
         )
     else:
-        print(f"SKIP: MOE data not found at {moe_dir}")
+        print(f"SKIP: Light-tone CSV not found at {lighttone_csv}")
+
+    # Step 5: Build reverse dictionary (prefer KipSutian 65K, fallback to MOE 24K)
+    # KipSutian CSV is nested: public/<date>/bunji/kautian.csv
+    kipsutian_base = data / "KipSutianDataMirror" / "public"
+    kipsutian_csv = None
+    if kipsutian_base.exists():
+        for candidate in sorted(kipsutian_base.iterdir(), reverse=True):
+            csv_path = candidate / "bunji" / "kautian.csv"
+            if csv_path.exists():
+                kipsutian_csv = csv_path
+                break
+    moe_dir = data / "moedict-data-twblg" / "uni"
+    reverse_output = out / "phah_taibun_reverse.dict.yaml"
+
+    if kipsutian_csv and kipsutian_csv.exists():
+        steps_ok &= run_step(
+            "Build KipSutian reverse dictionary (65K entries)",
+            [python, "scripts/build_kipsutian_reverse.py", "--input", str(kipsutian_csv), "--output", str(reverse_output)],
+        )
+    elif moe_dir.exists():
+        steps_ok &= run_step(
+            "Build MOE reverse dictionary (24K entries, fallback)",
+            [python, "scripts/build_moe_reverse.py", "--input", str(moe_dir), "--output", str(reverse_output)],
+        )
+    else:
+        print("SKIP: No reverse dict source found")
 
     # Step 6: Validate
     dict_yaml = out / "phah_taibun.dict.yaml"
