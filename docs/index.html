@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>拍台文 Phah Tai-bun — Rime 台語輸入法</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="description" content="拍台文 — Rime 台語輸入法方案使用說明。漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    :root {
+      --theme-color: #2E8B57;
+      --theme-color-dark: #3CB371;
+    }
+    .sidebar {
+      background-color: #f8f8f8;
+    }
+    .markdown-section h1 {
+      color: var(--theme-color);
+    }
+    .markdown-section table {
+      display: table;
+      width: 100%;
+    }
+    .markdown-section code {
+      color: #c7254e;
+      background-color: #f9f2f4;
+    }
+    .markdown-section pre>code {
+      color: inherit;
+      background-color: inherit;
+    }
+    /* Dark mode */
+    body.dark {
+      background-color: #1e1e1e;
+      color: #dcdcdc;
+    }
+    body.dark .sidebar {
+      background-color: #252525;
+    }
+    body.dark .markdown-section code {
+      color: #e06c75;
+      background-color: #2d2d2d;
+    }
+    /* Toggle button */
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      background: var(--theme-color);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const btn = document.querySelector('.theme-toggle');
+      btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+      localStorage.setItem('dark', document.body.classList.contains('dark'));
+    }
+    if (localStorage.getItem('dark') === 'true') {
+      document.body.classList.add('dark');
+      document.querySelector('.theme-toggle').textContent = '☀️';
+    }
+  </script>
+  <script>
+    window.$docsify = {
+      name: '拍台文 Phah Tai-bun',
+      repo: 'soanseng/rime-phah-taibun',
+      homepage: 'user-guide.md',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        placeholder: '搜尋',
+        noData: '找不到結果',
+        paths: 'auto'
+      }
+    }
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+</body>
+</html>

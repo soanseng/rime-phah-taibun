@@ -13,7 +13,11 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 - **多種輸出模式**：漢羅TL、漢羅POJ、全羅TL、全羅POJ 一鍵切換
 - **華語反查**：不知道台語怎麼講？用拼音打華語就能查到台語讀音
 - **萬用字元**：拼音不確定？用 `?` 代替，列出所有可能
-- **86K+ 詞條**：整合 ChhoeTaigi 多本辭典，涵蓋日常到文學用語
+- **以詞定字**：按 `[` 取首字、`]` 取尾字，從詞組精準選字
+- **長詞優先**：自動提升多字詞排序，減少逐字選字
+- **Emoji 輸入**：候選區自動顯示相關 emoji（可開關）
+- **英文混打**：直接打英文單字，台語英文無縫切換
+- **170K 詞條**：整合 ChhoeTaigi 9 本辭典 + 7 語料庫頻率加權，涵蓋日常到文學用語
 
 ## 使用範例
 
@@ -155,6 +159,10 @@ macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](ht
 | `,,h` | 按鍵說明 | 在候選區顯示所有快捷鍵 |
 | `,,jit` | 台語日期 | 輸出今天日期（漢字/羅馬字/ISO） |
 | `,,sp` | 簡拼對照 | 顯示聲母縮寫對照表 |
+| `[` | 以詞定字（首字） | 選取候選詞的第一個字 |
+| `]` | 以詞定字（尾字） | 選取候選詞的最後一個字 |
+| `Tab` | 音節跳轉 | 組字時跳到下一個音節 |
+| `Ctrl+Backspace` | 刪除音節 | 刪除前一個音節 |
 
 ## 疑難排解
 
@@ -170,7 +178,7 @@ macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](ht
 ```bash
 ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
 ```
-應該要有 10 個 `phah_taibun_*.lua` 檔案。
+應該要有 12 個 `phah_taibun_*.lua` 檔案。
 
 ### 華語反查 `~` 沒有反應
 
@@ -216,15 +224,17 @@ cd rime-phah-taibun
 ```
 schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
   phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
-  phah_taibun.dict.yaml           主字典（86K 條目）
-  phah_taibun_reverse.dict.yaml   反查字典（25K 條目）
+  phah_taibun.dict.yaml           主字典（170K 條目）
+  phah_taibun_reverse.dict.yaml   反查字典（26K 條目）
   hanlo_rules.yaml                LKK 漢羅分類規則
   lighttone_rules.json            輕聲規則
   default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組（10 個）
+lua/                           Lua 擴充模組（12 個）
   phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換
   phah_taibun_data.lua            漢羅規則載入器
   phah_taibun_lookup.lua          TL+POJ 雙標註
+  phah_taibun_select_char.lua     以詞定字（[ 首字、] 尾字）
+  phah_taibun_long_word.lua       長詞優先排序
   phah_taibun_wildcard.lua        萬用字元 ?
   phah_taibun_symbols.lua         符號選單
   phah_taibun_help.lua            按鍵說明
@@ -233,8 +243,8 @@ lua/                           Lua 擴充模組（10 個）
   phah_taibun_synonym.lua         文白讀切換（開發中）
   phah_taibun_speedup.lua         簡拼對照
 rime.lua                       Lua 模組註冊（舊版 librime 相容）
-scripts/                       Python 資料處理腳本
-tests/                         pytest 測試（127 個）
+scripts/                       Python 資料處理腳本（18 個）
+tests/                         pytest 測試（18 個測試檔）
 ```
 
 ## 開發
@@ -283,7 +293,13 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [教育部辭典 (g0v)](https://github.com/g0v/moedict-data-twblg) | CC BY-ND 3.0 | 反查字典 fallback |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | CC BY 4.0 | 詞頻統計（57K 詞） |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 待確認 | 文學語料詞頻（93K 詞） |
+| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 待確認 | 國小台語課本詞頻（1K 詞） |
+| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 待確認 | 日常高頻詞彙（2.8K 詞） |
+| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 待確認 | 台語文學語料（2K+ 篇） |
+| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | CC BY-ND 3.0 | 例句語料 + 反查字典 |
+| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 待確認 | 歷史 POJ 語料（POJ→TL 轉換） |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | 開源 | Lua 模組架構參考 |
+| [rime-ice](https://github.com/iDvel/rime-ice) | GPL-3.0 | UX 功能參考（以詞定字、長詞優先、emoji） |
 
 ## 致謝
 
@@ -292,8 +308,9 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
 - [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 反查字典資料
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫與詞頻資料
-- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus 臺華平行新聞語料
+- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
+- [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 以詞定字、長詞優先等 UX 功能參考
 
 ## 授權
 

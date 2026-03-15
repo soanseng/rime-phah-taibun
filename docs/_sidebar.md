@@ -1,0 +1,45 @@
+- [拍台文使用說明](user-guide.md)
+- **一、安裝方式**
+  - [安裝需求](user-guide.md#安裝需求)
+  - [快速安裝](user-guide.md#快速安裝)
+  - [支援平台](user-guide.md#支援平台)
+  - [Windows Weasel 安裝](user-guide.md#windows-weasel-安裝)
+  - [重新部署](user-guide.md#重新部署)
+  - [建議字體](user-guide.md#建議字體)
+- **二、基本輸入**
+  - [台語拼音輸入](user-guide.md#台語拼音輸入)
+  - [POJ 和 TL 都通](user-guide.md#poj-和-tl-都通)
+  - [聲調可省略](user-guide.md#聲調可省略)
+  - [拼音註解](user-guide.md#拼音註解)
+- **三、輸出模式**
+  - [四種輸出模式](user-guide.md#四種輸出模式)
+  - [漢羅混寫](user-guide.md#漢羅混寫)
+  - [全羅輸出](user-guide.md#全羅輸出)
+  - [模式切換](user-guide.md#模式切換)
+- **四、以詞定字**
+  - [用法說明](user-guide.md#以詞定字)
+- **五、長詞優先**
+  - [自動排序](user-guide.md#長詞優先)
+- **六、華語反查**
+  - [反查台語讀音](user-guide.md#華語反查)
+- **七、萬用查字**
+  - [模糊拼音](user-guide.md#萬用查字)
+- **八、造詞功能**
+  - [造詞模式](user-guide.md#造詞功能)
+- **九、符號輸入**
+  - [符號選單](user-guide.md#符號輸入)
+- **十、Emoji 輸入**
+  - [Emoji 候選](user-guide.md#emoji-輸入)
+- **十一、英文混打**
+  - [英文輸入](user-guide.md#英文混打)
+- **十二、簡拼提示**
+  - [縮寫對照](user-guide.md#簡拼提示)
+- **十三、台語日期**
+  - [日期輸出](user-guide.md#台語日期)
+- **十四、快捷鍵總覽**
+  - [按鍵說明](user-guide.md#快捷鍵總覽)
+- **十五、進階設定**
+  - [自訂詞庫](user-guide.md#自訂詞庫)
+  - [從原始資料重新建置](user-guide.md#從原始資料重新建置)
+- **十六、疑難排解**
+  - [常見問題](user-guide.md#疑難排解)
