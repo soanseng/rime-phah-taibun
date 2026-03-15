@@ -3,6 +3,8 @@
 Orchestrates the full preprocessing pipeline:
 1. Extract word frequencies + sentences from iCorpus corpus
 2. Extract word frequencies + sentences from Ungian corpus
+2b. Extract word frequencies + sentences from 康軒 textbooks
+2c. Extract word frequencies + sentences from 900例句
 3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
@@ -68,6 +70,10 @@ def main(argv: list[str] | None = None) -> None:
     kipsutian_sentences = data / "kipsutian_sentences.txt"
     pojbh_freq = data / "pojbh_freq.tsv"
     pojbh_sentences = data / "pojbh_sentences.txt"
+    kok4hau7_freq = data / "kok4hau7_freq.tsv"
+    kok4hau7_sentences = data / "kok4hau7_sentences.txt"
+    leku900_freq = data / "900leku_freq.tsv"
+    leku900_sentences = data / "900leku_sentences.txt"
 
     # Step 1: Extract iCorpus frequencies + sentences
     icorpus_file = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改音標.txt"
@@ -95,12 +101,34 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: Ungian data not found at {ungian_dir}")
 
+    # Step 2b: Extract 康軒 textbook frequencies + sentences
+    kok4hau7_dir = data / "kok4hau7-kho3pun2"
+    if kok4hau7_dir.exists():
+        steps_ok &= run_step(
+            "Extract 康軒 textbook frequencies",
+            [python, "scripts/extract_kok4hau7_freq.py", "--input", str(kok4hau7_dir),
+             "--output", str(kok4hau7_freq), "--sentences", str(kok4hau7_sentences)],
+        )
+    else:
+        print(f"SKIP: 康軒 textbook data not found at {kok4hau7_dir}")
+
+    # Step 2c: Extract 900例句 frequencies + sentences
+    leku900_json = data / "Sin1pak8tshi7_2015_900-le7ku3" / "minnan900.json"
+    if leku900_json.exists():
+        steps_ok &= run_step(
+            "Extract 常用900例句 frequencies",
+            [python, "scripts/extract_900leku_freq.py", "--input", str(leku900_json),
+             "--output", str(leku900_freq), "--sentences", str(leku900_sentences)],
+        )
+    else:
+        print(f"SKIP: 900例句 not found at {leku900_json}")
+
     # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
         convert_cmd = [python, "scripts/convert_chhoetaigi.py", "--input", str(chhoetaigi_dir), "--output", str(out)]
         # Attach extracted corpus frequency TSVs if available
-        freq_files = [f for f in [icorpus_freq, ungian_freq, nmtl_freq, kipsutian_sent_freq, pojbh_freq] if f.exists()]
+        freq_files = [f for f in [icorpus_freq, ungian_freq, kok4hau7_freq, leku900_freq, nmtl_freq, kipsutian_sent_freq, pojbh_freq] if f.exists()]
         if freq_files:
             convert_cmd.append("--corpus-freq")
             convert_cmd.extend(str(f) for f in freq_files)
@@ -197,7 +225,8 @@ def main(argv: list[str] | None = None) -> None:
 
     # Step 10: Build bigram phrases from all corpora
     sentence_files = [f for f in [
-        icorpus_sentences, ungian_sentences, nmtl_sentences,
+        icorpus_sentences, ungian_sentences, kok4hau7_sentences,
+        leku900_sentences, nmtl_sentences,
         kipsutian_sentences, pojbh_sentences,
     ] if f.exists()]
     dict_yaml = out / "phah_taibun.dict.yaml"
