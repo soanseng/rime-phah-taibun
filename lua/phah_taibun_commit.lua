@@ -50,7 +50,7 @@ function M.init(env)
   env.page_size = config:get_int("menu/page_size") or 5
 
   -- Build select key → page-relative index mapping
-  local keys = config:get_string("menu/select_keys") or "1234567890"
+  local keys = config:get_string("menu/alternative_select_keys") or "1234567890"
   env.select_map = {}
   for i = 1, #keys do
     env.select_map[keys:byte(i)] = i - 1  -- 0-based
