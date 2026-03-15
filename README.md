@@ -323,3 +323,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
 - [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 以詞定字、長詞優先等 UX 功能參考
+
+## 授權
+
+詳見 [LICENSE](LICENSE)。
