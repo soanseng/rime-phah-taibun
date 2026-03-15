@@ -86,7 +86,7 @@ def parse_itaigi_csv(csvfile: TextIO) -> list[dict]:
                 {
                     "hanlo": hanlo,
                     "kip_input": kip,
-                    "rime_key": strip_tone_numbers(kip, delimiter=" "),
+                    "rime_key": kip.replace("-", " "),
                     "hoabun": hoabun,
                     "source": "itaigi",
                 }
@@ -121,7 +121,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
                     {
                         "hanlo": hanlo,
                         "kip_input": kip,
-                        "rime_key": strip_tone_numbers(kip, delimiter=" "),
+                        "rime_key": kip.replace("-", " "),
                         "hoabun": hoabun,
                         "source": "taihoa",
                     }
@@ -133,7 +133,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
                     {
                         "hanlo": hanlo,
                         "kip_input": kip,
-                        "rime_key": strip_tone_numbers(kip, delimiter=" "),
+                        "rime_key": kip.replace("-", " "),
                         "hoabun": hoabun,
                         "source": "taihoa",
                     }
@@ -174,7 +174,7 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
                 {
                     "hanlo": hanlo,
                     "kip_input": kip,
-                    "rime_key": strip_tone_numbers(kip, delimiter=" "),
+                    "rime_key": kip.replace("-", " "),
                     "hoabun": hoabun,
                     "source": source_name,
                 }
