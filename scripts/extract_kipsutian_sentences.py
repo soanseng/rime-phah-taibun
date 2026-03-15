@@ -14,7 +14,10 @@ from collections import Counter
 from pathlib import Path
 from typing import TextIO
 
-from scripts.extract_icorpus_freq import tokenize_tl_line
+try:
+    from scripts.extract_icorpus_freq import tokenize_tl_line
+except ModuleNotFoundError:
+    from extract_icorpus_freq import tokenize_tl_line
 
 
 # Columns that contain romanization data worth extracting

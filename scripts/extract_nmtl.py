@@ -48,7 +48,8 @@ def _extract_from_json(
 ) -> None:
     """Extract sentences from nmtl.json format.
 
-    Expected structure: [{"漢羅": "...", "音標": "..."}, ...]
+    Actual structure: [{"資料": [["hanlo_text", "romanization_text"], ...], ...}, ...]
+    Each entry in 資料 is a pair: [Han-Lo text, POJ/TL romanization].
     """
     try:
         with open(json_path, encoding="utf-8") as f:
@@ -62,13 +63,19 @@ def _extract_from_json(
     for record in data:
         if not isinstance(record, dict):
             continue
-        tl_line = record.get("音標", "")
-        if not isinstance(tl_line, str) or not tl_line.strip():
+        paragraphs = record.get("資料", [])
+        if not isinstance(paragraphs, list):
             continue
-        tokens = tokenize_tl_line(tl_line)
-        if tokens:
-            sentences.append(" ".join(tokens))
-            freq.update(tokens)
+        for paragraph in paragraphs:
+            if not isinstance(paragraph, list) or len(paragraph) < 2:
+                continue
+            tl_line = paragraph[1]  # second element is romanization
+            if not isinstance(tl_line, str) or not tl_line.strip():
+                continue
+            tokens = tokenize_tl_line(tl_line)
+            if tokens:
+                sentences.append(" ".join(tokens))
+                freq.update(tokens)
 
 
 def _extract_from_text_files(
