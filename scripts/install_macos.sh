@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # 拍台文 Phah Tai-bun 自動安裝工具 (macOS / 鼠鬚管 Squirrel)
-# 參考 soanseng/rime-liur-arch 的 rime_liur_installer_linux.sh
 
 set -e
 
@@ -18,8 +17,8 @@ PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # ============================================================
 SQUIRREL_APP="/Library/Input Methods/Squirrel.app"
 SQUIRREL_SHARED="$SQUIRREL_APP/Contents/SharedSupport"
-SQUIRREL_BIN="$SQUIRREL_APP/Contents/MacOS/Squirrel"
 RIME_DIR="${RIME_DIR:-$HOME/Library/Rime}"
+FONT_DIR="$HOME/Library/Fonts"
 
 # ============================================================
 # 標題
@@ -52,15 +51,39 @@ echo -e "偵測到 Rime 框架：${GREEN}鼠鬚管 Squirrel${NC}"
 echo -e "Rime 資料夾：${GREEN}${RIME_DIR}${NC}"
 echo
 
-# ============================================================
-# Step 1: 確認安裝
-# ============================================================
 echo "本工具將執行以下作業："
 echo "  1. 複製方案檔（schema/*.yaml）到 Rime 資料夾"
 echo "  2. 複製 Lua 腳本（lua/*.lua + rime.lua）到 Rime 資料夾"
-echo "  3. 部署 RIME（自動重新編譯）"
+echo "  3. 安裝芫荽 iansui 字體"
+echo "  4. 部署 RIME（自動重新編譯）"
 echo
 echo -e "${YELLOW}※ 若有自訂設定尚未備份，請按 Ctrl+C 終止${NC}"
+echo
+
+# ============================================================
+# 偵測現有方案
+# ============================================================
+echo "[ 偵測現有方案 ]"
+echo
+
+EXISTING_SCHEMAS=()
+for schema_file in "$RIME_DIR"/*.schema.yaml; do
+    [ -f "$schema_file" ] || continue
+    schema_name=$(basename "$schema_file" .schema.yaml)
+    EXISTING_SCHEMAS+=("$schema_name")
+done
+
+if [ ${#EXISTING_SCHEMAS[@]} -gt 0 ]; then
+    echo -e "已安裝的輸入方案："
+    for s in "${EXISTING_SCHEMAS[@]}"; do
+        echo -e "  ${GREEN}•${NC} $s"
+    done
+    echo
+    echo -e "${GREEN}拍台文只會安裝 phah_taibun_* 檔案，不會覆蓋現有方案${NC}"
+else
+    echo -e "未偵測到現有方案（首次安裝）"
+fi
+
 echo
 
 # 檢查現有 default.custom.yaml 中是否已有 phah_taibun
@@ -75,7 +98,7 @@ if [ -f "$RIME_DIR/default.custom.yaml" ]; then
 fi
 
 # ============================================================
-# Step 2: 複製方案檔
+# Step 1: 複製方案檔
 # ============================================================
 echo "[ Step 1: 複製方案檔 ]"
 echo
@@ -88,6 +111,7 @@ SCHEMA_FILES=(
     "phah_taibun_reverse.dict.yaml"
     "hanlo_rules.yaml"
     "lighttone_rules.json"
+    "hoabun_map.txt"
 )
 
 for file in "${SCHEMA_FILES[@]}"; do
@@ -115,15 +139,16 @@ done
 echo
 
 # ============================================================
-# Step 3: 複製 Lua 腳本
+# Step 2: 複製 Lua 腳本
 # ============================================================
 echo "[ Step 2: 複製 Lua 腳本 ]"
 echo
 
 mkdir -p "$RIME_DIR/lua"
 
+# 只複製 phah_taibun_* 開頭的 Lua 檔案，避免覆蓋其他方案的模組
 LUA_COUNT=0
-for src in "$PROJ_DIR"/lua/*.lua; do
+for src in "$PROJ_DIR"/lua/phah_taibun_*.lua; do
     [ -f "$src" ] || continue
     filename=$(basename "$src")
     cp -f "$src" "$RIME_DIR/lua/$filename"
@@ -138,12 +163,12 @@ fi
 # 合併 rime.lua 模組註冊檔（舊版 librime-lua 相容）
 if [ -f "$PROJ_DIR/rime.lua" ]; then
     if [ -f "$RIME_DIR/rime.lua" ]; then
-        # 已有 rime.lua，追加尚未註冊的拍台文模組
+        cp -f "$RIME_DIR/rime.lua" "$RIME_DIR/rime.lua.bak"
+        echo -e "  ${YELLOW}[備份]${NC} rime.lua → rime.lua.bak"
+
         MERGED=0
         while IFS= read -r line; do
-            # 跳過空行和註解
             [[ -z "$line" || "$line" =~ ^[[:space:]]*-- ]] && continue
-            # 檢查該行是否已存在
             if ! grep -qF "$line" "$RIME_DIR/rime.lua"; then
                 echo "$line" >> "$RIME_DIR/rime.lua"
                 MERGED=$((MERGED + 1))
@@ -155,7 +180,6 @@ if [ -f "$PROJ_DIR/rime.lua" ]; then
             echo -e "  ${GREEN}[ok]${NC} rime.lua（模組已註冊，無需變更）"
         fi
     else
-        # 沒有現有 rime.lua，直接複製
         cp -f "$PROJ_DIR/rime.lua" "$RIME_DIR/rime.lua"
         echo -e "  ${GREEN}[ok]${NC} rime.lua（模組註冊）"
     fi
@@ -166,15 +190,19 @@ fi
 # ============================================================
 if [ "$NEED_REGISTER" = true ]; then
     if [ -f "$RIME_DIR/default.custom.yaml" ]; then
-        # 追加 phah_taibun 到現有的 schema_list（使用 @next 語法，不覆蓋現有方案）
-        if grep -q 'schema_list/@next' "$RIME_DIR/default.custom.yaml"; then
-            echo -e "  ${YELLOW}[skip]${NC} default.custom.yaml 已有 @next 區塊"
+        cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
+        echo -e "  ${YELLOW}[備份]${NC} default.custom.yaml → default.custom.yaml.bak"
+
+        LAST_SCHEMA_LINE=$(grep -n '\- schema:' "$RIME_DIR/default.custom.yaml" | tail -1 | cut -d: -f1)
+        if [ -n "$LAST_SCHEMA_LINE" ]; then
+            NEW_LINE=$(sed -n "${LAST_SCHEMA_LINE}p" "$RIME_DIR/default.custom.yaml" | sed 's/- schema: .*/- schema: phah_taibun/')
+            sed -i '' "${LAST_SCHEMA_LINE}a\\
+${NEW_LINE}" "$RIME_DIR/default.custom.yaml"
         else
             printf '\n  schema_list/@next:\n    schema: phah_taibun\n' >> "$RIME_DIR/default.custom.yaml"
         fi
-        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 追加到 default.custom.yaml"
+        echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun 追加到 default.custom.yaml（保留現有方案）"
     else
-        # 沒有 default.custom.yaml，複製專案的版本
         cp -f "$PROJ_DIR/schema/default.custom.yaml" "$RIME_DIR/default.custom.yaml"
         echo -e "  ${GREEN}[ok]${NC} default.custom.yaml（新建）"
     fi
@@ -183,37 +211,52 @@ fi
 echo
 
 # ============================================================
-# Step 4: 檢查依賴
+# Step 3: 檢查系統依賴
 # ============================================================
 echo "[ Step 3: 檢查系統依賴 ]"
 echo
 
-# 華語反查需要 luna_pinyin 字典
-if [ -f "$SQUIRREL_SHARED/luna_pinyin.schema.yaml" ] || [ -f "$RIME_DIR/luna_pinyin.schema.yaml" ]; then
-    echo -e "  ${GREEN}[ok]${NC} luna_pinyin（華語反查字典）"
+# 注音反查需要 bopomofo_tw 方案
+if [ -f "$SQUIRREL_SHARED/bopomofo_tw.schema.yaml" ] || [ -f "$RIME_DIR/bopomofo_tw.schema.yaml" ]; then
+    echo -e "  ${GREEN}[ok]${NC} bopomofo_tw（注音反查字典）"
+elif [ -f "$SQUIRREL_SHARED/terra_pinyin.schema.yaml" ] || [ -f "$RIME_DIR/terra_pinyin.schema.yaml" ]; then
+    echo -e "  ${GREEN}[ok]${NC} terra_pinyin（注音反查字典基礎）"
 else
-    echo -e "  ${YELLOW}[warn]${NC} 找不到 luna_pinyin 字典，華語反查功能將無法使用"
-    echo -e "         安裝方式："
-    echo -e "           東風破（plum）："
-    echo -e "             bash rime-install luna-pinyin"
-    echo -e "           或手動下載："
-    echo -e "             https://github.com/rime/rime-luna-pinyin"
+    echo -e "  ${YELLOW}[warn]${NC} 找不到 bopomofo_tw 字典，注音反查功能將無法使用"
+    echo -e "         鼠鬚管通常已內建注音方案，若無反應請重新安裝鼠鬚管"
+fi
+
+# 芫荽 iansui 字體
+mkdir -p "$FONT_DIR"
+if ls "$FONT_DIR"/Iansui* &>/dev/null || ls "$FONT_DIR"/iansui* &>/dev/null; then
+    echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體"
+else
+    echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
+    IANSUI_URL="https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf"
+    if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
+        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
+    else
+        echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
+        echo -e "         https://github.com/ChhoeTaigi/iansui/releases"
+    fi
 fi
 
 echo
 
 # ============================================================
-# Step 5: 部署 RIME（鼠鬚管）
+# Step 4: 部署 RIME（鼠鬚管）
 # ============================================================
 echo "[ Step 4: 部署 RIME ]"
 echo
 
-if [ -x "$SQUIRREL_BIN" ]; then
-    echo "正在重新部署鼠鬚管..."
-    "$SQUIRREL_BIN" --reload 2>/dev/null || true
-    echo -e "${GREEN}已通知鼠鬚管重新部署${NC}"
+# 終止鼠鬚管並重新啟動以觸發部署（參考 rime-liur）
+killall Squirrel 2>/dev/null || true
+sleep 1
+if [ -d "$SQUIRREL_APP" ]; then
+    open -a Squirrel
+    echo -e "${GREEN}已重新啟動鼠鬚管，正在部署中...${NC}"
 else
-    echo -e "${YELLOW}找不到鼠鬚管執行檔，請手動切換輸入法以觸發部署${NC}"
+    echo -e "${YELLOW}請手動點選選單列輸入法圖示 → 重新部署${NC}"
 fi
 
 echo
@@ -226,10 +269,40 @@ echo "Rime 資料夾：$RIME_DIR"
 echo
 echo "已安裝："
 echo "  - 方案檔：${#SCHEMA_FILES[@]} 個"
-echo "  - Lua 腳本：${LUA_COUNT} 個"
+echo "  - Lua 腳本：${LUA_COUNT} 個（皆為 phah_taibun_* 命名）"
+echo
+
+# 顯示所有可用方案
+echo "可用的輸入方案："
+for schema_file in "$RIME_DIR"/*.schema.yaml; do
+    [ -f "$schema_file" ] || continue
+    schema_name=$(basename "$schema_file" .schema.yaml)
+    if [ "$schema_name" = "phah_taibun" ]; then
+        echo -e "  ${GREEN}•${NC} $schema_name（拍台文）← 新安裝"
+    else
+        echo -e "  •  $schema_name"
+    fi
+done
 echo
 echo "切換輸入法：Ctrl+\` 或 Ctrl+Shift+\`"
 echo
+
+# 字體設定提示
+SQUIRREL_CUSTOM="$RIME_DIR/squirrel.custom.yaml"
+if [ -f "$SQUIRREL_CUSTOM" ] && grep -q "font_face.*[Ii]ansui" "$SQUIRREL_CUSTOM" 2>/dev/null; then
+    : # 已設定
+else
+    echo -e "${YELLOW}【字體設定】${NC}"
+    echo "  建議在 $SQUIRREL_CUSTOM 加入以下設定："
+    echo
+    echo -e "    ${GREEN}patch:${NC}"
+    echo -e "    ${GREEN}  style/font_face: \"Iansui\"${NC}"
+    echo -e "    ${GREEN}  style/font_point: 18${NC}"
+    echo
+    echo "  儲存後重新部署即可生效。"
+    echo
+fi
+
 echo "如遇問題，請到 GitHub 回報："
 echo "  https://github.com/soanseng/rime-phah-taibun"
 echo

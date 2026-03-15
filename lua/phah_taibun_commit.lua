@@ -1,10 +1,10 @@
 -- phah_taibun_commit.lua
--- 全羅模式輸出處理器：候選清單顯示漢羅，確定選字後輸出全羅拼音
---
--- 在全羅模式下，filter 將候選 text 設為漢羅顯示文字，
--- 全羅拼音存在 comment 的 [roman] 中。
--- 本 processor 攔截選字按鍵，改為輸出 comment 中的全羅拼音，
--- 並將聲調數字轉為 Unicode 調符、空格轉為連字符。
+-- 多功能選字處理器：
+--   1. 全羅模式輸出（候選顯示漢羅，確定後輸出全羅拼音）
+--   2. 反斜線 \ 強制輸出羅馬字
+--   3. 萬用查字 ? 送回（選音節 → 送回主輸入查字）
+--   4. 注音反查 ~ 送回（選字 → 查TL → 送回主輸入）
+--   5. 同音選字 '（輸入後按 ' → 查同音字）
 
 local M = {}
 
@@ -16,8 +16,20 @@ if ok and mod then
 end
 
 -- ============================================================
--- TL ↔ POJ consonant/vowel conversion
+-- Utilities
 -- ============================================================
+
+-- Count UTF-8 characters
+local function utf8_len(s)
+  if not s or s == "" then return 0 end
+  local count = 0
+  for _ in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    count = count + 1
+  end
+  return count
+end
+
+-- TL → POJ conversion
 local function tl_to_poj(tl_text)
   if not tl_text or tl_text == "" then
     return tl_text
@@ -55,6 +67,17 @@ function M.init(env)
   for i = 1, #keys do
     env.select_map[keys:byte(i)] = i - 1  -- 0-based
   end
+
+  -- ReverseLookup for homophone and reverse lookup feed-back
+  env.rev = nil
+  local rok, rev
+  rok, rev = pcall(function() return ReverseLookup("phah_taibun") end)
+  if rok and rev then
+    env.rev = rev
+  end
+
+  -- Track last committed character for homophone
+  env.last_text = nil
 end
 
 -- Extract romanization from candidate's comment
@@ -85,18 +108,137 @@ local function extract_roman(cand, env)
   return format_romanization(raw)
 end
 
+-- Get candidate at a specific index (for select keys)
+local function get_candidate_at(context, env, rel_idx)
+  local comp = context.composition
+  if comp:empty() then return nil end
+  local seg = comp:back()
+  local old_idx = seg.selected_index
+  local page = math.floor(old_idx / env.page_size)
+  local abs_idx = page * env.page_size + rel_idx
+  seg.selected_index = abs_idx
+  local cand = context:get_selected_candidate()
+  if not cand then
+    seg.selected_index = old_idx  -- restore
+  end
+  return cand
+end
+
 function M.func(key, env)
   local context = env.engine.context
 
+  -- ============================================================
+  -- NOT COMPOSING: homophone trigger with '
+  -- ============================================================
   if not context:is_composing() and not context:has_menu() then
+    if key:release() then return 2 end
+
+    if key:repr() == "apostrophe" and env.last_text then
+      local tl_code = nil
+      -- Try ReverseLookup first
+      if env.rev then
+        local code = env.rev:lookup(env.last_text)
+        if code and code ~= "" then
+          tl_code = code:match("^(%S+)")
+        end
+      end
+      -- Fallback: hoabun_map
+      if not tl_code and data_mod and data_mod.hoabun_to_tl then
+        tl_code = data_mod.hoabun_to_tl(env.last_text)
+      end
+      if tl_code then
+        context:push_input(tl_code)
+        env.last_text = nil  -- one-shot
+        return 1  -- kAccepted
+      end
+    end
+
+    -- Clear last_text on non-modifier keys (not ', not Shift/Ctrl/etc.)
+    if key:repr() ~= "apostrophe" and not key:repr():match("^[A-Z]") then
+      env.last_text = nil
+    end
     return 2  -- kNoop
   end
+
   if key:release() then return 2 end
 
-  local full_roman = context:get_option("full_romanization")
+  local input = context.input or ""
+  local kc = key.keycode
 
   -- ============================================================
-  -- 反斜線 \：強制輸出羅馬字（任何模式皆可）
+  -- WILDCARD FEED-BACK: ?pattern → select romanization → push as input
+  -- ============================================================
+  if input:match("^%?") and input ~= "?" then
+    if kc == 0x20 then  -- space
+      local cand = context:get_selected_candidate()
+      if cand and cand.type == "wildcard" and cand.text:match("^[a-z]") then
+        context:clear()
+        context:push_input(cand.text)
+        return 1  -- kAccepted
+      end
+    end
+    local rel_idx = env.select_map[kc]
+    if rel_idx then
+      local cand = get_candidate_at(context, env, rel_idx)
+      if cand and cand.type == "wildcard" and cand.text:match("^[a-z]") then
+        context:clear()
+        context:push_input(cand.text)
+        return 1
+      end
+    end
+    -- Fall through for other keys
+  end
+
+  -- ============================================================
+  -- REVERSE LOOKUP FEED-BACK: ~zhuyin → select → look up TL → push as input
+  -- Uses ReverseLookup first, then hoabun_map (華→台) as fallback
+  -- ============================================================
+  if input:match("^~") then
+    local function lookup_tl(text)
+      -- Try ReverseLookup (for chars in our dictionary like 食, 人, 大)
+      if env.rev then
+        local code = env.rev:lookup(text)
+        if code and code ~= "" then
+          return code:match("^(%S+)")
+        end
+      end
+      -- Fallback: hoabun_map (for Mandarin chars like 吃→tsiah8, 好→ho2)
+      if data_mod and data_mod.hoabun_to_tl then
+        local tl = data_mod.hoabun_to_tl(text)
+        if tl then return tl end
+      end
+      return nil
+    end
+
+    if kc == 0x20 then  -- space
+      local cand = context:get_selected_candidate()
+      if cand then
+        local tl_code = lookup_tl(cand.text)
+        if tl_code then
+          context:clear()
+          context:push_input(tl_code)
+          return 1  -- kAccepted
+        end
+      end
+      -- No TL code found: fall through to normal commit
+    end
+    local rel_idx = env.select_map[kc]
+    if rel_idx then
+      local cand = get_candidate_at(context, env, rel_idx)
+      if cand then
+        local tl_code = lookup_tl(cand.text)
+        if tl_code then
+          context:clear()
+          context:push_input(tl_code)
+          return 1
+        end
+      end
+    end
+    -- Fall through for other keys or if no TL code
+  end
+
+  -- ============================================================
+  -- BACKSLASH \：force romanization output (any mode)
   -- ============================================================
   if key:repr() == "backslash" then
     local cand = context:get_selected_candidate()
@@ -109,12 +251,32 @@ function M.func(key, env)
     return 2
   end
 
+  -- ============================================================
+  -- TRACK last committed character for homophone (all modes)
+  -- Store before full_roman check so it works in 漢羅 mode too
+  -- ============================================================
+  if (kc == 0x20 or env.select_map[kc]) and context:has_menu() then
+    local cand = context:get_selected_candidate()
+    if cand then
+      -- For select keys, get the candidate at the right index
+      if env.select_map[kc] then
+        cand = get_candidate_at(context, env, env.select_map[kc])
+      end
+      -- Only track single characters (useful for homophone)
+      if cand and utf8_len(cand.text) == 1 then
+        env.last_text = cand.text
+      else
+        env.last_text = nil
+      end
+    end
+  end
+
+  local full_roman = context:get_option("full_romanization")
+
   -- 以下只在全羅模式下攔截
   if not full_roman then
     return 2  -- kNoop, let normal processing handle 漢羅 modes
   end
-
-  local kc = key.keycode
 
   -- Handle space → confirm selected candidate with romanization
   if kc == 0x20 then

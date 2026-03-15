@@ -1,10 +1,13 @@
 -- phah_taibun_wildcard.lua
--- 萬用查字 ? — 模糊拼音匹配
+-- 萬用查字 ? — 二段式模糊拼音匹配
 -- 移植自 rime-liur (ryanwuson/rime-liur) 萬用字元模組
 --
--- Usage: type ?iah to match tsiah, siah, liah, etc.
--- The ? replaces an unknown initial consonant.
--- Directly looks up the dictionary and yields Han character candidates.
+-- Two-step flow:
+--   Step 1: ?iah → shows available syllable patterns (tsiah, siah, liah...)
+--   Step 2: select a pattern → feeds romanization into main translator
+--           → shows all Han characters for that pronunciation
+--
+-- The feed-back from Step 1→2 is handled by phah_taibun_commit processor.
 
 local M = {}
 
@@ -37,18 +40,29 @@ function M.func(input, seg, env)
     return
   end
 
-  -- Look up dictionary for each possible initial + remainder
+  -- Step 1: Show available romanization patterns for each initial
   for _, initial in ipairs(INITIALS) do
     local expanded = initial .. remainder
-    if env.mem:dict_lookup(expanded, true, 50) then
+    if env.mem:dict_lookup(expanded, true, 100) then
+      -- Count unique characters for this pattern
+      local count = 0
+      local seen = {}
       for entry in env.mem:iter_dict() do
         local code = entry.custom_code or expanded
-        -- Use first syllable only (skip multi-syllable phrases)
-        if not code:find(" ") then
-          local cand = Candidate("wildcard", seg.start, seg._end,
-            entry.text, " [" .. code .. "]")
-          yield(cand)
+        -- Only count single-syllable entries (no spaces in code)
+        if not code:find(" ") and not seen[entry.text] then
+          seen[entry.text] = true
+          count = count + 1
         end
+      end
+      if count > 0 then
+        local label = count .. " 個字"
+        if initial == "" then
+          label = label .. "（零聲母）"
+        end
+        local cand = Candidate("wildcard", seg.start, seg._end,
+          expanded, label)
+        yield(cand)
       end
     end
   end
