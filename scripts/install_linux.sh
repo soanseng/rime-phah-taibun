@@ -261,6 +261,23 @@ else
     echo -e "  ${YELLOW}[warn]${NC} 找不到 $RIME_SHARED，可能缺少 rime-data 套件"
 fi
 
+# 芫荽 iansui 字體（台文特殊漢字、方音符號正確顯示需要）
+if fc-list 2>/dev/null | grep -qi "iansui\|芫荽"; then
+    echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體"
+else
+    echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
+    FONT_DIR="$HOME/.local/share/fonts/iansui"
+    mkdir -p "$FONT_DIR"
+    IANSUI_URL="https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf"
+    if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
+        fc-cache -f "$FONT_DIR" 2>/dev/null || true
+        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
+    else
+        echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
+        echo -e "         https://github.com/ChhoeTaigi/iansui/releases"
+    fi
+fi
+
 echo
 
 # ============================================================
