@@ -1,5 +1,5 @@
 -- phah_taibun_date.lua
--- 台語日期 ,,jit
+-- 台語日期 vvjit
 -- 移植自 rime-liur (ryanwuson/rime-liur) 日期模組，改為台語格式
 
 local M = {}
@@ -30,7 +30,7 @@ function M.init(env)
 end
 
 function M.func(input, seg, env)
-  if input == ",,jit" then
+  if input == "vvjit" then
     local now = os.date("*t")
     local y, m, d = now.year, now.month, now.day
     local wday = now.wday - 1  -- Lua: 1=Sunday, we want 0=Sunday

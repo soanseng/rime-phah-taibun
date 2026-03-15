@@ -1,9 +1,9 @@
 -- phah_taibun_speedup.lua
--- 簡拼提示 ,,sp
+-- 簡拼提示 vvsp
 -- 移植自 rime-liur (ryanwuson/rime-liur) 快打模組
 -- 顯示常用簡拼縮寫表，幫助使用者學習打字加速
 --
--- Usage: type ,,sp to show the abbreviation reference table
+-- Usage: type vvsp to show the abbreviation reference table
 
 local M = {}
 
@@ -37,7 +37,7 @@ local SPEEDUP_TABLE = {
 }
 
 function M.func(input, seg, env)
-  if input ~= ",,sp" then
+  if input ~= "vvsp" then
     return
   end
 
