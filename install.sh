@@ -11,8 +11,7 @@ case "$(uname -s)" in
         exec bash "$SCRIPT_DIR/scripts/install_linux.sh" "$@"
         ;;
     Darwin)
-        echo "macOS 安裝尚未支援，請手動複製檔案到 ~/Library/Rime/"
-        exit 1
+        exec bash "$SCRIPT_DIR/scripts/install_macos.sh" "$@"
         ;;
     *)
         echo "不支援的作業系統：$(uname -s)"
