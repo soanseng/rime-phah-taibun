@@ -1,7 +1,7 @@
 -- phah_taibun_input.lua
 -- Pre-processor for:
 --   1. Uppercase letter interception (Shift+letter → lowercase + capitalize flag)
---   2. Tab selection mode (freeze speller, enable asdf/number candidate selection)
+--   2. Tab selection mode (freeze speller, enable asdf candidate selection)
 --
 -- Must be first in the processor chain (before ascii_composer)
 
@@ -15,6 +15,7 @@ if ok and mod then
 end
 
 -- Selection key set: asdfghjkl; (mapped to candidate indices 0-9)
+-- Number keys are NOT selection keys — they pass through for tone input
 local SELECTION_KEYS = {}
 for i, byte in ipairs({
   0x61, 0x73, 0x64, 0x66, 0x67, 0x68, 0x6a, 0x6b, 0x6c, 0x3b, -- a s d f g h j k l ;
@@ -22,11 +23,13 @@ for i, byte in ipairs({
   SELECTION_KEYS[byte] = i - 1  -- 0-based index
 end
 
--- Number keys 0-9 (mapped to candidate indices 0-9)
--- Standard IME numbering: 1→0, 2→1, ..., 9→8, 0→9
-local NUMBER_KEYS = {}
-for i = 0, 9 do
-  NUMBER_KEYS[0x30 + i] = (i == 0) and 9 or (i - 1)
+-- Helper: set or clear the selection mode prompt on the current segment
+local function update_prompt(context, entering)
+  local comp = context.composition
+  if comp and not comp:empty() then
+    local seg = comp:back()
+    seg.prompt = entering and "〔選字：asdf 選字／Esc 取消〕" or ""
+  end
 end
 
 function M.init(env)
@@ -82,6 +85,7 @@ function M.func(key, env)
   if key:repr() == "Tab" then
     if context:has_menu() then
       state.selection_mode = true
+      update_prompt(context, true)
       return 1  -- kAccepted
     end
     return 2  -- kNoop: let key_binder handle (next syllable or pass through)
@@ -124,8 +128,8 @@ function M.func(key, env)
     return 1  -- kAccepted
   end
 
-  -- Selection keys (asdf... or 0-9): select specific candidate
-  local sel_idx = SELECTION_KEYS[kc] or NUMBER_KEYS[kc]
+  -- Selection keys (asdf... only, NOT numbers — numbers are for tone input)
+  local sel_idx = SELECTION_KEYS[kc]
   if sel_idx then
     local comp = context.composition
     if not comp:empty() then
@@ -145,12 +149,14 @@ function M.func(key, env)
   -- Escape: exit selection mode, keep composition
   if key:repr() == "Escape" then
     state.selection_mode = false
+    update_prompt(context, false)
     return 1  -- kAccepted
   end
 
   -- Enter: exit selection mode, pass to fluency_editor for commit_raw_input
   if key:repr() == "Return" then
     state.selection_mode = false
+    update_prompt(context, false)
     return 2  -- kNoop
   end
 
@@ -158,6 +164,7 @@ function M.func(key, env)
   if key:repr() == "bracketleft" or key:repr() == "bracketright"
      or key:repr() == "backslash" then
     state.selection_mode = false
+    update_prompt(context, false)
     return 2  -- kNoop
   end
 
@@ -167,14 +174,23 @@ function M.func(key, env)
     return 2  -- kNoop: let selector/navigator handle
   end
 
+  -- Number keys 0-9: exit selection mode, let speller handle as tone input
+  if kc >= 0x30 and kc <= 0x39 then
+    state.selection_mode = false
+    update_prompt(context, false)
+    return 2  -- kNoop: pass to speller for tone number
+  end
+
   -- Any other letter: exit selection mode, let speller handle
   if kc >= 0x61 and kc <= 0x7a then  -- a-z
     state.selection_mode = false
+    update_prompt(context, false)
     return 2  -- kNoop
   end
 
   -- All other keys: exit selection mode, pass through
   state.selection_mode = false
+  update_prompt(context, false)
   return 2  -- kNoop
 end
 
