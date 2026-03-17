@@ -54,20 +54,24 @@ function M.func(key, env)
   -- ============================================================
   -- UPPERCASE INTERCEPTION: Shift+letter → lowercase + capitalize
   -- Only when in 台文 mode (not ascii_mode) and not in selection mode
+  -- key:repr() returns "Shift+a" or "Shift+A" for Shift+letter,
+  -- or just "A" on some platforms
   -- ============================================================
   if not state.selection_mode
      and not context:get_option("ascii_mode")
-     and key:repr():match("^[A-Z]$")
   then
-    -- Use key:repr() to get the letter reliably (keycode may be lowercase on some platforms)
-    local lower = key:repr():lower()
-    -- Set capitalize flag if this is the first letter of a new composition
-    local is_new_composition = not context:is_composing()
-    context:push_input(lower)
-    if is_new_composition then
-      state.capitalize_next = true
+    local repr = key:repr()
+    local letter = repr:match("^Shift%+([a-zA-Z])$") or repr:match("^([A-Z])$")
+    if letter then
+      local lower = letter:lower()
+      -- Set capitalize flag if this is the first letter of a new composition
+      local is_new_composition = not context:is_composing()
+      context:push_input(lower)
+      if is_new_composition then
+        state.capitalize_next = true
+      end
+      return 1  -- kAccepted: prevent ascii_composer from seeing Shift+letter
     end
-    return 1  -- kAccepted: prevent ascii_composer from seeing Shift+letter
   end
 
   -- ============================================================
