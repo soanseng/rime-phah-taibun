@@ -334,10 +334,6 @@ function M.extract_roman(cand, context)
     raw = M.tl_to_poj(raw)
   end
   local result = M.format_romanization(raw)
-  -- POJ: fix diphthong tone mark position (oa→óa, oe→óe)
-  if poj then
-    result = M.poj_fix_diacritics(result)
-  end
   return result
 end
 
