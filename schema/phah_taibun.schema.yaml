@@ -22,10 +22,8 @@ switches:
   - name: full_shape
     states: [ 半形, 全形 ]
   - name: full_romanization
-    reset: 0
     states: [ 漢羅, 全羅 ]
   - name: poj_mode
-    reset: 0
     states: [ TL, POJ ]
   - name: emoji
     states: [ 💀, 😄 ]
