@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # 拍台文 Phah Tai-bun 自動安裝工具 (macOS / 鼠鬚管 Squirrel)
+# 從 bundle installer 呼叫時：bash install_macos.sh --project-root /path/to/staged/files
 
 set -e
 
@@ -9,8 +10,30 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# 專案根目錄（install_macos.sh 在 scripts/ 下）
-PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# 解析參數：--project-root 覆蓋預設的專案根目錄
+_PROJ_ROOT_OVERRIDE=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --project-root)
+            _PROJ_ROOT_OVERRIDE="$2"
+            shift 2
+            ;;
+        --project-root=*)
+            _PROJ_ROOT_OVERRIDE="${1#*=}"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+# 專案根目錄：優先使用 --project-root 參數，否則從腳本位置推算
+if [ -n "$_PROJ_ROOT_OVERRIDE" ] && [ -d "$_PROJ_ROOT_OVERRIDE" ]; then
+    PROJ_DIR="$(cd "$_PROJ_ROOT_OVERRIDE" && pwd)"
+else
+    PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+fi
 
 # ============================================================
 # 鼠鬚管路徑定義

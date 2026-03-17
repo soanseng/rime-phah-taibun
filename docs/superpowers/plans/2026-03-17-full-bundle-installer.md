@@ -10,13 +10,15 @@
 
 ### Design Decisions
 
-1. **Reuse existing install scripts**: The project already has mature install scripts (`scripts/install_windows.ps1`, `scripts/install_macos.sh`) that handle edge cases (rime.lua merging, schema registration with `@next` syntax, bopomofo_tw dependency checking). The installer bundles and invokes these directly rather than reimplementing their logic.
+1. **Reuse existing install scripts via staging**: The project already has mature install scripts (`scripts/install_windows.ps1`, `scripts/install_macos.sh`) that handle edge cases (rime.lua merging, schema registration with `@next` syntax, bopomofo_tw dependency checking). The installer stages files in standard project layout (`schema/`, `lua/`, `rime.lua`), then invokes the install script with `--project-root` pointing to the staging area. **No file copying is done by the installer directly to the Rime user directory** — the install script handles everything.
 
-2. **PrivilegesRequired=lowest (Windows)**: All phah_taibun data goes to user-space `%APPDATA%\Rime`. Only Weasel itself needs admin. If Weasel is already installed, no elevation is needed.
+2. **PrivilegesRequired=admin (Windows)**: Weasel installation needs admin rights. After Weasel installs, a post-install verification step checks it actually succeeded (handles UAC denial gracefully). If Weasel was already installed, the admin right is technically unnecessary but harmless.
 
-3. **Squirrel as prerequisite (macOS)**: Rather than silently installing Squirrel (which would surprise users), the installer checks for it and fails with a clear download URL if missing. The welcome page documents this requirement.
+3. **Squirrel as prerequisite (macOS)**: Rather than silently installing Squirrel (which would surprise users), the installer checks for it and fails with a clear download URL if missing. The welcome page documents this as a prerequisite.
 
 4. **Pinned upstream versions**: CI pins Weasel/Squirrel to specific tested versions with SHA256 verification, rather than downloading "latest" at install time.
+
+5. **Post-install verification**: Both Windows and macOS installers verify the Rime engine is present after the installation step, before proceeding to schema registration. This prevents broken installs where the engine is missing but schema files are partially configured.
 
 ---
 
@@ -102,23 +104,23 @@ git commit -m "feat(installer): add Weasel download script for Windows"
 
 ---
 
-### Task 2: Installer Delegates to Existing Install Script (Windows)
+### Task 2: Install Scripts Accept -ProjectRoot / --project-root
 
-The Inno Setup script copies the project's `scripts/install_windows.ps1` into the install dir and invokes it as the post-install step. This reuses the existing, battle-tested installation logic (rime.lua merging with duplicate detection, `schema_list/@next` YAML registration, bopomofo_tw dependency check, font download).
+All three install scripts (`install_windows.ps1`, `install_macos.sh`, `install_linux.sh`) have been refactored to accept an optional parameter that overrides the default `PROJ_DIR` derivation. When called from a bundle installer, the parameter points to the staging directory where schema/lua/rime.lua files are arranged in the standard project layout.
 
-No new post-install script is needed — the existing `scripts/install_windows.ps1` already handles everything. The Inno Setup `[Run]` section invokes it directly.
+**Already done:**
+- [x] `install_windows.ps1` accepts `-ProjectRoot "C:\path"` parameter
+- [x] `install_macos.sh` accepts `--project-root /path` parameter
+- [x] `install_linux.sh` accepts `--project-root /path` parameter (consistency)
+- All scripts fall back to deriving from script location if parameter is omitted
 
-**Note:** The existing script's `-ProjectRoot` parameter must point to `{app}` (where Inno Setup copies schema/lua files). Verify the existing script accepts this parameter or add it if needed.
+**Design:** The bundle installer stages files in `{app}/` using the standard project layout (`{app}/schema/`, `{app}/lua/`, `{app}/rime.lua`), then invokes the install script with `-ProjectRoot "{app}"`. The install script handles all file copying to Rime user dir, rime.lua merging, schema registration, and deployment — no duplication.
 
-- [ ] **Step 1: Review `scripts/install_windows.ps1` for compatibility**
-
-Read the existing script and verify it can be invoked from an arbitrary directory with the schema files located alongside it. If it assumes it's run from the git repo root, add a `-ProjectRoot` parameter.
-
-- [ ] **Step 2: Commit any needed changes to install_windows.ps1**
+- [x] **Step 1: Committed**
 
 ```bash
-git add scripts/install_windows.ps1
-git commit -m "refactor(installer): make install_windows.ps1 invocable from bundled installer"
+git add scripts/install_windows.ps1 scripts/install_macos.sh scripts/install_linux.sh
+git commit -m "refactor(installer): add --project-root parameter to all install scripts"
 ```
 
 ---
@@ -203,15 +205,18 @@ git commit -m "feat(installer): add Windows pre-uninstall script"
 
 - [ ] **Step 1: Write the Inno Setup script**
 
-The Inno Setup script defines the full Windows installer. It:
-- Checks if Weasel is installed; if not, runs the bundled Weasel installer silently
-- Copies schema files, Lua modules, and font to appropriate locations
-- Runs post_install.ps1 to register and deploy
-- Provides uninstaller that runs pre_uninstall.ps1
+The Inno Setup script defines the full Windows installer. Key design:
+- **Staging approach**: All schema/lua/rime.lua files are staged under `{app}/` in standard project layout (`{app}/schema/`, `{app}/lua/`, `{app}/rime.lua`). The existing `install_windows.ps1` is invoked with `-ProjectRoot "{app}"` to handle all file copying to Rime user dir, rime.lua merging, schema registration, and deployment. **No files are copied directly to `{userappdata}\Rime` by Inno Setup** — this prevents dual-copy conflicts.
+- **Post-Weasel verification**: After Weasel installer runs, a Pascal Script check verifies Weasel actually installed before proceeding. If UAC was denied or installation failed, the installer aborts with a clear message rather than creating a broken install.
+- **Privilege model**: `PrivilegesRequired=admin` since Weasel needs admin. If Weasel is already installed, the phah_taibun files go to user-space only.
 
 ```iss
 ; phah_taibun.iss — Inno Setup script for 拍台文輸入法
 ; Builds a single .exe installer bundling Weasel + phah_taibun schema
+;
+; Architecture: Inno Setup stages files under {app}/ in standard project layout.
+; The existing install_windows.ps1 is invoked with -ProjectRoot "{app}" to handle
+; all file operations to the Rime user directory. This avoids duplicating logic.
 
 #define MyAppName "拍台文輸入法 Phah Tai-bun"
 #define MyAppVersion "1.0.0"
@@ -219,6 +224,7 @@ The Inno Setup script defines the full Windows installer. It:
 #define MyAppURL "https://github.com/soanseng/rime-phah-taibun"
 
 [Setup]
+; TODO: Generate a real GUID before first build: powershell [System.Guid]::NewGuid()
 AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -232,7 +238,8 @@ UninstallDisplayIcon={app}\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
-PrivilegesRequired=lowest
+; Weasel needs admin; schema install is user-space but we need admin for Weasel
+PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile=..\..\LICENSE
@@ -242,43 +249,47 @@ Name: "tchinese"; MessagesFile: "compiler:Languages\ChineseTraditional.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-; --- Weasel installer (bundled) ---
+; --- Weasel installer (bundled, extracted to temp) ---
 Source: "build\weasel-installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Check: not IsWeaselInstalled
 
-; --- Schema files → Rime user dir ---
-Source: "..\..\schema\phah_taibun.schema.yaml"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
-Source: "..\..\schema\phah_taibun.dict.yaml"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
-Source: "..\..\schema\phah_taibun_reverse.dict.yaml"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
-Source: "..\..\schema\hanlo_rules.yaml"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
-Source: "..\..\schema\lighttone_rules.json"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
-Source: "..\..\schema\hoabun_map.txt"; DestDir: "{userappdata}\Rime"; Flags: ignoreversion
+; --- Stage schema files under {app}/schema/ (standard project layout) ---
+; install_windows.ps1 will copy these to %APPDATA%\Rime via -ProjectRoot
+Source: "..\..\schema\phah_taibun.schema.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\phah_taibun.dict.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\phah_taibun.phrase.dict.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\..\schema\phah_taibun.custom.dict.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\..\schema\phah_taibun_reverse.dict.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\hanlo_rules.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\lighttone_rules.json"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\hoabun_map.txt"; DestDir: "{app}\schema"; Flags: ignoreversion
+Source: "..\..\schema\default.custom.yaml"; DestDir: "{app}\schema"; Flags: ignoreversion
 
-; --- Custom dict (only if not exists, preserve user data) ---
-Source: "..\..\schema\default.custom.yaml"; DestDir: "{userappdata}\Rime"; Flags: onlyifdoesntexist
+; --- Stage Lua modules under {app}/lua/ ---
+Source: "..\..\lua\phah_taibun_*.lua"; DestDir: "{app}\lua"; Flags: ignoreversion
 
-; --- Lua modules → Rime user dir/lua/ ---
-Source: "..\..\lua\phah_taibun_*.lua"; DestDir: "{userappdata}\Rime\lua"; Flags: ignoreversion
-
-; --- Module registration ---
+; --- Module registration file at {app}/rime.lua ---
 Source: "..\..\rime.lua"; DestDir: "{app}"; Flags: ignoreversion
 
 ; --- Icon ---
 Source: "..\..\icons\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
-; --- Font ---
+; --- Font (installed directly to user fonts, not staged) ---
 Source: "build\Iansui-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Iansui"; Flags: onlyifdoesntexist uninsneveruninstall
 
-; --- Existing install script (reused, not duplicated) ---
+; --- Install + uninstall scripts ---
 Source: "..\..\scripts\install_windows.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
-; --- Uninstall script (new, handles cleanup only) ---
 Source: "pre_uninstall.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
 
 [Run]
-; Install Weasel if not present (requires elevation via UAC prompt)
+; Install Weasel if not present (runs with admin via UAC)
 Filename: "{tmp}\weasel-installer.exe"; Parameters: "/S"; StatusMsg: "安裝小狼毫 Rime 引擎..."; Check: not IsWeaselInstalled; Flags: waituntilterminated shellexec
 
-; Delegate to existing install script for schema registration, rime.lua merge, deployment
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\scripts\install_windows.ps1"" -ProjectRoot ""{app}"""; StatusMsg: "設定拍台文輸入法..."; Flags: runhidden waituntilterminated
+; Verify Weasel is installed before proceeding (handles UAC denial)
+; This check is done in [Code] CurStepChanged(ssPostInstall)
+
+; Delegate ALL file operations to existing install script
+; -ProjectRoot points to {app} where files are staged in standard layout
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\scripts\install_windows.ps1"" -ProjectRoot ""{app}"""; StatusMsg: "設定拍台文輸入法..."; Flags: runhidden waituntilterminated; Check: IsWeaselInstalled
 
 [UninstallRun]
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\scripts\pre_uninstall.ps1"""; Flags: runhidden waituntilterminated
@@ -291,6 +302,23 @@ begin
   Result := RegQueryStringValue(HKLM, 'SOFTWARE\Rime\Weasel', 'WeaselRoot', path)
     or DirExists(ExpandConstant('{autopf}\Rime'))
     or DirExists(ExpandConstant('{autopf32}\Rime'));
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    { Verify Weasel is actually installed after the Weasel installer step }
+    if not IsWeaselInstalled then
+    begin
+      MsgBox('小狼毫 (Weasel) 安裝失敗或已取消。' + #13#10 +
+             '拍台文輸入法需要小狼毫 Rime 引擎才能運作。' + #13#10 + #13#10 +
+             '請手動安裝小狼毫後，重新執行本安裝程式：' + #13#10 +
+             'https://rime.im/download/',
+             mbError, MB_OK);
+      WizardForm.Close;
+    end;
+  end;
 end;
 ```
 
@@ -313,11 +341,16 @@ git commit -m "feat(installer): add Inno Setup script for Windows bundle install
 - [ ] **Step 1: Write the macOS postinstall script**
 
 This runs as root after pkgbuild copies files. It delegates to the existing
-`scripts/install_macos.sh` for the actual installation logic (schema copy, rime.lua merge,
-default.custom.yaml registration, bopomofo_tw verification).
+`scripts/install_macos.sh` (which now accepts `--project-root`) for the actual
+installation logic (schema copy, rime.lua merge, default.custom.yaml registration,
+bopomofo_tw verification, font install, Squirrel restart).
 
-**Key fix:** In macOS `.pkg` postinstall context, `$USER` is `root`, not the GUI user.
-We use `/usr/bin/stat -f '%Su' /dev/console` to reliably detect the logged-in user.
+**Key design choices:**
+- Uses `scutil` for reliable console user detection (Apple-recommended approach, works
+  with Fast User Switching, remote sessions, etc.)
+- Staging directory uses `/private/var/tmp/` (mode 700) instead of world-writable `/tmp`
+  to prevent TOCTOU attacks
+- `install_macos.sh` already accepts `--project-root` (refactored in Task 2)
 
 ```bash
 #!/bin/bash
@@ -326,14 +359,16 @@ We use `/usr/bin/stat -f '%Su' /dev/console` to reliably detect the logged-in us
 
 set -e
 
-INSTALL_SRC="/tmp/phah_taibun_staging"
+INSTALL_SRC="/private/var/tmp/phah_taibun_staging"
 
 # --- Detect real user (not root) ---
-# In .pkg context, $USER is root. Get the actual console user.
-if [ "$USER" = "root" ] || [ -z "$USER" ]; then
-    REAL_USER=$(/usr/bin/stat -f '%Su' /dev/console)
-else
-    REAL_USER="$USER"
+# In .pkg context, $USER is root. Use scutil (Apple-recommended approach)
+# to reliably detect the logged-in GUI user.
+REAL_USER=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
+
+if [ -z "${REAL_USER}" ] || [ "${REAL_USER}" = "root" ]; then
+    echo "錯誤：無法偵測目前登入的使用者" >&2
+    exit 1
 fi
 
 REAL_HOME=$(dscl . -read /Users/"${REAL_USER}" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
@@ -356,8 +391,6 @@ echo "拍台文輸入法安裝完成！"
 exit 0
 ```
 
-**Note:** The existing `scripts/install_macos.sh` may need a `--project-root` flag added so it can find schema/lua files from a non-default location. This is a small refactor to the existing script.
-
 - [ ] **Step 2: Make executable and commit**
 
 ```bash
@@ -378,6 +411,8 @@ git commit -m "feat(installer): add macOS postinstall script"
 Checks for Squirrel prerequisite. Fails with a clear message and download URL if missing,
 rather than silently installing a system-level input method framework without explicit user consent.
 
+Uses `/private/var/tmp/` for staging (not world-writable `/tmp`) with restrictive permissions.
+
 ```bash
 #!/bin/bash
 # preinstall — verify Squirrel prerequisite before installing phah_taibun
@@ -397,8 +432,11 @@ if [ ! -d "/Library/Input Methods/Squirrel.app" ]; then
     exit 1
 fi
 
-# Create staging directory
-mkdir -p /tmp/phah_taibun_staging
+# Create staging directory with restrictive permissions (prevent TOCTOU)
+STAGING="/private/var/tmp/phah_taibun_staging"
+rm -rf "${STAGING}"
+mkdir -p "${STAGING}"
+chmod 700 "${STAGING}"
 
 echo "Pre-install checks passed: Squirrel detected"
 exit 0
@@ -502,7 +540,7 @@ fi
 # --- Build component .pkg ---
 pkgbuild \
     --root "${STAGING}" \
-    --install-location /tmp/phah_taibun_staging \
+    --install-location /private/var/tmp/phah_taibun_staging \
     --scripts "${SCRIPT_DIR}/scripts" \
     --identifier com.phah-taibun.schema \
     --version "${VERSION}" \
@@ -523,7 +561,7 @@ cat > "${BUILD_DIR}/resources/welcome.html" << 'HTML'
 <p>這是一個基於 Rime 的台語輸入法，支援漢羅混寫。</p>
 <p>安裝程式會：</p>
 <ul>
-<li>安裝鼠鬚管 (Squirrel) Rime 引擎（若尚未安裝）</li>
+<li>需要已安裝鼠鬚管 (Squirrel) Rime 引擎（<a href="https://rime.im/download/">下載</a>）</li>
 <li>安裝拍台文輸入方案</li>
 <li>安裝芫荽字體</li>
 </ul>

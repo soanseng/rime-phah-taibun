@@ -1,10 +1,19 @@
 # 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
 # 使用方式：在專案目錄中執行 powershell -ExecutionPolicy Bypass -File scripts\install_windows.ps1
+# 從 bundle installer 呼叫時：powershell ... -ProjectRoot "C:\path\to\staged\files"
+
+param(
+    [string]$ProjectRoot = ""
+)
 
 $ErrorActionPreference = "Stop"
 
-# 專案根目錄
-$PROJ_DIR = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+# 專案根目錄：優先使用 -ProjectRoot 參數，否則從腳本位置推算
+if ($ProjectRoot -ne "" -and (Test-Path $ProjectRoot)) {
+    $PROJ_DIR = (Resolve-Path $ProjectRoot).Path
+} else {
+    $PROJ_DIR = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+}
 
 # 小狼毫路徑
 $RIME_DIR = "$env:APPDATA\Rime"
