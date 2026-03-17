@@ -29,8 +29,15 @@ switches:
     states: [ 💀, 😄 ]
     reset: 1
 
+ascii_composer:
+  switch_key:
+    Shift_L: noop
+    Shift_R: noop
+    Caps_Lock: clear
+
 engine:
   processors:
+    - lua_processor@*phah_taibun_input
     - ascii_composer
     - lua_processor@*phah_taibun_select_char
     - recognizer
@@ -129,6 +136,7 @@ punctuator:
 key_binder:
   import_preset: default
   bindings:
+    - { when: always, accept: Control+space, toggle: ascii_mode }
     - { when: composing, accept: Tab, send: Shift+Right }
     - { when: composing, accept: Shift+Tab, send: Shift+Left }
     - { when: paging, accept: bracketleft, send: Page_Up }
