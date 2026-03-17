@@ -263,6 +263,51 @@ function M.hoabun_to_tl(word)
 end
 
 -- ============================================================
+-- Shared commit utilities
+-- ============================================================
+
+-- TL → POJ conversion
+function M.tl_to_poj(tl_text)
+  if not tl_text or tl_text == "" then
+    return tl_text
+  end
+  local result = tl_text
+  result = result:gsub("tsh", "chh")
+  result = result:gsub("ts", "ch")
+  result = result:gsub("ing([^a-z])", "eng%1")
+  result = result:gsub("ing$", "eng")
+  result = result:gsub("ik([^a-z])", "ek%1")
+  result = result:gsub("ik$", "ek")
+  -- POJ special characters
+  result = result:gsub("nn", "\226\129\191")                    -- nn → ⁿ (U+207F)
+  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
+  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
+  result = result:gsub("ua", "oa")
+  result = result:gsub("ue", "oe")
+  return result
+end
+
+-- Capitalize the first letter of romanization text
+function M.capitalize_first(text)
+  if not text or text == "" then return text end
+  local first = text:sub(1, 1)
+  if first:match("[a-z]") then
+    return first:upper() .. text:sub(2)
+  end
+  return text
+end
+
+-- Count UTF-8 characters (not bytes)
+function M.utf8_len(s)
+  if not s or s == "" then return 0 end
+  local count = 0
+  for _ in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    count = count + 1
+  end
+  return count
+end
+
+-- ============================================================
 -- Shared state for cross-processor communication
 -- ============================================================
 local _shared_state = {
