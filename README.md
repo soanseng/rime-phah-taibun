@@ -147,20 +147,20 @@ Step 2: 選 tsiah → 出現所有 tsiah 的字：
 
 ### 調符位置（Tone Diacritic Placement）
 
-全羅模式輸出時，聲調符號自動標在正確的母音上，遵循教育部台羅拼音規則：
+全羅模式輸出時，聲調符號自動標在正確的母音上，遵循[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)規則：
 
-**優先順序**：`oo > a > e > o > u > i > m/ng`
+**優先順序**：`a > oo > e > o`；`i` 和 `u` 同時出現時，前者為介音，後者為主要元音（標在後者）。
 
 | 拼音 | 調符位置 | 說明 |
 |------|---------|------|
-| `gua2` | g**u**á | 有 a → 標在 a |
-| `ue2` | **u**é | 有 e → 標在 e |
-| `io2` | i**ó** | 有 o → 標在 o |
-| `kui2` | k**ú**i | u 優先於 i |
-| `chiu2` | chi**ú** | u 優先於 i |
-| `iu2` | i**ú** | u 優先於 i |
-| `oo7` | **ō**o | oo 標在第一個 o |
-| `ng2` | **ń**g | 鼻音韻母 |
+| `gua2` | guá | 有 a → 標在 a |
+| `ue2` | ué | 有 e → 標在 e |
+| `io2` | ió | 有 o → 標在 o |
+| `ui7` | uī | i,u 同時出現 → 標在後者 i |
+| `iu5` | iû | i,u 同時出現 → 標在後者 u |
+| `oo7` | ōo | oo 標在第一個 o |
+| `ng2` | ńg | 韻化輔音 |
+| `ere5` | erê | 三字母雙元音 → 標在後面的 e |
 
 ### 台語日期
 
@@ -405,6 +405,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料（2K+ 篇） |
 | [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 例句語料 + 反查字典 |
 | [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料（POJ→TL 轉換） |
+| [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先、emoji） |
 

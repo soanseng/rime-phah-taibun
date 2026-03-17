@@ -124,7 +124,12 @@ local TONE_MARKS = {
 }
 
 -- Add tone diacritic to a single syllable (e.g. "gua2" → "guá")
--- TL placement priority: oo > a > e > o > u > i > syllabic nasal (m,n,ng)
+-- 教育部台羅拼音方案 tone mark placement rules:
+--   Priority: a > oo > e > o
+--   When i,u both present: mark the SECOND one (main vowel, not glide)
+--     iu → iú (mark u), ui → uí (mark i)
+--   Special: ere → mark second e (erê)
+--   Syllabic nasals: m, ng
 local function add_tone_to_syllable(syl)
   local tone = syl:sub(-1)
   local mark = TONE_MARKS[tone]
@@ -132,10 +137,24 @@ local function add_tone_to_syllable(syl)
   local base = syl:sub(1, -2)
   local pos = base:find("oo")
   if not pos then pos = base:find("a") end
-  if not pos then pos = base:find("e") end
+  if not pos then
+    local ere = base:find("ere")
+    if ere then
+      pos = ere + 2  -- mark the second e in ere
+    else
+      pos = base:find("e")
+    end
+  end
   if not pos then pos = base:find("o") end
-  if not pos then pos = base:find("u") end
-  if not pos then pos = base:find("i") end
+  if not pos then
+    local pi = base:find("i")
+    local pu = base:find("u")
+    if pi and pu then
+      pos = math.max(pi, pu)  -- mark the second vowel (main vowel)
+    else
+      pos = pi or pu
+    end
+  end
   if not pos then pos = base:find("[mn]") end
   if pos then return base:sub(1, pos) .. mark .. base:sub(pos + 1) end
   return base
@@ -171,6 +190,17 @@ function M.format_romanization(roman)
     table.insert(formatted, table.concat(parts, "-"))
   end
   return table.concat(formatted, "--")
+end
+
+-- Fix POJ diphthong tone mark position after format_romanization
+-- In POJ, 'oa' and 'oe' (from TL 'ua'/'ue') mark tone on 'o':
+--   goá → góa, toà → tòa, hoê → hôe
+-- Moves combining diacritical mark from after a/e to after o
+function M.poj_fix_diacritics(text)
+  if not text then return text end
+  text = text:gsub("oa(\204[\128-\191])", "o%1a")
+  text = text:gsub("oe(\204[\128-\191])", "o%1e")
+  return text
 end
 
 -- ============================================================
