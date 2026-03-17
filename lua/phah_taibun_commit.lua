@@ -32,56 +32,35 @@ local PUNCT_MAP = {
 local SENTENCE_ENDERS = { ["."] = true, ["!"] = true, ["?"] = true }
 
 -- ============================================================
--- Utilities
+-- Utilities (forwarding to shared data module)
 -- ============================================================
 
--- Capitalize the first letter of romanization text
 local function capitalize_first(text)
-  if not text or text == "" then return text end
-  local first = text:sub(1, 1)
-  if first:match("[a-z]") then
-    return first:upper() .. text:sub(2)
-  end
-  return text
+  return data_mod.capitalize_first(text)
 end
 
--- Count UTF-8 characters
 local function utf8_len(s)
-  if not s or s == "" then return 0 end
-  local count = 0
-  for _ in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-    count = count + 1
-  end
-  return count
+  return data_mod.utf8_len(s)
 end
 
--- TL → POJ conversion
-local function tl_to_poj(tl_text)
-  if not tl_text or tl_text == "" then
-    return tl_text
-  end
-  local result = tl_text
-  result = result:gsub("tsh", "chh")
-  result = result:gsub("ts", "ch")
-  result = result:gsub("ing([^a-z])", "eng%1")
-  result = result:gsub("ing$", "eng")
-  result = result:gsub("ik([^a-z])", "ek%1")
-  result = result:gsub("ik$", "ek")
-  -- POJ special characters
-  result = result:gsub("nn", "\226\129\191")                    -- nn → ⁿ (U+207F)
-  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
-  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
-  result = result:gsub("ua", "oa")
-  result = result:gsub("ue", "oe")
-  return result
+local function extract_roman(cand, env)
+  return data_mod.extract_roman(cand, env.engine.context)
 end
 
--- Use shared format_romanization from data module
-local function format_romanization(roman)
-  if data_mod and data_mod.format_romanization then
-    return data_mod.format_romanization(roman)
+-- Get candidate at a specific index (for select keys)
+local function get_candidate_at(context, env, rel_idx)
+  local comp = context.composition
+  if comp:empty() then return nil end
+  local seg = comp:back()
+  local old_idx = seg.selected_index
+  local page = math.floor(old_idx / env.page_size)
+  local abs_idx = page * env.page_size + rel_idx
+  seg.selected_index = abs_idx
+  local cand = context:get_selected_candidate()
+  if not cand then
+    seg.selected_index = old_idx  -- restore
   end
-  return roman
+  return cand
 end
 
 -- ============================================================
@@ -106,64 +85,15 @@ function M.init(env)
     env.rev = rev
   end
 
-  -- Track last committed character for homophone
-  env.last_text = nil
-
-  -- Auto-capitalize first letter of sentence in 全羅 mode
-  env.capitalize_next = true
-end
-
--- Extract romanization from candidate's comment
--- Handles both simple [roman] and lookup-modified [TL:roman POJ:roman] formats
-local function extract_roman(cand, env)
-  if not cand then return nil end
-  local comment = cand.comment or ""
-  local content = comment:match("%[(.-)%]")
-  if not content or content == "" then return nil end
-
-  local context = env.engine.context
-  local poj = context and context:get_option("poj_mode")
-
-  -- Handle dual annotation format from phah_taibun_lookup:
-  -- [TL:gua2 ai li POJ:goa2 ai li]
-  local tl_part = content:match("TL:(.-)%s+POJ:")
-  local poj_part = content:match("POJ:(.+)")
-  if tl_part and poj_part then
-    local raw = poj and poj_part or tl_part
-    return format_romanization(raw)
-  end
-
-  -- Simple format: [gua2 ai li]
-  local raw = content
-  if poj then
-    raw = tl_to_poj(raw)
-  end
-  local result = format_romanization(raw)
-  -- POJ: fix diphthong tone mark position (oa→óa, oe→óe)
-  if poj and data_mod and data_mod.poj_fix_diacritics then
-    result = data_mod.poj_fix_diacritics(result)
-  end
-  return result
-end
-
--- Get candidate at a specific index (for select keys)
-local function get_candidate_at(context, env, rel_idx)
-  local comp = context.composition
-  if comp:empty() then return nil end
-  local seg = comp:back()
-  local old_idx = seg.selected_index
-  local page = math.floor(old_idx / env.page_size)
-  local abs_idx = page * env.page_size + rel_idx
-  seg.selected_index = abs_idx
-  local cand = context:get_selected_candidate()
-  if not cand then
-    seg.selected_index = old_idx  -- restore
-  end
-  return cand
+  -- Shared state for cross-processor communication
+  env.state = data_mod.get_shared_state()
+  env.state.last_text = nil
+  env.state.capitalize_next = true
 end
 
 function M.func(key, env)
   local context = env.engine.context
+  local state = env.state
 
   -- ============================================================
   -- NOT COMPOSING: homophone trigger with '
@@ -171,22 +101,22 @@ function M.func(key, env)
   if not context:is_composing() and not context:has_menu() then
     if key:release() then return 2 end
 
-    if key:repr() == "apostrophe" and env.last_text then
+    if key:repr() == "apostrophe" and state.last_text then
       local tl_code = nil
       -- Try ReverseLookup first
       if env.rev then
-        local code = env.rev:lookup(env.last_text)
+        local code = env.rev:lookup(state.last_text)
         if code and code ~= "" then
           tl_code = code:match("^(%S+)")
         end
       end
       -- Fallback: hoabun_map
       if not tl_code and data_mod and data_mod.hoabun_to_tl then
-        tl_code = data_mod.hoabun_to_tl(env.last_text)
+        tl_code = data_mod.hoabun_to_tl(state.last_text)
       end
       if tl_code then
         context:push_input(tl_code)
-        env.last_text = nil  -- one-shot
+        state.last_text = nil  -- one-shot
         return 1  -- kAccepted
       end
     end
@@ -198,7 +128,7 @@ function M.func(key, env)
       if punct then
         env.engine:commit_text(punct)
         if SENTENCE_ENDERS[punct] then
-          env.capitalize_next = true
+          state.capitalize_next = true
         end
         return 1  -- kAccepted
       end
@@ -206,7 +136,7 @@ function M.func(key, env)
 
     -- Clear last_text on non-modifier keys (not ', not Shift/Ctrl/etc.)
     if key:repr() ~= "apostrophe" and not key:repr():match("^[A-Z]") then
-      env.last_text = nil
+      state.last_text = nil
     end
     return 2  -- kNoop
   end
@@ -329,9 +259,9 @@ function M.func(key, env)
       end
       -- Only track single characters (useful for homophone)
       if cand and utf8_len(cand.text) == 1 then
-        env.last_text = cand.text
+        state.last_text = cand.text
       else
-        env.last_text = nil
+        state.last_text = nil
       end
     end
   end
@@ -345,11 +275,11 @@ function M.func(key, env)
 
   -- Helper: commit romanization with auto-capitalization
   local function commit_roman(roman)
-    if env.capitalize_next then
+    if state.capitalize_next then
       roman = capitalize_first(roman)
     end
     env.engine:commit_text(roman)
-    env.capitalize_next = false
+    state.capitalize_next = false
   end
 
   -- Handle space → confirm selected candidate with romanization
@@ -396,7 +326,7 @@ function M.func(key, env)
       env.engine:commit_text(punct)
       context:clear()
       if SENTENCE_ENDERS[punct] then
-        env.capitalize_next = true
+        state.capitalize_next = true
       end
       return 1  -- kAccepted
     end
