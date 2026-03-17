@@ -124,7 +124,7 @@ local TONE_MARKS = {
 }
 
 -- Add tone diacritic to a single syllable (e.g. "gua2" → "guá")
--- Placement: oo > a > e > last vowel (i,o,u) > syllabic nasal (m,n)
+-- TL placement priority: oo > a > e > o > u > i > syllabic nasal (m,n,ng)
 local function add_tone_to_syllable(syl)
   local tone = syl:sub(-1)
   local mark = TONE_MARKS[tone]
@@ -133,12 +133,9 @@ local function add_tone_to_syllable(syl)
   local pos = base:find("oo")
   if not pos then pos = base:find("a") end
   if not pos then pos = base:find("e") end
-  if not pos then
-    for i = #base, 1, -1 do
-      local c = base:sub(i, i)
-      if c == "i" or c == "o" or c == "u" then pos = i; break end
-    end
-  end
+  if not pos then pos = base:find("o") end
+  if not pos then pos = base:find("u") end
+  if not pos then pos = base:find("i") end
   if not pos then pos = base:find("[mn]") end
   if pos then return base:sub(1, pos) .. mark .. base:sub(pos + 1) end
   return base
@@ -147,13 +144,33 @@ end
 -- Convert space-separated syllables with tone numbers to
 -- hyphen-joined syllables with Unicode diacritics
 -- e.g. "gua2 ai3 li2" → "guá-ài-lí"
+-- Double space (light-tone marker) becomes "--":
+-- e.g. "tng2  lai5" → "tǹg--lâi"
 function M.format_romanization(roman)
   if not roman or roman == "" then return roman end
-  local parts = {}
-  for syl in roman:gmatch("[^%s]+") do
-    table.insert(parts, add_tone_to_syllable(syl))
+  -- Split on double-space first to preserve light-tone "--" boundaries
+  local groups = {}
+  local start = 1
+  while true do
+    local ds = roman:find("  ", start, true)
+    if ds then
+      table.insert(groups, roman:sub(start, ds - 1))
+      start = ds + 2
+    else
+      table.insert(groups, roman:sub(start))
+      break
+    end
   end
-  return table.concat(parts, "-")
+  -- Process each group: single-space-separated syllables joined with "-"
+  local formatted = {}
+  for _, group in ipairs(groups) do
+    local parts = {}
+    for syl in group:gmatch("[^%s]+") do
+      table.insert(parts, add_tone_to_syllable(syl))
+    end
+    table.insert(formatted, table.concat(parts, "-"))
+  end
+  return table.concat(formatted, "--")
 end
 
 -- ============================================================
