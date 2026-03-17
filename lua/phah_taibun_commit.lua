@@ -16,8 +16,34 @@ if ok and mod then
 end
 
 -- ============================================================
+-- Half-width punctuation for 全羅 mode
+-- ============================================================
+local PUNCT_MAP = {
+  [0x2c] = ",",   -- comma (instead of ，)
+  [0x2e] = ".",   -- period (instead of 。)
+  [0x21] = "!",   -- exclamation (instead of ！)
+  [0x3f] = "?",   -- question mark (instead of ？)
+  [0x3a] = ":",   -- colon (instead of ：)
+  [0x22] = '"',   -- double quote (instead of 「」)
+  [0x28] = "(",   -- left paren (instead of （)
+  [0x29] = ")",   -- right paren (instead of ）)
+}
+
+local SENTENCE_ENDERS = { ["."] = true, ["!"] = true, ["?"] = true }
+
+-- ============================================================
 -- Utilities
 -- ============================================================
+
+-- Capitalize the first letter of romanization text
+local function capitalize_first(text)
+  if not text or text == "" then return text end
+  local first = text:sub(1, 1)
+  if first:match("[a-z]") then
+    return first:upper() .. text:sub(2)
+  end
+  return text
+end
 
 -- Count UTF-8 characters
 local function utf8_len(s)
@@ -82,6 +108,9 @@ function M.init(env)
 
   -- Track last committed character for homophone
   env.last_text = nil
+
+  -- Auto-capitalize first letter of sentence in 全羅 mode
+  env.capitalize_next = true
 end
 
 -- Extract romanization from candidate's comment
@@ -153,6 +182,19 @@ function M.func(key, env)
       if tl_code then
         context:push_input(tl_code)
         env.last_text = nil  -- one-shot
+        return 1  -- kAccepted
+      end
+    end
+
+    -- 全羅 mode: output half-width punctuation (instead of full-width)
+    local full_roman = context:get_option("full_romanization")
+    if full_roman then
+      local punct = PUNCT_MAP[key.keycode]
+      if punct then
+        env.engine:commit_text(punct)
+        if SENTENCE_ENDERS[punct] then
+          env.capitalize_next = true
+        end
         return 1  -- kAccepted
       end
     end
@@ -296,12 +338,21 @@ function M.func(key, env)
     return 2  -- kNoop, let normal processing handle 漢羅 modes
   end
 
+  -- Helper: commit romanization with auto-capitalization
+  local function commit_roman(roman)
+    if env.capitalize_next then
+      roman = capitalize_first(roman)
+    end
+    env.engine:commit_text(roman)
+    env.capitalize_next = false
+  end
+
   -- Handle space → confirm selected candidate with romanization
   if kc == 0x20 then
     local cand = context:get_selected_candidate()
     local roman = extract_roman(cand, env)
     if roman then
-      env.engine:commit_text(roman)
+      commit_roman(roman)
       context:clear()
       return 1  -- kAccepted
     end
@@ -322,12 +373,28 @@ function M.func(key, env)
       local cand = context:get_selected_candidate()
       local roman = extract_roman(cand, env)
       if roman then
-        env.engine:commit_text(roman)
+        commit_roman(roman)
         context:clear()
         return 1  -- kAccepted
       end
     end
     return 2
+  end
+
+  -- Handle punctuation while composing: commit romanization + half-width punctuation
+  local punct = PUNCT_MAP[kc]
+  if punct and not input:match("^[%?~]") then
+    local cand = context:get_selected_candidate()
+    local roman = extract_roman(cand, env)
+    if roman then
+      commit_roman(roman)
+      env.engine:commit_text(punct)
+      context:clear()
+      if SENTENCE_ENDERS[punct] then
+        env.capitalize_next = true
+      end
+      return 1  -- kAccepted
+    end
   end
 
   return 2  -- kNoop for all other keys
