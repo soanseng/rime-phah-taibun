@@ -307,6 +307,56 @@ function M.utf8_len(s)
   return count
 end
 
+-- Extract romanization from candidate's comment
+-- Handles both simple [roman] and lookup-modified [TL:roman POJ:roman] formats
+-- context: Rime context object (for reading poj_mode option)
+function M.extract_roman(cand, context)
+  if not cand then return nil end
+  local comment = cand.comment or ""
+  local content = comment:match("%[(.-)%]")
+  if not content or content == "" then return nil end
+
+  local poj = context and context:get_option("poj_mode")
+
+  -- Handle dual annotation format from phah_taibun_lookup:
+  -- [TL:gua2 ai li POJ:goa2 ai li]
+  local tl_part = content:match("TL:(.-)%s+POJ:")
+  local poj_part = content:match("POJ:(.+)")
+  if tl_part and poj_part then
+    local raw = poj and poj_part or tl_part
+    return M.format_romanization(raw)
+  end
+
+  -- Simple format: [gua2 ai li]
+  local raw = content
+  if poj then
+    raw = M.tl_to_poj(raw)
+  end
+  local result = M.format_romanization(raw)
+  -- POJ: fix diphthong tone mark position (oa→óa, oe→óe)
+  if poj then
+    result = M.poj_fix_diacritics(result)
+  end
+  return result
+end
+
+-- Commit candidate as romanization with auto-capitalization
+-- engine: Rime engine object
+-- context: Rime context object
+-- cand: candidate object
+-- state: shared state table (from get_shared_state())
+-- Returns: committed text (for homophone tracking)
+function M.commit_with_roman(engine, context, cand, state)
+  local roman = M.extract_roman(cand, context)
+  if not roman then return nil end
+  if state.capitalize_next then
+    roman = M.capitalize_first(roman)
+  end
+  engine:commit_text(roman)
+  state.capitalize_next = false
+  return roman
+end
+
 -- ============================================================
 -- Shared state for cross-processor communication
 -- ============================================================
