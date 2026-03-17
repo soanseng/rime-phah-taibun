@@ -230,41 +230,6 @@ def _count_syllables(kip_segment: str) -> int:
     return len(kip_segment.split("-"))
 
 
-def _count_hanlo_chars(hanlo: str) -> int:
-    """Count logical characters in a hanlo string.
-
-    CJK characters count as 1. Romanization syllables are identified by
-    contiguous non-CJK non-separator characters.
-
-    For simplicity, we count: CJK chars + romanization 'words' separated by
-    hyphens or spaces. But since hanlo from the dict doesn't have separators
-    between CJK chars, we just count CJK chars plus any romanization tokens.
-
-    Args:
-        hanlo: Han-Lo text (e.g., "轉來" or "去lih")
-
-    Returns:
-        Character/syllable count
-    """
-    count = 0
-    in_roman = False
-    for ch in hanlo:
-        cat = unicodedata.category(ch)
-        if cat.startswith("Lo"):
-            # CJK ideograph
-            count += 1
-            in_roman = False
-        elif ch in ("-", " "):
-            if in_roman:
-                in_roman = False
-        elif cat.startswith("L") or cat.startswith("N") or cat.startswith("M"):
-            if not in_roman:
-                count += 1
-                in_roman = True
-        else:
-            in_roman = False
-    return count
-
 
 def insert_lighttone_marker(hanlo: str, prefix_syllable_count: int) -> str:
     """Insert ``--`` into hanzi string at the correct syllable position.
@@ -340,6 +305,34 @@ def compute_lighttone_weight(count: int, non_lighttone_weight: int | None) -> in
     return weight
 
 
+def _lookup_segment_hanzi(
+    kip_segment: str,
+    kip_to_hanlo: dict[str, set[str]],
+    suffix_hanzi: dict[str, str],
+) -> str | None:
+    """Look up hanzi for a single kip segment (after a -- boundary).
+
+    Tries lighttone_rules first, then single-candidate dict lookup.
+
+    Args:
+        kip_segment: Kip segment (e.g., "lai5" or "khi2-lai5")
+        kip_to_hanlo: Dict mapping kip to hanlo set
+        suffix_hanzi: Dict mapping suffix kip to hanzi from rules
+
+    Returns:
+        Hanzi string or None if lookup fails
+    """
+    # Prefer lighttone_rules.json
+    hz = suffix_hanzi.get(kip_segment)
+    if hz is not None:
+        return hz
+    # Fallback: dict with exactly one candidate
+    candidates = kip_to_hanlo.get(kip_segment, set())
+    if len(candidates) == 1:
+        return next(iter(candidates))
+    return None
+
+
 def reverse_lookup_hanzi(
     kip_input: str,
     kip_to_hanlo: dict[str, set[str]],
@@ -348,9 +341,10 @@ def reverse_lookup_hanzi(
     """Reverse-lookup hanzi for a light-tone kip_input.
 
     Tries whole-word match first, then syllable assembly.
+    Handles entries with multiple ``--`` positions.
 
     Args:
-        kip_input: Light-tone kip_input (e.g., "tng2--lai5")
+        kip_input: Light-tone kip_input (e.g., "tng2--lai5" or "a--b--c")
         kip_to_hanlo: Dict mapping non-light-tone kip to hanlo set
         suffix_hanzi: Dict mapping suffix kip to hanzi
 
@@ -361,41 +355,53 @@ def reverse_lookup_hanzi(
 
     # Split at --
     parts = kip_input.split("--")
-    if len(parts) != 2:
+    if len(parts) < 2 or any(not p for p in parts):
         return results
 
-    prefix_kip = parts[0]  # e.g., "tng2"
-    suffix_kip = parts[1]  # e.g., "lai5"
+    if len(parts) == 2:
+        prefix_kip = parts[0]
+        suffix_kip = parts[1]
+        prefix_syllable_count = _count_syllables(prefix_kip)
 
-    if not prefix_kip or not suffix_kip:
+        # Strategy 1: Whole-word match
+        whole_kip = prefix_kip + "-" + suffix_kip
+        if whole_kip in kip_to_hanlo:
+            for hanlo in kip_to_hanlo[whole_kip]:
+                marked = insert_lighttone_marker(hanlo, prefix_syllable_count)
+                if "--" in marked and marked != hanlo:
+                    results.append(marked)
+
+        if results:
+            return results
+
+        # Strategy 2: Syllable assembly
+        prefix_hanzi_set = kip_to_hanlo.get(prefix_kip, set())
+        suffix_hz = _lookup_segment_hanzi(suffix_kip, kip_to_hanlo, suffix_hanzi)
+
+        if prefix_hanzi_set and suffix_hz is not None:
+            for prefix_hz in prefix_hanzi_set:
+                assembled = prefix_hz + "--" + suffix_hz
+                results.append(assembled)
+
         return results
 
-    prefix_syllable_count = _count_syllables(prefix_kip)
-
-    # Strategy 1: Whole-word match
-    whole_kip = prefix_kip + "-" + suffix_kip
-    if whole_kip in kip_to_hanlo:
-        for hanlo in kip_to_hanlo[whole_kip]:
-            marked = insert_lighttone_marker(hanlo, prefix_syllable_count)
-            if "--" in marked and marked != hanlo:
-                results.append(marked)
-
-    if results:
-        return results
-
-    # Strategy 2: Syllable assembly
+    # Multiple -- positions: assemble each segment
+    # parts[0] is prefix, parts[1:] are successive light-tone suffixes
+    prefix_kip = parts[0]
     prefix_hanzi_set = kip_to_hanlo.get(prefix_kip, set())
-    # Get suffix hanzi from lighttone_rules first, then dict
-    suffix_hz = suffix_hanzi.get(suffix_kip)
-    if suffix_hz is None:
-        suffix_candidates = kip_to_hanlo.get(suffix_kip, set())
-        if len(suffix_candidates) == 1:
-            suffix_hz = next(iter(suffix_candidates))
+    if not prefix_hanzi_set:
+        return results
 
-    if prefix_hanzi_set and suffix_hz is not None:
-        for prefix_hz in prefix_hanzi_set:
-            assembled = prefix_hz + "--" + suffix_hz
-            results.append(assembled)
+    suffix_parts = []
+    for segment in parts[1:]:
+        hz = _lookup_segment_hanzi(segment, kip_to_hanlo, suffix_hanzi)
+        if hz is None:
+            return results  # Can't resolve all segments
+        suffix_parts.append(hz)
+
+    for prefix_hz in prefix_hanzi_set:
+        assembled = prefix_hz + "--" + "--".join(suffix_parts)
+        results.append(assembled)
 
     return results
 
