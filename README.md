@@ -191,6 +191,15 @@ cd rime-phah-taibun
 
 安裝完成後，在輸入法選單中選擇「拍台文」即可使用。
 
+### 一鍵安裝包（Windows / macOS）
+
+不想裝 Git？從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載安裝包：
+
+| 平台 | 格式 | 說明 |
+|------|------|------|
+| Windows | `.exe` | 自動安裝小狼毫 + 拍台文方案 + 芫荽字體 |
+| macOS | `.pkg` | 需先安裝[鼠鬚管](https://rime.im/download/)，雙擊即裝 |
+
 ### 支援平台
 
 | 平台 | 輸入法框架 | 安裝指令 |
@@ -382,6 +391,37 @@ uv run pytest --cov=scripts --cov-report=term-missing  # 含覆蓋率
 uv run ruff check scripts/ tests/                      # Lint
 uv run ruff format scripts/ tests/                     # 格式化
 ```
+
+### 打包安裝包
+
+本地打包 Windows / macOS 一鍵安裝包：
+
+**Windows**（需要 [Inno Setup 6+](https://jrsoftware.org/isinfo.php) + PowerShell）：
+
+```powershell
+cd installer/windows
+mkdir build
+pwsh download_weasel.ps1 -OutputDir build
+Invoke-WebRequest "https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf" `
+    -OutFile "build/Iansui-Regular.ttf"
+iscc phah_taibun.iss
+# 產出：Output/phah-taibun-setup-1.0.0.exe
+```
+
+**macOS**（需要 Xcode Command Line Tools）：
+
+```bash
+bash installer/macos/build_pkg.sh 1.0.0
+# 產出：installer/macos/build/phah-taibun-1.0.0.pkg
+```
+
+**CI 自動打包**：push tag 即觸發 GitHub Actions 自動打包並建立 Draft Release：
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+詳見 [`installer/README.md`](installer/README.md)。
 
 ### 新增 Lua 模組
 
