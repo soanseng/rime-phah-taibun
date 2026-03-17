@@ -74,7 +74,7 @@ class TestParseItaigiCsv:
         """Each entry should have a space-separated rime_key with tone numbers."""
         entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
         first = entries[0]
-        assert first["rime_key"] == "sian7 neh"
+        assert first["rime_key"] == "sian7 neh4"
 
     def test_source_tagged(self, itaigi_csv_content):
         entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
