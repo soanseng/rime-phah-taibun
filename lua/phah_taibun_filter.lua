@@ -14,27 +14,12 @@
 
 local M = {}
 
--- Simple TL to POJ conversion for display
--- Handles the most common differences between the two systems
+-- Reference to data module (loaded in init)
+local data_mod = nil
+
+-- Use shared tl_to_poj from data module
 local function tl_to_poj(tl_text)
-  if not tl_text or tl_text == "" then
-    return tl_text
-  end
-  local result = tl_text
-  -- Order matters: longer patterns first
-  result = result:gsub("tsh", "chh")
-  result = result:gsub("ts", "ch")
-  result = result:gsub("ing([^a-z])", "eng%1")
-  result = result:gsub("ing$", "eng")
-  result = result:gsub("ik([^a-z])", "ek%1")
-  result = result:gsub("ik$", "ek")
-  -- POJ special characters
-  result = result:gsub("nn", "\226\129\191")                    -- nn → ⁿ (U+207F)
-  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
-  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
-  result = result:gsub("ua", "oa")
-  result = result:gsub("ue", "oe")
-  return result
+  return data_mod.tl_to_poj(tl_text)
 end
 
 -- Get the current output mode from Rime context
@@ -56,9 +41,6 @@ local function get_output_mode(env)
   end
   return 0  -- 漢羅TL (default)
 end
-
--- Reference to data module (loaded in init)
-local data_mod = nil
 
 function M.init(env)
   env.name_space = env.name_space or ""
