@@ -84,8 +84,7 @@ speller:
   algebra:
     # === 聲調完全可省略 ===
     - derive/[1-9]$//
-    # === 第1聲：字典存 "to"（無聲調），允許使用者打 "to1" 也能匹配 ===
-    - derive/^([a-z]+)$/$11/
+    # 第1聲在字典中已標為 "to1"（非 "to"），由 build pipeline 處理
 
     # === POJ → TL 對應 ===
     - derive/^ts/ch/

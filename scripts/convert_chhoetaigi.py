@@ -25,6 +25,37 @@ CSV_SOURCE_MAP = {
 }
 
 
+def normalize_implicit_tone(kip_input: str) -> str:
+    """Add explicit tone numbers to syllables that have no tone number.
+
+    ChhoeTaigi stores default tones as bare syllables:
+    - 舒聲 (open/nasal ending: vowel, m, n, ng) → tone 1 (陰平)
+    - 入聲 (checked ending: p, t, k, h) → tone 4 (陰入)
+
+    Rime needs explicit tone numbers so users can type "to1" or "tsit4"
+    to narrow candidates to a specific tone.
+
+    Args:
+        kip_input: KipInput string like "to-sit" or "tua7-lang5"
+
+    Returns:
+        String with implicit tones made explicit: "to1-sit4" or "tua7-lang5"
+    """
+    syllables = kip_input.split("-")
+    result = []
+    for s in syllables:
+        if s and re.match(r"^[a-z]+$", s):
+            # 入聲: ends in p, t, k, h → tone 4
+            if re.search(r"[ptkh]$", s):
+                result.append(s + "4")
+            # 舒聲: ends in vowel, m, n, ng → tone 1
+            else:
+                result.append(s + "1")
+        else:
+            result.append(s)
+    return "-".join(result)
+
+
 def strip_tone_numbers(kip_input: str, delimiter: str = "-") -> str:
     """Remove tone number suffixes (1-9) from each syllable in KipInput.
 
@@ -86,7 +117,7 @@ def parse_itaigi_csv(csvfile: TextIO) -> list[dict]:
                 {
                     "hanlo": hanlo,
                     "kip_input": kip,
-                    "rime_key": kip.replace("-", " "),
+                    "rime_key": normalize_implicit_tone(kip).replace("-", " "),
                     "hoabun": hoabun,
                     "source": "itaigi",
                 }
@@ -121,7 +152,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
                     {
                         "hanlo": hanlo,
                         "kip_input": kip,
-                        "rime_key": kip.replace("-", " "),
+                        "rime_key": normalize_implicit_tone(kip).replace("-", " "),
                         "hoabun": hoabun,
                         "source": "taihoa",
                     }
@@ -133,7 +164,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
                     {
                         "hanlo": hanlo,
                         "kip_input": kip,
-                        "rime_key": kip.replace("-", " "),
+                        "rime_key": normalize_implicit_tone(kip).replace("-", " "),
                         "hoabun": hoabun,
                         "source": "taihoa",
                     }
@@ -174,7 +205,7 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
                 {
                     "hanlo": hanlo,
                     "kip_input": kip,
-                    "rime_key": kip.replace("-", " "),
+                    "rime_key": normalize_implicit_tone(kip).replace("-", " "),
                     "hoabun": hoabun,
                     "source": source_name,
                 }
