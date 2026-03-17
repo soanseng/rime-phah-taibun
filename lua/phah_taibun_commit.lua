@@ -138,7 +138,12 @@ local function extract_roman(cand, env)
   if poj then
     raw = tl_to_poj(raw)
   end
-  return format_romanization(raw)
+  local result = format_romanization(raw)
+  -- POJ: fix diphthong tone mark position (oa→óa, oe→óe)
+  if poj and data_mod and data_mod.poj_fix_diacritics then
+    result = data_mod.poj_fix_diacritics(result)
+  end
+  return result
 end
 
 -- Get candidate at a specific index (for select keys)
