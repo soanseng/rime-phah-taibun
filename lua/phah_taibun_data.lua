@@ -262,4 +262,17 @@ function M.hoabun_to_tl(word)
   return map[word]
 end
 
+-- ============================================================
+-- Shared state for cross-processor communication
+-- ============================================================
+local _shared_state = {
+  selection_mode = false,
+  capitalize_next = true,
+  last_text = nil,
+}
+
+function M.get_shared_state()
+  return _shared_state
+end
+
 return M
