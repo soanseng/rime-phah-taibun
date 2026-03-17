@@ -48,6 +48,13 @@ jobs:
             exit 1
           }
 
+      - name: Install Inno Setup language files
+        shell: pwsh
+        run: |
+          $issDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages\Unofficial"
+          New-Item -ItemType Directory -Force -Path $issDir | Out-Null
+          Invoke-WebRequest "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseTraditional.isl" -OutFile "$issDir\ChineseTraditional.isl"
+
       - name: Build with Inno Setup
         run: iscc installer/windows/phah_taibun.iss
 
