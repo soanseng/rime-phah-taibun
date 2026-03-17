@@ -201,12 +201,15 @@ end
 --   iu: mark first vowel i (iū → īu)
 function M.poj_fix_diacritics(text)
   if not text then return text end
-  -- oa + diacritic only at END of syllable (before - or end of string)
-  -- NOT when followed by consonant coda (n, t, k, h, ⁿ etc.)
+  -- oa + diacritic at end of syllable: before -, ⁿ (U+207F), or end of string
+  -- NOT when followed by consonant coda (n, t, k, h)
+  -- ⁿ is nasalization (not a coda), so oa+ⁿ is still open syllable
   text = text:gsub("oa(\204[\128-\191])%-", "o%1a-")
+  text = text:gsub("oa(\204[\128-\191])(\226\129\191)", "o%1a%2")  -- before ⁿ
   text = text:gsub("oa(\204[\128-\191])$", "o%1a")
   -- oe + diacritic at end of syllable
   text = text:gsub("oe(\204[\128-\191])%-", "o%1e-")
+  text = text:gsub("oe(\204[\128-\191])(\226\129\191)", "o%1e%2")  -- before ⁿ
   text = text:gsub("oe(\204[\128-\191])$", "o%1e")
   -- ui: move diacritic from i (second) to u (first)
   text = text:gsub("ui(\204[\128-\191])", "u%1i")
