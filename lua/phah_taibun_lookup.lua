@@ -47,6 +47,9 @@ function M.func(input, env)
 
     if tl_roman and tl_roman ~= "" then
       local poj_roman = tl_to_poj(tl_roman)
+      if data_mod and data_mod.poj_fix_diacritics then
+        poj_roman = data_mod.poj_fix_diacritics(poj_roman)
+      end
 
       -- Only add dual annotation if POJ differs from TL
       if poj_roman ~= tl_roman then

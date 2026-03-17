@@ -194,13 +194,24 @@ function M.format_romanization(roman)
 end
 
 -- Fix POJ diphthong tone mark position after format_romanization
--- In POJ, 'oa' and 'oe' (from TL 'ua'/'ue') mark tone on 'o':
---   goá → góa, toà → tòa, hoê → hôe
--- Moves combining diacritical mark from after a/e to after o
+-- POJ rules differ from TL for certain diphthongs:
+--   oa at end of syllable: mark o (goā → gōa), but oan keeps mark on a (koán)
+--   oe at end of syllable: mark o (hoé → hōe)
+--   ui: mark first vowel u (uī → ūi)
+--   iu: mark first vowel i (iū → īu)
 function M.poj_fix_diacritics(text)
   if not text then return text end
-  text = text:gsub("oa(\204[\128-\191])", "o%1a")
-  text = text:gsub("oe(\204[\128-\191])", "o%1e")
+  -- oa + diacritic only at END of syllable (before - or end of string)
+  -- NOT when followed by consonant coda (n, t, k, h, ⁿ etc.)
+  text = text:gsub("oa(\204[\128-\191])%-", "o%1a-")
+  text = text:gsub("oa(\204[\128-\191])$", "o%1a")
+  -- oe + diacritic at end of syllable
+  text = text:gsub("oe(\204[\128-\191])%-", "o%1e-")
+  text = text:gsub("oe(\204[\128-\191])$", "o%1e")
+  -- ui: move diacritic from i (second) to u (first)
+  text = text:gsub("ui(\204[\128-\191])", "u%1i")
+  -- iu: move diacritic from u (second) to i (first)
+  text = text:gsub("iu(\204[\128-\191])", "i%1u")
   return text
 end
 
@@ -334,6 +345,9 @@ function M.extract_roman(cand, context)
     raw = M.tl_to_poj(raw)
   end
   local result = M.format_romanization(raw)
+  if poj then
+    result = M.poj_fix_diacritics(result)
+  end
   return result
 end
 

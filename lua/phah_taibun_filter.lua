@@ -174,6 +174,12 @@ function M.func(input, env)
         -- text = 漢羅 (顯示在候選清單)
         -- comment = [roman] (全羅拼音，調符版，由 phah_taibun_commit processor 用來輸出)
         local display_roman = fmt and fmt(roman) or roman
+        if mode == 3 and data_mod and data_mod.poj_fix_diacritics then
+          display_roman = data_mod.poj_fix_diacritics(display_roman)
+          if display_text ~= text then
+            display_text = data_mod.poj_fix_diacritics(display_text)
+          end
+        end
         local display_comment = " [" .. display_roman .. "]"
         local new_cand = Candidate(cand.type, cand.start, cand._end, display_text, display_comment)
         new_cand.quality = cand.quality + boost
@@ -204,6 +210,12 @@ function M.func(input, env)
       local new_comment = comment
       if display_roman ~= "" then
         local formatted = fmt and fmt(display_roman) or display_roman
+        if mode == 1 and data_mod and data_mod.poj_fix_diacritics then
+          formatted = data_mod.poj_fix_diacritics(formatted)
+          if new_text ~= text then
+            new_text = data_mod.poj_fix_diacritics(new_text)
+          end
+        end
         new_comment = " [" .. formatted .. "]"
       end
 
