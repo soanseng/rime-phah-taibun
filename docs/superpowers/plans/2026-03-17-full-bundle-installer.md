@@ -1,6 +1,6 @@
 # Full Bundle Installer Implementation Plan
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Create one-click installers for Windows (.exe) and macOS (.pkg) that bundle the Rime engine + phah_taibun schema, so non-technical users can install the Taiwanese Hokkien IME without any prior knowledge of Rime.
 
@@ -50,7 +50,7 @@
 **Files:**
 - Create: `installer/windows/download_weasel.ps1`
 
-- [ ] **Step 1: Write the download script**
+- [x] **Step 1: Write the download script**
 
 ```powershell
 # download_weasel.ps1
@@ -90,12 +90,12 @@ Write-Host "Downloaded to: $outputPath"
 Write-Output $outputPath
 ```
 
-- [ ] **Step 2: Test the script locally**
+- [x] **Step 2: Test the script locally**
 
 Run: `pwsh installer/windows/download_weasel.ps1 -OutputDir /tmp`
 Expected: Weasel .exe downloaded to /tmp/
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add installer/windows/download_weasel.ps1
@@ -130,7 +130,7 @@ git commit -m "refactor(installer): add --project-root parameter to all install 
 **Files:**
 - Create: `installer/windows/pre_uninstall.ps1`
 
-- [ ] **Step 1: Write the pre-uninstall script**
+- [x] **Step 1: Write the pre-uninstall script**
 
 ```powershell
 # pre_uninstall.ps1
@@ -189,7 +189,7 @@ Write-Host "Note: User custom dictionaries preserved (if any)"
 Write-Host "Pre-uninstall complete!"
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add installer/windows/pre_uninstall.ps1
@@ -203,7 +203,7 @@ git commit -m "feat(installer): add Windows pre-uninstall script"
 **Files:**
 - Create: `installer/windows/phah_taibun.iss`
 
-- [ ] **Step 1: Write the Inno Setup script**
+- [x] **Step 1: Write the Inno Setup script**
 
 The Inno Setup script defines the full Windows installer. Key design:
 - **Staging approach**: All schema/lua/rime.lua files are staged under `{app}/` in standard project layout (`{app}/schema/`, `{app}/lua/`, `{app}/rime.lua`). The existing `install_windows.ps1` is invoked with `-ProjectRoot "{app}"` to handle all file copying to Rime user dir, rime.lua merging, schema registration, and deployment. **No files are copied directly to `{userappdata}\Rime` by Inno Setup** — this prevents dual-copy conflicts.
@@ -322,7 +322,7 @@ begin
 end;
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add installer/windows/phah_taibun.iss
@@ -338,7 +338,7 @@ git commit -m "feat(installer): add Inno Setup script for Windows bundle install
 **Files:**
 - Create: `installer/macos/scripts/postinstall`
 
-- [ ] **Step 1: Write the macOS postinstall script**
+- [x] **Step 1: Write the macOS postinstall script**
 
 This runs as root after pkgbuild copies files. It delegates to the existing
 `scripts/install_macos.sh` (which now accepts `--project-root`) for the actual
@@ -391,7 +391,7 @@ echo "拍台文輸入法安裝完成！"
 exit 0
 ```
 
-- [ ] **Step 2: Make executable and commit**
+- [x] **Step 2: Make executable and commit**
 
 ```bash
 chmod +x installer/macos/scripts/postinstall
@@ -406,7 +406,7 @@ git commit -m "feat(installer): add macOS postinstall script"
 **Files:**
 - Create: `installer/macos/scripts/preinstall`
 
-- [ ] **Step 1: Write the macOS preinstall script**
+- [x] **Step 1: Write the macOS preinstall script**
 
 Checks for Squirrel prerequisite. Fails with a clear message and download URL if missing,
 rather than silently installing a system-level input method framework without explicit user consent.
@@ -442,7 +442,7 @@ echo "Pre-install checks passed: Squirrel detected"
 exit 0
 ```
 
-- [ ] **Step 2: Make executable and commit**
+- [x] **Step 2: Make executable and commit**
 
 ```bash
 chmod +x installer/macos/scripts/preinstall
@@ -458,7 +458,7 @@ git commit -m "feat(installer): add macOS preinstall script"
 - Create: `installer/macos/build_pkg.sh`
 - Create: `installer/macos/distribution.xml`
 
-- [ ] **Step 1: Write distribution.xml**
+- [x] **Step 1: Write distribution.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -492,7 +492,7 @@ git commit -m "feat(installer): add macOS preinstall script"
 </installer-gui-script>
 ```
 
-- [ ] **Step 2: Write build_pkg.sh**
+- [x] **Step 2: Write build_pkg.sh**
 
 ```bash
 #!/bin/bash
@@ -511,7 +511,7 @@ echo "Building phah_taibun macOS installer v${VERSION}..."
 
 # --- Clean & prepare ---
 rm -rf "${BUILD_DIR}"
-mkdir -p "${STAGING}/schema" "${STAGING}/lua" "${STAGING}/fonts"
+mkdir -p "${STAGING}/schema" "${STAGING}/lua" "${STAGING}/scripts" "${STAGING}/fonts"
 
 # --- Stage files ---
 cp "${PROJECT_ROOT}"/schema/phah_taibun.schema.yaml \
@@ -525,6 +525,9 @@ cp "${PROJECT_ROOT}"/schema/phah_taibun.schema.yaml \
 
 cp "${PROJECT_ROOT}"/lua/phah_taibun_*.lua "${STAGING}/lua/"
 cp "${PROJECT_ROOT}"/rime.lua "${STAGING}/"
+
+# Stage install script (postinstall delegates to it)
+cp "${PROJECT_ROOT}"/scripts/install_macos.sh "${STAGING}/scripts/"
 
 # --- Download Iansui font if not cached ---
 FONT_PATH="${STAGING}/fonts/Iansui-Regular.ttf"
@@ -580,7 +583,7 @@ echo ""
 echo "Build complete: ${BUILD_DIR}/phah-taibun-${VERSION}.pkg"
 ```
 
-- [ ] **Step 3: Make executable and commit**
+- [x] **Step 3: Make executable and commit**
 
 ```bash
 chmod +x installer/macos/build_pkg.sh
@@ -595,7 +598,7 @@ git commit -m "feat(installer): add macOS pkg build script and distribution conf
 **Files:**
 - Create: `.github/workflows/release.yml`
 
-- [ ] **Step 1: Write the CI pipeline**
+- [x] **Step 1: Write the CI pipeline**
 
 **Note:** Pin upstream versions and verify SHA256 checksums. Update the version/hash
 constants in this file when upgrading Weasel or Iansui.
@@ -699,7 +702,7 @@ jobs:
             macos-installer/*.pkg
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add .github/workflows/release.yml
@@ -710,7 +713,7 @@ git commit -m "ci: add GitHub Actions pipeline for building Windows/macOS instal
 
 ### Task 9: Integration Test & Documentation
 
-- [ ] **Step 1: Add installer README**
+- [x] **Step 1: Add installer README**
 
 Create `installer/README.md` with build instructions for contributors:
 - How to build Windows installer locally (requires Inno Setup 6+)
@@ -718,7 +721,7 @@ Create `installer/README.md` with build instructions for contributors:
 - How the CI pipeline works
 - Version bumping process
 
-- [ ] **Step 2: Test Windows build locally (if on Windows)**
+- [x] **Step 2: Test Windows build locally (if on Windows)**
 
 ```powershell
 cd installer/windows
@@ -727,7 +730,7 @@ pwsh download_weasel.ps1 -OutputDir build
 # Then open phah_taibun.iss in Inno Setup and compile
 ```
 
-- [ ] **Step 3: Test macOS build locally (if on macOS)**
+- [x] **Step 3: Test macOS build locally (if on macOS)**
 
 ```bash
 cd installer/macos
@@ -735,7 +738,7 @@ bash build_pkg.sh 1.0.0
 # Output: build/phah-taibun-1.0.0.pkg
 ```
 
-- [ ] **Step 4: Commit documentation**
+- [x] **Step 4: Commit documentation**
 
 ```bash
 git add installer/README.md
