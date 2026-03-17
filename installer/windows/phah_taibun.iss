@@ -31,7 +31,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile=..\..\LICENSE
 
 [Languages]
-Name: "tchinese"; MessagesFile: "compiler:Languages\ChineseTraditional.isl"
+Name: "tchinese"; MessagesFile: "compiler:Languages\Unofficial\ChineseTraditional.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
