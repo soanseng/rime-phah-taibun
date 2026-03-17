@@ -3,6 +3,7 @@
 -- 供舊版 librime-lua（不支援 @* 語法）使用
 
 phah_taibun_data     = require("phah_taibun_data")
+phah_taibun_input    = require("phah_taibun_input")
 phah_taibun_filter   = require("phah_taibun_filter")
 phah_taibun_lighttone = require("phah_taibun_lighttone")
 phah_taibun_lookup   = require("phah_taibun_lookup")
