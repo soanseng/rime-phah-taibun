@@ -232,6 +232,30 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
 
+    # Step 9b: Build light-tone entries from corpus frequencies
+    dict_yaml = out / "phah_taibun.dict.yaml"
+    lighttone_json = out / "lighttone_rules.json"
+    all_freq_files = [f for f in [
+        icorpus_freq, ungian_freq, kok4hau7_freq, leku900_freq,
+        nmtl_freq, kipsutian_sent_freq, pojbh_freq,
+    ] if f.exists()]
+    if dict_yaml.exists() and lighttone_json.exists() and all_freq_files:
+        lighttone_output = data / "lighttone_entries.tsv"
+        steps_ok &= run_step(
+            "Build light-tone entries from corpus frequencies",
+            [python, "scripts/build_lighttone_entries.py",
+             "--dict", str(dict_yaml),
+             "--rules", str(lighttone_json),
+             "--corpus-freq"] + [str(f) for f in all_freq_files] +
+            ["--output", str(lighttone_output)],
+        )
+        # Append new light-tone entries to dict.yaml
+        if lighttone_output.exists() and lighttone_output.stat().st_size > 0:
+            with open(dict_yaml, "a", encoding="utf-8") as out_f:
+                with open(lighttone_output, encoding="utf-8") as in_f:
+                    out_f.write(in_f.read())
+            print(f"  Appended light-tone entries from {lighttone_output}")
+
     # Step 10: Build bigram phrases from all corpora
     sentence_files = [f for f in [
         icorpus_sentences, ungian_sentences, kok4hau7_sentences,

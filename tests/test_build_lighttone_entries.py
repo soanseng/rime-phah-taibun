@@ -270,7 +270,7 @@ class TestCollectLighttoneWords:
         assert len(result) == 0
 
 
-class TestReverseLookuoHanzi:
+class TestReverseLookupHanzi:
     """Reverse-lookup hanzi for light-tone words."""
 
     def test_whole_word_match(self):
@@ -322,6 +322,39 @@ class TestReverseLookuoHanzi:
         suffix_hanzi = {}
         result = reverse_lookup_hanzi("to3-tng2--lai5", kip_to_hanlo, suffix_hanzi)
         assert "倒轉--來" in result
+
+    def test_multiple_lighttone_positions(self):
+        """Entries with two -- markers (e.g., reduplicative forms)."""
+        kip_to_hanlo = {"tshuah4": {"擦"}}
+        suffix_hanzi = {"tsit8-e7": "一下"}
+        result = reverse_lookup_hanzi(
+            "tshuah4--tsit8-e7--tshuah4--tsit8-e7",
+            kip_to_hanlo,
+            suffix_hanzi,
+        )
+        assert len(result) > 0
+        assert "--" in result[0]
+
+    def test_two_lighttone_simple(self):
+        """Two -- segments, each resolvable."""
+        kip_to_hanlo = {"a2": {"仔"}}
+        suffix_hanzi = {"a2": "仔", "lai5": "來"}
+        result = reverse_lookup_hanzi("a2--lai5--a2", kip_to_hanlo, suffix_hanzi)
+        assert "仔--來--仔" in result
+
+    def test_multiple_lighttone_unresolvable(self):
+        """If any segment fails, return empty."""
+        kip_to_hanlo = {"a2": {"仔"}}
+        suffix_hanzi = {}
+        result = reverse_lookup_hanzi("a2--xxx--a2", kip_to_hanlo, suffix_hanzi)
+        assert len(result) == 0
+
+    def test_rules_disambiguate_multiple_dict_candidates(self):
+        """When dict has multiple suffix candidates, lighttone_rules disambiguates."""
+        kip_to_hanlo = {"si2": {"死"}, "e5": {"的", "兮"}}
+        suffix_hanzi = {"e5": "的"}  # Rules say e5 → 的
+        result = reverse_lookup_hanzi("si2--e5", kip_to_hanlo, suffix_hanzi)
+        assert "死--的" in result
 
 
 class TestDeduplication:
