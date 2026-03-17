@@ -132,9 +132,10 @@ local TONE_MARKS = {
 --   Syllabic nasals: m, ng
 local function add_tone_to_syllable(syl)
   local tone = syl:sub(-1)
-  local mark = TONE_MARKS[tone]
-  if not mark then return syl end
+  if not tone:match("[1-9]") then return syl end  -- no tone number
   local base = syl:sub(1, -2)
+  local mark = TONE_MARKS[tone]
+  if not mark then return base end  -- tone 1, 4: strip number, no diacritic
   local pos = base:find("oo")
   if not pos then pos = base:find("a") end
   if not pos then
