@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon.png" alt="拍台文 icon" width="128">
+</p>
+
 # 拍台文 Phah Tai-bun
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
