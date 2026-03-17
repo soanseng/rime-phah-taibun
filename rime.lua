@@ -4,6 +4,7 @@
 
 phah_taibun_data     = require("phah_taibun_data")
 phah_taibun_filter   = require("phah_taibun_filter")
+phah_taibun_lighttone = require("phah_taibun_lighttone")
 phah_taibun_lookup   = require("phah_taibun_lookup")
 phah_taibun_help     = require("phah_taibun_help")
 phah_taibun_date     = require("phah_taibun_date")

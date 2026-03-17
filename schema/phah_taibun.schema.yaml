@@ -63,6 +63,7 @@ engine:
     - lua_translator@*phah_taibun_phrase
     - lua_translator@*phah_taibun_speedup
   filters:
+    - lua_filter@*phah_taibun_lighttone
     - lua_filter@*phah_taibun_filter
     - lua_filter@*phah_taibun_lookup
     - lua_filter@*phah_taibun_synonym
