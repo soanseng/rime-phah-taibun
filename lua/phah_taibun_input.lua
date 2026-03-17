@@ -69,6 +69,107 @@ function M.func(key, env)
     return 1  -- kAccepted: prevent ascii_composer from seeing Shift+letter
   end
 
+  -- ============================================================
+  -- TAB: enter selection mode (when menu visible)
+  -- When no menu: falls through to key_binder YAML binding
+  -- which sends Shift+Right for next syllable
+  -- ============================================================
+  if key:repr() == "Tab" then
+    if context:has_menu() then
+      state.selection_mode = true
+      return 1  -- kAccepted
+    end
+    return 2  -- kNoop: let key_binder handle (next syllable or pass through)
+  end
+
+  -- ============================================================
+  -- SELECTION MODE key handling
+  -- ============================================================
+  if not state.selection_mode then
+    return 2  -- kNoop: not in selection mode, pass through
+  end
+
+  local kc = key.keycode
+
+  -- Helper: commit candidate and track homophone
+  local function commit_candidate(cand)
+    local full_roman = context:get_option("full_romanization")
+    if full_roman and data_mod then
+      data_mod.commit_with_roman(env.engine, context, cand, state)
+      context:clear()
+    else
+      context:confirm_current_selection()
+    end
+    -- Track for homophone
+    if data_mod and data_mod.utf8_len(cand.text) == 1 then
+      state.last_text = cand.text
+    else
+      state.last_text = nil
+    end
+    state.selection_mode = false
+  end
+
+  -- Space: confirm highlighted candidate
+  if kc == 0x20 then
+    local cand = context:get_selected_candidate()
+    if cand then
+      commit_candidate(cand)
+    end
+    state.selection_mode = false
+    return 1  -- kAccepted
+  end
+
+  -- Selection keys (asdf... or 0-9): select specific candidate
+  local sel_idx = SELECTION_KEYS[kc] or NUMBER_KEYS[kc]
+  if sel_idx then
+    local comp = context.composition
+    if not comp:empty() then
+      local seg = comp:back()
+      local page = math.floor(seg.selected_index / env.page_size)
+      local abs_idx = page * env.page_size + sel_idx
+      seg.selected_index = abs_idx
+      local cand = context:get_selected_candidate()
+      if cand then
+        commit_candidate(cand)
+      end
+    end
+    state.selection_mode = false
+    return 1  -- kAccepted
+  end
+
+  -- Escape: exit selection mode, keep composition
+  if key:repr() == "Escape" then
+    state.selection_mode = false
+    return 1  -- kAccepted
+  end
+
+  -- Enter: exit selection mode, pass to fluency_editor for commit_raw_input
+  if key:repr() == "Return" then
+    state.selection_mode = false
+    return 2  -- kNoop
+  end
+
+  -- Brackets [ ] and backslash \: exit selection mode, pass to downstream
+  if key:repr() == "bracketleft" or key:repr() == "bracketright"
+     or key:repr() == "backslash" then
+    state.selection_mode = false
+    return 2  -- kNoop
+  end
+
+  -- Navigation keys: pass through (don't exit selection mode)
+  if key:repr() == "Up" or key:repr() == "Down"
+     or key:repr() == "Page_Up" or key:repr() == "Page_Down" then
+    return 2  -- kNoop: let selector/navigator handle
+  end
+
+  -- Any other letter: exit selection mode, let speller handle
+  if kc >= 0x61 and kc <= 0x7a then  -- a-z
+    state.selection_mode = false
+    return 2  -- kNoop
+  end
+
+  -- All other keys: exit selection mode, pass through
+  state.selection_mode = false
   return 2  -- kNoop
 end
 
