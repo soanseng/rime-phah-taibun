@@ -17,6 +17,10 @@ local function tl_to_poj(tl_text)
   result = result:gsub("ing$", "eng")
   result = result:gsub("ik([^a-z])", "ek%1")
   result = result:gsub("ik$", "ek")
+  -- POJ special characters
+  result = result:gsub("nn", "\226\129\191")                    -- nn → ⁿ (U+207F)
+  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
+  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
   result = result:gsub("ua", "oa")
   result = result:gsub("ue", "oe")
   return result
