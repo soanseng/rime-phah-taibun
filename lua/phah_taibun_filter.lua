@@ -14,12 +14,17 @@
 
 local M = {}
 
--- Reference to data module (loaded in init)
+-- Load shared data module
 local data_mod = nil
+local ok, mod = pcall(require, "phah_taibun_data")
+if ok and mod then
+  data_mod = mod
+end
 
 -- Use shared tl_to_poj from data module
 local function tl_to_poj(tl_text)
-  return data_mod.tl_to_poj(tl_text)
+  if data_mod then return data_mod.tl_to_poj(tl_text) end
+  return tl_text
 end
 
 -- Get the current output mode from Rime context
@@ -44,14 +49,6 @@ end
 
 function M.init(env)
   env.name_space = env.name_space or ""
-
-  -- Load hanlo_rules data module
-  if not data_mod then
-    local ok, mod = pcall(require, "phah_taibun_data")
-    if ok and mod then
-      data_mod = mod
-    end
-  end
 end
 
 -- Count UTF-8 characters (not bytes)
