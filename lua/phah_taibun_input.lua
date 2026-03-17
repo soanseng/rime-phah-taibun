@@ -61,9 +61,10 @@ function M.func(key, env)
   then
     -- Use key:repr() to get the letter reliably (keycode may be lowercase on some platforms)
     local lower = key:repr():lower()
+    -- Set capitalize flag if this is the first letter of a new composition
+    local is_new_composition = not context:is_composing()
     context:push_input(lower)
-    -- Set capitalize flag for sentence-start capitalization
-    if not context:is_composing() or context.input == lower then
+    if is_new_composition then
       state.capitalize_next = true
     end
     return 1  -- kAccepted: prevent ascii_composer from seeing Shift+letter

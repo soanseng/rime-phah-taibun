@@ -36,15 +36,18 @@ local SENTENCE_ENDERS = { ["."] = true, ["!"] = true, ["?"] = true }
 -- ============================================================
 
 local function capitalize_first(text)
-  return data_mod.capitalize_first(text)
+  if data_mod then return data_mod.capitalize_first(text) end
+  return text
 end
 
 local function utf8_len(s)
-  return data_mod.utf8_len(s)
+  if data_mod then return data_mod.utf8_len(s) end
+  return 0
 end
 
 local function extract_roman(cand, env)
-  return data_mod.extract_roman(cand, env.engine.context)
+  if data_mod then return data_mod.extract_roman(cand, env.engine.context) end
+  return nil
 end
 
 -- Get candidate at a specific index (for select keys)
