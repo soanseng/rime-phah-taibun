@@ -6,13 +6,12 @@
 ; all file operations to the Rime user directory. This avoids duplicating logic.
 
 #define MyAppName "拍台文輸入法 Phah Tai-bun"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "0.1.0"
 #define MyAppPublisher "Phah Tai-bun Project"
 #define MyAppURL "https://github.com/soanseng/rime-phah-taibun"
 
 [Setup]
-; TODO: Generate a real GUID before first build: powershell [System.Guid]::NewGuid()
-AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+AppId={{2A6691AC-0D3E-42AE-A463-91753AEAC832}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
