@@ -6,6 +6,9 @@ local M = {}
 
 -- Global cache
 local _hanlo_rules = nil
+local _moe700_single = nil   -- set of single-char MOE 700 words
+local _moe700_multi = nil    -- list of multi-char MOE 700 words
+local _lkk_multi_keys = nil  -- list of multi-char hanlo_rules keys
 
 -- Parse a simple YAML file into a Lua table
 -- Only handles the specific format of hanlo_rules.yaml:
@@ -109,6 +112,153 @@ function M.get_hanlo_type(word)
     return entry.type
   end
   return nil
+end
+
+-- ============================================================
+-- MOE 700字推薦用字
+-- ============================================================
+
+-- Find the moe700.yaml file path
+local function find_moe700_path()
+  local dirs = {}
+  if rime_api then
+    local user_dir = rime_api.get_user_data_dir()
+    if user_dir then table.insert(dirs, user_dir) end
+    local shared_dir = rime_api.get_shared_data_dir()
+    if shared_dir then table.insert(dirs, shared_dir) end
+  end
+  for _, dir in ipairs(dirs) do
+    local path = dir .. "/moe700.yaml"
+    local f = io.open(path, "r")
+    if f then
+      f:close()
+      return path
+    end
+  end
+  return nil
+end
+
+-- Parse moe700.yaml (simple YAML list: "- word" per line)
+local function parse_moe700_yaml(content)
+  local single = {}
+  local multi = {}
+  for line in content:gmatch("[^\r\n]+") do
+    if line:match("^%s*#") or line:match("^%s*$") then
+      goto continue
+    end
+    local word = line:match("^%-%s*(.+)$")
+    if word then
+      word = word:gsub("^'(.*)'$", "%1")
+      local char_count = 0
+      for _ in word:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        char_count = char_count + 1
+      end
+      if char_count == 1 then
+        single[word] = true
+      else
+        table.insert(multi, word)
+      end
+    end
+    ::continue::
+  end
+  return single, multi
+end
+
+-- Load and cache MOE 700 data
+function M.get_moe700()
+  if _moe700_single then
+    return _moe700_single, _moe700_multi
+  end
+
+  local path = find_moe700_path()
+  if not path then
+    _moe700_single = {}
+    _moe700_multi = {}
+    return _moe700_single, _moe700_multi
+  end
+
+  local f = io.open(path, "r")
+  if not f then
+    _moe700_single = {}
+    _moe700_multi = {}
+    return _moe700_single, _moe700_multi
+  end
+
+  local content = f:read("*all")
+  f:close()
+  _moe700_single, _moe700_multi = parse_moe700_yaml(content)
+  return _moe700_single, _moe700_multi
+end
+
+-- Check if any part of text matches MOE 700
+function M.check_moe700(text)
+  if not text or text == "" then return false end
+  local single, multi = M.get_moe700()
+
+  -- Check individual characters
+  for char in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    if single[char] then return true end
+  end
+
+  -- Check multi-char words
+  for _, word in ipairs(multi) do
+    if text:find(word, 1, true) then return true end
+  end
+
+  return false
+end
+
+-- ============================================================
+-- LKK推薦用字查詢
+-- ============================================================
+
+-- Build multi-char key list from hanlo_rules (cached)
+local function get_lkk_multi_keys()
+  if _lkk_multi_keys then return _lkk_multi_keys end
+  local rules = M.get_hanlo_rules()
+  _lkk_multi_keys = {}
+  for key, _ in pairs(rules) do
+    local char_count = 0
+    for _ in key:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+      char_count = char_count + 1
+    end
+    if char_count > 1 then
+      table.insert(_lkk_multi_keys, key)
+    end
+  end
+  return _lkk_multi_keys
+end
+
+-- Check if text has LKK recommended han or lo characters
+-- Returns: has_han, has_lo
+function M.check_lkk_recommend(text)
+  if not text or text == "" then return false, false end
+  local rules = M.get_hanlo_rules()
+  local has_han = false
+  local has_lo = false
+
+  -- Check individual characters
+  for char in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    local entry = rules[char]
+    if entry then
+      if entry.type == "han" then has_han = true end
+      if entry.type == "lo" then has_lo = true end
+    end
+  end
+
+  -- Check multi-char keys
+  local multi_keys = get_lkk_multi_keys()
+  for _, key in ipairs(multi_keys) do
+    if text:find(key, 1, true) then
+      local entry = rules[key]
+      if entry then
+        if entry.type == "han" then has_han = true end
+        if entry.type == "lo" then has_lo = true end
+      end
+    end
+  end
+
+  return has_han, has_lo
 end
 
 -- ============================================================

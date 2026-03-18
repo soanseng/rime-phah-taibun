@@ -115,6 +115,17 @@ if [ -n "$LKK_HTML" ] && [ ! -f "$DATA_DIR/lkk_yongji.html" ]; then
 fi
 
 echo ""
+echo "=== 9b/20 教育部推薦700字台語漢字 ==="
+echo "  教育部公告700字台語漢字推薦用字表"
+if [ -f "$DATA_DIR/700iongji.csv" ]; then
+  echo "  [skip] 教育部700字 CSV（已存在）"
+else
+  echo "  [download] 教育部700字 CSV（yiufung/minnan-700）"
+  curl -sL "https://raw.githubusercontent.com/yiufung/minnan-700/master/700iongji.csv" -o "$DATA_DIR/700iongji.csv"
+  echo "  → $(wc -l < "$DATA_DIR/700iongji.csv") 行"
+fi
+
+echo ""
 echo "=== 10/20Taiwanese-Corpus/Ungian_2009_KIPsupin ==="
 echo "  楊允言詞頻資料（教育部臺灣閩南語字詞頻調查）"
 clone_and_degit \

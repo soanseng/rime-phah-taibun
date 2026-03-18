@@ -71,6 +71,7 @@ engine:
     - lua_filter@*phah_taibun_lighttone
     - lua_filter@*phah_taibun_filter
     - lua_filter@*phah_taibun_lookup
+    - lua_filter@*phah_taibun_recommend
     - lua_filter@*phah_taibun_synonym
     - lua_filter@*phah_taibun_long_word
     - reverse_lookup_filter@phah_taibun_reverse_lookup
@@ -157,6 +158,9 @@ phah_taibun_select_char:
 phah_taibun_long_word:
   count: 2
   idx: 4
+
+phah_taibun_recommend:
+  enabled: true
 
 melt_eng:
   dictionary: melt_eng

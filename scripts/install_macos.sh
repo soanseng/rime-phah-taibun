@@ -134,6 +134,7 @@ SCHEMA_FILES=(
     "phah_taibun_reverse.dict.yaml"
     "hanlo_rules.yaml"
     "lighttone_rules.json"
+    "moe700.yaml"
     "hoabun_map.txt"
 )
 

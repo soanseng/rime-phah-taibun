@@ -8,6 +8,7 @@ Orchestrates the full preprocessing pipeline:
 3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
+4c. Parse MOE 700字 → moe700.yaml
 5. Build reverse dictionary (KipSutian or MOE fallback)
 6. Validate generated dictionary
 7. Extract nmtl literary corpus sentences + frequencies
@@ -158,6 +159,16 @@ def main(argv: list[str] | None = None) -> None:
         )
     else:
         print(f"SKIP: Light-tone CSV not found at {lighttone_csv}")
+
+    # Step 4c: Parse MOE 700 recommended characters
+    moe700_csv = data / "700iongji.csv"
+    if moe700_csv.exists():
+        steps_ok &= run_step(
+            "Parse MOE 700字 → moe700.yaml",
+            [python, "scripts/parse_moe700.py", "--input", str(moe700_csv), "--output", str(out / "moe700.yaml")],
+        )
+    else:
+        print("SKIP: 700iongji.csv not found (run download_resources.sh)")
 
     # Step 5: Build reverse dictionary (prefer KipSutian 65K, fallback to MOE 24K)
     # KipSutian CSV is nested: public/<date>/bunji/kautian.csv
