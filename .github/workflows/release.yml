@@ -1,97 +1,21 @@
-name: Build Installers
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0)'
-        required: true
-
-# Pin upstream dependency versions — update these when upgrading
-env:
-  WEASEL_VERSION: "0.16.3"
-  WEASEL_SHA256: "efa114b20a8cda39c34316cd1a9b5ed25ac0581891aa3e485c830ff7cc2dbdd9"
-  IANSUI_SHA256: "e3a9b4175f10ef244d75c7bdb9c06e9decf08d38c08d15348bf5f61da9527045"
 
 permissions:
   contents: write
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  release:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download and verify Weasel
-        shell: pwsh
-        run: |
-          mkdir installer/windows/build
-          $release = Invoke-RestMethod "https://api.github.com/repos/rime/weasel/releases/tags/$env:WEASEL_VERSION"
-          $asset = $release.assets | Where-Object { $_.name -match "weasel-.*\.exe$" } | Select-Object -First 1
-          Invoke-WebRequest $asset.browser_download_url -OutFile "installer/windows/build/weasel-installer.exe"
-          $hash = (Get-FileHash "installer/windows/build/weasel-installer.exe" -Algorithm SHA256).Hash
-          if ($hash -ne $env:WEASEL_SHA256) {
-            Write-Error "Weasel checksum mismatch! Expected: $env:WEASEL_SHA256 Got: $hash"
-            exit 1
-          }
-
-      - name: Download and verify Iansui font
-        shell: pwsh
-        run: |
-          Invoke-WebRequest "https://raw.githubusercontent.com/ChhoeTaigi/iansui/main/Iansui-Regular.ttf" -OutFile "installer/windows/build/Iansui-Regular.ttf"
-          $hash = (Get-FileHash "installer/windows/build/Iansui-Regular.ttf" -Algorithm SHA256).Hash
-          if ($hash -ne $env:IANSUI_SHA256) {
-            Write-Error "Iansui checksum mismatch! Expected: $env:IANSUI_SHA256 Got: $hash"
-            exit 1
-          }
-
-      - name: Install Inno Setup language files
-        shell: pwsh
-        run: |
-          $issDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages\Unofficial"
-          New-Item -ItemType Directory -Force -Path $issDir | Out-Null
-          Invoke-WebRequest "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseTraditional.isl" -OutFile "$issDir\ChineseTraditional.isl"
-
-      - name: Build with Inno Setup
-        run: iscc installer/windows/phah_taibun.iss
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: installer/windows/Output/*.exe
-
-  release:
-    needs: [build-windows]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
-          files: |
-            windows-installer/*.exe
-
-  # macOS build — uncomment when ready
-  # build-macos:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Build .pkg
-  #       run: |
-  #         VERSION="${GITHUB_REF_NAME#v}"
-  #         [ -z "$VERSION" ] && VERSION="${{ github.event.inputs.version }}"
-  #         bash installer/macos/build_pkg.sh "$VERSION"
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: macos-installer
-  #         path: installer/macos/build/*.pkg

@@ -15,12 +15,12 @@ case "$(uname -s)" in
         ;;
     MINGW*|MSYS*|CYGWIN*)
         echo "Windows 請使用 PowerShell 執行："
-        echo "  powershell -ExecutionPolicy Bypass -File scripts\\install_windows.ps1"
+        echo "  powershell -ExecutionPolicy Bypass -File install_windows.ps1"
         exit 1
         ;;
     *)
         echo "不支援的作業系統：$(uname -s)"
-        echo "Windows 請使用 PowerShell：powershell -ExecutionPolicy Bypass -File scripts\\install_windows.ps1"
+        echo "Windows 請使用 PowerShell：powershell -ExecutionPolicy Bypass -File install_windows.ps1"
         exit 1
         ;;
 esac

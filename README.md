@@ -189,9 +189,41 @@ vvjit  → 2026年3月15 拜六
 
 ## 安裝
 
-### 快速安裝（推薦）
+### 安裝需求
 
-字典檔已包含在 repo 中，clone 即可安裝，不需要另外建置。
+- **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
+- **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
+- **Linux**：fcitx5-rime 或 ibus-rime
+
+### 手動安裝
+
+1. 從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載 zip 並解壓
+2. 將 `schema/` 內的檔案複製到 Rime 使用者資料夾：
+   - **macOS**：`~/Library/Rime/`
+   - **Windows**：`%AppData%\Rime\`
+   - **Linux (fcitx5)**：`~/.local/share/fcitx5/rime/`
+   - **Linux (ibus)**：`~/.config/ibus/rime/`
+3. 將 `lua/` 內的檔案複製到 Rime 使用者資料夾的 `lua/` 子目錄
+4. 將 `rime.lua` 複製到 Rime 使用者資料夾根目錄（若已有 `rime.lua`，將內容追加合併）
+5. 重新部署 Rime
+
+### 指令安裝
+
+#### macOS
+
+打開終端機 (Terminal)，輸入以下指令：
+```bash
+curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash
+```
+
+#### Windows
+
+先安裝[小狼毫 (Weasel)](https://github.com/rime/weasel/releases)，然後打開 PowerShell，輸入以下指令：
+```powershell
+irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex
+```
+
+#### Linux
 
 ```bash
 git clone https://github.com/soanseng/rime-phah-taibun.git
@@ -199,64 +231,23 @@ cd rime-phah-taibun
 ./install.sh
 ```
 
-安裝腳本會自動：
-1. 偵測你的輸入法框架（fcitx5-rime 或 ibus-rime）
-2. 複製方案檔、字典、Lua 模組到 Rime 使用者目錄
-3. 註冊「拍台文」到方案清單（不會覆蓋你現有的方案）
-4. 檢查反查所需的 `bopomofo_tw` 方案是否存在
-5. 觸發 Rime 重新部署
-
-安裝完成後，在輸入法選單中選擇「拍台文」即可使用。
-
-### 一鍵安裝包（Windows / macOS）
-
-不想裝 Git？從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載安裝包：
-
-| 平台 | 格式 | 說明 |
-|------|------|------|
-| Windows | `.exe` | 自動安裝小狼毫 + 拍台文方案 + 芫荽字體 |
-| macOS | `.pkg` | 需先安裝[鼠鬚管](https://rime.im/download/)，雙擊即裝 |
-
-### 支援平台
-
-| 平台 | 輸入法框架 | 安裝指令 |
-|------|-----------|---------|
-| Linux | fcitx5-rime | `./install.sh`（自動偵測） |
-| Linux | ibus-rime | `./install.sh`（自動偵測） |
-| macOS | 鼠鬚管 Squirrel | `./install.sh`（自動偵測） |
-| Windows | 小狼毫 Weasel | `powershell -ExecutionPolicy Bypass -File scripts\install_windows.ps1` |
-
-macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](https://rime.im/download/) 下載。
-Windows 需先安裝[小狼毫 Weasel](https://rime.im/download/)。
-
-### 重新部署
-
-安裝後必須重新部署 Rime：
-
-- **fcitx5-rime**：右鍵系統匣圖示 → 重新部署（安裝腳本已自動執行）
-- **ibus-rime**：`ibus restart`
-- **鼠鬚管**：點選選單列圖示 → 重新部署
-
-### 前置需求
-
-- [Rime 輸入法引擎](https://rime.im/)（fcitx5-rime、ibus-rime 或鼠鬚管）
-- `bopomofo_tw` 方案（注音反查需要，大部分 Rime 安裝已內建）
-- Git
-
-> Python 和 uv 只有在需要從原始資料重新建置字典時才需要，一般使用者不需要。
+腳本會自動偵測 fcitx5-rime 或 ibus-rime，下載方案檔案、Lua 模組、芫荽字體，並觸發 Rime 重新部署。
 
 ### 建議字體
 
-安裝 [芫荽 iansui](https://github.com/ChhoeTaigi/iansui) 可獲得最佳台文顯示效果，特別是方音符號和特殊台文漢字。Linux 安裝時會自動下載。
+安裝 [芫荽 iansui](https://github.com/ButTaiwan/iansui) 可獲得最佳台文顯示效果（方音符號、特殊台文漢字）。安裝腳本會自動下載；也可從 [Releases](https://github.com/ButTaiwan/iansui/releases) 手動下載 `iansui.zip`。
 
-安裝字體後，需設定輸入法候選區使用 iansui：
+安裝字體後，設定輸入法候選區使用 iansui：
 
-| 平台 | 設定方式 |
-|------|---------|
-| **fcitx5** (Linux) | 在 `~/.config/fcitx5/conf/classicui.conf` 加入 `Font="Iansui 12"` |
-| **ibus** (Linux) | ibus 偏好設定 → 外觀 → 字型 → 選擇「Iansui」 |
-| **鼠鬚管** (macOS) | 在 `~/Library/Rime/squirrel.custom.yaml` 加入字體設定（見下方） |
-| **小狼毫** (Windows) | 在 `%AppData%\Rime\weasel.custom.yaml` 加入字體設定（見下方） |
+<details>
+<summary>Windows 小狼毫 weasel.custom.yaml</summary>
+
+```yaml
+patch:
+  style/font_face: "Iansui"
+  style/font_point: 14
+```
+</details>
 
 <details>
 <summary>macOS 鼠鬚管 squirrel.custom.yaml</summary>
@@ -269,12 +260,11 @@ patch:
 </details>
 
 <details>
-<summary>Windows 小狼毫 weasel.custom.yaml</summary>
+<summary>Linux fcitx5 classicui.conf</summary>
 
-```yaml
-patch:
-  style/font_face: "Iansui"
-  style/font_point: 14
+在 `~/.config/fcitx5/conf/classicui.conf` 加入：
+```
+Font="Iansui 12"
 ```
 </details>
 
@@ -410,37 +400,6 @@ uv run pytest --cov=scripts --cov-report=term-missing  # 含覆蓋率
 uv run ruff check scripts/ tests/                      # Lint
 uv run ruff format scripts/ tests/                     # 格式化
 ```
-
-### 打包安裝包
-
-本地打包 Windows / macOS 一鍵安裝包：
-
-**Windows**（需要 [Inno Setup 6+](https://jrsoftware.org/isinfo.php) + PowerShell）：
-
-```powershell
-cd installer/windows
-mkdir build
-pwsh download_weasel.ps1 -OutputDir build
-Invoke-WebRequest "https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf" `
-    -OutFile "build/Iansui-Regular.ttf"
-iscc phah_taibun.iss
-# 產出：Output/phah-taibun-setup-1.0.0.exe
-```
-
-**macOS**（需要 Xcode Command Line Tools）：
-
-```bash
-bash installer/macos/build_pkg.sh 1.0.0
-# 產出：installer/macos/build/phah-taibun-1.0.0.pkg
-```
-
-**CI 自動打包**：push tag 即觸發 GitHub Actions 自動打包並建立 Draft Release：
-
-```bash
-git tag v1.0.0 && git push origin v1.0.0
-```
-
-詳見 [`installer/README.md`](installer/README.md)。
 
 ### 新增 Lua 模組
 

@@ -10,15 +10,39 @@
 
 ### 安裝需求
 
-- [Rime 輸入法引擎](https://rime.im/)（fcitx5-rime、ibus-rime、鼠鬚管 或小狼毫）
-- `bopomofo_tw` 方案（注音反查需要，大部分 Rime 安裝已內建）
-- Git
+- **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
+- **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
+- **Linux**：fcitx5-rime 或 ibus-rime
 
-> Python 和 uv 只有在需要從原始資料重新建置字典時才需要，一般使用者不需要。
+### 手動安裝
 
-### 快速安裝
+1. 從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載 zip 並解壓
+2. 將 `schema/` 內的檔案複製到 Rime 使用者資料夾：
+   - **macOS**：`~/Library/Rime/`
+   - **Windows**：`%AppData%\Rime\`
+   - **Linux (fcitx5)**：`~/.local/share/fcitx5/rime/`
+   - **Linux (ibus)**：`~/.config/ibus/rime/`
+3. 將 `lua/` 內的檔案複製到 Rime 使用者資料夾的 `lua/` 子目錄
+4. 將 `rime.lua` 複製到 Rime 使用者資料夾根目錄（若已有 `rime.lua`，將內容追加合併）
+5. 重新部署 Rime
 
-字典檔已包含在 repo 中，clone 即可安裝，不需要另外建置：
+### 指令安裝
+
+#### macOS
+
+打開終端機 (Terminal)，輸入以下指令：
+```bash
+curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash
+```
+
+#### Windows
+
+先安裝[小狼毫 (Weasel)](https://github.com/rime/weasel/releases)，然後打開 PowerShell，輸入以下指令：
+```powershell
+irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex
+```
+
+#### Linux
 
 ```bash
 git clone https://github.com/soanseng/rime-phah-taibun.git
@@ -26,95 +50,23 @@ cd rime-phah-taibun
 ./install.sh
 ```
 
-安裝腳本會自動：
-1. 偵測你的輸入法框架（fcitx5-rime、ibus-rime 或鼠鬚管）
-2. 複製方案檔、字典、Lua 模組到 Rime 使用者目錄
-3. 註冊「拍台文」到方案清單（不會覆蓋你現有的方案）
-4. 檢查反查所需的 `bopomofo_tw` 方案是否存在
-5. 觸發 Rime 重新部署
-
-安裝完成後，在輸入法選單中選擇「拍台文(台)」即可使用。
-
-### 支援平台
-
-| 平台 | 輸入法框架 | 安裝指令 |
-|------|-----------|---------|
-| Linux | fcitx5-rime | `./install.sh`（自動偵測） |
-| Linux | ibus-rime | `./install.sh`（自動偵測） |
-| macOS | 鼠鬚管 Squirrel | `./install.sh`（自動偵測） |
-| Windows | 小狼毫 Weasel | 見下方手動安裝 |
-| 手動指定 | 任意平台 | `./install.sh ~/.local/share/fcitx5/rime` |
-
-macOS 需先安裝鼠鬚管：`brew install --cask squirrel` 或從 [rime.im](https://rime.im/download/) 下載。
-
-### Windows Weasel 安裝
-
-Windows 使用者需先安裝 [小狼毫 Weasel](https://rime.im/download/)。
-
-#### 自動安裝（推薦）
-
-```
-git clone https://github.com/soanseng/rime-phah-taibun.git
-cd rime-phah-taibun
-powershell -ExecutionPolicy Bypass -File scripts\install_windows.ps1
-```
-
-安裝腳本會自動：
-1. 複製方案檔和 Lua 腳本到 `%AppData%\Rime`
-2. 註冊拍台文到方案清單（不覆蓋現有方案）
-3. 下載芫荽 iansui 字體
-4. 提示手動重新部署
-
-#### 手動安裝
-
-如果 PowerShell 腳本無法執行，也可以手動安裝：
-
-1. 下載或 clone 本專案
-2. 找到 Rime 使用者目錄：右鍵小狼毫系統匣圖示 → 用戶文件夾（通常在 `%AppData%\Rime`）
-3. 複製以下檔案：
-   ```
-   schema/phah_taibun.schema.yaml       → %AppData%\Rime\
-   schema/phah_taibun.dict.yaml         → %AppData%\Rime\
-   schema/phah_taibun_reverse.dict.yaml → %AppData%\Rime\
-   schema/hanlo_rules.yaml              → %AppData%\Rime\
-   schema/lighttone_rules.json          → %AppData%\Rime\
-   lua/phah_taibun_*.lua                → %AppData%\Rime\lua\
-   rime.lua                             → %AppData%\Rime\
-   ```
-4. 編輯 `%AppData%\Rime\default.custom.yaml`，在 `schema_list` 中加入 `- schema: phah_taibun`
-5. 右鍵小狼毫圖示 → 重新部署
-6. 在輸入法選單中選擇「拍台文(台)」
-
-> **注意**：如果你已有 `default.custom.yaml`，請手動將 `phah_taibun` 加入 `schema_list` 而非直接覆蓋。
->
-> 英文混打和 Emoji 功能需要 rime-ice 的 `melt_eng` 字典和 `opencc/emoji.json`，Windows 使用者可從 [rime-ice](https://github.com/iDvel/rime-ice) 取得這些檔案。
-
-### 重新部署
-
-安裝後必須重新部署 Rime：
-
-- **fcitx5-rime**：右鍵系統匣圖示 → 重新部署（安裝腳本已自動執行）
-- **ibus-rime**：`ibus restart`
-- **鼠鬚管**（macOS）：點選選單列圖示 → 重新部署
-- **小狼毫**（Windows）：右鍵系統匣圖示 → 重新部署
+腳本會自動偵測 fcitx5-rime 或 ibus-rime，下載方案檔案、Lua 模組、芫荽字體，並觸發 Rime 重新部署。
 
 ### 建議字體
 
-安裝 [芫荽 iansui](https://github.com/ChhoeTaigi/iansui) 可獲得最佳台文顯示效果，特別是方音符號和特殊台文漢字。Linux 執行 `install.sh` 時會自動下載；macOS / Windows 請從 [GitHub Releases](https://github.com/ChhoeTaigi/iansui/releases) 手動下載安裝。
+安裝 [芫荽 iansui](https://github.com/ButTaiwan/iansui) 可獲得最佳台文顯示效果（方音符號、特殊台文漢字）。安裝腳本會自動下載；也可從 [Releases](https://github.com/ButTaiwan/iansui/releases) 手動下載 `iansui.zip`。
 
-安裝字體後，還需要設定輸入法的候選區使用 iansui 字體：
+安裝字體後，設定輸入法候選區使用 iansui 字體：
 
-#### fcitx5（Linux）
+#### 小狼毫 Weasel（Windows）
 
-在 `~/.config/fcitx5/conf/classicui.conf` 加入：
+建立或編輯 `%AppData%\Rime\weasel.custom.yaml`：
 
+```yaml
+patch:
+  style/font_face: "Iansui"
+  style/font_point: 14
 ```
-Font="Iansui 12"
-```
-
-#### ibus（Linux）
-
-開啟 ibus 偏好設定 → 外觀 → 字型 → 選擇「Iansui」。
 
 #### 鼠鬚管 Squirrel（macOS）
 
@@ -126,16 +78,12 @@ patch:
   style/font_point: 18
 ```
 
-儲存後點選選單列圖示 → 重新部署。
+#### fcitx5（Linux）
 
-#### 小狼毫 Weasel（Windows）
+在 `~/.config/fcitx5/conf/classicui.conf` 加入：
 
-建立或編輯 `%AppData%\Rime\weasel.custom.yaml`：
-
-```yaml
-patch:
-  style/font_face: "Iansui"
-  style/font_point: 14
+```
+Font="Iansui 12"
 ```
 
 儲存後右鍵系統匣圖示 → 重新部署。

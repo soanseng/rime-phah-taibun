@@ -294,14 +294,14 @@ else
     echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
     FONT_DIR="$HOME/.local/share/fonts/iansui"
     mkdir -p "$FONT_DIR"
-    IANSUI_URL="https://github.com/ChhoeTaigi/iansui/releases/latest/download/Iansui-Regular.ttf"
+    IANSUI_URL="https://raw.githubusercontent.com/ButTaiwan/iansui/main/fonts/ttf/Iansui-Regular.ttf"
     if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
         fc-cache -f "$FONT_DIR" 2>/dev/null || true
         IANSUI_INSTALLED=true
         echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
     else
         echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
-        echo -e "         https://github.com/ChhoeTaigi/iansui/releases"
+        echo -e "         https://github.com/ButTaiwan/iansui/releases"
     fi
 fi
 
