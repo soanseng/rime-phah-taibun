@@ -728,6 +728,10 @@ Step 3: 選 liah → 出現：掠、拿、略...
 Step 4: 選「掠」→ 輸出
 ```
 
+### 線上打字練習
+
+想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 網站，有各種台語文章可以練習打字。搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音和漢羅混寫！
+
 ### 教學四：POJ 使用者無痛轉移
 
 如果你習慣 POJ，完全不需要改變打字習慣：
@@ -994,6 +998,7 @@ cd rime-phah-taibun
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
+| [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考 |
 

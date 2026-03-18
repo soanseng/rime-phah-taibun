@@ -453,6 +453,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
+| [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，開發時用於驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先、emoji） |
 
@@ -505,6 +506,8 @@ uv run ruff format scripts/ tests/                     # 格式化
 - **台文寫作者**：LKK 漢羅規範、全羅模式、POJ/TL 切換
 - **台語學習者**：拼音註解、注音反查、萬用查字，邊打邊學
 - **Linux 使用者**：目前唯一的 Linux 台語桌面輸入法
+
+> 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 試試看，搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音！
 
 ## TODO
 
