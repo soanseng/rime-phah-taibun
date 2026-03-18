@@ -279,7 +279,7 @@ local TONE_MARKS = {
 --   When i,u both present: mark the SECOND one (main vowel, not glide)
 --     iu → iú (mark u), ui → uí (mark i)
 --   Special: ere → mark second e (erê)
---   Syllabic nasals: m, ng
+--   Syllabic nasals: m, ng, nng (mark second n for nng: nn̄g)
 local function add_tone_to_syllable(syl)
   local tone = syl:sub(-1)
   if not tone:match("[1-9]") then return syl end  -- no tone number
@@ -306,7 +306,14 @@ local function add_tone_to_syllable(syl)
       pos = pi or pu
     end
   end
-  if not pos then pos = base:find("[mn]") end
+  if not pos then
+    -- Syllabic nasals: for nng, mark the second n (nn̄g not n̄ng)
+    if base:sub(1, 2) == "nn" then
+      pos = 2
+    else
+      pos = base:find("[mn]")
+    end
+  end
   if pos then return base:sub(1, pos) .. mark .. base:sub(pos + 1) end
   return base
 end
