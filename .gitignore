@@ -28,6 +28,7 @@ LKK*.html
 # Claude Code（AI 開發指令，不進公開 repo）
 CLAUDE.md
 .claude/
+docs/superpowers/
 
 # Worktrees
 .worktrees/
