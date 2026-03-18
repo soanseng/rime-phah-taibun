@@ -314,15 +314,15 @@ end
 -- Convert space-separated syllables with tone numbers to
 -- hyphen-joined syllables with Unicode diacritics
 -- e.g. "gua2 ai3 li2" → "guá-ài-lí"
--- Double space (light-tone marker) becomes "--":
--- e.g. "tng2  lai5" → "tǹg--lâi"
+-- Light-tone marker "--" in input is preserved in output:
+-- e.g. "tng2--lai5" → "tǹg--lâi"
 function M.format_romanization(roman)
   if not roman or roman == "" then return roman end
-  -- Split on double-space first to preserve light-tone "--" boundaries
+  -- Split on "--" first to preserve light-tone boundaries
   local groups = {}
   local start = 1
   while true do
-    local ds = roman:find("  ", start, true)
+    local ds = roman:find("--", start, true)
     if ds then
       table.insert(groups, roman:sub(start, ds - 1))
       start = ds + 2

@@ -71,42 +71,34 @@ local function is_lo_type(word)
   return htype == "lo"
 end
 
--- Replace Han characters with romanization for words classified as "lo"
--- For single characters/words: check the whole word
--- For phrases: check each character individually
-local function apply_hanlo_rules(text, raw_roman)
-  if not data_mod or not raw_roman or raw_roman == "" then
-    return text
-  end
-
+-- Apply hanlo rules to a single group (no "--" markers)
+-- Returns: result_text, changed
+local function apply_hanlo_rules_group(text, roman_group)
   local fmt = data_mod.format_romanization
 
-  -- Check the whole word/phrase first
-  if is_lo_type(text) then
-    return fmt and fmt(raw_roman) or raw_roman
-  end
-
-  -- For multi-character text, check each character
-  -- Split romanization by hyphens/spaces to match individual characters
   local chars = {}
   for char in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
     table.insert(chars, char)
   end
 
-  -- If single character, we already checked above
-  if #chars <= 1 then
-    return text
-  end
-
   -- Split romanization syllables (hyphen-separated or space-separated)
   local syllables = {}
-  for syl in raw_roman:gmatch("[^%s%-]+") do
+  for syl in roman_group:gmatch("[^%s%-]+") do
     table.insert(syllables, syl)
   end
 
   -- If syllable count doesn't match character count, keep original
   if #syllables ~= #chars then
-    return text
+    return text, false
+  end
+
+  -- Single character: check directly
+  if #chars == 1 then
+    if is_lo_type(text) then
+      local result = fmt and fmt(roman_group) or roman_group
+      return result, true
+    end
+    return text, false
   end
 
   -- Check each character: if "lo" type, replace with romanization (with diacritics)
@@ -124,7 +116,72 @@ local function apply_hanlo_rules(text, raw_roman)
   end
 
   if changed then
-    return table.concat(result_parts, "")
+    return table.concat(result_parts, ""), true
+  end
+
+  return text, false
+end
+
+-- Replace Han characters with romanization for words classified as "lo"
+-- For single characters/words: check the whole word
+-- For phrases: check each character individually
+-- Handles "--" light-tone markers: splits text and romanization into groups
+local function apply_hanlo_rules(text, raw_roman)
+  if not data_mod or not raw_roman or raw_roman == "" then
+    return text
+  end
+
+  local fmt = data_mod.format_romanization
+
+  -- Check the whole word/phrase first (excluding "--" markers)
+  local text_no_marker = text:gsub("%-%-", "")
+  if is_lo_type(text_no_marker) then
+    return fmt and fmt(raw_roman) or raw_roman
+  end
+
+  -- Split text on "--" into groups, and romanization on "--"
+  local text_groups = {}
+  local tpos = 1
+  while true do
+    local dp = text:find("--", tpos, true)
+    if dp then
+      table.insert(text_groups, text:sub(tpos, dp - 1))
+      tpos = dp + 2
+    else
+      table.insert(text_groups, text:sub(tpos))
+      break
+    end
+  end
+
+  local roman_groups = {}
+  local rpos = 1
+  while true do
+    local ds = raw_roman:find("--", rpos, true)
+    if ds then
+      table.insert(roman_groups, raw_roman:sub(rpos, ds - 1))
+      rpos = ds + 2
+    else
+      table.insert(roman_groups, raw_roman:sub(rpos))
+      break
+    end
+  end
+
+  -- Group counts must match
+  if #text_groups ~= #roman_groups then
+    return text
+  end
+
+  -- Process each group independently
+  local result_groups = {}
+  local changed = false
+  for g = 1, #text_groups do
+    local group_result, group_changed = apply_hanlo_rules_group(text_groups[g], roman_groups[g])
+    table.insert(result_groups, group_result)
+    if group_changed then changed = true end
+  end
+
+  if changed then
+    return table.concat(result_groups, "--")
   end
 
   return text
@@ -140,6 +197,27 @@ function M.func(input, env)
     -- Extract the raw romanization from Rime's auto-comment
     -- Rime formats it as " [romanization]" via comment_format xform
     local raw_roman = comment:match("%[(.-)%]") or ""
+
+    -- Synchronize light-tone "--" from text to romanization.
+    -- User dictionary may cache text with "--" but romanization without it.
+    if raw_roman ~= "" and text:find("--", 1, true) and not raw_roman:find("--", 1, true) then
+      local before = text:match("^(.-)%-%-")
+      if before then
+        local char_count = 0
+        for _ in before:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+          char_count = char_count + 1
+        end
+        local syls = {}
+        for syl in raw_roman:gmatch("[^%s]+") do
+          table.insert(syls, syl)
+        end
+        if char_count > 0 and char_count < #syls then
+          local pre = table.concat(syls, " ", 1, char_count)
+          local suf = table.concat(syls, " ", char_count + 1)
+          raw_roman = pre .. "--" .. suf
+        end
+      end
+    end
 
     -- Convert tone numbers to diacritics for display (e.g. "gua2" → "guá")
     local fmt = data_mod and data_mod.format_romanization or nil
@@ -162,8 +240,9 @@ function M.func(input, env)
         end
 
         -- Boost quality for multi-syllable phrases
-        local syllable_count = 1
-        for _ in roman:gmatch(" ") do syllable_count = syllable_count + 1 end
+        -- Count actual syllables (not individual spaces — double-space is one boundary)
+        local syllable_count = 0
+        for _ in roman:gmatch("[^%s%-]+") do syllable_count = syllable_count + 1 end
         local boost = 0
         if syllable_count >= 3 then
           boost = 1.0
@@ -226,7 +305,9 @@ function M.func(input, env)
       end
 
       -- Boost quality for longer matches (multi-character phrases)
-      local text_len = utf8_len(new_text)
+      -- Exclude "--" light-tone markers from length count
+      local text_for_len = new_text:gsub("%-%-", "")
+      local text_len = utf8_len(text_for_len)
       local boost = lo_boost
       if text_len >= 4 then
         boost = boost + 1.0

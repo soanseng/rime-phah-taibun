@@ -145,7 +145,7 @@ local function insert_lighttone_marker_roman(syllables, match_count)
   local prefix_count = #syllables - match_count
   local prefix = table.concat(syllables, " ", 1, prefix_count)
   local suffix = table.concat(syllables, " ", prefix_count + 1)
-  return prefix .. "  " .. suffix
+  return prefix .. "--" .. suffix
 end
 
 -- ============================================================
