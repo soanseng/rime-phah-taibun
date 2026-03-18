@@ -294,7 +294,9 @@ function M.tl_to_poj(tl_text)
   result = result:gsub("ik([^a-z])", "ek%1")
   result = result:gsub("ik$", "ek")
   -- POJ special characters
-  result = result:gsub("nn", "\226\129\191")                    -- nn → ⁿ (U+207F)
+  -- nn → ⁿ only when NOT followed by g (nng is syllabic nasal, not nasalization)
+  result = result:gsub("nn([^g])", "\226\129\191%1")             -- nn → ⁿ (U+207F) before non-g
+  result = result:gsub("nn$", "\226\129\191")                    -- nn → ⁿ at end of string
   result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
   result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
   result = result:gsub("ua", "oa")
