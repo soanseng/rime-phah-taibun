@@ -18,8 +18,9 @@ local function tl_to_poj(tl_text)
   result = result:gsub("ik([^a-z])", "ek%1")
   result = result:gsub("ik$", "ek")
   -- POJ special characters
-  -- nn → ⁿ only when NOT followed by g (nng is syllabic nasal, not nasalization)
-  result = result:gsub("nn([^g])", "\226\129\191%1")             -- nn → ⁿ (U+207F) before non-g
+  -- nn → ⁿ only when NOT followed by g or combining diacritics
+  -- (nng is syllabic nasal; combining marks \xCC/\xCD mean the n carries a tone)
+  result = result:gsub("nn([^g\204\205])", "\226\129\191%1")    -- nn → ⁿ (U+207F) before non-g
   result = result:gsub("nn$", "\226\129\191")                    -- nn → ⁿ at end of string
   result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
   result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
