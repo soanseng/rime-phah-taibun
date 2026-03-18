@@ -342,6 +342,40 @@ Step 3: 按 a 選第一個、s 選第二個、d 選第三個...
 
 ---
 
+## 五之一、推薦用字標記
+
+候選區的註解會顯示推薦用字標記，幫助你辨別哪些字推薦用漢字、哪些推薦用羅馬字：
+
+```
+輸入: tsiah
+候選: 食 ◆ [tsiah8]     ← ◆ 推薦用漢字
+
+輸入: beh
+候選: beh ★ [beh4]      ← ★ 推薦用羅馬字
+```
+
+### 標記說明
+
+| 標記 | 意義 | 來源 |
+|------|------|------|
+| ◆ | 推薦用漢字 | LKK 用字規範（type: han）或[教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) |
+| ★ | 推薦用羅馬字 | LKK 用字規範（type: lo） |
+
+標記只出現在候選區註解（comment），**不影響輸出文字**。你可以參考標記來學習正確的漢羅書寫，但最終輸出仍由漢羅模式自動決定。
+
+### 關閉標記
+
+如果不需要推薦用字標記，可以在 Rime 使用者目錄中建立或編輯 `phah_taibun.custom.yaml`：
+
+```yaml
+patch:
+  phah_taibun_recommend/enabled: false
+```
+
+重新部署 Rime 後生效。
+
+---
+
 ## 六、注音反查（華→台）
 
 不知道台語怎麼講？按 `~` 進入反查模式，用注音找華語字，選字後自動轉換成台語候選。
@@ -730,7 +764,7 @@ Step 4: 選「掠」→ 輸出
 | **Emoji** | 自動顯示 | 無 | 有 |
 | **英文混打** | 內建 | 無 | 無 |
 | **輕聲辨識** | **29K 詞條 + 即時產生** | 無 | 無 |
-| **自訂擴充** | Lua 模組（14 個） | 無 | 無 |
+| **自訂擴充** | Lua 模組（16 個） | 無 | 無 |
 
 ### 拍台文的核心差異
 
@@ -846,7 +880,7 @@ uv run python scripts/build_all.py
 **建置流程**涵蓋 11 個步驟：
 1. 從 7 個語料庫提取詞頻（iCorpus、Ungian、康軒課本、900例句、NMTL 文學、KipSutian、白話字文獻）
 2. 合併 ChhoeTaigi 9 本辭典 CSV，加上語料庫頻率加權
-3. 解析 LKK 漢羅規則和輕聲規則
+3. 解析 LKK 漢羅規則、輕聲規則、教育部推薦700字
 4. 建置反查字典（KipSutian 65K 筆，或 MOE 24K 筆備用）
 5. 從所有語料庫句子提取雙字詞組（bigram phrases）
 6. 驗證生成的字典
@@ -876,7 +910,7 @@ ls ~/Library/Rime/lua/phah_taibun_*.lua
 dir %AppData%\Rime\lua\phah_taibun_*.lua
 ```
 
-應該要有 15 個 `phah_taibun_*.lua` 檔案。
+應該要有 16 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
@@ -957,6 +991,8 @@ cd rime-phah-taibun
 | [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙 |
 | [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料 |
 | [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料 |
+| [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
+| [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考 |
@@ -974,4 +1010,4 @@ cd rime-phah-taibun
 
 ---
 
-*最後更新：2026-03-17*
+*最後更新：2026-03-18*
