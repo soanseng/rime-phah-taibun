@@ -3,8 +3,12 @@
 -- Runs after reverse_lookup_filter in the filter chain
 --
 -- The built-in reverse_lookup_filter generates comments with numeric tones
--- (e.g. "siau2 siau3 tsio2"). This filter converts them to diacritics
--- (e.g. "siáu siàu tsió") and respects TL/POJ output mode.
+-- (e.g. "Siau2 Siau3 tsio2"). This filter converts them to diacritics
+-- (e.g. "Siáu Siàu tsió") and respects TL/POJ output mode.
+--
+-- Note: comment_format xform in the schema (wrapping in brackets) is applied
+-- at display time, NOT stored on the candidate. The raw comment is just
+-- space-separated readings like "Siau2 Siau3 siau2 siau2(文)".
 
 local M = {}
 
@@ -25,15 +29,12 @@ function M.func(input, env)
   for cand in input:iter() do
     local comment = cand.comment or ""
 
-    -- Extract content inside brackets: " [...]"
-    local inner = comment:match("^%s*%[(.-)%]%s*$")
-
     -- Only process if there are tone numbers (digits) in the comment.
     -- Normal candidates already have diacritics by this point, so this
     -- naturally targets only reverse lookup results.
-    if inner and inner:match("[1-9]") and data_mod then
+    if comment ~= "" and comment:match("[1-9]") and data_mod then
       local tokens = {}
-      for token in inner:gmatch("[^%s]+") do
+      for token in comment:gmatch("[^%s]+") do
         -- Separate syllable from annotation like (文) or (白)
         local syl, annotation = token:match("^(.-)(%b())$")
         if not syl or syl == "" then
@@ -55,11 +56,15 @@ function M.func(input, env)
         table.insert(tokens, formatted .. annotation)
       end
 
-      local new_comment = " [" .. table.concat(tokens, " ") .. "]"
-      local new_cand = Candidate(cand.type, cand.start, cand._end, cand.text, new_comment)
-      new_cand.quality = cand.quality
-      new_cand.preedit = cand.preedit
-      yield(new_cand)
+      local new_comment = table.concat(tokens, " ")
+      if new_comment ~= comment then
+        local new_cand = Candidate(cand.type, cand.start, cand._end, cand.text, new_comment)
+        new_cand.quality = cand.quality
+        new_cand.preedit = cand.preedit
+        yield(new_cand)
+      else
+        yield(cand)
+      end
     else
       yield(cand)
     end

@@ -179,6 +179,9 @@ function M.func(key, env)
   -- Uses ReverseLookup first, then hoabun_map (華→台) as fallback
   -- ============================================================
   if input:match("^~") then
+    local full_roman = context:get_option("full_romanization")
+    local poj = context:get_option("poj_mode")
+
     local function lookup_tl(text)
       -- Try ReverseLookup (for chars in our dictionary like 食, 人, 大)
       if env.rev then
@@ -195,11 +198,36 @@ function M.func(key, env)
       return nil
     end
 
+    -- 全羅 mode: directly commit formatted romanization (no feed-back needed,
+    -- since all candidates for the same TL code produce the same romanization)
+    local function commit_reverse_roman(tl_code)
+      local roman = tl_code
+      if poj and data_mod then
+        roman = data_mod.tl_to_poj(roman)
+      end
+      if data_mod then
+        roman = data_mod.format_romanization(roman)
+      end
+      if poj and data_mod and data_mod.poj_fix_diacritics then
+        roman = data_mod.poj_fix_diacritics(roman)
+      end
+      if state.capitalize_next then
+        roman = capitalize_first(roman)
+      end
+      env.engine:commit_text(roman)
+      state.capitalize_next = false
+      context:clear()
+      return 1  -- kAccepted
+    end
+
     if kc == 0x20 then  -- space
       local cand = context:get_selected_candidate()
       if cand then
         local tl_code = lookup_tl(cand.text)
         if tl_code then
+          if full_roman then
+            return commit_reverse_roman(tl_code)
+          end
           context:clear()
           context:push_input(tl_code)
           return 1  -- kAccepted
@@ -213,6 +241,9 @@ function M.func(key, env)
       if cand then
         local tl_code = lookup_tl(cand.text)
         if tl_code then
+          if full_roman then
+            return commit_reverse_roman(tl_code)
+          end
           context:clear()
           context:push_input(tl_code)
           return 1
