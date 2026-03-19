@@ -43,7 +43,7 @@ local FINALS = {
   "io", "ioh", "iok", "iong",
   "iu", "iuh",
   -- u-diphthongs and triphthongs
-  "ua", "uah", "uai", "uaih", "uan", "uat",
+  "ua", "uah", "uai", "uaih", "uak", "uan", "uang", "uat",
   "ue", "ueh",
   "ui", "uih",
   -- Nasalized (-nn)
@@ -53,11 +53,12 @@ local FINALS = {
   "iaunn",
   "uann", "uainn", "uinn",
   -- Nasalized + h (checked nasalized)
-  "ainnh", "aunnh", "ennh", "innh",
-  "iannh", "iaunnh",
+  "ainnh", "annh", "aunnh", "ennh", "innh", "onnh", "unnh",
+  "iannh", "iaunnh", "iunnh",
   "uainnh", "uinnh",
-  -- Special
-  "er", "erh", "ir", "irh",
+  -- Special / dialectal
+  "er", "erh", "ere", "ir", "irh", "irn",
+  "ioo",
   -- Syllabic nasals
   "m", "mh", "ng", "ngh", "nng",
 }
