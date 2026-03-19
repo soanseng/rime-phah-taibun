@@ -151,8 +151,9 @@ function M.func(key, env)
 
   -- ============================================================
   -- WILDCARD FEED-BACK: ?pattern → select romanization → push as input
+  -- Supports ? at any position: ?iah, si?, s?ah
   -- ============================================================
-  if input:match("^%?") and input ~= "?" then
+  if input:find("?", 1, true) and input ~= "?" then
     if kc == 0x20 then  -- space
       local cand = context:get_selected_candidate()
       if cand and cand.type == "wildcard" and cand.text:match("^[a-z]") then
@@ -321,7 +322,7 @@ function M.func(key, env)
 
   -- Handle punctuation while composing: commit romanization + half-width punctuation
   local punct = PUNCT_MAP[kc]
-  if punct and not input:match("^[%?~]") then
+  if punct and not input:match("^~") and not input:find("?", 1, true) then
     local cand = context:get_selected_candidate()
     local roman = extract_roman(cand, env)
     if roman then
