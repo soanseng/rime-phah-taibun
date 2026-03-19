@@ -75,6 +75,7 @@ engine:
     - lua_filter@*phah_taibun_synonym
     - lua_filter@*phah_taibun_long_word
     - reverse_lookup_filter@phah_taibun_reverse_lookup
+    - lua_filter@*phah_taibun_reverse_format
     - simplifier@emoji
     - uniquifier
 
