@@ -126,9 +126,10 @@ end
 -- For single characters/words: check the whole word
 -- For phrases: check each character individually
 -- Handles "--" light-tone markers: splits text and romanization into groups
+-- Returns: result_text, has_lo (true if text contains lo-type romanization)
 local function apply_hanlo_rules(text, raw_roman)
   if not data_mod or not raw_roman or raw_roman == "" then
-    return text
+    return text, false
   end
 
   local fmt = data_mod.format_romanization
@@ -136,7 +137,7 @@ local function apply_hanlo_rules(text, raw_roman)
   -- Check the whole word/phrase first (excluding "--" markers)
   local text_no_marker = text:gsub("%-%-", "")
   if is_lo_type(text_no_marker) then
-    return fmt and fmt(raw_roman) or raw_roman
+    return (fmt and fmt(raw_roman) or raw_roman), true
   end
 
   -- Split text on "--" into groups, and romanization on "--"
@@ -168,7 +169,7 @@ local function apply_hanlo_rules(text, raw_roman)
 
   -- Group counts must match
   if #text_groups ~= #roman_groups then
-    return text
+    return text, false
   end
 
   -- Process each group independently
@@ -181,10 +182,10 @@ local function apply_hanlo_rules(text, raw_roman)
   end
 
   if changed then
-    return table.concat(result_groups, "--")
+    return table.concat(result_groups, "--"), true
   end
 
-  return text
+  return text, false
 end
 
 function M.func(input, env)
@@ -231,11 +232,12 @@ function M.func(input, env)
       if roman and roman ~= "" then
         -- 候選清單顯示漢羅文字（套用 hanlo rules，跟漢羅模式相同）
         local display_text = text
+        local display_has_lo = false
         if raw_roman ~= "" then
-          display_text = apply_hanlo_rules(text, raw_roman)
+          display_text, display_has_lo = apply_hanlo_rules(text, raw_roman)
         end
         -- POJ 模式下，漢羅文字中的羅馬字也要轉 POJ
-        if mode == 3 and display_text ~= text then
+        if mode == 3 and display_has_lo then
           display_text = tl_to_poj(display_text)
         end
 
@@ -255,7 +257,7 @@ function M.func(input, env)
         local display_roman = fmt and fmt(roman) or roman
         if mode == 3 and data_mod and data_mod.poj_fix_diacritics then
           display_roman = data_mod.poj_fix_diacritics(display_roman)
-          if display_text ~= text then
+          if display_has_lo then
             display_text = data_mod.poj_fix_diacritics(display_text)
           end
         end
@@ -270,8 +272,9 @@ function M.func(input, env)
     else
       -- 漢羅模式：apply hanlo_rules to determine Han vs Lo output
       local new_text = text
+      local has_lo = false
       if raw_roman ~= "" then
-        new_text = apply_hanlo_rules(text, raw_roman)
+        new_text, has_lo = apply_hanlo_rules(text, raw_roman)
       end
 
       local display_roman = raw_roman
@@ -280,8 +283,8 @@ function M.func(input, env)
         display_roman = tl_to_poj(raw_roman)
       end
 
-      -- If mode 1 (POJ) and text changed to romanization, convert that too
-      if mode == 1 and new_text ~= text then
+      -- If mode 1 (POJ) and text contains romanization, convert to POJ
+      if mode == 1 and has_lo then
         new_text = tl_to_poj(new_text)
       end
 
@@ -291,7 +294,7 @@ function M.func(input, env)
         local formatted = fmt and fmt(display_roman) or display_roman
         if mode == 1 and data_mod and data_mod.poj_fix_diacritics then
           formatted = data_mod.poj_fix_diacritics(formatted)
-          if new_text ~= text then
+          if has_lo then
             new_text = data_mod.poj_fix_diacritics(new_text)
           end
         end
@@ -300,7 +303,7 @@ function M.func(input, env)
 
       -- LKK lo-type 候選排前面（如 ê、kah 等應為羅馬字的詞）
       local lo_boost = 0
-      if new_text ~= text then
+      if has_lo then
         lo_boost = 5.0
       end
 
