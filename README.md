@@ -19,7 +19,7 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 
 <p align="center">
-  <img src="docs/demo-1.png" alt="拍台文輸入示範" width="240">
+  <img src="docs/demo/demo-part1.gif" alt="拍台文打字示範：基本輸入" width="600">
 </p>
 
 ## 特色
@@ -52,6 +52,10 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 ```
 
 漢羅混寫自動處理：「我」「去」輸出漢字，「beh」「tshit-thô」依 LKK 規範輸出羅馬字。
+
+<p align="center">
+  <img src="docs/demo/demo-part2.gif" alt="拍台文打字示範：選字與候選" width="600">
+</p>
 
 ### POJ / TL 都可以打
 
@@ -519,9 +523,14 @@ uv run ruff format scripts/ tests/                     # 格式化
 
 > 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 試試看，搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音！
 
+<p align="center">
+  <img src="docs/demo/demo-part3.gif" alt="拍台文打字示範：完成練習" width="600">
+</p>
+
 ## TODO
 
-- [ ] 製作 GIF 動畫教學（基本輸入、輸出模式切換、注音反查、萬用查字等）
+- [x] 製作 GIF 動畫教學（基本輸入、選字與候選、打字練習）
+- [ ] 製作功能特寫 GIF（輸出模式切換、注音反查、萬用查字等）
 - [ ] 文白讀切換功能（phah_taibun_synonym）
 
 ## 授權
