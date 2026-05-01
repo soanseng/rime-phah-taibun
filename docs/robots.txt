@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://soanseng.github.io/rime-phah-taibun/sitemap.xml

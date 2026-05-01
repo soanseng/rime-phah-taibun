@@ -14,7 +14,7 @@
 
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
 
-> **快速入口**：[線上使用說明](https://soanseng.github.io/rime-phah-taibun/) · [快速上手小卡](docs/quickstart-card.md) · [完整使用指南](docs/user-guide.md)
+> **快速入口**：[專案首頁](https://soanseng.github.io/rime-phah-taibun/) · [線上使用說明](https://soanseng.github.io/rime-phah-taibun/guide.html) · [快速上手小卡](docs/quickstart-card.md)
 
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 
@@ -137,7 +137,7 @@ to1 → 多、刀...（只列出第1聲）
 
 不確定聲母？用 `?` 代替，先選音節再選字：
 
-![萬用查字](<docs/萬用查字 ?.png>)
+![萬用查字](docs/wildcard-lookup.png)
 
 ```
 Step 1: ?iah → 列出可能的音節：

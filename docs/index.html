@@ -1,101 +1,445 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>拍台文 Phah Tai-bun — Rime 台語輸入法</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <meta name="description" content="拍台文 — Rime 台語輸入法方案使用說明。漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拍台文 Phah Tai-bun｜電腦台語輸入法、Rime 台語輸入法、POJ/TL 漢羅打字</title>
+  <meta name="description" content="拍台文 Phah Tai-bun 是給 Windows、macOS、Linux 電腦使用的 Rime 台語輸入法方案。整合 ChhoeTaigi、iTaigi、教育部辭典、楊允言詞頻與 20+ 個台文外部資源，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫、候選拼音註解、華語反查台語，適合創作者、老師、學生與日常台文書寫。">
+  <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,電腦台語輸入法,Rime 台語輸入法,白話字輸入法,台羅輸入法,POJ 輸入法,TL 輸入法,漢羅輸入,漢羅混寫,台語打字,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,拍台文,Phah Tai-bun">
+  <meta name="author" content="Soan Seng">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://soanseng.github.io/rime-phah-taibun/">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
   <link rel="icon" type="image/png" sizes="128x128" href="icon.png">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-  <style>
-    :root {
-      --theme-color: #2E8B57;
-      --theme-color-dark: #3CB371;
-    }
-    .sidebar {
-      background-color: #f8f8f8;
-    }
-    .markdown-section h1 {
-      color: var(--theme-color);
-    }
-    .markdown-section table {
-      display: table;
-      width: 100%;
-    }
-    .markdown-section code {
-      color: #c7254e;
-      background-color: #f9f2f4;
-    }
-    .markdown-section pre>code {
-      color: inherit;
-      background-color: inherit;
-    }
-    /* Dark mode */
-    body.dark {
-      background-color: #1e1e1e;
-      color: #dcdcdc;
-    }
-    body.dark .sidebar {
-      background-color: #252525;
-    }
-    body.dark .markdown-section code {
-      color: #e06c75;
-      background-color: #2d2d2d;
-    }
-    /* Toggle button */
-    .theme-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 20px;
-      cursor: pointer;
-      background: var(--theme-color);
-      color: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-  </style>
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="拍台文 Phah Tai-bun">
+  <meta property="og:title" content="拍台文｜電腦台語輸入法">
+  <meta property="og:description" content="會講台語，就可以開始打台文。POJ/TL 都通、聲調可省略、候選顯示拼音、預設漢羅混寫。">
+  <meta property="og:url" content="https://soanseng.github.io/rime-phah-taibun/">
+  <meta property="og:image" content="https://soanseng.github.io/rime-phah-taibun/icon.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="拍台文｜電腦台語輸入法">
+  <meta name="twitter:description" content="Rime 台語輸入法方案：POJ/TL 雙拼音、聲調可省略、漢羅混寫、華語反查台語。">
+  <meta name="theme-color" content="#0b6f55">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/landing.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://soanseng.github.io/rime-phah-taibun/#website",
+        "url": "https://soanseng.github.io/rime-phah-taibun/",
+        "name": "拍台文 Phah Tai-bun",
+        "inLanguage": "zh-Hant-TW",
+        "description": "Rime 台語輸入法方案，支援 POJ/TL、漢羅混寫與電腦台語打字。"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://soanseng.github.io/rime-phah-taibun/#software",
+        "name": "拍台文 Phah Tai-bun",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Windows, macOS, Linux",
+        "softwareRequirements": "Rime, Weasel, Squirrel, fcitx5-rime, ibus-rime",
+        "url": "https://soanseng.github.io/rime-phah-taibun/",
+        "downloadUrl": "https://github.com/soanseng/rime-phah-taibun/releases",
+        "codeRepository": "https://github.com/soanseng/rime-phah-taibun",
+        "license": "https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE",
+        "description": "給電腦使用的 Rime 台語輸入法方案，整合開源辭典與台語語料庫，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫與華語反查台語。",
+        "creator": {
+          "@type": "Person",
+          "name": "Soan Seng",
+          "url": "https://github.com/soanseng"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "TWD"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
-  <div id="app"></div>
-  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-  <script>
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
-      const btn = document.querySelector('.theme-toggle');
-      btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-      localStorage.setItem('dark', document.body.classList.contains('dark'));
-    }
-    if (localStorage.getItem('dark') === 'true') {
-      document.body.classList.add('dark');
-      document.querySelector('.theme-toggle').textContent = '☀️';
-    }
-  </script>
-  <script>
-    window.$docsify = {
-      name: '拍台文 Phah Tai-bun',
-      logo: 'icon.png',
-      repo: 'soanseng/rime-phah-taibun',
-      homepage: 'user-guide.md',
-      loadSidebar: true,
-      subMaxLevel: 2,
-      auto2top: true,
-      search: {
-        placeholder: '搜尋',
-        noData: '找不到結果',
-        paths: 'auto'
-      }
-    }
-  </script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <a class="skip-link" href="#main">跳到主要內容</a>
+  <header class="site-header" data-elevate>
+    <div class="container header-grid">
+      <a class="brand" href="./" aria-label="拍台文首頁">
+        <img src="icon.png" alt="" width="44" height="44">
+        <span>
+          <strong>拍台文</strong>
+          <small>Phah Tai-bun</small>
+        </span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+        <span class="sr-only">開啟選單</span>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="主要導覽">
+        <a href="#features">特色</a>
+        <a href="#typing-schemes">拼音方案</a>
+        <a href="#compare">比較</a>
+        <a href="#install">安裝</a>
+        <a href="guide.html">使用說明</a>
+        <a class="nav-cta" href="https://github.com/soanseng/rime-phah-taibun/releases">下載</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero section-tight">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Windows / macOS / Linux 電腦台語輸入法</p>
+          <h1>會講台語，就會開始打台文。</h1>
+          <p class="lead">拍台文是基於 Rime 的台語輸入法方案。白話字 POJ、台羅 TL 可以混著打，聲調可以先省略，候選區會顯示完整讀音，預設輸出適合日常書寫的漢羅混寫。</p>
+          <div class="hero-actions" aria-label="主要行動">
+            <a class="btn btn-primary" href="https://github.com/soanseng/rime-phah-taibun/releases">下載安裝包</a>
+            <a class="btn btn-secondary" href="guide.html">看使用說明</a>
+          </div>
+          <dl class="hero-facts">
+            <div><dt>拼音</dt><dd>POJ / TL 雙系統</dd></div>
+            <div><dt>輸出</dt><dd>漢羅、全羅、TL、POJ</dd></div>
+            <div><dt>詞庫</dt><dd>170K+ 詞條</dd></div>
+          </dl>
+        </div>
+        <div class="hero-media">
+          <figure class="demo-frame">
+            <img src="demo/demo-part1.gif" alt="拍台文在電腦上輸入台語句子的候選示範">
+            <figcaption>輸入 <code>gua beh khi tshit tho</code>，候選顯示「我 beh 去 tshit-thô」。</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="intent-band" aria-label="常見搜尋需求">
+      <div class="container intent-grid">
+        <a href="#install">我要找台語輸入法安裝</a>
+        <a href="#typing-schemes">我要用白話字 POJ 打字</a>
+        <a href="#typing-schemes">我要用台羅 TL 打字</a>
+        <a href="#reverse">我只知道華語想查台語</a>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">為電腦書寫台文設計</p>
+          <h2>不是只把拼音變漢字，而是幫你跨過台文打字最卡的幾步。</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="marker marker-green">01</span>
+            <h3>POJ/TL 都會通</h3>
+            <p>不用先決定白話字或台羅。打 <code>tsiah</code> 或 <code>chiah</code> 都能找到「食」，適合不同拼音習慣的人一起用。</p>
+          </article>
+          <article class="feature-card">
+            <span class="marker marker-red">02</span>
+            <h3>聲調可省略</h3>
+            <p>先照口語直覺輸入，候選會列出可能聲調；需要精準時再補數字調，例如 <code>ho2</code>、<code>tai5 uan5</code>。</p>
+          </article>
+          <article class="feature-card">
+            <span class="marker marker-blue">03</span>
+            <h3>候選顯示讀音</h3>
+            <p>每個候選都顯示拼音註解，讓你在選字時確認讀音，也能慢慢建立自己的台文書寫習慣。</p>
+          </article>
+          <article class="feature-card">
+            <span class="marker marker-yellow">04</span>
+            <h3>預設漢羅混寫</h3>
+            <p>依 LKK 李江却用字規範，該用漢字的用漢字，該留羅馬字的留羅馬字，更貼近日常台文書寫。</p>
+          </article>
+          <article class="feature-card feature-card-wide">
+            <span class="marker marker-green">05</span>
+            <h3>站在開源台文資料上</h3>
+            <p>主字典整合 ChhoeTaigi 9 本辭典，包含 iTaigi 華台對照典、台華線頂對照典、台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、教育部台語辭典、甘字典等來源；候選排序再參考楊允言詞頻、iCorpus 新聞語料、康軒課本、900 例句、NMTL 文學語料、KipSutian 例句與白話字文獻。另參考既有 Rime 台語方案、蝦米 Rime 模組、方音符號方案、意傳工具、KeSi、字咍 IVS 與教育部推薦用字。這些外部資源讓拍台文不是憑感覺排字，而是把台文社群多年累積變成可用的電腦輸入法。</p>
+          </article>
+        </div>
+        <div class="craft-grid" aria-label="拍台文開發紀錄中的特色">
+          <article>
+            <h3>萬用查字不只開頭可用</h3>
+            <p>不確定哪一段拼音時，可以打 <code>si?</code>、<code>s?ah</code>、<code>tsh?</code> 這類模式查音節，再進一步選字。</p>
+          </article>
+          <article>
+            <h3>注音反查會回到台語候選</h3>
+            <p>用 <kbd>~</kbd> 從華語注音找字後，會把台語拼音送回主輸入流程，並在註解和全羅輸出中顯示調符。</p>
+          </article>
+          <article>
+            <h3>輕聲候選來自字典和規則</h3>
+            <p>從語料建立輕聲詞條，也在輸入時即時產生輕聲候選，保留 <code>--</code> 標記，像「轉--來」「食--飽」這種用法不會被吃掉。</p>
+          </article>
+          <article>
+            <h3>POJ/TL 調符細節有特別處理</h3>
+            <p>針對 <code>oa</code>、<code>oe</code>、<code>ui</code>、<code>iu</code>、<code>nng</code>、<code>nn</code> 轉 <code>ⁿ</code> 等細節反覆修正，避免輸出看起來不像真正的白話字或台羅。</p>
+          </article>
+          <article>
+            <h3>候選區直接提示推薦用字</h3>
+            <p><strong>◆</strong> 標示推薦漢字，<strong>★</strong> 標示推薦羅馬字，來源包含 LKK 漢羅規範與教育部推薦用字 700 字詞。</p>
+          </article>
+          <article>
+            <h3>鍵盤流程為長文輸入調整</h3>
+            <p><kbd>Tab</kbd> 可進入 asdf 選字，<kbd>\</kbd> 可在漢羅和全羅間切換，輸出模式會記住，減少寫文章時一直重設。</p>
+          </article>
+        </div>
+        <div class="pipeline-card" aria-label="資料前處理流程">
+          <div>
+            <p class="eyebrow">scripts/ 資料工程</p>
+            <h3>先把辭典、語料、詞頻和規則整理好，輸入法才會真的順。</h3>
+            <p>拍台文不是只手寫一份 Rime 字典。<code>scripts/</code> 會下載約 20 個語言資源，轉換 ChhoeTaigi CSV、抽取語料詞頻、建立華語反查、解析 LKK 與教育部推薦用字、產生輕聲詞條、擷取雙字詞組，最後再驗證 Rime 字典格式。</p>
+          </div>
+          <ol>
+            <li><strong>辭典轉換</strong><span>iTaigi、台華線頂、台日、Maryknoll、Embree、教育部、甘字典等資料轉成 Rime 可用格式。</span></li>
+            <li><strong>詞頻加權</strong><span>從 iCorpus、Ungian 2009、康軒課本、900 例句、NMTL、KipSutian、白話字文獻抽詞頻，讓常用詞優先。</span></li>
+            <li><strong>輸入體驗資料</strong><span>建立華語→台語反查、輕聲候選、bigram 詞組、LKK 漢羅規則與 MOE 700 字推薦標記。</span></li>
+          </ol>
+        </div>
+        <article class="research-note">
+          <p class="eyebrow">extract_ungian_freq.py</p>
+          <h3>楊允言老師的字詞頻研究，讓候選排序更接近真實台文。</h3>
+          <p><code>scripts/extract_ungian_freq.py</code> 讀取 <strong>Ungian_2009_KIPsupin</strong> 專案中的 JSON 資料。這份資料來自楊允言老師提供的「教育部臺灣閩南語字詞頻調查工作」，內容是台語文作品整理成教育部台羅（KIP/TL）後的語料。腳本會解析 1,093 個 JSON 檔，抽出台羅行、切出詞 token，統計每個詞出現次數，也輸出句子給 bigram 詞組建置使用。</p>
+          <p>這很重要，因為輸入法不能只知道「有哪些字詞」，還要知道「哪些字詞在文章裡比較常出現」。有了文學與書面台語的詞頻，拍台文可以把常用詞排前面，減少選字，也讓漢羅文章、創作、教學和長文輸入更順。</p>
+        </article>
+        <div class="resource-ledger" aria-label="20+ 個外部資源分類">
+          <div class="section-heading narrow">
+            <p class="eyebrow">20+ 個外部資源</p>
+            <h2>拍台文把辭典、語料、輸入法經驗和字形資料整理成一套可重建流程。</h2>
+          </div>
+          <div class="resource-grid">
+            <article>
+              <h3>辭典與用字標準</h3>
+              <ul>
+                <li><a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase">ChhoeTaigi 台語字詞資料庫</a>：9 本辭典 CSV，353K 筆原始字詞資料。</li>
+                <li><a href="https://github.com/g0v/moedict-data-twblg">g0v/moedict-data-twblg</a>：教育部台語辭典開放資料，建反查字典。</li>
+                <li><a href="https://github.com/ChhoeTaigi/KipSutianDataMirror">KipSutianDataMirror</a>：教育部台語辭典鏡像，ODS 與音檔更完整。</li>
+                <li>LKK 用字表：李江却台語文教基金會漢羅用字規範，決定哪些詞輸出漢字或羅馬字。</li>
+                <li><a href="https://github.com/yiufung/minnan-700">教育部推薦 700 字</a>：候選區 ◆ 推薦漢字標記。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/moe_minkalaok">moe_minkalaok</a>：閩南語卡拉OK正字字表，作為教育部用字規範參考。</li>
+                <li><a href="https://github.com/ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian">甘字典 CSV 原始版</a>：1913 年甘為霖台語辭典。</li>
+              </ul>
+            </article>
+            <article>
+              <h3>語料與詞頻</h3>
+              <ul>
+                <li><a href="https://github.com/Taiwanese-Corpus/hue7jip8">Taiwanese-Corpus/hue7jip8</a>：台語、族語、客語語料清單，包含楊允言詞頻研究路徑。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin">Ungian_2009_KIPsupin</a>：楊允言詞頻資料，教育部臺灣閩南語字詞頻調查。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7">iCorpus 臺華平行新聞語料庫</a>：2008-2014 新聞語料，計算真實新聞用詞頻率。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt">NMTL 文學語料</a>：2,169 篇台語漢羅與全羅文學作品，作為漢羅書寫慣例參考。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh">白話字文獻館</a>：歷史 POJ 語料，經 POJ→TL 轉換後納入詞頻。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2">康軒國小台語課本</a>：12 冊漢字與台羅對照，補日常教學詞彙。</li>
+                <li><a href="https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3">常用 900 例句</a>：詞條漢字、台羅與例句，補日常高頻詞。</li>
+              </ul>
+            </article>
+            <article>
+              <h3>輸入法與語言工具參考</h3>
+              <ul>
+                <li><a href="https://github.com/glll4678/rime-taigi">glll4678/rime-taigi</a>：既有 Rime 台語方案，參考 schema 結構與方言碼。</li>
+                <li><a href="https://github.com/ryanwuson/rime-liur">rime-liur</a>：蝦米 Rime 方案，參考查碼、造詞、符號、日期等 Lua 模組架構。</li>
+                <li><a href="https://github.com/YuRen-tw/rime-taigi-tps">rime-taigi-tps</a>：方音符號台語方案，參考字典格式與方音鍵盤配置。</li>
+                <li><a href="https://github.com/i3thuan5/khin1siann1-hun1sik4">意傳輕聲分析器</a>：輕聲詞頻、書寫規範與分詞邏輯參考。</li>
+                <li><a href="https://github.com/i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7">意傳臺灣言語工具</a>：音標轉換與台文 NLP 工具參考。</li>
+                <li><a href="https://github.com/i3thuan5/KeSi">KeSi</a>：輕量 POJ↔TL 轉換工具。</li>
+              </ul>
+            </article>
+            <article>
+              <h3>字型與字形</h3>
+              <ul>
+                <li><a href="https://github.com/ButTaiwan/taigivs">ButTaiwan/taigivs</a>：字咍台語字型與 IVS 對照表，作為特殊台文漢字顯示參考。</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section split-section" id="typing-schemes">
+      <div class="container split-grid">
+        <div>
+          <p class="eyebrow">搜尋：白話字輸入法 / 台羅輸入法 / 漢羅輸入</p>
+          <h2>不同拼音方案，不需要分開裝。</h2>
+          <p>拍台文把 POJ 白話字和 TL 台羅放在同一套 Rime 方案裡，常見差異會自動對應。你可以照自己熟悉的方式打，也可以在輸出時切換漢羅 TL、漢羅 POJ、全羅 TL、全羅 POJ。</p>
+          <a class="text-link" href="guide.html#/user-guide?id=poj-%e5%92%8c-tl-%e9%83%bd%e9%80%9a">看 POJ/TL 對照</a>
+        </div>
+        <div class="typing-table" role="table" aria-label="POJ 與 TL 輸入範例">
+          <div role="row"><span role="columnheader">你輸入</span><span role="columnheader">拍台文候選</span></div>
+          <div role="row"><code>tsiah png</code><strong>食飯</strong></div>
+          <div role="row"><code>chiah png</code><strong>食飯</strong></div>
+          <div role="row"><code>gua ai li</code><strong>我愛你</strong></div>
+          <div role="row"><code>goa ai li</code><strong>我愛你</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="compare">
+      <div class="container">
+        <div class="section-heading narrow">
+          <p class="eyebrow">比較：意傳 / 教育部 / 信望愛 / 拍台文</p>
+          <h2>更適合「想在電腦上真的開始寫台文」的人。</h2>
+          <p>台語輸入法不是只有一種需求。教育部適合查標準與手機輸入，信望愛是成熟的台語客語桌面輸入法，意傳累積了重要的台文 NLP 工具；拍台文則把開源辭典、語料詞頻、Rime 跨平台和低門檻安裝整合成一套電腦輸入體驗。</p>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card">
+            <p class="compare-label">搜尋：意傳台語輸入法</p>
+            <h3>相較意傳舊方案：拍台文更聚焦日常輸入</h3>
+            <p>意傳的臺灣言語工具、KeSi 和相關台文處理工具奠定了羅馬字轉換、文本正規化、斷詞與 NLP 基礎。拍台文延續這個開源方向，但產品焦點放在「裝好後每天打字」：Rime 方案、POJ/TL 混打、漢羅候選、注音反查、安裝包與跨平台部署。</p>
+          </article>
+          <article class="compare-card">
+            <p class="compare-label">搜尋：教育部台語輸入法</p>
+            <h3>相較教育部：拍台文更偏電腦創作工作流</h3>
+            <p>教育部的官方資源很適合查標準用字、台羅拼音和手機/平板輸入；既有漢字輸入法也以教育部臺羅和推薦用字為準。拍台文則主打桌機長文輸入：Windows、macOS、Linux 都可用，POJ/TL 不必分開，候選顯示拼音，還能把華語反查送回台語候選。</p>
+          </article>
+          <article class="compare-card">
+            <p class="compare-label">搜尋：信望愛台語輸入法</p>
+            <h3>相較信望愛：拍台文更容易擴充與協作</h3>
+            <p>信望愛台語客語輸入法提供 Windows/macOS 安裝程式，是很多台文使用者熟悉的老牌工具。拍台文選擇 Rime 生態，讓方案檔、Lua 模組、詞庫、安裝腳本和問題回報都能在 GitHub 上一起改，Linux 使用者也能用同一套方案。</p>
+          </article>
+          <article class="compare-card">
+            <p class="compare-label">搜尋：最好用的台語輸入法</p>
+            <h3>拍台文強在低門檻和資料厚度</h3>
+            <p>打字時可以省聲調、POJ/TL 混打、看拼音註解、切換漢羅/全羅、用 <code>?</code> 任意位置查字；背後用 170K+ 詞條和多語料庫詞頻把常用詞往前排。對創作者、老師、學生和社群小編來說，重點是少查字、少切換、少整理格式。</p>
+          </article>
+        </div>
+        <div class="source-note" aria-label="資料來源摘要">
+          <h3>資料與比較依據</h3>
+          <p>拍台文使用的辭典與語料來源包含 <a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase">ChhoeTaigiDatabase</a>、<a href="https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7">iCorpus 臺華平行新聞語料庫漢字臺羅版</a>、<a href="https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin">楊允言老師 Ungian 2009 字詞頻調查資料</a>、<a href="https://github.com/i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7">意傳臺灣言語工具</a>、<a href="https://github.com/i3thuan5/KeSi">KeSi</a>、<a href="https://sutian.moe.edu.tw/zh-hant/">教育部臺灣台語常用詞辭典</a>與<a href="https://ime.hokkhi.org/latest/">信望愛台語客語輸入法公開說明</a>。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reverse-section" id="reverse">
+      <div class="container reverse-grid">
+        <div class="screen-shot">
+          <img src="注音反查.png" alt="拍台文用注音反查華語再轉台語候選">
+        </div>
+        <div>
+          <p class="eyebrow">搜尋：華語查台語 / 台語讀音反查</p>
+          <h2>不知道台語怎麼講，也能從華語開始找。</h2>
+          <p>按 <kbd>~</kbd> 進入注音反查，用華語字找到台語候選。這對剛開始寫台文、或臨時想不起某個詞讀音的人特別有用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section install-section" id="install">
+      <div class="container">
+        <div class="section-heading narrow">
+          <p class="eyebrow">下載與安裝</p>
+          <h2>先裝 Rime 核心，再加入拍台文方案。</h2>
+          <p>拍台文不是另一個輸入法引擎，而是 Rime 的台語方案。Windows 使用小狼毫，macOS 使用鼠鬚管，Linux 使用 fcitx5-rime 或 ibus-rime。</p>
+        </div>
+        <div class="install-tabs" data-tabs>
+          <div class="tab-list" role="tablist" aria-label="選擇作業系統">
+            <button type="button" role="tab" aria-selected="true" data-tab="windows">Windows</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="macos">macOS</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="linux">Linux</button>
+          </div>
+          <div class="tab-panel is-active" id="panel-windows" role="tabpanel">
+            <h3>Windows：小狼毫 Weasel + PhahTaiBunSetup.exe</h3>
+            <ol>
+              <li>先安裝小狼毫 Weasel。</li>
+              <li>從 Releases 下載 <code>PhahTaiBunSetup.exe</code>。</li>
+              <li>雙擊安裝後重新部署 Rime，按 <kbd>F4</kbd> 選「拍台文(台)」。</li>
+            </ol>
+          </div>
+          <div class="tab-panel" id="panel-macos" role="tabpanel" hidden>
+            <h3>macOS：鼠鬚管 Squirrel + PhahTaiBun.pkg</h3>
+            <ol>
+              <li>先安裝鼠鬚管 Squirrel。</li>
+              <li>從 Releases 下載 <code>PhahTaiBun.pkg</code>。</li>
+              <li>安裝後重新部署 Rime，按 <kbd>F4</kbd> 選「拍台文(台)」。</li>
+            </ol>
+          </div>
+          <div class="tab-panel" id="panel-linux" role="tabpanel" hidden>
+            <h3>Linux：fcitx5-rime 或 ibus-rime</h3>
+            <pre><code>git clone https://github.com/soanseng/rime-phah-taibun.git
+cd rime-phah-taibun
+./install.sh</code></pre>
+          </div>
+        </div>
+        <div class="center-actions">
+          <a class="btn btn-primary" href="https://github.com/soanseng/rime-phah-taibun/releases">前往 GitHub Releases</a>
+          <a class="btn btn-secondary" href="packaged-installers.md">安裝包說明</a>
+        </div>
+        <div class="ai-install-card" id="ai-install">
+          <div>
+            <p class="eyebrow">給 Claude / Codex</p>
+            <h3>下載專案後，把這段 prompt 貼給 AI，請它幫你安裝。</h3>
+            <p>適合不熟 Rime 資料夾、終端機或重新部署流程的人。AI 會依你的系統走 Windows、macOS 或 Linux 安裝路徑。</p>
+          </div>
+          <div class="prompt-box">
+            <button class="copy-prompt" type="button" data-copy-target="#ai-install-prompt">複製 prompt</button>
+            <pre id="ai-install-prompt"><code>請幫我在這台電腦安裝拍台文 rime-phah-taibun。請先確認我的作業系統與是否已安裝 Rime 核心：Windows 用小狼毫 Weasel，macOS 用鼠鬚管 Squirrel，Linux 用 fcitx5-rime 或 ibus-rime。若尚未安裝 Rime，請引導我先安裝官方 Rime 核心。
+
+我已經下載或 clone 這個專案。請在專案根目錄執行適合我系統的安裝方式：
+- Windows：執行 install_windows.ps1，保留既有 Rime 設定、自訂詞庫與 rime.lua。
+- macOS：執行 scripts/install_macos.sh，必要時指定目前專案路徑。
+- Linux：執行 ./install.sh，自動偵測 fcitx5-rime 或 ibus-rime。
+
+請不要刪除或覆蓋我原本的其他 Rime 輸入方案。安裝後請協助我重新部署 Rime，按 F4 確認清單中有「拍台文(台)」，並測試輸入 gua beh khi tshit tho 是否能看到台語候選。</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section creator-section" id="creator">
+      <div class="container">
+        <figure class="creator-art">
+          <img src="assets/img/landing-workspace.webp" alt="台語輸入法與辭典整理工作的桌面情境插圖" width="1600" height="900" loading="lazy">
+        </figure>
+      </div>
+      <div class="container creator-grid">
+        <div>
+          <p class="eyebrow">創作者</p>
+          <h2>一個寫得很辛苦，也想讓更多人用得到的台文工具。</h2>
+        </div>
+        <div>
+          <p>拍台文由 <a href="https://anatomind.com">陳璿丞醫師</a> 發起。一個屏東長大的孩子，想要把母語撿回來，也想把台語書寫從「懂規則的人才能用」往「會講台語的人也能開始用」推進。專案整合 Rime、ChhoeTaigi 詞庫、語料頻率、LKK 用字規範與多個 Lua 模組，並持續改善安裝、候選排序與日常輸入體驗。</p>
+          <p>如果你是創作者、老師、學生、社群經營者，或只是想在電腦上寫自己的台語，這個專案就是為你準備的。</p>
+          <a class="text-link" href="https://github.com/soanseng/rime-phah-taibun">看原始碼與專案紀錄</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container">
+        <div class="section-heading narrow">
+          <p class="eyebrow">常見問題</p>
+          <h2>搜尋前，先看這裡。</h2>
+        </div>
+        <div class="faq-list">
+          <details open>
+            <summary>拍台文適合完全不懂台文的人嗎？</summary>
+            <p>如果會講台語、知道大概怎麼拼，就可以開始。候選拼音註解、聲調省略和華語反查，都是為了降低入門門檻。</p>
+          </details>
+          <details>
+            <summary>這是手機輸入法嗎？</summary>
+            <p>不是。拍台文主打電腦輸入法，支援 Windows、macOS、Linux，使用 Rime 作為輸入法核心。</p>
+          </details>
+          <details>
+            <summary>會覆蓋我原本的 Rime 設定嗎？</summary>
+            <p>安裝流程會保留既有 Rime 輸入法、自訂詞庫與 <code>rime.lua</code>，再加入拍台文方案。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <p>拍台文 Phah Tai-bun · Rime 台語輸入法方案</p>
+      <nav aria-label="頁尾連結">
+        <a href="guide.html">使用說明</a>
+        <a href="quickstart-card.md">快速上手</a>
+        <a href="sitemap.xml">Sitemap</a>
+        <a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+  <script src="assets/js/landing.js"></script>
 </body>
 </html>
