@@ -110,6 +110,8 @@ speller:
 translator:
   dictionary: phah_taibun
   prism: phah_taibun
+  enable_sentence: false
+  enable_user_dict: false
   spelling_hints: 5
   comment_format:
     - "xform/^(.*)$/ [$1]/"
