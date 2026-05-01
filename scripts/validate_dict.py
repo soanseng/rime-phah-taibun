@@ -1,8 +1,11 @@
 """Validate Rime dictionary files for format correctness and data quality."""
 
 import argparse
+import re
 import sys
 from pathlib import Path
+
+RIME_KEY_RE = re.compile(r"^[a-z0-9]+(?:[ -]+[a-z0-9]+)*$")
 
 
 def validate_dict_format(dict_path: Path) -> list[str]:
@@ -47,6 +50,8 @@ def validate_dict_format(dict_path: Path) -> list[str]:
         if len(parts) < 2:
             errors.append(f"Line {i}: bad format (expected tab-separated, got: {line!r})")
             continue
+        if not RIME_KEY_RE.fullmatch(parts[1]):
+            errors.append(f"Line {i}: non-canonical Rime key '{parts[1]}'")
         key = (parts[0], parts[1])
         if key in seen:
             errors.append(f"Line {i}: duplicate entry '{parts[0]}' with key '{parts[1]}'")

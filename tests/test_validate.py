@@ -34,6 +34,12 @@ class TestValidateDictFormat:
         errors = validate_dict_format(dictfile)
         assert any("duplicate" in e.lower() for e in errors)
 
+    def test_detects_non_canonical_rime_key(self, tmp_path):
+        dictfile = tmp_path / "test.dict.yaml"
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n你好\tlí hó\t500\n')
+        errors = validate_dict_format(dictfile)
+        assert any("rime key" in e.lower() for e in errors)
+
 
 class TestValidateCli:
     """Test CLI entry point."""

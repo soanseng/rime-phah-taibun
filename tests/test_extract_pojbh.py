@@ -1,7 +1,5 @@
 """Tests for Khin-hoan POJ text extractor."""
 
-from collections import Counter
-
 from scripts.extract_pojbh import extract_pojbh_sentences
 
 
@@ -12,7 +10,7 @@ class TestPojToTlConversion:
         """POJ 'ch' consonants are converted to TL 'ts'."""
         txt = tmp_path / "test.txt"
         txt.write_text("chi2-chit8\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         # "ch" → "ts", so chi2 → tsi2, chit8 → tsit8
         assert len(sentences) == 1
         assert "tsi2-tsit8" in sentences[0]
@@ -21,7 +19,7 @@ class TestPojToTlConversion:
         """POJ 'chh' consonant cluster becomes TL 'tsh'."""
         txt = tmp_path / "test.txt"
         txt.write_text("chhui3\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         assert len(sentences) == 1
         assert "tshui3" in sentences[0]
 
@@ -29,7 +27,7 @@ class TestPojToTlConversion:
         """POJ 'oa' vowel becomes TL 'ua'."""
         txt = tmp_path / "test.txt"
         txt.write_text("hoa1\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         assert len(sentences) == 1
         assert "hua1" in sentences[0]
 
@@ -42,7 +40,7 @@ class TestUnicodePoj:
         txt = tmp_path / "test.txt"
         # saⁿ2 → sann2
         txt.write_text("sa\u207f2\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         assert len(sentences) == 1
         assert "sann2" in sentences[0]
 
@@ -51,9 +49,18 @@ class TestUnicodePoj:
         txt = tmp_path / "test.txt"
         # o͘1 → oo1
         txt.write_text("o\u03581\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         assert len(sentences) == 1
         assert "oo1" in sentences[0]
+
+    def test_unicode_tone_marks_become_syllable_final_numbers(self, tmp_path):
+        """Unicode POJ tone marks become numeric TL tokens."""
+        txt = tmp_path / "test.txt"
+        txt.write_text("lâng chhiúⁿ\n", encoding="utf-8")
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
+        assert len(sentences) == 1
+        assert "lang5" in sentences[0]
+        assert "tshiunn2" in sentences[0]
 
 
 class TestEmptyDirectory:
@@ -79,7 +86,7 @@ class TestMultipleFiles:
         sub = tmp_path / "subdir"
         sub.mkdir()
         (sub / "deep.txt").write_text("goa2\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        sentences, _freq = extract_pojbh_sentences(tmp_path)
         assert len(sentences) == 1
         # goa2 → POJ oa→ua → gua2
         assert "gua2" in sentences[0]
@@ -87,7 +94,7 @@ class TestMultipleFiles:
     def test_frequency_counter_aggregates(self, tmp_path):
         (tmp_path / "a.txt").write_text("lang5 si7\n", encoding="utf-8")
         (tmp_path / "b.txt").write_text("lang5 bo5\n", encoding="utf-8")
-        sentences, freq = extract_pojbh_sentences(tmp_path)
+        _sentences, freq = extract_pojbh_sentences(tmp_path)
         assert freq["lang5"] == 2
         assert freq["si7"] == 1
         assert freq["bo5"] == 1

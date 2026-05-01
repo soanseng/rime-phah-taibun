@@ -13,6 +13,13 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    from scripts.convert_chhoetaigi import is_valid_kip_input, unicode_tones_to_numeric
+    from scripts.tl_poj_convert import poj_to_tl
+except ModuleNotFoundError:
+    from convert_chhoetaigi import is_valid_kip_input, unicode_tones_to_numeric
+    from tl_poj_convert import poj_to_tl
+
 # Source priority: higher = more authoritative
 SOURCE_PRIORITY = {
     "moe": 4,       # 教育部台語辭典
@@ -27,6 +34,9 @@ CSV_SOURCE_MAP = {
     "KauiokpooTaigiSutian": "moe",
     "MaryknollTaiengSutian": "maryknoll",
 }
+
+SENTENCE_PUNCT_RE = re.compile("[\u3002\uff01\uff1f\uff1b\uff1a]")
+HOABUN_DELIMITER_RE = re.compile("[\u3001\uff0c,;]")
 
 
 def cjk_len(text: str) -> int:
@@ -46,8 +56,9 @@ def clean_kip_input(kip_input: str) -> str | None:
         text = text.split("/")[0].strip()
     if not text:
         return None
+    text = unicode_tones_to_numeric(text)
     # Must look like valid TL romanization (lowercase letters, digits, hyphens)
-    if not re.match(r"^[a-z0-9][a-z0-9 \-]*$", text):
+    if not is_valid_kip_input(text):
         return None
     return text
 
@@ -55,7 +66,7 @@ def clean_kip_input(kip_input: str) -> str | None:
 def split_hoabun(hoabun: str) -> list[str]:
     """Split HoaBun into individual Mandarin words.
 
-    Handles delimiters: 、；，,;
+    Handles common CJK and ASCII delimiters.
     Filters out sentences and non-CJK text.
     """
     if not hoabun:
@@ -63,10 +74,10 @@ def split_hoabun(hoabun: str) -> list[str]:
     # Remove parenthetical notes like (文), (白), (俗), etc.
     text = re.sub(r"\([^)]*\)", "", hoabun).strip()
     # Skip if it looks like a sentence (has sentence-ending punctuation)
-    if re.search(r"[。！？；：]", text):
+    if SENTENCE_PUNCT_RE.search(text):
         return []
     # Split on common delimiters
-    parts = re.split(r"[、，,;]", text)
+    parts = HOABUN_DELIMITER_RE.split(text)
     result = []
     for part in parts:
         word = part.strip()
@@ -95,10 +106,10 @@ def split_into_chars(
     if len(chars) < 2:
         return []
     # Split KipInput into syllables
-    syllables = kip_input.split("-")
+    syllables = [s for s in re.split(r"-+", kip_input) if s]
     if len(syllables) != len(chars):
         return []
-    return list(zip(chars, syllables))
+    return list(zip(chars, syllables, strict=True))
 
 
 def _read_csv_rows(data_dir: Path) -> list[tuple[str, str, int, str]]:
@@ -122,11 +133,15 @@ def _read_csv_rows(data_dir: Path) -> list[tuple[str, str, int, str]]:
                 if not hoabun:
                     continue
                 kip_raw = row.get("KipInput", "").strip()
+                is_poj_input = False
                 if not kip_raw:
                     kip_raw = row.get("PojInput", "").strip()
+                    is_poj_input = True
                 kip = clean_kip_input(kip_raw)
                 if not kip:
                     continue
+                if is_poj_input:
+                    kip = poj_to_tl(kip)
                 hanlo = row.get("HanLoTaibunKip", "").strip()
                 if not hanlo:
                     hanlo = row.get("HanLoTaibunPoj", "").strip()

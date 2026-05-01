@@ -9,8 +9,14 @@ import argparse
 import csv
 import re
 import sys
+import unicodedata
 from pathlib import Path
 from typing import TextIO
+
+try:
+    from scripts.tl_poj_convert import poj_to_tl
+except ModuleNotFoundError:
+    from tl_poj_convert import poj_to_tl
 
 CSV_SOURCE_MAP = {
     "iTaigiHoataiTuichiautian": "itaigi",
@@ -23,6 +29,58 @@ CSV_SOURCE_MAP = {
     "TaioanPehoeKichhooGiku": "pehoe",
     "TaioanSitbutMialui": "sitbut",
 }
+
+COMBINING_TONE_TO_NUMBER = {
+    "\u0301": "2",  # acute accent
+    "\u0300": "3",  # grave accent
+    "\u0302": "5",  # circumflex
+    "\u0304": "7",  # macron
+    "\u030d": "8",  # vertical line above
+    "\u030b": "9",  # double acute accent
+    "\u0306": "9",  # breve
+}
+
+
+def unicode_tones_to_numeric(text: str) -> str:
+    """Normalize Unicode TL/POJ tone marks to syllable-final tone numbers."""
+    if not text:
+        return text
+
+    text = text.replace("\u3000", " ").replace("ⁿ", "nn")
+    text = re.sub(r"\s+", "-", text.strip())
+
+    parts = re.split(r"(-+)", text)
+    normalized_parts: list[str] = []
+    for part in parts:
+        if not part or set(part) == {"-"}:
+            normalized_parts.append(part)
+            continue
+
+        decomposed = unicodedata.normalize("NFD", part)
+        tone = ""
+        chars = []
+        for ch in decomposed:
+            if ch in COMBINING_TONE_TO_NUMBER:
+                tone = COMBINING_TONE_TO_NUMBER[ch]
+            else:
+                chars.append(ch)
+        base = unicodedata.normalize("NFC", "".join(chars)).replace("\u0131", "i").lower()
+        base = base.replace("o\u0358", "oo")
+        if tone and not re.search(r"[1-9]$", base):
+            base += tone
+        normalized_parts.append(base)
+
+    return "".join(normalized_parts)
+
+
+def is_valid_kip_input(kip_input: str) -> bool:
+    """Return whether a normalized KipInput variant is usable as a Rime key."""
+    return bool(re.fullmatch(r"[a-z0-9]+(?:-+[a-z0-9]+)*", kip_input))
+
+
+def clean_hanlo_text(text: str) -> str:
+    """Remove TSV-breaking control whitespace from candidate text."""
+    return re.sub(r"[\t\r\n]+", "", text).strip()
 
 
 def normalize_implicit_tone(kip_input: str) -> str:
@@ -91,7 +149,10 @@ def clean_kip_input(kip_input: str) -> list[str]:
     # Remove (替) marker
     text = re.sub(r"\(替\)", "", text)
     # Split on "/" for multiple readings
-    variants = [v.strip() for v in text.split("/") if v.strip()]
+    variants = []
+    for variant in (unicode_tones_to_numeric(v.strip()) for v in text.split("/") if v.strip()):
+        if is_valid_kip_input(variant):
+            variants.append(variant)
     return variants
 
 
@@ -108,7 +169,7 @@ def parse_itaigi_csv(csvfile: TextIO) -> list[dict]:
     reader = csv.DictReader(csvfile)
     for row in reader:
         kip_raw = row.get("KipInput", "").strip()
-        hanlo = row.get("HanLoTaibunKip", "").strip()
+        hanlo = clean_hanlo_text(row.get("HanLoTaibunKip", ""))
         hoabun = row.get("HoaBun", "").strip()
         if not kip_raw or not hanlo:
             continue
@@ -141,7 +202,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
     for row in reader:
         kip_raw = row.get("KipInput", "").strip()
         kip_others = row.get("KipInputOthers", "").strip()
-        hanlo = row.get("HanLoTaibunKip", "").strip()
+        hanlo = clean_hanlo_text(row.get("HanLoTaibunKip", ""))
         hoabun = row.get("HoaBun", "").strip()
         if not hanlo:
             continue
@@ -191,16 +252,20 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
     for row in reader:
         # Try KipInput, fall back to PojInput
         kip_raw = row.get("KipInput", "").strip()
+        is_poj_input = False
         if not kip_raw:
             kip_raw = row.get("PojInput", "").strip()
+            is_poj_input = True
         # Try HanLoTaibunKip, fall back to HanLoTaibunPoj
-        hanlo = row.get("HanLoTaibunKip", "").strip()
+        hanlo = clean_hanlo_text(row.get("HanLoTaibunKip", ""))
         if not hanlo:
-            hanlo = row.get("HanLoTaibunPoj", "").strip()
+            hanlo = clean_hanlo_text(row.get("HanLoTaibunPoj", ""))
         hoabun = row.get("HoaBun", "").strip()
         if not kip_raw or not hanlo:
             continue
         for kip in clean_kip_input(kip_raw):
+            if is_poj_input:
+                kip = poj_to_tl(kip)
             entries.append(
                 {
                     "hanlo": hanlo,

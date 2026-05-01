@@ -126,7 +126,7 @@ class TestPojDiacriticsToToneNumbers:
         assert poj_diacritics_to_tone_numbers("a\u030D") == "a8"
 
     def test_word_with_diacritic(self):
-        assert poj_diacritics_to_tone_numbers("lâng") == "la5ng"
+        assert poj_diacritics_to_tone_numbers("lâng") == "lang5"
 
     def test_empty_string(self):
         assert poj_diacritics_to_tone_numbers("") == ""

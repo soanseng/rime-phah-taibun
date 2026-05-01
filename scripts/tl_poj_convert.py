@@ -7,6 +7,16 @@ for Taiwanese Hokkien.
 import re
 import unicodedata
 
+COMBINING_TONE_TO_NUMBER = {
+    "\u0301": "2",  # acute accent
+    "\u0300": "3",  # grave accent
+    "\u0302": "5",  # circumflex
+    "\u0304": "7",  # macron
+    "\u030d": "8",  # vertical line above
+    "\u030b": "9",  # double acute accent
+    "\u0306": "9",  # breve
+}
+
 
 def tl_to_poj(tl_text: str) -> str:
     """Convert TL romanization to POJ.
@@ -31,37 +41,39 @@ def tl_to_poj(tl_text: str) -> str:
 
 
 def poj_diacritics_to_tone_numbers(text: str) -> str:
-    """Convert POJ Unicode diacritics to TL tone numbers.
+    """Convert POJ Unicode diacritics to syllable-final tone numbers.
 
     Args:
         text: Text with POJ diacritics (e.g. â, á, à, ā, a̍)
 
     Returns:
-        Text with diacritics replaced by tone numbers
+        Text with diacritics converted to tone numbers
     """
     if not text:
         return text
 
-    # Mapping from combining diacritical marks to tone numbers
-    diacritic_to_tone = {
-        "\u0301": "2",  # acute accent → tone 2
-        "\u0300": "3",  # grave accent → tone 3
-        "\u0302": "5",  # circumflex → tone 5
-        "\u0304": "7",  # macron → tone 7
-        "\u030D": "8",  # vertical line above → tone 8
-    }
+    parts = re.split(r"([-\s]+)", text)
+    normalized_parts = []
+    for part in parts:
+        if not part or re.fullmatch(r"[-\s]+", part):
+            normalized_parts.append(part)
+            continue
 
-    # Decompose to NFD so diacritics become separate combining characters
-    decomposed = unicodedata.normalize("NFD", text)
+        decomposed = unicodedata.normalize("NFD", part)
+        tone = ""
+        chars = []
+        for char in decomposed:
+            if char in COMBINING_TONE_TO_NUMBER:
+                tone = COMBINING_TONE_TO_NUMBER[char]
+            else:
+                chars.append(char)
 
-    result = []
-    for char in decomposed:
-        if char in diacritic_to_tone:
-            result.append(diacritic_to_tone[char])
-        else:
-            result.append(char)
+        base = unicodedata.normalize("NFC", "".join(chars)).replace("\u0131", "i")
+        if tone and not re.search(r"[1-9]$", base):
+            base += tone
+        normalized_parts.append(base)
 
-    return "".join(result)
+    return "".join(normalized_parts)
 
 
 def poj_to_tl(poj_text: str) -> str:
@@ -75,7 +87,7 @@ def poj_to_tl(poj_text: str) -> str:
     """
     if not poj_text:
         return poj_text
-    result = poj_text
+    result = poj_diacritics_to_tone_numbers(poj_text)
 
     # Normalize to lowercase
     result = result.lower()

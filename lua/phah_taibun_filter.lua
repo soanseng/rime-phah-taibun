@@ -71,6 +71,21 @@ local function is_lo_type(word)
   return htype == "lo"
 end
 
+local function roman_syllable_is_lo(raw_syllable)
+  if not raw_syllable or raw_syllable == "" then
+    return false, raw_syllable
+  end
+  if is_lo_type(raw_syllable) then
+    return true, raw_syllable
+  end
+  local fmt = data_mod and data_mod.format_romanization or nil
+  local formatted = fmt and fmt(raw_syllable) or raw_syllable
+  if is_lo_type(formatted) then
+    return true, formatted
+  end
+  return false, formatted
+end
+
 -- Apply hanlo rules to a single group (no "--" markers)
 -- Returns: result_text, changed
 local function apply_hanlo_rules_group(text, roman_group)
@@ -94,9 +109,9 @@ local function apply_hanlo_rules_group(text, roman_group)
 
   -- Single character: check directly
   if #chars == 1 then
-    if is_lo_type(text) then
-      local result = fmt and fmt(roman_group) or roman_group
-      return result, true
+    local roman_is_lo, formatted = roman_syllable_is_lo(roman_group)
+    if is_lo_type(text) or roman_is_lo then
+      return formatted, true
     end
     return text, false
   end
@@ -105,9 +120,10 @@ local function apply_hanlo_rules_group(text, roman_group)
   local result_parts = {}
   local changed = false
   for i, char in ipairs(chars) do
-    if is_lo_type(char) then
-      local syl = syllables[i]
-      if fmt then syl = fmt(syl) end
+    local syl = syllables[i]
+    local roman_is_lo, formatted = roman_syllable_is_lo(syl)
+    if is_lo_type(char) or roman_is_lo then
+      syl = formatted
       table.insert(result_parts, syl)
       changed = true
     else

@@ -55,6 +55,13 @@ class TestCleanKipInput:
     def test_whitespace_input(self):
         assert clean_kip_input("  ") == []
 
+    def test_reject_malformed_non_input_keys(self):
+        assert clean_kip_input("洪荒之力") == []
+        assert clean_kip_input("mng5 mng5, thoo5.") == []
+
+    def test_normalizes_poj_o_dot_to_tl_oo(self):
+        assert clean_kip_input("ho\u0358") == ["hoo"]
+
 
 class TestParseItaigiCsv:
     """Parse iTaigi CSV into list of dict entries."""
@@ -79,6 +86,18 @@ class TestParseItaigiCsv:
     def test_source_tagged(self, itaigi_csv_content):
         entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
         assert all(e["source"] == "itaigi" for e in entries)
+
+    def test_unicode_tone_kip_input_is_normalized_to_numeric_tl(self):
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun\n"
+            "lí-hó,你好,妳好\n"
+            "kau5-sí-gín-á,猴死囡仔,小屁孩\n"
+        )
+        entries = parse_itaigi_csv(io.StringIO(csv_data))
+        assert entries[0]["kip_input"] == "li2-ho2"
+        assert entries[0]["rime_key"] == "li2 ho2"
+        assert entries[1]["kip_input"] == "kau5-si2-gin2-a2"
+        assert entries[1]["rime_key"] == "kau5 si2 gin2 a2"
 
 
 class TestParseTaihoaCsv:
@@ -278,7 +297,7 @@ class TestParseGenericCsv:
         assert entries[0]["source"] == "maryknoll"
 
     def test_fallback_to_poj_columns(self):
-        """When KipInput/HanLoTaibunKip are missing, use Poj columns."""
+        """When KipInput is missing, convert PojInput to canonical TL."""
         csv_data = (
             "PojInput,HanLoTaibunPoj,HoaBun\n"
             "chiah8-png7,食飯,吃飯\n"
@@ -286,7 +305,8 @@ class TestParseGenericCsv:
         entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert len(entries) == 1
         assert entries[0]["hanlo"] == "食飯"
-        assert entries[0]["kip_input"] == "chiah8-png7"
+        assert entries[0]["kip_input"] == "tsiah8-png7"
+        assert entries[0]["rime_key"] == "tsiah8 png7"
         assert entries[0]["source"] == "kamjitian"
 
     def test_prefers_kip_over_poj(self):
@@ -339,6 +359,12 @@ class TestParseGenericCsv:
         entries = parse_generic_csv(io.StringIO(csv_data), "embree")
         assert len(entries) == 1
         assert entries[0]["hoabun"] == ""
+
+    def test_sanitizes_tabs_in_hanlo_text(self):
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkai3-tu2-ho2,蓋\tú好,剛好\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        assert entries[0]["hanlo"] == "蓋ú好"
+        assert entries[0]["rime_key"] == "kai3 tu2 ho2"
 
 
 class TestSourceNameFromFilename:
