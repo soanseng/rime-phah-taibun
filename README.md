@@ -10,17 +10,59 @@
 [![Lua Modules](https://img.shields.io/badge/lua-16%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#支援平台)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#安裝)
 
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
 
-> **[使用說明 User Guide](https://soanseng.github.io/rime-phah-taibun/)**
+> **快速入口**：[線上使用說明](https://soanseng.github.io/rime-phah-taibun/) · [快速上手小卡](docs/quickstart-card.md) · [完整使用指南](docs/user-guide.md)
 
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 
 <p align="center">
   <img src="docs/demo/demo-part1.gif" alt="拍台文打字示範：基本輸入" width="600">
 </p>
+
+## 3 分鐘上手
+
+### 1. 安裝
+
+先安裝 Rime 框架，再安裝拍台文方案：
+
+| 系統 | 先安裝 | 拍台文安裝方式 |
+|------|--------|----------------|
+| macOS | [鼠鬚管 Squirrel](https://github.com/rime/squirrel/releases) | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` |
+| Windows | [小狼毫 Weasel](https://github.com/rime/weasel/releases) | PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` |
+| Linux | fcitx5-rime 或 ibus-rime | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` |
+
+安裝後重新部署 Rime，按 `F4` 確認清單中有「拍台文(台)」。
+
+### 2. 先打一段
+
+不用打聲調，TL 和 POJ 可以混著打：
+
+```text
+gua beh khi tshit tho  →  我 beh 去 tshit-thô
+tsiah png              →  食飯
+chiah png              →  食飯
+tai uan                →  臺灣 / 台灣
+```
+
+候選區會顯示完整讀音，例如 `食飯 [tsia̍h-pn̄g]`。想更精準時，再補聲調數字：`ho2`、`tai5 uan5`。
+
+### 3. 記住 8 個按鍵
+
+| 按鍵 | 用途 |
+|------|------|
+| `Space` | 確認候選 |
+| `Tab` | 候選出現時進入 asdf 選字；打字中跳下一音節 |
+| `F4` | 切換漢羅/全羅、TL/POJ、emoji |
+| `Ctrl+Space` | 台文/英文模式 |
+| `~` | 注音反查華語，再轉台語候選 |
+| `?` | 萬用查字，例如 `?iah` |
+| `[` / `]` | 從候選詞取首字/尾字 |
+| `\` | 目前候選改用另一種輸出形式 |
+
+更多按鍵可直接打 `vvh`，或看 [快速上手小卡](docs/quickstart-card.md)。
 
 ## 特色
 
@@ -82,7 +124,7 @@ to1 → 多、刀...（只列出第1聲）
 
 按 `~` 進入反查模式，用注音找華語字，選字後自動轉成台語：
 
-![注音反查](docs/%E6%B3%A8%E9%9F%B3%E5%8F%8D%E6%9F%A5.png)
+![注音反查](docs/注音反查.png)
 
 ```
 ~ㄔ → 選「吃」→ 自動查到台語 tsiah8 → 出現「食」候選
@@ -95,7 +137,7 @@ to1 → 多、刀...（只列出第1聲）
 
 不確定聲母？用 `?` 代替，先選音節再選字：
 
-![萬用查字](docs/%E8%90%AC%E7%94%A8%E6%9F%A5%E5%AD%97%20%3F.png)
+![萬用查字](<docs/萬用查字 ?.png>)
 
 ```
 Step 1: ?iah → 列出可能的音節：
@@ -108,7 +150,7 @@ Step 2: 選 tsiah → 出現所有 tsiah 的字：
 
 輸入後按 `'` 查看同音字：
 
-![同音選字](docs/%E5%90%8C%E9%9F%B3%E9%81%B8%E5%AD%97.png)
+![同音選字](docs/同音選字.png)
 
 ```
 打 ho2 → 選「好」→ 按 ' → 顯示所有 ho2 的字
@@ -150,7 +192,7 @@ Step 2: 選 tsiah → 出現所有 tsiah 的字：
 
 ### 輸出模式切換
 
-按 `F4` 或 `Ctrl+Shift+T` 切換：
+按 `F4` 切換：
 
 | 模式 | 輸出範例 |
 |------|---------|

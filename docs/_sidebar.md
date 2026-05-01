@@ -1,1 +1,2 @@
-- [拍台文使用說明](user-guide.md)
+- [快速上手小卡](quickstart-card.md)
+- [完整使用說明](user-guide.md)
