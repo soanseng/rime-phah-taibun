@@ -13,6 +13,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={localappdata}\Phah Tai-bun
 DisableProgramGroupPage=yes
 OutputBaseFilename=PhahTaiBunSetup
+OutputDir=packaging/windows/Output
 SourceDir=..\..
 Compression=lzma
 SolidCompression=yes

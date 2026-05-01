@@ -41,6 +41,7 @@ jobs:
         with:
           name: PhahTaiBun-Windows-setup
           path: packaging/windows/Output/PhahTaiBunSetup.exe
+          if-no-files-found: error
 
   release:
     needs: [package-macos, package-windows]
