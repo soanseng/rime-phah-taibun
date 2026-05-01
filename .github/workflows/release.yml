@@ -9,13 +9,54 @@ permissions:
   contents: write
 
 jobs:
+  package-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build macOS pkg
+        run: |
+          PHAH_TAIBUN_VERSION="${GITHUB_REF_NAME#v}" packaging/macos/build-pkg.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhahTaiBun-macOS-pkg
+          path: packaging/macos/build/PhahTaiBun.pkg
+
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $env:PHAH_TAIBUN_VERSION = "${env:GITHUB_REF_NAME}".TrimStart("v")
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging/windows/phah-taibun.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhahTaiBun-Windows-setup
+          path: packaging/windows/Output/PhahTaiBunSetup.exe
+
   release:
+    needs: [package-macos, package-windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
+          files: |
+            release-assets/PhahTaiBun-macOS-pkg/PhahTaiBun.pkg
+            release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe

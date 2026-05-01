@@ -83,8 +83,16 @@ def main(argv: list[str] | None = None) -> None:
     if icorpus_file.exists():
         steps_ok &= run_step(
             "Extract iCorpus word frequencies",
-            [python, "scripts/extract_icorpus_freq.py", "--input", str(icorpus_file),
-             "--output", str(icorpus_freq), "--sentences", str(icorpus_sentences)],
+            [
+                python,
+                "scripts/extract_icorpus_freq.py",
+                "--input",
+                str(icorpus_file),
+                "--output",
+                str(icorpus_freq),
+                "--sentences",
+                str(icorpus_sentences),
+            ],
         )
     else:
         print(f"SKIP: iCorpus not found at {icorpus_file}")
@@ -96,8 +104,16 @@ def main(argv: list[str] | None = None) -> None:
     if ungian_dir.exists():
         steps_ok &= run_step(
             "Extract Ungian literary corpus frequencies",
-            [python, "scripts/extract_ungian_freq.py", "--input", str(ungian_dir),
-             "--output", str(ungian_freq), "--sentences", str(ungian_sentences)],
+            [
+                python,
+                "scripts/extract_ungian_freq.py",
+                "--input",
+                str(ungian_dir),
+                "--output",
+                str(ungian_freq),
+                "--sentences",
+                str(ungian_sentences),
+            ],
         )
     else:
         print(f"SKIP: Ungian data not found at {ungian_dir}")
@@ -107,8 +123,16 @@ def main(argv: list[str] | None = None) -> None:
     if kok4hau7_dir.exists():
         steps_ok &= run_step(
             "Extract 康軒 textbook frequencies",
-            [python, "scripts/extract_kok4hau7_freq.py", "--input", str(kok4hau7_dir),
-             "--output", str(kok4hau7_freq), "--sentences", str(kok4hau7_sentences)],
+            [
+                python,
+                "scripts/extract_kok4hau7_freq.py",
+                "--input",
+                str(kok4hau7_dir),
+                "--output",
+                str(kok4hau7_freq),
+                "--sentences",
+                str(kok4hau7_sentences),
+            ],
         )
     else:
         print(f"SKIP: 康軒 textbook data not found at {kok4hau7_dir}")
@@ -118,8 +142,16 @@ def main(argv: list[str] | None = None) -> None:
     if leku900_json.exists():
         steps_ok &= run_step(
             "Extract 常用900例句 frequencies",
-            [python, "scripts/extract_900leku_freq.py", "--input", str(leku900_json),
-             "--output", str(leku900_freq), "--sentences", str(leku900_sentences)],
+            [
+                python,
+                "scripts/extract_900leku_freq.py",
+                "--input",
+                str(leku900_json),
+                "--output",
+                str(leku900_freq),
+                "--sentences",
+                str(leku900_sentences),
+            ],
         )
     else:
         print(f"SKIP: 900例句 not found at {leku900_json}")
@@ -127,9 +159,28 @@ def main(argv: list[str] | None = None) -> None:
     # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
-        convert_cmd = [python, "scripts/convert_chhoetaigi.py", "--input", str(chhoetaigi_dir), "--output", str(out)]
+        convert_cmd = [
+            python,
+            "scripts/convert_chhoetaigi.py",
+            "--input",
+            str(chhoetaigi_dir),
+            "--output",
+            str(out),
+        ]
         # Attach extracted corpus frequency TSVs if available
-        freq_files = [f for f in [icorpus_freq, ungian_freq, kok4hau7_freq, leku900_freq, nmtl_freq, kipsutian_sent_freq, pojbh_freq] if f.exists()]
+        freq_files = [
+            f
+            for f in [
+                icorpus_freq,
+                ungian_freq,
+                kok4hau7_freq,
+                leku900_freq,
+                nmtl_freq,
+                kipsutian_sent_freq,
+                pojbh_freq,
+            ]
+            if f.exists()
+        ]
         if freq_files:
             convert_cmd.append("--corpus-freq")
             convert_cmd.extend(str(f) for f in freq_files)
@@ -155,7 +206,14 @@ def main(argv: list[str] | None = None) -> None:
     if lighttone_csv.exists():
         steps_ok &= run_step(
             "Parse light-tone rules → lighttone_rules.json",
-            [python, "scripts/parse_lighttone.py", "--input", str(lighttone_csv), "--output", str(out / "lighttone_rules.json")],
+            [
+                python,
+                "scripts/parse_lighttone.py",
+                "--input",
+                str(lighttone_csv),
+                "--output",
+                str(out / "lighttone_rules.json"),
+            ],
         )
     else:
         print(f"SKIP: Light-tone CSV not found at {lighttone_csv}")
@@ -186,7 +244,14 @@ def main(argv: list[str] | None = None) -> None:
     if kipsutian_csv and kipsutian_csv.exists():
         steps_ok &= run_step(
             "Build KipSutian reverse dictionary (65K entries)",
-            [python, "scripts/build_kipsutian_reverse.py", "--input", str(kipsutian_csv), "--output", str(reverse_output)],
+            [
+                python,
+                "scripts/build_kipsutian_reverse.py",
+                "--input",
+                str(kipsutian_csv),
+                "--output",
+                str(reverse_output),
+            ],
         )
     elif moe_dir.exists():
         steps_ok &= run_step(
@@ -200,9 +265,14 @@ def main(argv: list[str] | None = None) -> None:
     if chhoetaigi_dir.exists():
         steps_ok &= run_step(
             "Build Mandarin→Taiwanese mapping (hoabun_map.txt)",
-            [python, "scripts/build_hoabun_map.py",
-             "--input", str(chhoetaigi_dir),
-             "--output", str(out / "hoabun_map.txt")],
+            [
+                python,
+                "scripts/build_hoabun_map.py",
+                "--input",
+                str(chhoetaigi_dir),
+                "--output",
+                str(out / "hoabun_map.txt"),
+            ],
         )
 
     # Step 6: Validate
@@ -218,8 +288,16 @@ def main(argv: list[str] | None = None) -> None:
     if nmtl_dir.exists():
         steps_ok &= run_step(
             "Extract nmtl literary corpus",
-            [python, "scripts/extract_nmtl.py", "--input", str(nmtl_dir),
-             "--output", str(nmtl_freq), "--sentences", str(nmtl_sentences)],
+            [
+                python,
+                "scripts/extract_nmtl.py",
+                "--input",
+                str(nmtl_dir),
+                "--output",
+                str(nmtl_freq),
+                "--sentences",
+                str(nmtl_sentences),
+            ],
         )
     else:
         print(f"SKIP: nmtl data not found at {nmtl_dir}")
@@ -228,8 +306,16 @@ def main(argv: list[str] | None = None) -> None:
     if kipsutian_csv and kipsutian_csv.exists():
         steps_ok &= run_step(
             "Extract KipSutian example sentences",
-            [python, "scripts/extract_kipsutian_sentences.py", "--input", str(kipsutian_csv),
-             "--output", str(kipsutian_sent_freq), "--sentences", str(kipsutian_sentences)],
+            [
+                python,
+                "scripts/extract_kipsutian_sentences.py",
+                "--input",
+                str(kipsutian_csv),
+                "--output",
+                str(kipsutian_sent_freq),
+                "--sentences",
+                str(kipsutian_sentences),
+            ],
         )
 
     # Step 9: Extract Khin-hoan POJ texts (with POJ→TL conversion)
@@ -237,8 +323,16 @@ def main(argv: list[str] | None = None) -> None:
     if pojbh_dir.exists():
         steps_ok &= run_step(
             "Extract Khin-hoan POJ texts (with POJ→TL conversion)",
-            [python, "scripts/extract_pojbh.py", "--input", str(pojbh_dir),
-             "--output", str(pojbh_freq), "--sentences", str(pojbh_sentences)],
+            [
+                python,
+                "scripts/extract_pojbh.py",
+                "--input",
+                str(pojbh_dir),
+                "--output",
+                str(pojbh_freq),
+                "--sentences",
+                str(pojbh_sentences),
+            ],
         )
     else:
         print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
@@ -246,48 +340,68 @@ def main(argv: list[str] | None = None) -> None:
     # Step 9b: Build light-tone entries from corpus frequencies
     dict_yaml = out / "phah_taibun.dict.yaml"
     lighttone_json = out / "lighttone_rules.json"
-    all_freq_files = [f for f in [
-        icorpus_freq, ungian_freq, kok4hau7_freq, leku900_freq,
-        nmtl_freq, kipsutian_sent_freq, pojbh_freq,
-    ] if f.exists()]
+    all_freq_files = [
+        f
+        for f in [
+            icorpus_freq,
+            ungian_freq,
+            kok4hau7_freq,
+            leku900_freq,
+            nmtl_freq,
+            kipsutian_sent_freq,
+            pojbh_freq,
+        ]
+        if f.exists()
+    ]
     if dict_yaml.exists() and lighttone_json.exists() and all_freq_files:
         lighttone_output = data / "lighttone_entries.tsv"
         steps_ok &= run_step(
             "Build light-tone entries from corpus frequencies",
-            [python, "scripts/build_lighttone_entries.py",
-             "--dict", str(dict_yaml),
-             "--rules", str(lighttone_json),
-             "--corpus-freq"] + [str(f) for f in all_freq_files] +
-            ["--output", str(lighttone_output)],
+            [
+                python,
+                "scripts/build_lighttone_entries.py",
+                "--dict",
+                str(dict_yaml),
+                "--rules",
+                str(lighttone_json),
+                "--corpus-freq",
+            ]
+            + [str(f) for f in all_freq_files]
+            + ["--output", str(lighttone_output)],
         )
         # Append new light-tone entries to dict.yaml
         if lighttone_output.exists() and lighttone_output.stat().st_size > 0:
-            with open(dict_yaml, "a", encoding="utf-8") as out_f:
-                with open(lighttone_output, encoding="utf-8") as in_f:
-                    out_f.write(in_f.read())
+            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(lighttone_output, encoding="utf-8") as in_f:
+                out_f.write(in_f.read())
             print(f"  Appended light-tone entries from {lighttone_output}")
 
     # Step 10: Build bigram phrases from all corpora
-    sentence_files = [f for f in [
-        icorpus_sentences, ungian_sentences, kok4hau7_sentences,
-        leku900_sentences, nmtl_sentences,
-        kipsutian_sentences, pojbh_sentences,
-    ] if f.exists()]
+    sentence_files = [
+        f
+        for f in [
+            icorpus_sentences,
+            ungian_sentences,
+            kok4hau7_sentences,
+            leku900_sentences,
+            nmtl_sentences,
+            kipsutian_sentences,
+            pojbh_sentences,
+        ]
+        if f.exists()
+    ]
     dict_yaml = out / "phah_taibun.dict.yaml"
     if sentence_files and dict_yaml.exists():
         phrase_output = data / "new_phrases.txt"
         steps_ok &= run_step(
             "Build bigram phrases from all corpora",
-            [python, "scripts/build_phrases.py",
-             "--dict", str(dict_yaml),
-             "--sentences"] + [str(f) for f in sentence_files] +
-            ["--output", str(phrase_output), "--min-count", "5"],
+            [python, "scripts/build_phrases.py", "--dict", str(dict_yaml), "--sentences"]
+            + [str(f) for f in sentence_files]
+            + ["--output", str(phrase_output), "--min-count", "5"],
         )
         # Append new phrases to dict.yaml
         if phrase_output.exists() and phrase_output.stat().st_size > 0:
-            with open(dict_yaml, "a", encoding="utf-8") as out_f:
-                with open(phrase_output, encoding="utf-8") as in_f:
-                    out_f.write(in_f.read())
+            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(phrase_output, encoding="utf-8") as in_f:
+                out_f.write(in_f.read())
             print(f"  Appended phrases from {phrase_output}")
 
     # Step 11: Re-validate dictionary (with new phrases)

@@ -8,12 +8,13 @@ from scripts.extract_nmtl import (
     write_nmtl_output,
 )
 
-
 SAMPLE_JSON = [
-    {"資料": [
-        ["伊去學校讀冊", "I1 khi3 hak8-hau7 thak8-chheh"],
-        ["有一个少年人", "U7 chit8 e5 siau3-lian5-lang5"],
-    ]},
+    {
+        "資料": [
+            ["伊去學校讀冊", "I1 khi3 hak8-hau7 thak8-chheh"],
+            ["有一个少年人", "U7 chit8 e5 siau3-lian5-lang5"],
+        ]
+    },
 ]
 
 
@@ -44,7 +45,7 @@ class TestExtractNmtlSentencesJson:
         json_file = tmp_path / "nmtl.json"
         json_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
-        sentences, freq = extract_nmtl_sentences(tmp_path)
+        sentences, _freq = extract_nmtl_sentences(tmp_path)
         assert len(sentences) == 0
 
 
@@ -72,7 +73,7 @@ class TestExtractNmtlSentencesTxt:
         sub.mkdir()
         (sub / "deep.txt").write_text("khi3 hak8-hau7\n", encoding="utf-8")
 
-        sentences, freq = extract_nmtl_sentences(tmp_path)
+        sentences, _freq = extract_nmtl_sentences(tmp_path)
         assert len(sentences) == 1
 
     def test_json_takes_priority_over_txt(self, tmp_path):
@@ -85,7 +86,7 @@ class TestExtractNmtlSentencesTxt:
         txt_file = tmp_path / "extra.txt"
         txt_file.write_text("hak8-hau7\n", encoding="utf-8")
 
-        sentences, freq = extract_nmtl_sentences(tmp_path)
+        sentences, _freq = extract_nmtl_sentences(tmp_path)
         # Should only have the JSON entry
         assert len(sentences) == 1
         assert "khi3" in sentences[0]
@@ -107,7 +108,7 @@ class TestFrequencyCounting:
         txt_file = tmp_path / "repeat.txt"
         txt_file.write_text("khi3 khi3 khi3\nhak8 khi3\n", encoding="utf-8")
 
-        sentences, freq = extract_nmtl_sentences(tmp_path)
+        _sentences, freq = extract_nmtl_sentences(tmp_path)
         assert freq["khi3"] == 4
         assert freq["hak8"] == 1
 

@@ -88,11 +88,7 @@ class TestParseItaigiCsv:
         assert all(e["source"] == "itaigi" for e in entries)
 
     def test_unicode_tone_kip_input_is_normalized_to_numeric_tl(self):
-        csv_data = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            "lí-hó,你好,妳好\n"
-            "kau5-sí-gín-á,猴死囡仔,小屁孩\n"
-        )
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nlí-hó,你好,妳好\nkau5-sí-gín-á,猴死囡仔,小屁孩\n"
         entries = parse_itaigi_csv(io.StringIO(csv_data))
         assert entries[0]["kip_input"] == "li2-ho2"
         assert entries[0]["rime_key"] == "li2 ho2"
@@ -245,11 +241,7 @@ class TestConvertWithCorpusFreq:
     def test_corpus_freq_boosts_weight(self, tmp_path):
         from scripts.build_frequency import load_corpus_frequencies
 
-        csv_content = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            "tsiah8-png7,食飯,吃飯\n"
-            "khi3,去,去\n"
-        )
+        csv_content = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\nkhi3,去,去\n"
         csv_path = tmp_path / "itaigi.csv"
         csv_path.write_text(csv_content, encoding="utf-8-sig")
         freq_path = tmp_path / "corpus_freq.tsv"
@@ -265,9 +257,7 @@ class TestConvertWithCorpusFreq:
         def get_weights(path):
             weights = {}
             for line in path.read_text().splitlines():
-                if "\t" in line and not line.startswith(
-                    ("#", "-", "name", "version", "sort", "use_preset", "...")
-                ):
+                if "\t" in line and not line.startswith(("#", "-", "name", "version", "sort", "use_preset", "...")):
                     parts = line.split("\t")
                     if len(parts) >= 3:
                         weights[parts[0]] = int(parts[2])
@@ -283,11 +273,7 @@ class TestParseGenericCsv:
     """Parse generic ChhoeTaigi CSVs with column name fallbacks."""
 
     def test_basic_parse_with_kip_columns(self):
-        csv_data = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            "tsiah8-png7,食飯,吃飯\n"
-            "khi3,去,去\n"
-        )
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\nkhi3,去,去\n"
         entries = parse_generic_csv(io.StringIO(csv_data), "maryknoll")
         assert len(entries) == 2
         assert entries[0]["hanlo"] == "食飯"
@@ -298,10 +284,7 @@ class TestParseGenericCsv:
 
     def test_fallback_to_poj_columns(self):
         """When KipInput is missing, convert PojInput to canonical TL."""
-        csv_data = (
-            "PojInput,HanLoTaibunPoj,HoaBun\n"
-            "chiah8-png7,食飯,吃飯\n"
-        )
+        csv_data = "PojInput,HanLoTaibunPoj,HoaBun\nchiah8-png7,食飯,吃飯\n"
         entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert len(entries) == 1
         assert entries[0]["hanlo"] == "食飯"
@@ -312,8 +295,7 @@ class TestParseGenericCsv:
     def test_prefers_kip_over_poj(self):
         """When both KipInput and PojInput exist, use KipInput."""
         csv_data = (
-            "KipInput,PojInput,HanLoTaibunKip,HanLoTaibunPoj,HoaBun\n"
-            "tsiah8-png7,chiah8-png7,食飯kip,食飯poj,吃飯\n"
+            "KipInput,PojInput,HanLoTaibunKip,HanLoTaibunPoj,HoaBun\ntsiah8-png7,chiah8-png7,食飯kip,食飯poj,吃飯\n"
         )
         entries = parse_generic_csv(io.StringIO(csv_data), "embree")
         assert len(entries) == 1
@@ -321,28 +303,17 @@ class TestParseGenericCsv:
         assert entries[0]["hanlo"] == "食飯kip"
 
     def test_skips_rows_without_pronunciation(self):
-        csv_data = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            ",食飯,吃飯\n"
-            "khi3,去,去\n"
-        )
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\n,食飯,吃飯\nkhi3,去,去\n"
         entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert len(entries) == 1
 
     def test_skips_rows_without_hanlo(self):
-        csv_data = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            "tsiah8-png7,,吃飯\n"
-            "khi3,去,去\n"
-        )
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,,吃飯\nkhi3,去,去\n"
         entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert len(entries) == 1
 
     def test_handles_slash_variants(self):
-        csv_data = (
-            "KipInput,HanLoTaibunKip,HoaBun\n"
-            "tsiah8/sit8,食,吃\n"
-        )
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8/sit8,食,吃\n"
         entries = parse_generic_csv(io.StringIO(csv_data), "pehoe")
         assert len(entries) == 2
         kips = [e["kip_input"] for e in entries]
@@ -396,7 +367,9 @@ class TestConvertWithGenericPaths:
         csv_path.write_text(csv_data, encoding="utf-8")
         output = tmp_path / "output.dict.yaml"
         convert_chhoetaigi(
-            itaigi_paths=[], taihoa_paths=[], output_path=output,
+            itaigi_paths=[],
+            taihoa_paths=[],
+            output_path=output,
             generic_paths=[(csv_path, "maryknoll")],
         )
         content = output.read_text()

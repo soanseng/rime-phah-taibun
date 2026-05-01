@@ -83,7 +83,7 @@ class TestSentenceOutput:
         corpus = tmp_path / "corpus.txt"
         corpus.write_text("gua2 beh4\n\nOhio hello\n\nlai5\n", encoding="utf-8")
         outfile = tmp_path / "sentences.txt"
-        count = write_sentences(corpus, outfile)
+        _count = write_sentences(corpus, outfile)
         lines = outfile.read_text(encoding="utf-8").splitlines()
         assert "" not in lines
         assert len(lines) == 2

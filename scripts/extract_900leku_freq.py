@@ -7,7 +7,6 @@ for frequency matching with the main dictionary pipeline.
 
 import argparse
 import json
-import re
 import sys
 import unicodedata
 from collections import Counter
@@ -25,7 +24,7 @@ _DIACRITIC_TO_TONE = {
     "\u0300": "3",  # grave accent → tone 3
     "\u0302": "5",  # circumflex → tone 5
     "\u0304": "7",  # macron → tone 7
-    "\u030D": "8",  # vertical line above → tone 8
+    "\u030d": "8",  # vertical line above → tone 8
 }
 
 
@@ -80,10 +79,10 @@ def _convert_syllable(syllable: str) -> str:
     prefix = ""
     suffix = ""
     core = syllable
-    while core and not core[0].isalpha() and core[0] not in "\u0300\u0301\u0302\u0304\u030D":
+    while core and not core[0].isalpha() and core[0] not in "\u0300\u0301\u0302\u0304\u030d":
         prefix += core[0]
         core = core[1:]
-    while core and not core[-1].isalpha() and core[-1] not in "\u0300\u0301\u0302\u0304\u030D":
+    while core and not core[-1].isalpha() and core[-1] not in "\u0300\u0301\u0302\u0304\u030d":
         suffix = core[-1] + suffix
         core = core[:-1]
 
@@ -170,12 +169,8 @@ def write_frequency_table(freq: Counter, output_path: Path) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for 900例句 frequency extraction."""
-    parser = argparse.ArgumentParser(
-        description="Extract word frequencies from 常用900例句"
-    )
-    parser.add_argument(
-        "--input", type=Path, required=True, help="Path to minnan900.json"
-    )
+    parser = argparse.ArgumentParser(description="Extract word frequencies from 常用900例句")
+    parser.add_argument("--input", type=Path, required=True, help="Path to minnan900.json")
     parser.add_argument("--output", type=Path, required=True, help="Output frequency TSV path")
     parser.add_argument("--sentences", type=Path, help="Output tokenized sentences file")
     args = parser.parse_args(argv)

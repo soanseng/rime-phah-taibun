@@ -11,11 +11,11 @@ from collections import Counter
 from pathlib import Path
 
 try:
-    from scripts.tl_poj_convert import poj_to_tl
     from scripts.extract_icorpus_freq import tokenize_tl_line
+    from scripts.tl_poj_convert import poj_to_tl
 except ModuleNotFoundError:
-    from tl_poj_convert import poj_to_tl
     from extract_icorpus_freq import tokenize_tl_line
+    from tl_poj_convert import poj_to_tl
 
 
 def extract_pojbh_sentences(data_dir: Path) -> tuple[list[str], Counter]:
@@ -90,12 +90,8 @@ def write_frequency_table(freq: Counter, output_path: Path) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for Khin-hoan POJ frequency extraction."""
-    parser = argparse.ArgumentParser(
-        description="Extract word frequencies from Khin-hoan POJ text corpus"
-    )
-    parser.add_argument(
-        "--input", type=Path, required=True, help="Directory containing POJ .txt files"
-    )
+    parser = argparse.ArgumentParser(description="Extract word frequencies from Khin-hoan POJ text corpus")
+    parser.add_argument("--input", type=Path, required=True, help="Directory containing POJ .txt files")
     parser.add_argument("--output", type=Path, required=True, help="Output frequency TSV path")
     parser.add_argument("--sentences", type=Path, help="Output tokenized sentences file")
     args = parser.parse_args(argv)

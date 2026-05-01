@@ -230,7 +230,6 @@ def _count_syllables(kip_segment: str) -> int:
     return len(kip_segment.split("-"))
 
 
-
 def insert_lighttone_marker(hanlo: str, prefix_syllable_count: int) -> str:
     """Insert ``--`` into hanzi string at the correct syllable position.
 

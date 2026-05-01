@@ -57,7 +57,7 @@ def tokenize_tl_diacritical(line: str) -> list[str]:
     tokens = []
     for token in raw_tokens:
         # Strip leading/trailing punctuation but keep Unicode letters and hyphens
-        cleaned = token.strip(".,;:!?\"'()[]{}。，、；：！？「」『』（）")
+        cleaned = token.strip(".,;:!?\"'()[]{}。，、；：！？「」『』（）")  # noqa: RUF001
         if not cleaned:
             continue
         # Normalize to NFC for consistent matching
@@ -107,18 +107,10 @@ def extract_kipsutian_sentences(csvfile: TextIO) -> tuple[list[str], Counter]:
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for KipSutian sentence extraction."""
-    parser = argparse.ArgumentParser(
-        description="Extract word frequencies from KipSutian CSV"
-    )
-    parser.add_argument(
-        "--input", type=Path, required=True, help="Path to kautian.csv"
-    )
-    parser.add_argument(
-        "--output", type=Path, required=True, help="Output frequency TSV path"
-    )
-    parser.add_argument(
-        "--sentences", type=Path, help="Output tokenized sentences file"
-    )
+    parser = argparse.ArgumentParser(description="Extract word frequencies from KipSutian CSV")
+    parser.add_argument("--input", type=Path, required=True, help="Path to kautian.csv")
+    parser.add_argument("--output", type=Path, required=True, help="Output frequency TSV path")
+    parser.add_argument("--sentences", type=Path, help="Output tokenized sentences file")
     args = parser.parse_args(argv)
 
     if not args.input.exists():

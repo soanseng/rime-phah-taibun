@@ -56,7 +56,7 @@ class TestBuildReverseIndex:
         lines = [
             "---",
             "name: phah_taibun",
-            "version: \"0.1.0\"",
+            'version: "0.1.0"',
             "sort: by_weight",
             "...",
             "我\tgua\t900",
@@ -165,7 +165,7 @@ class TestBuildPhrasesFromFiles:
         # Create dict file
         dict_file = tmp_path / "dict.yaml"
         dict_file.write_text(
-            "---\nname: test\nversion: \"0.1\"\nsort: by_weight\n...\n"
+            '---\nname: test\nversion: "0.1"\nsort: by_weight\n...\n'
             "我\tgua\t900\n"
             "袂\tbeh\t800\n"
             "去\tkhi\t700\n"

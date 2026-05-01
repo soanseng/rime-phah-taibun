@@ -123,7 +123,7 @@ class TestPojDiacriticsToToneNumbers:
         assert poj_diacritics_to_tone_numbers("ā") == "a7"
 
     def test_vertical_line_above_tone8(self):
-        assert poj_diacritics_to_tone_numbers("a\u030D") == "a8"
+        assert poj_diacritics_to_tone_numbers("a\u030d") == "a8"
 
     def test_word_with_diacritic(self):
         assert poj_diacritics_to_tone_numbers("lâng") == "lang5"

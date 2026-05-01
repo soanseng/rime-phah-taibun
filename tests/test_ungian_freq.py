@@ -84,9 +84,7 @@ class TestSentenceOutput:
         json_dir = tmp_path / "json"
         json_dir.mkdir()
         data = {"資料": [{"段": [["漢字text", "kip2 romanization3"]]}]}
-        (json_dir / "test.json").write_text(
-            json.dumps(data, ensure_ascii=False), encoding="utf-8"
-        )
+        (json_dir / "test.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         output = tmp_path / "sentences.txt"
         count = write_ungian_sentences(json_dir, output)
         assert count == 1
@@ -99,9 +97,7 @@ class TestSentenceOutput:
         json_dir = tmp_path / "json"
         json_dir.mkdir()
         data = {"資料": [{"段": [["只有漢字", ""]]}]}
-        (json_dir / "test.json").write_text(
-            json.dumps(data, ensure_ascii=False), encoding="utf-8"
-        )
+        (json_dir / "test.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         output = tmp_path / "sentences.txt"
         count = write_ungian_sentences(json_dir, output)
         assert count == 0

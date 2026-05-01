@@ -6,13 +6,17 @@
 
 ## 先裝起來
 
-| 系統 | 需要先有 | 安裝拍台文 |
-|------|----------|------------|
-| macOS | 鼠鬚管 Squirrel | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` |
-| Windows | 小狼毫 Weasel | PowerShell: `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` |
-| Linux | fcitx5-rime 或 ibus-rime | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` |
+一般使用者先到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載安裝包：
+
+| 系統 | 安裝拍台文 | 需要先有 |
+|------|------------|----------|
+| Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
+| macOS | 下載 `PhahTaiBun.pkg`，雙擊安裝 | 鼠鬚管 Squirrel |
+| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 
 裝好後重新部署 Rime，按 `F4`，選「拍台文(台)」。
+
+進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。
 
 ---
 

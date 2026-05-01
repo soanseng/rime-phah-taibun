@@ -2,6 +2,10 @@
 # 參考 ryanwuson/rime-liur 安裝腳本架構
 # https://github.com/soanseng/rime-phah-taibun
 
+param(
+    [string]$ProjectRoot = ""
+)
+
 $ErrorActionPreference = "Stop"
 
 # GitHub 相關設定
@@ -19,6 +23,22 @@ $WEASEL_DIR_ALT = "$env:ProgramFiles\Rime\weasel-*"
 # 使用者自訂檔案（保留不覆蓋）
 $CUSTOM_FILES = @("phah_taibun.custom.dict.yaml", "phah_taibun.phrase.dict.yaml")
 
+# 打包安裝器會傳入內建 payload；命令列安裝則維持從 GitHub 下載最新檔案。
+$USE_LOCAL_PAYLOAD = $false
+if ($ProjectRoot -ne "") {
+    $resolvedRoot = Resolve-Path $ProjectRoot -ErrorAction SilentlyContinue
+    $resolvedRootPath = if ($resolvedRoot) { $resolvedRoot.Path } else { "" }
+    if ($resolvedRoot -and
+        (Test-Path (Join-Path $resolvedRootPath "schema")) -and
+        (Test-Path (Join-Path $resolvedRootPath "lua"))) {
+        $ProjectRoot = $resolvedRootPath
+        $USE_LOCAL_PAYLOAD = $true
+    } else {
+        Write-Host "錯誤：指定的 ProjectRoot 沒有 schema/ 與 lua/：$ProjectRoot" -ForegroundColor Red
+        exit 1
+    }
+}
+
 # 進度條函數（from rime-liur）
 function Show-Progress {
     param(
@@ -35,6 +55,19 @@ function Show-Progress {
     }
     $status = "  [$bar] $("{0,3}" -f $Current)/$Total  $($FileName.PadRight(45))"
     Write-Host "`r$status" -NoNewline
+}
+
+function Copy-OrDownload {
+    param(
+        [string]$SourcePath,
+        [string]$DestinationPath
+    )
+
+    if ($USE_LOCAL_PAYLOAD) {
+        Copy-Item -Force (Join-Path $ProjectRoot $SourcePath) $DestinationPath
+    } else {
+        Invoke-WebRequest -Uri "$GITHUB_RAW/$SourcePath" -OutFile $DestinationPath | Out-Null
+    }
 }
 
 # ============================================================
@@ -71,11 +104,18 @@ if (-not $weaselExists) {
 }
 
 Write-Host "本工具將執行以下作業："
-Write-Host "  1. 從 GitHub 下載拍台文方案檔案"
+if ($USE_LOCAL_PAYLOAD) {
+    Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+} else {
+    Write-Host "  1. 從 GitHub 下載拍台文方案檔案"
+}
 Write-Host "  2. 註冊輸入方案"
 Write-Host "  3. 安裝芫荽 iansui 字體"
 Write-Host ""
 Write-Host "Rime 資料夾：$RIME_DIR" -ForegroundColor Green
+if ($USE_LOCAL_PAYLOAD) {
+    Write-Host "安裝包資料夾：$ProjectRoot" -ForegroundColor Green
+}
 Write-Host ""
 
 # 偵測現有方案
@@ -95,38 +135,50 @@ if ($existingSchemas.Count -gt 0) {
 }
 
 # ============================================================
-# 從 GitHub 取得檔案清單
+# 取得檔案清單
 # ============================================================
-Write-Host "正在從 GitHub 取得檔案清單..."
-try {
-    $response = Invoke-RestMethod -Uri $GITHUB_API -Method Get
-} catch {
-    Write-Host "錯誤：GitHub API 連線失敗" -ForegroundColor Red
-    Write-Host "       請檢查網路連線，或稍後再試"
-    Write-Host "       https://github.com/$GITHUB_REPO"
-    exit 1
-}
-
-if (-not $response.tree) {
-    Write-Host "錯誤：無法解析檔案清單" -ForegroundColor Red
-    exit 1
-}
-
-# 分類檔案
 $SCHEMA_FILES = @()
 $LUA_FILES = @()
 $HAS_RIME_LUA = $false
 
-foreach ($item in $response.tree) {
-    if ($item.type -ne "blob") { continue }
-    $path = $item.path
+if ($USE_LOCAL_PAYLOAD) {
+    Write-Host "正在讀取安裝包內建檔案清單..."
+    Get-ChildItem (Join-Path $ProjectRoot "schema") -File | ForEach-Object {
+        if ($_.Name -ne "default.custom.yaml") {
+            $SCHEMA_FILES += "schema/$($_.Name)"
+        }
+    }
+    Get-ChildItem (Join-Path $ProjectRoot "lua") -Filter "phah_taibun_*.lua" -File | ForEach-Object {
+        $LUA_FILES += "lua/$($_.Name)"
+    }
+    $HAS_RIME_LUA = Test-Path (Join-Path $ProjectRoot "rime.lua")
+} else {
+    Write-Host "正在從 GitHub 取得檔案清單..."
+    try {
+        $response = Invoke-RestMethod -Uri $GITHUB_API -Method Get
+    } catch {
+        Write-Host "錯誤：GitHub API 連線失敗" -ForegroundColor Red
+        Write-Host "       請檢查網路連線，或稍後再試"
+        Write-Host "       https://github.com/$GITHUB_REPO"
+        exit 1
+    }
 
-    if ($path -match "^schema/.+" -and $path -notmatch "default\.custom\.yaml$") {
-        $SCHEMA_FILES += $path
-    } elseif ($path -match "^lua/phah_taibun_.*\.lua$") {
-        $LUA_FILES += $path
-    } elseif ($path -eq "rime.lua") {
-        $HAS_RIME_LUA = $true
+    if (-not $response.tree) {
+        Write-Host "錯誤：無法解析檔案清單" -ForegroundColor Red
+        exit 1
+    }
+
+    foreach ($item in $response.tree) {
+        if ($item.type -ne "blob") { continue }
+        $path = $item.path
+
+        if ($path -match "^schema/.+" -and $path -notmatch "default\.custom\.yaml$") {
+            $SCHEMA_FILES += $path
+        } elseif ($path -match "^lua/phah_taibun_.*\.lua$") {
+            $LUA_FILES += $path
+        } elseif ($path -eq "rime.lua") {
+            $HAS_RIME_LUA = $true
+        }
     }
 }
 
@@ -153,7 +205,7 @@ foreach ($file in $SCHEMA_FILES) {
         Show-Progress -Current $current -Total $TOTAL -FileName "$filename [保留]"
     } else {
         Show-Progress -Current $current -Total $TOTAL -FileName $filename
-        Invoke-WebRequest -Uri "$GITHUB_RAW/$file" -OutFile "$RIME_DIR\$filename" | Out-Null
+        Copy-OrDownload -SourcePath $file -DestinationPath "$RIME_DIR\$filename"
     }
 }
 
@@ -162,7 +214,7 @@ foreach ($file in $LUA_FILES) {
     $current++
     $filename = Split-Path $file -Leaf
     Show-Progress -Current $current -Total $TOTAL -FileName $filename
-    Invoke-WebRequest -Uri "$GITHUB_RAW/$file" -OutFile "$RIME_DIR\lua\$filename" | Out-Null
+    Copy-OrDownload -SourcePath $file -DestinationPath "$RIME_DIR\lua\$filename"
 }
 
 # 下載 rime.lua（合併既有）
@@ -174,8 +226,12 @@ if ($HAS_RIME_LUA) {
         Show-Progress -Current $current -Total $TOTAL -FileName "rime.lua [合併]"
         Copy-Item -Force $rimeLuaDest "$RIME_DIR\rime.lua.bak"
 
-        $tmpFile = "$env:TEMP\phah_taibun_rime.lua"
-        Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $tmpFile | Out-Null
+        if ($USE_LOCAL_PAYLOAD) {
+            $tmpFile = Join-Path $ProjectRoot "rime.lua"
+        } else {
+            $tmpFile = "$env:TEMP\phah_taibun_rime.lua"
+            Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $tmpFile | Out-Null
+        }
 
         $existingContent = Get-Content $rimeLuaDest -Raw -ErrorAction SilentlyContinue
         Get-Content $tmpFile | ForEach-Object {
@@ -185,10 +241,12 @@ if ($HAS_RIME_LUA) {
                 Add-Content -Path $rimeLuaDest -Value $line
             }
         }
-        Remove-Item $tmpFile -ErrorAction SilentlyContinue
+        if (-not $USE_LOCAL_PAYLOAD) {
+            Remove-Item $tmpFile -ErrorAction SilentlyContinue
+        }
     } else {
         Show-Progress -Current $current -Total $TOTAL -FileName "rime.lua"
-        Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $rimeLuaDest | Out-Null
+        Copy-OrDownload -SourcePath "rime.lua" -DestinationPath $rimeLuaDest
     }
 }
 
@@ -232,8 +290,8 @@ if ($needRegister) {
         }
         Write-Host "  已將 phah_taibun 追加到 default.custom.yaml" -ForegroundColor Green
     } else {
-        # 下載預設的 default.custom.yaml
-        Invoke-WebRequest -Uri "$GITHUB_RAW/schema/default.custom.yaml" -OutFile $defaultCustom | Out-Null
+        # 安裝預設的 default.custom.yaml
+        Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom
         Write-Host "  default.custom.yaml（新建）" -ForegroundColor Green
     }
 }

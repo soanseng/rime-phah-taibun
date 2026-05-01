@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PAYLOAD="/Library/Application Support/PhahTaiBun"
+INSTALLER="$PAYLOAD/install_macos.sh"
+CONSOLE_USER="$(stat -f %Su /dev/console)"
+
+if [ "$CONSOLE_USER" = "root" ] || [ -z "$CONSOLE_USER" ]; then
+  echo "找不到目前登入的 macOS 使用者，無法安裝到 ~/Library/Rime。" >&2
+  exit 1
+fi
+
+USER_HOME="$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory | cut -d' ' -f2-)"
+if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+  echo "找不到 $CONSOLE_USER 的家目錄，無法安裝到 ~/Library/Rime。" >&2
+  exit 1
+fi
+
+if [ ! -x "$INSTALLER" ]; then
+  chmod +x "$INSTALLER"
+fi
+
+sudo -u "$CONSOLE_USER" env HOME="$USER_HOME" RIME_DIR="$USER_HOME/Library/Rime" bash "$INSTALLER" --project-root "$PAYLOAD"
+exit 0

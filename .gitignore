@@ -25,6 +25,10 @@ LKK*.html
 .coverage
 .pytest_cache/
 
+# Installer build artifacts
+packaging/windows/Output/
+packaging/macos/build/
+
 # Claude Code（AI 開發指令，不進公開 repo）
 CLAUDE.md
 .claude/

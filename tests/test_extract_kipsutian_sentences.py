@@ -23,23 +23,15 @@ class TestExtractKipsutianSentences:
     """Extract romanization tokens from KipSutian CSV entries."""
 
     def test_extracts_romanization(self):
-        row = (
-            "1,主詞目,食飯,tsia̍h-pn̄g,動作,1(1),,,,,,,,,,,"
-            '"吃飯。","動詞",'
-            '"來食飯","來吃飯",,,,\n'
-        )
-        sentences, freq = extract_kipsutian_sentences(_make_csv(row))
+        row = '1,主詞目,食飯,tsia̍h-pn̄g,動作,1(1),,,,,,,,,,,"吃飯。","動詞","來食飯","來吃飯",,,,\n'
+        sentences, _freq = extract_kipsutian_sentences(_make_csv(row))
         assert len(sentences) >= 1
         # The romanization tsia̍h-pn̄g should appear as a token
         assert any("tsia" in s for s in sentences)
 
     def test_skips_entries_without_reading(self):
-        row = (
-            "1,主詞目,食飯,,動作,1(1),,,,,,,,,,,"
-            '"吃飯。","動詞",'
-            '"來食飯","來吃飯",,,,\n'
-        )
-        sentences, freq = extract_kipsutian_sentences(_make_csv(row))
+        row = '1,主詞目,食飯,,動作,1(1),,,,,,,,,,,"吃飯。","動詞","來食飯","來吃飯",,,,\n'
+        sentences, _freq = extract_kipsutian_sentences(_make_csv(row))
         assert len(sentences) == 0
 
     def test_empty_csv(self):
@@ -56,28 +48,20 @@ class TestExtractKipsutianSentences:
             '"食物。","名詞",'
             '"好食物","好的食物",,,,\n'
         )
-        sentences, freq = extract_kipsutian_sentences(_make_csv(rows))
+        _sentences, freq = extract_kipsutian_sentences(_make_csv(rows))
         # tsia̍h8 appears in both entries as part of compound
         assert isinstance(freq, Counter)
         assert len(freq) > 0
 
     def test_multiple_readings_with_又唸作(self):
         """Entries with 又唸作 (alternate reading) should also be extracted."""
-        row = (
-            "1,主詞目,一,tsi̍t,數詞,1(1),it,,,,,,,,,,,"
-            '"數目。","數詞",'
-            '"一蕊花","一朵花",,,,\n'
-        )
-        sentences, freq = extract_kipsutian_sentences(_make_csv(row))
+        row = '1,主詞目,一,tsi̍t,數詞,1(1),it,,,,,,,,,,,"數目。","數詞","一蕊花","一朵花",,,,\n'
+        sentences, _freq = extract_kipsutian_sentences(_make_csv(row))
         # Both main reading and alternate reading should be extracted
         assert len(sentences) >= 1
 
     def test_skips_empty_reading(self):
         """Entries where all reading fields are empty should be skipped."""
-        row = (
-            '1,主詞目,無讀音,,,1(1),,,,,,,,,,,'
-            '"解說。","名詞",'
-            '"例句","例句華語",,,,\n'
-        )
-        sentences, freq = extract_kipsutian_sentences(_make_csv(row))
+        row = '1,主詞目,無讀音,,,1(1),,,,,,,,,,,"解說。","名詞","例句","例句華語",,,,\n'
+        sentences, _freq = extract_kipsutian_sentences(_make_csv(row))
         assert len(sentences) == 0

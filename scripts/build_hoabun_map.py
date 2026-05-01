@@ -22,9 +22,9 @@ except ModuleNotFoundError:
 
 # Source priority: higher = more authoritative
 SOURCE_PRIORITY = {
-    "moe": 4,       # 教育部台語辭典
-    "itaigi": 3,     # iTaigi 社群
-    "taihoa": 2,     # 台華線頂
+    "moe": 4,  # 教育部台語辭典
+    "itaigi": 3,  # iTaigi 社群
+    "taihoa": 2,  # 台華線頂
     "maryknoll": 1,  # Maryknoll
 }
 
@@ -93,9 +93,7 @@ def split_hoabun(hoabun: str) -> list[str]:
     return result
 
 
-def split_into_chars(
-    hoabun: str, kip_input: str
-) -> list[tuple[str, str]]:
+def split_into_chars(hoabun: str, kip_input: str) -> list[tuple[str, str]]:
     """Split a multi-char HoaBun into individual character→syllable mappings.
 
     Only works when char count matches syllable count.
@@ -161,9 +159,7 @@ def extract_hoabun_mappings(data_dir: Path) -> dict[str, tuple[str, int]]:
     """
     mappings: dict[str, tuple[str, int]] = {}
 
-    def add_mapping(
-        mandarin: str, kip: str, priority: int, *, is_primary: bool = False
-    ) -> None:
+    def add_mapping(mandarin: str, kip: str, priority: int, *, is_primary: bool = False) -> None:
         existing = mappings.get(mandarin)
         if existing is None:
             mappings[mandarin] = (kip, priority, is_primary)
@@ -236,15 +232,17 @@ def build_hoabun_map(data_dir: Path, output_path: Path) -> int:
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Build Mandarin→Taiwanese mapping from ChhoeTaigi data"
-    )
+    parser = argparse.ArgumentParser(description="Build Mandarin→Taiwanese mapping from ChhoeTaigi data")
     parser.add_argument(
-        "--input", type=Path, required=True,
+        "--input",
+        type=Path,
+        required=True,
         help="Path to ChhoeTaigiDatabase directory",
     )
     parser.add_argument(
-        "--output", type=Path, required=True,
+        "--output",
+        type=Path,
+        required=True,
         help="Output path for hoabun_map.txt",
     )
     args = parser.parse_args(argv)

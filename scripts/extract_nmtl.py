@@ -84,9 +84,7 @@ def _extract_from_text_files(
     freq: Counter,
 ) -> None:
     """Fallback: extract from .tbk and .txt files recursively."""
-    text_files = sorted(
-        list(data_dir.rglob("*.tbk")) + list(data_dir.rglob("*.txt"))
-    )
+    text_files = sorted(list(data_dir.rglob("*.tbk")) + list(data_dir.rglob("*.txt")))
     for text_file in text_files:
         try:
             with open(text_file, encoding="utf-8") as f:
@@ -127,16 +125,10 @@ def write_nmtl_output(
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for NMTL frequency extraction."""
-    parser = argparse.ArgumentParser(
-        description="Extract word frequencies from NMTL literary corpus"
-    )
-    parser.add_argument(
-        "--input", type=Path, required=True, help="Path to nmtl_2006_dadwt directory"
-    )
+    parser = argparse.ArgumentParser(description="Extract word frequencies from NMTL literary corpus")
+    parser.add_argument("--input", type=Path, required=True, help="Path to nmtl_2006_dadwt directory")
     parser.add_argument("--output", type=Path, required=True, help="Output TSV path")
-    parser.add_argument(
-        "--sentences", type=Path, default=None, help="Output tokenized sentences file"
-    )
+    parser.add_argument("--sentences", type=Path, default=None, help="Output tokenized sentences file")
     args = parser.parse_args(argv)
 
     if not args.input.exists():

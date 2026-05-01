@@ -423,8 +423,11 @@ def main(argv: list[str] | None = None) -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     output_path = args.output / "phah_taibun.dict.yaml"
     convert_chhoetaigi(
-        itaigi_paths, taihoa_paths, output_path,
-        corpus_freq=corpus_freq, generic_paths=generic_paths,
+        itaigi_paths,
+        taihoa_paths,
+        output_path,
+        corpus_freq=corpus_freq,
+        generic_paths=generic_paths,
     )
     print(f"Written: {output_path}")
 

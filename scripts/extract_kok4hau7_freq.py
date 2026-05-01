@@ -94,9 +94,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Extract word frequencies from 康軒 elementary school Taiwanese textbooks"
     )
-    parser.add_argument(
-        "--input", type=Path, required=True, help="Directory containing kok4hau7-kho3pun2 data"
-    )
+    parser.add_argument("--input", type=Path, required=True, help="Directory containing kok4hau7-kho3pun2 data")
     parser.add_argument("--output", type=Path, required=True, help="Output frequency TSV path")
     parser.add_argument("--sentences", type=Path, help="Output tokenized sentences file")
     args = parser.parse_args(argv)
