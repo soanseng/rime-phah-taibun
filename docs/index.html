@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>拍台文 Phah Tai-bun｜電腦台語輸入法、Rime 台語輸入法、POJ/TL 漢羅打字</title>
-  <meta name="description" content="拍台文 Phah Tai-bun 是給 Windows、macOS、Linux 電腦使用的 Rime 台語輸入法方案。整合 ChhoeTaigi、iTaigi、教育部辭典、楊允言詞頻與 20+ 個台文外部資源，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫、候選拼音註解、華語反查台語，適合創作者、老師、學生與日常台文書寫。">
+  <meta name="description" content="拍台文 Phah Tai-bun 是給 Windows、macOS、Linux 電腦使用的 Rime 台語輸入法方案。整合 ChhoeTaigi、iTaigi、教育部辭典、楊允言詞頻、建中詞庫增補與 21 個台文外部資源，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫、候選拼音註解、華語反查台語，適合創作者、老師、學生與日常台文書寫。">
   <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,電腦台語輸入法,Rime 台語輸入法,白話字輸入法,台羅輸入法,POJ 輸入法,TL 輸入法,漢羅輸入,漢羅混寫,台語打字,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,拍台文,Phah Tai-bun">
   <meta name="author" content="Soan Seng">
   <meta name="robots" content="index,follow,max-image-preview:large">
@@ -50,7 +50,7 @@
         "downloadUrl": "https://github.com/soanseng/rime-phah-taibun/releases",
         "codeRepository": "https://github.com/soanseng/rime-phah-taibun",
         "license": "https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE",
-        "description": "給電腦使用的 Rime 台語輸入法方案，整合開源辭典與台語語料庫，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫與華語反查台語。",
+        "description": "給電腦使用的 Rime 台語輸入法方案，整合開源辭典、台語語料庫與人工詞庫增補，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫與華語反查台語。",
         "creator": {
           "@type": "Person",
           "name": "Soan Seng",
@@ -106,7 +106,7 @@
           <dl class="hero-facts">
             <div><dt>拼音</dt><dd>POJ / TL 雙系統</dd></div>
             <div><dt>輸出</dt><dd>漢羅、全羅、TL、POJ</dd></div>
-            <div><dt>詞庫</dt><dd>170K+ 詞條</dd></div>
+            <div><dt>詞庫</dt><dd>170K+ 詞條＋增補</dd></div>
           </dl>
         </div>
         <div class="hero-media">
@@ -131,7 +131,7 @@
       <div class="container">
         <div class="section-heading">
           <p class="eyebrow">為電腦書寫台文設計</p>
-          <h2>不是只把拼音變漢字，而是幫你跨過台文打字最卡的幾步。</h2>
+          <h2>幫助你跨過台文打字最困難的幾步。</h2>
         </div>
         <div class="feature-grid">
           <article class="feature-card">
@@ -157,7 +157,12 @@
           <article class="feature-card feature-card-wide">
             <span class="marker marker-green">05</span>
             <h3>站在開源台文資料上</h3>
-            <p>主字典整合 ChhoeTaigi 9 本辭典，包含 iTaigi 華台對照典、台華線頂對照典、台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、教育部台語辭典、甘字典等來源；候選排序再參考楊允言詞頻、iCorpus 新聞語料、康軒課本、900 例句、NMTL 文學語料、KipSutian 例句與白話字文獻。另參考既有 Rime 台語方案、蝦米 Rime 模組、方音符號方案、意傳工具、KeSi、字咍 IVS 與教育部推薦用字。這些外部資源讓拍台文不是憑感覺排字，而是把台文社群多年累積變成可用的電腦輸入法。</p>
+            <p>主字典整合 ChhoeTaigi 9 本辭典，包含 iTaigi 華台對照典、台華線頂對照典、台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、教育部台語辭典、甘字典等來源；候選排序再參考楊允言詞頻、iCorpus 新聞語料、康軒課本、900 例句、NMTL 文學語料、KipSutian 例句與白話字文獻。另納入建中的教育部臺灣台語輸入法詞庫增補檔案，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。這些外部資源讓拍台文不是憑感覺排字，而是把台文社群多年累積變成可用的電腦輸入法。</p>
+          </article>
+          <article class="feature-card">
+            <span class="marker marker-blue">06</span>
+            <h3>人工增補詞庫</h3>
+            <p>建置流程可納入第三方人工整理的教育部輸入法增補 CSV，轉成可驗證的 Rime 詞條，並保留跳過列與重複列報告。</p>
           </article>
         </div>
         <div class="craft-grid" aria-label="拍台文開發紀錄中的特色">
@@ -183,18 +188,19 @@
           </article>
           <article>
             <h3>鍵盤流程為長文輸入調整</h3>
-            <p><kbd>Tab</kbd> 可進入 asdf 選字，<kbd>\</kbd> 可在漢羅和全羅間切換，輸出模式會記住，減少寫文章時一直重設。</p>
+            <p><kbd>Tab</kbd> 可進入 <kbd>asdfghjkl;</kbd> 選字，數字鍵保留給聲調；<kbd>\</kbd> 可在漢羅和全羅間切換，輸出模式會記住。</p>
           </article>
         </div>
         <div class="pipeline-card" aria-label="資料前處理流程">
           <div>
             <p class="eyebrow">scripts/ 資料工程</p>
             <h3>先把辭典、語料、詞頻和規則整理好，輸入法才會真的順。</h3>
-            <p>拍台文不是只手寫一份 Rime 字典。<code>scripts/</code> 會下載約 20 個語言資源，轉換 ChhoeTaigi CSV、抽取語料詞頻、建立華語反查、解析 LKK 與教育部推薦用字、產生輕聲詞條、擷取雙字詞組，最後再驗證 Rime 字典格式。</p>
+            <p>拍台文不是只手寫一份 Rime 字典。<code>scripts/</code> 會下載 21 個語言資源，轉換 ChhoeTaigi CSV、抽取語料詞頻、建立華語反查、解析 LKK 與教育部推薦用字、產生輕聲詞條、匯入人工詞庫增補、擷取雙字詞組，最後再驗證 Rime 字典格式。</p>
           </div>
           <ol>
             <li><strong>辭典轉換</strong><span>iTaigi、台華線頂、台日、Maryknoll、Embree、教育部、甘字典等資料轉成 Rime 可用格式。</span></li>
             <li><strong>詞頻加權</strong><span>從 iCorpus、Ungian 2009、康軒課本、900 例句、NMTL、KipSutian、白話字文獻抽詞頻，讓常用詞優先。</span></li>
+            <li><strong>人工增補詞庫</strong><span>把建中的增補 CSV 轉成 Rime 詞條，跳過不合法拼音，並記錄重複與品質報告。</span></li>
             <li><strong>輸入體驗資料</strong><span>建立華語→台語反查、輕聲候選、bigram 詞組、LKK 漢羅規則與 MOE 700 字推薦標記。</span></li>
           </ol>
         </div>
@@ -204,9 +210,9 @@
           <p><code>scripts/extract_ungian_freq.py</code> 讀取 <strong>Ungian_2009_KIPsupin</strong> 專案中的 JSON 資料。這份資料來自楊允言老師提供的「教育部臺灣閩南語字詞頻調查工作」，內容是台語文作品整理成教育部台羅（KIP/TL）後的語料。腳本會解析 1,093 個 JSON 檔，抽出台羅行、切出詞 token，統計每個詞出現次數，也輸出句子給 bigram 詞組建置使用。</p>
           <p>這很重要，因為輸入法不能只知道「有哪些字詞」，還要知道「哪些字詞在文章裡比較常出現」。有了文學與書面台語的詞頻，拍台文可以把常用詞排前面，減少選字，也讓漢羅文章、創作、教學和長文輸入更順。</p>
         </article>
-        <div class="resource-ledger" aria-label="20+ 個外部資源分類">
+        <div class="resource-ledger" aria-label="21 個外部資源分類">
           <div class="section-heading narrow">
-            <p class="eyebrow">20+ 個外部資源</p>
+            <p class="eyebrow">21 個外部資源</p>
             <h2>拍台文把辭典、語料、輸入法經驗和字形資料整理成一套可重建流程。</h2>
           </div>
           <div class="resource-grid">
@@ -218,6 +224,7 @@
                 <li><a href="https://github.com/ChhoeTaigi/KipSutianDataMirror">KipSutianDataMirror</a>：教育部台語辭典鏡像，ODS 與音檔更完整。</li>
                 <li>LKK 用字表：李江却台語文教基金會漢羅用字規範，決定哪些詞輸出漢字或羅馬字。</li>
                 <li><a href="https://github.com/yiufung/minnan-700">教育部推薦 700 字</a>：候選區 ◆ 推薦漢字標記。</li>
+                <li><a href="https://github.com/luke871016/Taigi-Input-method-dictionary-supplement">建中的教育部臺灣台語輸入法詞庫增補檔案</a>：政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。</li>
                 <li><a href="https://github.com/Taiwanese-Corpus/moe_minkalaok">moe_minkalaok</a>：閩南語卡拉OK正字字表，作為教育部用字規範參考。</li>
                 <li><a href="https://github.com/ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian">甘字典 CSV 原始版</a>：1913 年甘為霖台語辭典。</li>
               </ul>
@@ -290,7 +297,7 @@
           <article class="compare-card">
             <p class="compare-label">搜尋：教育部台語輸入法</p>
             <h3>相較教育部：拍台文更偏電腦創作工作流</h3>
-            <p>教育部的官方資源很適合查標準用字、台羅拼音和手機/平板輸入；既有漢字輸入法也以教育部臺羅和推薦用字為準。拍台文則主打桌機長文輸入：Windows、macOS、Linux 都可用，POJ/TL 不必分開，候選顯示拼音，還能把華語反查送回台語候選。</p>
+            <p>教育部的官方資源很適合查標準用字、台羅拼音和手機/平板輸入；既有漢字輸入法也以教育部臺羅和推薦用字為準。拍台文則主打桌機長文輸入：Windows、macOS、Linux 都可用，POJ/TL 不必分開，候選顯示拼音，數字鍵保留給聲調，選字用 <kbd>Tab</kbd> 加 <kbd>asdfghjkl;</kbd>。</p>
           </article>
           <article class="compare-card">
             <p class="compare-label">搜尋：信望愛台語輸入法</p>
@@ -305,7 +312,7 @@
         </div>
         <div class="source-note" aria-label="資料來源摘要">
           <h3>資料與比較依據</h3>
-          <p>拍台文使用的辭典與語料來源包含 <a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase">ChhoeTaigiDatabase</a>、<a href="https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7">iCorpus 臺華平行新聞語料庫漢字臺羅版</a>、<a href="https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin">楊允言老師 Ungian 2009 字詞頻調查資料</a>、<a href="https://github.com/i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7">意傳臺灣言語工具</a>、<a href="https://github.com/i3thuan5/KeSi">KeSi</a>、<a href="https://sutian.moe.edu.tw/zh-hant/">教育部臺灣台語常用詞辭典</a>與<a href="https://ime.hokkhi.org/latest/">信望愛台語客語輸入法公開說明</a>。</p>
+          <p>拍台文使用的辭典與語料來源包含 <a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase">ChhoeTaigiDatabase</a>、<a href="https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7">iCorpus 臺華平行新聞語料庫漢字臺羅版</a>、<a href="https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin">楊允言老師 Ungian 2009 字詞頻調查資料</a>、<a href="https://github.com/luke871016/Taigi-Input-method-dictionary-supplement">建中的教育部臺灣台語輸入法詞庫增補檔案</a>、<a href="https://github.com/i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7">意傳臺灣言語工具</a>、<a href="https://github.com/i3thuan5/KeSi">KeSi</a>、<a href="https://sutian.moe.edu.tw/zh-hant/">教育部臺灣台語常用詞辭典</a>與<a href="https://ime.hokkhi.org/latest/">信望愛台語客語輸入法公開說明</a>。</p>
         </div>
       </div>
     </section>
@@ -421,6 +428,10 @@ cd rime-phah-taibun
           <details>
             <summary>會覆蓋我原本的 Rime 設定嗎？</summary>
             <p>安裝流程會保留既有 Rime 輸入法、自訂詞庫與 <code>rime.lua</code>，再加入拍台文方案。</p>
+          </details>
+          <details>
+            <summary>教育部輸入法的增補詞庫匯入後，操作方式也一樣嗎？</summary>
+            <p>不一樣。拍台文只把有用的詞庫資料納入建置流程；操作仍維持拍台文設計：數字鍵打聲調，候選選字按 <kbd>Tab</kbd> 後用 <kbd>asdfghjkl;</kbd>，符號選單按反引號。</p>
           </details>
         </div>
       </div>

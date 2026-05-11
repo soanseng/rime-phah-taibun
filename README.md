@@ -82,6 +82,7 @@ tai uan                →  臺灣 / 台灣
 - **英文混打**：直接打英文單字，台語英文無縫切換
 - **輕聲自動辨識**：自動產生輕聲候選（如「轉--來」「食--飽」），29K+ 輕聲詞條 + 即時輕聲建議
 - **170K 詞條**：整合 ChhoeTaigi 9 本辭典 + 7 語料庫頻率加權，涵蓋日常到文學用語
+- **人工詞庫增補**：build pipeline 可納入建中的教育部臺灣台語輸入法詞庫增補檔，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞
 
 ## 使用範例
 
@@ -462,8 +463,8 @@ lua/                           Lua 擴充模組（16 個）
   phah_taibun_synonym.lua         文白讀切換（開發中）
   phah_taibun_speedup.lua         簡拼對照
 rime.lua                       Lua 模組註冊（舊版 librime 相容）
-scripts/                       Python 資料處理腳本（18 個）
-tests/                         pytest 測試（18 個測試檔）
+scripts/                       Python 資料處理腳本
+tests/                         pytest 測試
 ```
 
 ## 開發
@@ -476,7 +477,7 @@ tests/                         pytest 測試（18 個測試檔）
 # 安裝 Python 依賴
 uv sync
 
-# 下載外部資料（20 個語言資源，約 2GB）
+# 下載外部資料（21 個語言資源，約 2GB）
 ./scripts/download_resources.sh
 
 # 建置字典
@@ -519,6 +520,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料（POJ→TL 轉換） |
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
+| [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) | 政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，開發時用於驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |

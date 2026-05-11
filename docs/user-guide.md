@@ -643,7 +643,7 @@ o͘  ⁿ
 
 **台文標點：**
 ```
-、。「」『』（）【】
+、。，？！：；「」『』《》…—
 ```
 
 ---
@@ -663,6 +663,26 @@ o͘  ⁿ
 按 `F4` 進入方案選單，可以開關 Emoji 候選（💀/😄）。
 
 > Emoji 功能需要 `opencc/emoji.json` 檔案。如果沒有顯示，請確認已安裝 rime-ice 的 OpenCC 檔案。
+
+---
+
+## 十之一、詞庫增補來源與自訂語詞
+
+拍台文的 build pipeline 可以納入建中的教育部臺灣台語輸入法詞庫增補檔案。這份資料補強政府機關、行政區、數字時間日期、常見人名、台/臺變體、教典相關術語，以及 LKK 寫羅馬字的詞。
+
+這份資料是第三方人工整理，可能有錯。若你自己要大量匯入使用者語詞，先備份 Rime 使用者資料。
+
+拍台文和教育部輸入法的操作不同：
+
+| 功能 | 拍台文 |
+|------|--------|
+| 候選選字 | 按 `Tab` 進入 `asdfghjkl;` 選字 |
+| 數字鍵 | 保留給聲調輸入 |
+| 模式切換 | 按 `F4` 切換漢羅/全羅、TL/POJ、emoji |
+| 符號選單 | 按 `` ` `` 開啟台文符號選單 |
+| 自訂語詞 | 使用 Rime 的 `custom_phrase`，拼音建議用正式台羅 |
+
+自訂語詞可以當 snippet 使用，例如把 email、常用 emoji、固定片語設成候選詞。建議拼音欄使用正式台羅或數字調 TL，避免不同模式輸出不可預期。
 
 ---
 
@@ -862,7 +882,7 @@ Step 4: 選「掠」→ 輸出
 | 按鍵 | 功能 |
 |------|------|
 | `Space` | 確認選字 |
-| `Tab` | 候選出現時：進入選字模式（asdf/數字鍵選字）；否則：跳到下一個音節 |
+| `Tab` | 候選出現時：進入選字模式（asdf 選字）；否則：跳到下一個音節 |
 | `Shift+字母` | 打大寫字母（不會切換到英文） |
 | `\` | 強制輸出羅馬字（帶調符，任何模式皆可） |
 | `Enter` | 直接送出拼音原文 |
@@ -905,7 +925,7 @@ Step 4: 選「掠」→ 輸出
 # 安裝 Python 依賴
 uv sync
 
-# 下載外部資料（20 個語言資源，約 2GB）
+# 下載外部資料（21 個語言資源，約 2GB）
 ./scripts/download_resources.sh
 
 # 建置字典
@@ -915,13 +935,14 @@ uv run python scripts/build_all.py
 ./install.sh
 ```
 
-**建置流程**涵蓋 11 個步驟：
+**建置流程重點**：
 1. 從 7 個語料庫提取詞頻（iCorpus、Ungian、康軒課本、900例句、NMTL 文學、KipSutian、白話字文獻）
 2. 合併 ChhoeTaigi 9 本辭典 CSV，加上語料庫頻率加權
-3. 解析 LKK 漢羅規則、輕聲規則、教育部推薦700字
-4. 建置反查字典（KipSutian 65K 筆，或 MOE 24K 筆備用）
-5. 從所有語料庫句子提取雙字詞組（bigram phrases）
-6. 驗證生成的字典
+3. 納入建中的教育部臺灣台語輸入法詞庫增補檔
+4. 解析 LKK 漢羅規則、輕聲規則、教育部推薦700字
+5. 建置反查字典（KipSutian 65K 筆，或 MOE 24K 筆備用）
+6. 從所有語料庫句子提取雙字詞組（bigram phrases）
+7. 驗證生成的字典
 
 ---
 
@@ -1031,6 +1052,7 @@ cd rime-phah-taibun
 | [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料 |
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
+| [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) | 政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |

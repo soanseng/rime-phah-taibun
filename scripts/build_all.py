@@ -6,6 +6,7 @@ Orchestrates the full preprocessing pipeline:
 2b. Extract word frequencies + sentences from 康軒 textbooks
 2c. Extract word frequencies + sentences from 900例句
 3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
+3b. Build and append Taigi input method dictionary supplement
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
 4c. Parse MOE 700字 → moe700.yaml
@@ -75,6 +76,9 @@ def main(argv: list[str] | None = None) -> None:
     kok4hau7_sentences = data / "kok4hau7_sentences.txt"
     leku900_freq = data / "900leku_freq.tsv"
     leku900_sentences = data / "900leku_sentences.txt"
+    supplement_dir = data / "Taigi-Input-method-dictionary-supplement"
+    supplement_entries = data / "dictionary_supplement_entries.tsv"
+    supplement_report = data / "dictionary_supplement_report.tsv"
 
     # Step 1: Extract iCorpus frequencies + sentences
     icorpus_file = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改音標.txt"
@@ -190,6 +194,30 @@ def main(argv: list[str] | None = None) -> None:
         )
     else:
         print(f"SKIP: ChhoeTaigi not found at {chhoetaigi_dir}")
+
+    # Step 3b: Build third-party dictionary supplement entries
+    if supplement_dir.exists():
+        steps_ok &= run_step(
+            "Build Taigi input method dictionary supplement",
+            [
+                python,
+                "scripts/build_dictionary_supplement.py",
+                "--input",
+                str(supplement_dir),
+                "--output",
+                str(supplement_entries),
+                "--report",
+                str(supplement_report),
+            ],
+        )
+        dict_yaml = out / "phah_taibun.dict.yaml"
+        if dict_yaml.exists() and supplement_entries.exists() and supplement_entries.stat().st_size > 0:
+            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(supplement_entries, encoding="utf-8") as in_f:
+                out_f.write(in_f.read())
+            print(f"  Appended supplement entries from {supplement_entries}")
+            print(f"  Supplement report: {supplement_report}")
+    else:
+        print(f"SKIP: Dictionary supplement not found at {supplement_dir}")
 
     # Step 4: Parse LKK rules
     lkk_csv = data / "lkk_yongji.csv"
