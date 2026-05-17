@@ -85,6 +85,7 @@
         <a href="#features">特色</a>
         <a href="#typing-schemes">拼音方案</a>
         <a href="#compare">比較</a>
+        <a href="#updates">更新</a>
         <a href="#install">安裝</a>
         <a href="guide.html">使用說明</a>
         <a class="nav-cta" href="https://github.com/soanseng/rime-phah-taibun/releases">下載</a>
@@ -326,6 +327,43 @@
           <p class="eyebrow">搜尋：華語查台語 / 台語讀音反查</p>
           <h2>不知道台語怎麼講，也能從華語開始找。</h2>
           <p>按 <kbd>~</kbd> 進入注音反查，用華語字找到台語候選。這對剛開始寫台文、或臨時想不起某個詞讀音的人特別有用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section updates-section" id="updates">
+      <div class="container">
+        <div class="section-heading narrow">
+          <p class="eyebrow">最近更新</p>
+          <h2>最近 5 個變更，重點都放在更準、更好裝、更可重建。</h2>
+          <p>這裡用使用者看得懂的方式整理近期變更；完整技術紀錄仍以 GitHub commit 與 Releases 為準。</p>
+        </div>
+        <div class="updates-list" aria-label="最近 5 個變更">
+          <article>
+            <time datetime="2026-05-17">2026-05-17</time>
+            <h3>修正「水觳仔」這類明確漢字候選的顯示</h3>
+            <p>候選本來已經在主字典內，但漢羅顯示規則會把多字詞裡的明確漢字誤改成羅馬字。現在像 <code>水khok仔</code> 會保留可選的 <strong>水觳仔</strong> 候選。</p>
+          </article>
+          <article>
+            <time datetime="2026-05-17">2026-05-17</time>
+            <h3>更新教育部台語辭典來源進主字典</h3>
+            <p>教育部 KipSutian ODS 會轉成可重建的 CSV，再匯入主輸入字典、反查字典、TL 全羅候選與 POJ 全羅候選；必要時也保留漢羅混用詞形。</p>
+          </article>
+          <article>
+            <time datetime="2026-05-17">2026-05-17</time>
+            <h3>加入教育部輸入法增補詞庫建置流程</h3>
+            <p>build pipeline 可納入第三方人工整理的增補 CSV，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。</p>
+          </article>
+          <article>
+            <time datetime="2026-05-17">2026-05-17</time>
+            <h3>修正 Windows Release 安裝包產物路徑</h3>
+            <p>GitHub Actions 產出的 Windows 安裝檔會使用正確 artifact 路徑，避免 release 流程找不到檔案或漏上傳。</p>
+          </article>
+          <article>
+            <time datetime="2026-05-17">2026-05-17</time>
+            <h3>建立 GitHub Releases 發佈流程</h3>
+            <p>專案可透過 CI 發佈跨平台安裝包，讓一般使用者從 Releases 下載，而不必手動複製 Rime 方案檔。</p>
+          </article>
         </div>
       </div>
     </section>
