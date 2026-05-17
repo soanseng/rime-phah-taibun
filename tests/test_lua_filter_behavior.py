@@ -77,3 +77,63 @@ def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
     )
 
     assert run_lua(script).strip() == "ê\t [ê]"
+
+
+def test_hanlo_rules_preserve_multi_character_hanzi_candidate_when_syllable_is_lo():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {
+          get_hanlo_type = function(word)
+            if word == "khok" then return "lo" end
+            return nil
+          end,
+          format_romanization = function(roman)
+            if roman == "tsui2 khok4 a2" then return "tsuí-khok-á" end
+            if roman == "khok4" then return "khok" end
+            return roman
+          end,
+        }
+
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        local filter = require("phah_taibun_filter")
+        local input = {
+          iter = function()
+            local done = false
+            return function()
+              if done then return nil end
+              done = true
+              return Candidate("table", 0, 1, "水觳仔", " [tsui2 khok4 a2]")
+            end
+          end
+        }
+        local env = {
+          engine = {
+            context = {
+              get_option = function(_, _) return false end
+            }
+          }
+        }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).strip() == "水觳仔\t [tsuí-khok-á]"

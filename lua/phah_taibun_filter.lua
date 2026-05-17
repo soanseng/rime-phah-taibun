@@ -61,6 +61,21 @@ local function utf8_len(s)
   return count
 end
 
+local function is_cjk_char(char)
+  if not char or char == "" then return false end
+  local b1, b2, b3, b4 = char:byte(1, 4)
+  if not b1 then return false end
+  local code = b1
+  if b1 >= 0xF0 and b2 and b3 and b4 then
+    code = (b1 % 0x08) * 0x40000 + (b2 % 0x40) * 0x1000 + (b3 % 0x40) * 0x40 + (b4 % 0x40)
+  elseif b1 >= 0xE0 and b2 and b3 then
+    code = (b1 % 0x10) * 0x1000 + (b2 % 0x40) * 0x40 + (b3 % 0x40)
+  elseif b1 >= 0xC0 and b2 then
+    code = (b1 % 0x20) * 0x40 + (b2 % 0x40)
+  end
+  return (code >= 0x3400 and code <= 0x9FFF) or (code >= 0x20000 and code <= 0x2FA1F)
+end
+
 -- Check if a word should be displayed as romanization (lo) per hanlo_rules
 -- Returns true if the word is classified as "lo" type
 local function is_lo_type(word)
@@ -122,7 +137,7 @@ local function apply_hanlo_rules_group(text, roman_group)
   for i, char in ipairs(chars) do
     local syl = syllables[i]
     local roman_is_lo, formatted = roman_syllable_is_lo(syl)
-    if is_lo_type(char) or roman_is_lo then
+    if is_lo_type(char) or (roman_is_lo and not is_cjk_char(char)) then
       syl = formatted
       table.insert(result_parts, syl)
       changed = true
