@@ -160,6 +160,16 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: 900例句 not found at {leku900_json}")
 
+    # KipSutian CSV is nested: public/<date>/bunji/kautian.csv
+    kipsutian_base = data / "KipSutianDataMirror" / "public"
+    kipsutian_csv = None
+    if kipsutian_base.exists():
+        for candidate in sorted(kipsutian_base.iterdir(), reverse=True):
+            csv_path = candidate / "bunji" / "kautian.csv"
+            if csv_path.exists():
+                kipsutian_csv = csv_path
+                break
+
     # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
@@ -188,6 +198,8 @@ def main(argv: list[str] | None = None) -> None:
         if freq_files:
             convert_cmd.append("--corpus-freq")
             convert_cmd.extend(str(f) for f in freq_files)
+        if kipsutian_csv and kipsutian_csv.exists():
+            convert_cmd.extend(["--kipsutian-csv", str(kipsutian_csv)])
         steps_ok &= run_step(
             "Convert ChhoeTaigi CSVs to Rime dictionary",
             convert_cmd,
@@ -257,15 +269,6 @@ def main(argv: list[str] | None = None) -> None:
         print("SKIP: 700iongji.csv not found (run download_resources.sh)")
 
     # Step 5: Build reverse dictionary (prefer KipSutian 65K, fallback to MOE 24K)
-    # KipSutian CSV is nested: public/<date>/bunji/kautian.csv
-    kipsutian_base = data / "KipSutianDataMirror" / "public"
-    kipsutian_csv = None
-    if kipsutian_base.exists():
-        for candidate in sorted(kipsutian_base.iterdir(), reverse=True):
-            csv_path = candidate / "bunji" / "kautian.csv"
-            if csv_path.exists():
-                kipsutian_csv = csv_path
-                break
     moe_dir = data / "moedict-data-twblg" / "uni"
     reverse_output = out / "phah_taibun_reverse.dict.yaml"
 

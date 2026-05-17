@@ -106,7 +106,7 @@
           <dl class="hero-facts">
             <div><dt>拼音</dt><dd>POJ / TL 雙系統</dd></div>
             <div><dt>輸出</dt><dd>漢羅、全羅、TL、POJ</dd></div>
-            <div><dt>詞庫</dt><dd>170K+ 詞條＋增補</dd></div>
+            <div><dt>詞庫</dt><dd>220K+ 詞條＋增補</dd></div>
           </dl>
         </div>
         <div class="hero-media">
@@ -157,7 +157,7 @@
           <article class="feature-card feature-card-wide">
             <span class="marker marker-green">05</span>
             <h3>站在開源台文資料上</h3>
-            <p>主字典整合 ChhoeTaigi 9 本辭典，包含 iTaigi 華台對照典、台華線頂對照典、台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、教育部台語辭典、甘字典等來源；候選排序再參考楊允言詞頻、iCorpus 新聞語料、康軒課本、900 例句、NMTL 文學語料、KipSutian 例句與白話字文獻。另納入建中的教育部臺灣台語輸入法詞庫增補檔案，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。這些外部資源讓拍台文不是憑感覺排字，而是把台文社群多年累積變成可用的電腦輸入法。</p>
+            <p>主字典整合 ChhoeTaigi 9 本辭典與教育部 KipSutian 詞目，包含 iTaigi 華台對照典、台華線頂對照典、台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、教育部台語辭典、甘字典等來源；教育部詞目保留原始漢字或漢羅候選，並補上 TL、POJ 全羅候選。候選排序再參考楊允言詞頻、iCorpus 新聞語料、康軒課本、900 例句、NMTL 文學語料、KipSutian 例句與白話字文獻。另納入建中的教育部臺灣台語輸入法詞庫增補檔案，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。這些外部資源讓拍台文不是憑感覺排字，而是把台文社群多年累積變成可用的電腦輸入法。</p>
           </article>
           <article class="feature-card">
             <span class="marker marker-blue">06</span>
@@ -195,10 +195,10 @@
           <div>
             <p class="eyebrow">scripts/ 資料工程</p>
             <h3>先把辭典、語料、詞頻和規則整理好，輸入法才會真的順。</h3>
-            <p>拍台文不是只手寫一份 Rime 字典。<code>scripts/</code> 會下載 21 個語言資源，轉換 ChhoeTaigi CSV、抽取語料詞頻、建立華語反查、解析 LKK 與教育部推薦用字、產生輕聲詞條、匯入人工詞庫增補、擷取雙字詞組，最後再驗證 Rime 字典格式。</p>
+            <p>拍台文不是只手寫一份 Rime 字典。<code>scripts/</code> 會下載 21 個語言資源，轉換 ChhoeTaigi CSV 與教育部 KipSutian ODS、抽取語料詞頻、建立華語反查、解析 LKK 與教育部推薦用字、產生輕聲詞條、匯入人工詞庫增補、擷取雙字詞組，最後再驗證 Rime 字典格式。</p>
           </div>
           <ol>
-            <li><strong>辭典轉換</strong><span>iTaigi、台華線頂、台日、Maryknoll、Embree、教育部、甘字典等資料轉成 Rime 可用格式。</span></li>
+            <li><strong>辭典轉換</strong><span>iTaigi、台華線頂、台日、Maryknoll、Embree、教育部、甘字典與 KipSutian ODS 等資料轉成 Rime 可用格式。</span></li>
             <li><strong>詞頻加權</strong><span>從 iCorpus、Ungian 2009、康軒課本、900 例句、NMTL、KipSutian、白話字文獻抽詞頻，讓常用詞優先。</span></li>
             <li><strong>人工增補詞庫</strong><span>把建中的增補 CSV 轉成 Rime 詞條，跳過不合法拼音，並記錄重複與品質報告。</span></li>
             <li><strong>輸入體驗資料</strong><span>建立華語→台語反查、輕聲候選、bigram 詞組、LKK 漢羅規則與 MOE 700 字推薦標記。</span></li>
@@ -220,8 +220,8 @@
               <h3>辭典與用字標準</h3>
               <ul>
                 <li><a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase">ChhoeTaigi 台語字詞資料庫</a>：9 本辭典 CSV，353K 筆原始字詞資料。</li>
-                <li><a href="https://github.com/g0v/moedict-data-twblg">g0v/moedict-data-twblg</a>：教育部台語辭典開放資料，建反查字典。</li>
-                <li><a href="https://github.com/ChhoeTaigi/KipSutianDataMirror">KipSutianDataMirror</a>：教育部台語辭典鏡像，ODS 與音檔更完整。</li>
+                <li><a href="https://github.com/g0v/moedict-data-twblg">g0v/moedict-data-twblg</a>：教育部台語辭典開放資料，作為反查字典備用來源。</li>
+                <li><a href="https://github.com/ChhoeTaigi/KipSutianDataMirror">KipSutianDataMirror</a>：教育部台語辭典鏡像，ODS 詞目進主字典與反查字典，例句進詞頻語料。</li>
                 <li>LKK 用字表：李江却台語文教基金會漢羅用字規範，決定哪些詞輸出漢字或羅馬字。</li>
                 <li><a href="https://github.com/yiufung/minnan-700">教育部推薦 700 字</a>：候選區 ◆ 推薦漢字標記。</li>
                 <li><a href="https://github.com/luke871016/Taigi-Input-method-dictionary-supplement">建中的教育部臺灣台語輸入法詞庫增補檔案</a>：政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。</li>
@@ -307,7 +307,7 @@
           <article class="compare-card">
             <p class="compare-label">搜尋：最好用的台語輸入法</p>
             <h3>拍台文強在低門檻和資料厚度</h3>
-            <p>打字時可以省聲調、POJ/TL 混打、看拼音註解、切換漢羅/全羅、用 <code>?</code> 任意位置查字；背後用 170K+ 詞條和多語料庫詞頻把常用詞往前排。對創作者、老師、學生和社群小編來說，重點是少查字、少切換、少整理格式。</p>
+            <p>打字時可以省聲調、POJ/TL 混打、看拼音註解、切換漢羅/全羅、用 <code>?</code> 任意位置查字；背後用 220K+ 詞條和多語料庫詞頻把常用詞往前排。對創作者、老師、學生和社群小編來說，重點是少查字、少切換、少整理格式。</p>
           </article>
         </div>
         <div class="source-note" aria-label="資料來源摘要">

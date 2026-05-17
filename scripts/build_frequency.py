@@ -10,6 +10,8 @@ from pathlib import Path
 
 SOURCE_WEIGHTS = {
     "moe": 1000,  # L1: 教育部辭典
+    "moe_tl": 700,  # L1b: 教育部辭典全羅 TL 輸出候選
+    "moe_poj": 650,  # L1b: 教育部辭典全羅 POJ 輸出候選
     "itaigi": 800,  # L2: iTaigi (群眾驗證)
     "taihoa": 500,  # L3: 台華線頂
     "maryknoll": 300,  # L4: Maryknoll 台英辭典

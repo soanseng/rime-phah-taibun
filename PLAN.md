@@ -87,7 +87,22 @@ chmod +x scripts/download_resources.sh
 | `data/Khin-hoan_2010_pojbh/` | Taiwanese-Corpus/Khin-hoan_2010_pojbh | 白話字文獻館（歷史 POJ 語料） | 2 |
 | `data/Kam-Ui-lim_1913_Kam-Ji-tian/` | ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian | 甘字典 CSV 原始版（CC BY-NC-SA） | 2 |
 
-### 2-0c. .gitignore 設定
+### 2-0c. 主字典收錄狀態
+
+| 類型 | 資料來源 | 是否直接進主字典 | 說明 |
+|------|----------|------------------|------|
+| 辭典詞目 | ChhoeTaigiDatabase 9 本 CSV | 是 | `convert_chhoetaigi.py` 轉成 `phah_taibun.dict.yaml` |
+| 辭典詞目 | KipSutianDataMirror `kautian.ods` / `kautian.csv` | 是 | 保留原始漢字/漢羅候選，另補 TL 與 POJ 全羅候選 |
+| 人工增補 | Taigi-Input-method-dictionary-supplement | 條件式 | data 內存在時由 `build_all.py` append 進主字典；缺檔則跳過 |
+| 衍生詞條 | 輕聲規則 + 語料詞頻 | 是，衍生 | `build_lighttone_entries.py` 產生輕聲候選並 append |
+| 衍生詞條 | bigram phrases | 是，衍生 | 有達門檻的新雙字詞時 append；本次建置產生 0 筆 |
+| 反查資料 | moedict-data-twblg | 否 | 只作 KipSutian 缺檔時的反查字典 fallback |
+| 規則資料 | LKK 用字表、LKK 數字用法、MOE 700 字 | 否 | 產生漢羅轉換規則、數字用法、推薦用字標記，不是字典候選來源 |
+| 詞頻語料 | iCorpus、Ungian、康軒、900 例句、NMTL、KipSutian 例句、白話字文獻 | 否，除衍生詞條 | 用於權重、輕聲、bigram；原文語料不逐筆進主字典 |
+| 參考程式/方案 | rime-taigi-glll4678、rime-taigi-tps、rime-liur、tai5-uan5_gian5-gi2_kang1-ku7、KeSi、rime-ice | 否 | 參考 schema、Lua 架構、音標轉換或 UX，不匯入詞條 |
+| 字形/用字參考 | taigivs、moe_minkalaok、芫荽字體 | 否 | 作字形、IVS、用字規範或顯示建議，不進主字典 |
+
+### 2-0d. .gitignore 設定
 
 ```gitignore
 # 外部資料（不進 repo，用 download_resources.sh 重新下載）
@@ -110,7 +125,7 @@ __pycache__/
 - `schema/phah_taibun.dict.yaml` 和 `schema/hanlo_rules.yaml` **進 repo**（使用者 clone 即用，不需跑 build）
 - `rime.lua` **進 repo**（Lua 模組註冊檔）
 
-### 2-0d. 資源重點檔案索引
+### 2-0e. 資源重點檔案索引
 
 下載完之後，開發時最常需要查看的檔案：
 
@@ -119,7 +134,7 @@ data/
 ├── ChhoeTaigiDatabase/ChhoeTaigiDatabase/
 │   ├── ChhoeTaigi_iTaigiHoataiTuichiautian.csv    # iTaigi CC0，19K筆
 │   ├── ChhoeTaigi_TaihoaSoanntengTuichiautian.csv  # 台華線頂 CC BY-SA，91K筆，最大宗
-│   ├── ChhoeTaigi_KauiokpooTaigiSutian.csv         # 教育部 CC BY-ND，24K筆（僅反查用）
+│   ├── ChhoeTaigi_KauiokpooTaigiSutian.csv         # 教育部 CC BY-ND，24K筆
 │   ├── ChhoeTaigi_TaijitToaSutian.csv               # 台日大辭典，69K筆，無華文對照
 │   └── ...
 ├── rime-taigi-glll4678/
@@ -232,7 +247,7 @@ rime-liur (ryanwuson/rime-liur) 93.7% 是 Lua，模組化設計清晰。
 **授權合規**：
 - iTaigi (CC0)：自由使用，無限制
 - 台華線頂 (CC BY-SA)：需在 README 標示來源
-- 教育部辭典 (CC BY-ND)：**不可改作**，只能用於反查字典（原樣引用讀音資訊）
+- 教育部辭典 (CC BY-ND)：可用於主字典與反查字典；主字典需保留原始漢字/漢羅候選，另可補 TL/POJ 全羅候選，並在文件標示來源與授權
 - 台日大辭典 (CC BY-NC-SA)：非商用，可做補充字典
 
 ### 3-2. 詞頻建立
@@ -612,7 +627,7 @@ return M
 ## 8. 待決事項
 
 - [x] LKK 用字表：已自動從 Google Sheets 下載 CSV（字表 + 數字用法）
-- [x] 授權選擇：MIT（程式碼）+ CC BY-SA 4.0（主字典）+ CC BY-ND 3.0（反查字典）
+- [x] 授權選擇：MIT（程式碼）+ CC BY-SA 4.0 / CC BY-ND 3.0（字典資料，依來源標示）
 - [x] 楊允言詞頻：已自動下載，JSON 格式（1,093 檔），已用 extract_ungian_freq.py 提取 93K 詞頻
 - [x] ~~意傳 `rime_taigi_poj_hanlo` 的字典生成邏輯深入分析~~ — repo 已刪除，改用 LKK CSV + nmtl 語料
 - [x] 意傳 `khin1siann1-hun1sik4` 的分詞規則提取 — 111 條輕聲規則已用 parse_lighttone.py 解析

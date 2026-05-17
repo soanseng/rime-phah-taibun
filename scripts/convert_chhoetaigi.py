@@ -14,9 +14,9 @@ from pathlib import Path
 from typing import TextIO
 
 try:
-    from scripts.tl_poj_convert import poj_to_tl
+    from scripts.tl_poj_convert import poj_to_tl, tl_to_poj
 except ModuleNotFoundError:
-    from tl_poj_convert import poj_to_tl
+    from tl_poj_convert import poj_to_tl, tl_to_poj
 
 CSV_SOURCE_MAP = {
     "iTaigiHoataiTuichiautian": "itaigi",
@@ -278,6 +278,64 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
     return entries
 
 
+def _clean_kipsutian_reading(reading: str) -> str:
+    reading = re.sub(r"[\uFF08(][^\uFF09)]*[\uFF09)]", "", reading)
+    reading = re.sub(r"\u3010[^\u3011]*\u3011", "", reading)
+    return reading.strip()
+
+
+def parse_kipsutian_main_csv(csvfile: TextIO, include_roman_outputs: bool = True) -> list[dict]:
+    """Parse MOE KipSutian CSV into main input dictionary entries.
+
+    The upstream ``漢字`` field is kept as the primary candidate, including
+    Han-Lo mixed entries when the source uses them. Full romanization TL and
+    POJ candidates are added as selectable output forms for the same input key.
+    """
+    entries = []
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        hanlo = clean_hanlo_text(row.get("漢字", ""))
+        reading_raw = row.get("羅馬字", "").strip()
+        if not hanlo or not reading_raw:
+            continue
+
+        reading_variants = [_clean_kipsutian_reading(v) for v in reading_raw.split("/") if v.strip()]
+        for reading_variant in reading_variants:
+            for kip in clean_kip_input(reading_variant):
+                rime_key = normalize_implicit_tone(kip).replace("-", " ")
+                entries.append(
+                    {
+                        "hanlo": hanlo,
+                        "kip_input": kip,
+                        "rime_key": rime_key,
+                        "hoabun": "",
+                        "source": "moe",
+                    }
+                )
+                if include_roman_outputs:
+                    tl_output = clean_hanlo_text(reading_variant)
+                    poj_output = clean_hanlo_text(tl_to_poj(reading_variant))
+                    entries.append(
+                        {
+                            "hanlo": tl_output,
+                            "kip_input": kip,
+                            "rime_key": rime_key,
+                            "hoabun": "",
+                            "source": "moe_tl",
+                        }
+                    )
+                    entries.append(
+                        {
+                            "hanlo": poj_output,
+                            "kip_input": kip,
+                            "rime_key": rime_key,
+                            "hoabun": "",
+                            "source": "moe_poj",
+                        }
+                    )
+    return entries
+
+
 def source_name_from_filename(filename: str) -> str | None:
     """Extract the source name from a ChhoeTaigi CSV filename.
 
@@ -337,6 +395,7 @@ def convert_chhoetaigi(
     output_path: Path,
     corpus_freq: dict[str, int] | None = None,
     generic_paths: list[tuple[Path, str]] | None = None,
+    kipsutian_paths: list[Path] | None = None,
 ) -> None:
     """Convert ChhoeTaigi CSV files to Rime dict.yaml.
 
@@ -348,6 +407,7 @@ def convert_chhoetaigi(
         output_path: Path to write output dict.yaml
         corpus_freq: Optional merged corpus frequency dict (kip_input → count)
         generic_paths: Optional list of (path, source_name) tuples for additional CSVs
+        kipsutian_paths: Optional KipSutian kautian.csv files to include in the main dictionary
     """
     try:
         from scripts.build_frequency import compute_weights
@@ -364,6 +424,9 @@ def convert_chhoetaigi(
     for path, source_name in generic_paths or []:
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_generic_csv(f, source_name))
+    for path in kipsutian_paths or []:
+        with open(path, encoding="utf-8-sig") as f:
+            all_entries.extend(parse_kipsutian_main_csv(f))
     weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
     write_rime_dict(weighted, output_path)
 
@@ -384,6 +447,13 @@ def main(argv: list[str] | None = None) -> None:
         nargs="*",
         default=[],
         help="Paths to corpus frequency TSV files (word\\tcount)",
+    )
+    parser.add_argument(
+        "--kipsutian-csv",
+        type=Path,
+        action="append",
+        default=[],
+        help="Path to KipSutian kautian.csv to include in the main dictionary",
     )
     args = parser.parse_args(argv)
 
@@ -428,6 +498,7 @@ def main(argv: list[str] | None = None) -> None:
         output_path,
         corpus_freq=corpus_freq,
         generic_paths=generic_paths,
+        kipsutian_paths=args.kipsutian_csv,
     )
     print(f"Written: {output_path}")
 

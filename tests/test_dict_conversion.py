@@ -9,6 +9,7 @@ from scripts.convert_chhoetaigi import (
     main,
     parse_generic_csv,
     parse_itaigi_csv,
+    parse_kipsutian_main_csv,
     parse_taihoa_csv,
     source_name_from_filename,
     strip_tone_numbers,
@@ -338,6 +339,42 @@ class TestParseGenericCsv:
         assert entries[0]["rime_key"] == "kai3 tu2 ho2"
 
 
+class TestParseKipsutianMainCsv:
+    """Parse MOE KipSutian CSV entries into main input dictionary candidates."""
+
+    def test_adds_hanzi_tl_and_poj_outputs(self):
+        csv_data = "詞目id,詞目類型,漢字,羅馬字,解說\n1,主詞目,食飯,tsia̍h-pn̄g,吃飯。\n"
+        entries = parse_kipsutian_main_csv(io.StringIO(csv_data))
+
+        outputs = {entry["hanlo"]: entry for entry in entries}
+        assert outputs["食飯"]["rime_key"] == "tsiah8 png7"
+        assert outputs["食飯"]["source"] == "moe"
+        assert outputs["tsia̍h-pn̄g"]["rime_key"] == "tsiah8 png7"
+        assert outputs["tsia̍h-pn̄g"]["source"] == "moe_tl"
+        assert outputs["chia̍h-pn̄g"]["rime_key"] == "tsiah8 png7"
+        assert outputs["chia̍h-pn̄g"]["source"] == "moe_poj"
+
+    def test_splits_slash_reading_variants(self):
+        csv_data = "詞目id,詞目類型,漢字,羅馬字\n1,主詞目,日,ji̍t/li̍t\n"
+        entries = parse_kipsutian_main_csv(io.StringIO(csv_data), include_roman_outputs=False)
+
+        keys = {entry["rime_key"] for entry in entries}
+        assert keys == {"jit8", "lit8"}
+
+    def test_preserves_source_hanlo_mixed_output(self):
+        csv_data = "詞目id,詞目類型,漢字,羅馬字\n1,主詞目,媠--bai,suí--bái\n"
+        entries = parse_kipsutian_main_csv(io.StringIO(csv_data), include_roman_outputs=False)
+
+        assert entries[0]["hanlo"] == "媠--bai"
+        assert entries[0]["rime_key"] == "sui2  bai2"
+
+    def test_removes_reading_labels_without_dropping_variant(self):
+        csv_data = "詞目id,詞目類型,漢字,羅馬字\n1,主詞目,青,tsénn(白)/tshing(文)\n"
+        entries = parse_kipsutian_main_csv(io.StringIO(csv_data), include_roman_outputs=False)
+
+        assert {entry["rime_key"] for entry in entries} == {"tsenn2", "tshing1"}
+
+
 class TestSourceNameFromFilename:
     """Map ChhoeTaigi CSV filenames to source identifiers."""
 
@@ -375,6 +412,22 @@ class TestConvertWithGenericPaths:
         content = output.read_text()
         assert "去\tkhi3" in content
 
+    def test_kipsutian_paths_include_hanzi_tl_and_poj_outputs(self, tmp_path):
+        csv_data = "詞目id,詞目類型,漢字,羅馬字\n1,主詞目,食飯,tsia̍h-pn̄g\n"
+        csv_path = tmp_path / "kautian.csv"
+        csv_path.write_text(csv_data, encoding="utf-8")
+        output = tmp_path / "output.dict.yaml"
+        convert_chhoetaigi(
+            itaigi_paths=[],
+            taihoa_paths=[],
+            output_path=output,
+            kipsutian_paths=[csv_path],
+        )
+        content = output.read_text()
+        assert "食飯\ttsiah8 png7" in content
+        assert "tsia̍h-pn̄g\ttsiah8 png7" in content
+        assert "chia̍h-pn̄g\ttsiah8 png7" in content
+
 
 class TestConvertCli:
     """Test CLI entry point."""
@@ -406,3 +459,19 @@ class TestConvertCli:
         content = (out_dir / "phah_taibun.dict.yaml").read_text()
         assert "去" in content
         assert "食飯" in content
+
+    def test_cli_accepts_kipsutian_csv(self, tmp_path):
+        db_dir = tmp_path / "ChhoeTaigiDatabase"
+        db_dir.mkdir()
+        itaigi = db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
+        itaigi.write_text("KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n", encoding="utf-8")
+        kipsutian = tmp_path / "kautian.csv"
+        kipsutian.write_text("詞目id,詞目類型,漢字,羅馬字\n1,主詞目,食飯,tsia̍h-pn̄g\n", encoding="utf-8")
+        out_dir = tmp_path / "output"
+
+        main(["--input", str(tmp_path), "--output", str(out_dir), "--kipsutian-csv", str(kipsutian)])
+
+        content = (out_dir / "phah_taibun.dict.yaml").read_text()
+        assert "食飯\ttsiah8 png7" in content
+        assert "tsia̍h-pn̄g\ttsiah8 png7" in content
+        assert "chia̍h-pn̄g\ttsiah8 png7" in content

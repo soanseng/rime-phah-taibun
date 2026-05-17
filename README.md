@@ -6,7 +6,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Dict Entries](https://img.shields.io/badge/dict-170K%20entries-green?style=flat-square)](#)
+[![Dict Entries](https://img.shields.io/badge/dict-220K%20entries-green?style=flat-square)](#)
 [![Lua Modules](https://img.shields.io/badge/lua-16%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
@@ -81,7 +81,7 @@ tai uan                →  臺灣 / 台灣
 - **Emoji 輸入**：候選區自動顯示相關 emoji（可開關）
 - **英文混打**：直接打英文單字，台語英文無縫切換
 - **輕聲自動辨識**：自動產生輕聲候選（如「轉--來」「食--飽」），29K+ 輕聲詞條 + 即時輕聲建議
-- **170K 詞條**：整合 ChhoeTaigi 9 本辭典 + 7 語料庫頻率加權，涵蓋日常到文學用語
+- **220K 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
 - **人工詞庫增補**：build pipeline 可納入建中的教育部臺灣台語輸入法詞庫增補檔，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞
 
 ## 使用範例
@@ -440,7 +440,7 @@ cd rime-phah-taibun
 ```
 schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
   phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
-  phah_taibun.dict.yaml           主字典（170K 條目）
+  phah_taibun.dict.yaml           主字典（220K 條目）
   phah_taibun_reverse.dict.yaml   反查字典（26K 條目）
   hanlo_rules.yaml                LKK 漢羅分類規則
   lighttone_rules.json            輕聲規則
@@ -507,16 +507,16 @@ uv run ruff format scripts/ tests/                     # 格式化
 
 | 資料 | 用途 |
 |------|------|
-| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（iTaigi + 台華線頂） |
+| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（9 本辭典 CSV） |
 | [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
-| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 反查字典（65K 條目） |
+| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 主字典、TL/POJ 全羅候選、反查字典、例句語料 |
 | [教育部辭典 (g0v)](https://github.com/g0v/moedict-data-twblg) | 反查字典 fallback |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 詞頻統計（57K 詞） |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 文學語料詞頻（93K 詞） |
 | [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻（1K 詞） |
 | [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙（2.8K 詞） |
 | [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料（2K+ 篇） |
-| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 例句語料 + 反查字典 |
+| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 例句語料 + 主字典 + 反查字典 |
 | [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料（POJ→TL 轉換） |
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
@@ -531,7 +531,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [李江却台語文教基金會](https://www.tgb.org.tw/) — 漢羅用字規範（LKK 用字表），為本方案的漢羅混寫輸出提供核心依據
 - [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 整合多本辭典的開放資料平台
 - [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
-- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 反查字典資料
+- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、反查字典與例句語料資料
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫與詞頻資料
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
@@ -550,7 +550,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **拼音系統** | TL + POJ 雙系統 | TL + POJ | TL（自動轉換 POJ） |
 | **聲調** | 完全可省略 | 需輸入 | 需輸入 |
 | **漢羅混寫輸出** | 自動（LKK 規範） | 有 | 無（只有純漢字或純羅馬字） |
-| **字典規模** | 170K 條目 | 未公開 | ~24K 條目 |
+| **字典規模** | 220K 條目 | 未公開 | ~24K 條目 |
 | **語料庫詞頻** | 7 語料庫加權 | 無 | 基本頻率 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **萬用查字** | ?（二段式） | 無 | 無 |
