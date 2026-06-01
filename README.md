@@ -10,7 +10,42 @@
 [![Lua Modules](https://img.shields.io/badge/lua-16%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#安裝)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
+
+English | [繁體中文（台灣）](#中文說明)
+
+Phah Tai-bun is an open-source Rime input method for Taiwanese Hokkien. It supports Han/Roman mixed output, POJ and TL romanization, tone-optional typing, Mandarin reverse lookup, and a large public-corpus-based dictionary.
+
+It is designed for people who can speak Taiwanese but find written Taiwanese hard to type. Users do not need to choose between POJ and TL, type tone marks, or memorize Han-lo writing rules before they can start writing.
+
+## Why this matters
+
+Taiwanese Hokkien is widely spoken but difficult to type because users must navigate multiple writing systems, romanization standards, tone marks, and mixed Han/Roman output. Phah Tai-bun lowers that barrier by providing a practical, open-source Rime input method with tone-optional typing, POJ/TL support, Mandarin reverse lookup, and a large public-corpus-based dictionary.
+
+## Quick Start
+
+Download the latest release for your platform:
+
+| Platform | Install | Requires |
+|----------|---------|----------|
+| Windows | Download `PhahTaiBunSetup.exe` and run the installer | Weasel |
+| macOS | Download `PhahTaiBun.pkg` and run the installer | Squirrel |
+| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
+
+After installation, redeploy Rime and press `F4` to confirm that `拍台文(台)` is available.
+
+You can type without tone numbers, and POJ/TL spellings can be mixed:
+
+```text
+gua beh khi tshit tho  ->  我 beh 去 tshit-thô
+tsiah png              ->  食飯
+chiah png              ->  食飯
+tai uan                ->  臺灣 / 台灣
+```
+
+For full documentation, see the [project website](https://soanseng.github.io/rime-phah-taibun/), [online guide](https://soanseng.github.io/rime-phah-taibun/guide.html), and [quickstart card](docs/quickstart-card.md).
+
+## 中文說明
 
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
 

@@ -27,6 +27,28 @@ chmod +x scripts/download_resources.sh
 ./scripts/download_resources.sh
 ```
 
+## 字典貢獻流程
+
+字典修正請開 GitHub Issue 或 Pull Request，並盡量附上可重現的輸入與來源。每一筆修正至少包含：
+
+- input spelling
+- expected candidate
+- actual candidate
+- source or dictionary reference, if available
+- whether the form is TL, POJ, Han, or Han-lo
+
+範例：
+
+```text
+input spelling: tsiah png
+expected candidate: 食飯
+actual candidate: tsiah飯
+source or dictionary reference: 教育部臺灣台語常用詞辭典 / ChhoeTaigi entry, if available
+form: Han
+```
+
+如果是排序問題，請另外說明目前候選順位與希望順位。若是新增詞，請註明是否為人名、地名、機關名、日常詞、文學語料，或其他類型，方便維護者判斷資料來源與授權。
+
 ## TDD 開發流程
 
 本專案遵循 **Red-Green-Refactor** 循環：
