@@ -80,7 +80,7 @@ engine:
     - uniquifier
 
 speller:
-  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890"
+  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890-"
   initials: zyxwvutsrqponmlkjihgfedcba
   delimiter: " '-"
   algebra:

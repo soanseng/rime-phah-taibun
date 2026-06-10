@@ -137,3 +137,81 @@ def test_hanlo_rules_preserve_multi_character_hanzi_candidate_when_syllable_is_l
     )
 
     assert run_lua(script).strip() == "水觳仔\t [tsuí-khok-á]"
+
+
+def test_formats_direct_tl_input_with_hyphen_and_light_tone_marker():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        local data = require("phah_taibun_data")
+
+        print(data.format_input_romanization("tsng-kio5", false))
+        print(data.format_input_romanization("kio3--i", false))
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["tsng-kio\u0302", "kio\u0300--i"]
+
+
+def test_formats_direct_poj_input_without_forcing_tl_spelling():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        local data = require("phah_taibun_data")
+
+        print(data.format_input_romanization("goa2-kio5", true))
+        """
+    )
+
+    assert run_lua(script).strip() == "go\u0301a-kio\u0302"
+
+
+def test_full_romanization_return_commits_typed_romanization_directly():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+
+        local committed = ""
+        local cleared = false
+        local context = {
+          input = "tsng-kio5",
+          is_composing = function() return true end,
+          has_menu = function() return true end,
+          get_option = function(_, name)
+            return name == "full_romanization"
+          end,
+          clear = function()
+            cleared = true
+          end,
+        }
+        local env = {
+          engine = {
+            context = context,
+            schema = {
+              config = {
+                get_int = function() return 10 end,
+                get_string = function() return "asdfghjkl;" end,
+              },
+            },
+            commit_text = function(_, text)
+              committed = text
+            end,
+          },
+        }
+        local key = {
+          keycode = 13,
+          release = function() return false end,
+          repr = function() return "Return" end,
+        }
+
+        local commit = require("phah_taibun_commit")
+        commit.init(env)
+        local result = commit.func(key, env)
+
+        print(result)
+        print(committed)
+        print(cleared)
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["1", "Tsng-kio\u0302", "true"]

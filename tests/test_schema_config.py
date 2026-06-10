@@ -13,3 +13,13 @@ def test_main_translator_does_not_generate_sentence_candidates():
 
     assert translator["enable_sentence"] is False
     assert translator["enable_user_dict"] is False
+
+
+def test_speller_accepts_hyphen_for_romanization_input():
+    """Hyphen must be accepted for multi-syllable and light-tone input."""
+    schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+
+    speller = schema["speller"]
+
+    assert "-" in speller["alphabet"]
+    assert "-" in speller["delimiter"]

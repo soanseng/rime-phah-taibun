@@ -350,6 +350,56 @@ function M.format_romanization(roman)
   return table.concat(formatted, "--")
 end
 
+local function add_implicit_tone(syl)
+  if not syl or syl == "" or syl:match("[1-9]$") or not syl:match("^[A-Za-z]+$") then
+    return syl
+  end
+  syl = syl:lower()
+  if syl:match("[ptkh]$") then
+    return syl .. "4"
+  end
+  return syl .. "1"
+end
+
+local function normalize_input_group(group)
+  group = (group or ""):gsub("%-", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+  local syllables = {}
+  for syl in group:gmatch("%S+") do
+    table.insert(syllables, add_implicit_tone(syl))
+  end
+  return table.concat(syllables, " ")
+end
+
+-- Format the user's composing input as romanization for direct commit.
+-- Unlike dictionary comments, composing input may use "-" as a syllable
+-- separator and "--" as a light-tone marker.
+function M.format_input_romanization(input, poj)
+  if not input or input == "" then return nil end
+  local trimmed = input:gsub("^%s+", ""):gsub("%s+$", "")
+  if trimmed == "" then return nil end
+
+  local groups = {}
+  local start = 1
+  while true do
+    local marker = trimmed:find("--", start, true)
+    if marker then
+      table.insert(groups, normalize_input_group(trimmed:sub(start, marker - 1)))
+      start = marker + 2
+    else
+      table.insert(groups, normalize_input_group(trimmed:sub(start)))
+      break
+    end
+  end
+
+  local normalized = table.concat(groups, "--")
+  if normalized == "" then return nil end
+  local formatted = M.format_romanization(normalized)
+  if poj then
+    formatted = M.poj_fix_diacritics(formatted)
+  end
+  return formatted
+end
+
 -- Fix POJ diphthong tone mark position after format_romanization
 -- POJ rules differ from TL for certain diphthongs:
 --   oa at end of syllable: mark o (goā → gōa), but oan keeps mark on a (koán)

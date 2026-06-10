@@ -50,6 +50,13 @@ local function extract_roman(cand, env)
   return nil
 end
 
+local function format_input_romanization(input, env)
+  if data_mod and data_mod.format_input_romanization then
+    return data_mod.format_input_romanization(input, env.engine.context:get_option("poj_mode"))
+  end
+  return nil
+end
+
 -- Get candidate at a specific index (for select keys)
 local function get_candidate_at(context, env, rel_idx)
   local comp = context.composition
@@ -302,6 +309,23 @@ function M.func(key, env)
   end
 
   local full_roman = context:get_option("full_romanization")
+
+  -- In romanization modes, Return commits the sound the user typed instead of
+  -- forcing a dictionary candidate. This keeps hyphen and light-tone input usable.
+  if full_roman and key:repr() == "Return"
+     and input ~= "" and not input:match("^~") and not input:find("?", 1, true)
+     and not input:match("^;") then
+    local roman = format_input_romanization(input, env)
+    if roman then
+      if state.capitalize_next then
+        roman = capitalize_first(roman)
+      end
+      env.engine:commit_text(roman)
+      state.capitalize_next = false
+      context:clear()
+      return 1  -- kAccepted
+    end
+  end
 
   -- 以下只在全羅模式下攔截
   if not full_roman then
