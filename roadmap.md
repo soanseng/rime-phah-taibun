@@ -65,6 +65,7 @@
 | 萬用查字 `?` | ✅ 已實作 | `phah_taibun_wildcard.lua` 展開所有可能聲母匹配 |
 | 造詞模式 `;` | ✅ 基礎版 | `phah_taibun_phrase.lua` 基礎造詞引導，進階版需 per-syllable lookup |
 | 簡拼提示 `,,sp` | ✅ 已實作 | `phah_taibun_speedup.lua` 17 個聲母對照表 + 用法提示 |
+| 個人化學習 | ✅ 已啟用 | 主 translator `enable_user_dict: true` + `enable_encoder: false`：學使用者選字偏好但不造臨時詞，保留 c6110d5「不出現臨時候選」設計 |
 | 文白讀標記 | 🔲 scaffold | `phah_taibun_synonym.lua` 架構就位，需反查字典加入 wen_bai 欄位 |
 | IVS 標音輸出 | 🔲 待開始 | 確認字咍字型 IVS 對照表可提取後 |
 | 查讀音進階 | 🔲 待開始 | 整合教育部辭典例句、解說 |

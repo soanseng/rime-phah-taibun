@@ -110,8 +110,11 @@ speller:
 translator:
   dictionary: phah_taibun
   prism: phah_taibun
+  # 個人化學習：記住使用者選過的字詞，下次排前面。
+  enable_user_dict: true
+  # 但不從輸入歷史造新詞、也不組臨時句子，維持 c6110d5「不出現臨時候選」的設計。
+  enable_encoder: false
   enable_sentence: false
-  enable_user_dict: false
   spelling_hints: 5
   comment_format:
     - "xform/^(.*)$/ [$1]/"
