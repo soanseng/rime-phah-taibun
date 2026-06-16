@@ -30,6 +30,22 @@ def test_main_translator_learns_user_preferences_without_ad_hoc_phrases():
     assert translator["enable_sentence"] is False
 
 
+def test_origin_filter_runs_last_before_uniquifier():
+    """The raw-romanization fallback candidate must land at the very end of the list.
+
+    It is appended by phah_taibun_origin, which therefore has to sit after the
+    candidate-transforming filters and immediately before the uniquifier (so a
+    duplicate of an existing candidate is still de-duped).
+    """
+    schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+
+    filters = schema["engine"]["filters"]
+    origin = "lua_filter@*phah_taibun_origin"
+
+    assert origin in filters
+    assert filters.index(origin) == filters.index("uniquifier") - 1
+
+
 def test_speller_accepts_hyphen_for_romanization_input():
     """Hyphen must be accepted for multi-syllable and light-tone input."""
     schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
