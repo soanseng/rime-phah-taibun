@@ -61,12 +61,6 @@ function M.func(input, env)
   local roman = data.format_input_romanization(text, poj)
   if not roman or roman == "" then return end
 
-  -- 與 Enter 直接送出的路徑一致：句首／Shift 起首時首字母大寫。
-  local state = data.get_shared_state and data.get_shared_state()
-  if state and state.capitalize_next and data.capitalize_first then
-    roman = data.capitalize_first(roman)
-  end
-
   local cand = Candidate("origin", seg_start, seg_end, roman, "〔羅馬字原文〕")
   cand.quality = -1
   yield(cand)

@@ -288,6 +288,27 @@ function M.func(key, env)
     return 2
   end
 
+  -- 原文候選由 Lua 直接確認，確保句首大寫狀態只消耗一次。
+  local origin_cand
+  if kc == 0x20 then
+    origin_cand = context:get_selected_candidate()
+  else
+    local origin_idx = env.select_map[kc]
+    if origin_idx then
+      origin_cand = get_candidate_at(context, env, origin_idx)
+    end
+  end
+  if origin_cand and origin_cand.type == "origin" then
+    local roman = origin_cand.text
+    if state.capitalize_next then
+      roman = capitalize_first(roman)
+    end
+    env.engine:commit_text(roman)
+    state.capitalize_next = false
+    context:clear()
+    return 1  -- kAccepted
+  end
+
   -- ============================================================
   -- TRACK last committed character for homophone (all modes)
   -- Store before full_roman check so it works in 漢羅 mode too

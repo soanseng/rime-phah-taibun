@@ -248,14 +248,13 @@ def test_origin_appends_romanization_candidate_last_for_tl_input():
     assert out == ["X\t [e5]", "<tsng-kio5|poj=false>\t\u3014\u7f85\u99ac\u5b57\u539f\u6587\u3015"]
 
 
-def test_origin_passes_poj_mode_and_capitalize_flag():
+def test_origin_defers_capitalization_until_commit():
     out = run_lua(
         _origin_script(
             input_text="goa2-kio5", poj=True, ascii_mode=False, cap=True, enabled=True
         )
     ).splitlines()
-    # poj flag forwarded to the romanizer; capitalize_next True -> capitalize_first applied
-    assert out == ["X\t [e5]", "CAP:<goa2-kio5|poj=true>\t\u3014\u7f85\u99ac\u5b57\u539f\u6587\u3015"]
+    assert out == ["X\t [e5]", "<goa2-kio5|poj=true>\t〔羅馬字原文〕"]
 
 
 def test_origin_formats_only_the_active_segment():
@@ -349,6 +348,58 @@ def test_full_romanization_return_commits_typed_romanization_directly():
     )
 
     assert run_lua(script).splitlines() == ["1", "Tsng-kio\u0302", "true"]
+
+
+def test_origin_selection_capitalizes_once_and_consumes_sentence_state():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+
+        local committed = ""
+        local cleared = false
+        local selected = {
+          type = "origin",
+          text = "tsng-kiô",
+          comment = "〔羅馬字原文〕",
+        }
+        local context = {
+          input = "tsng-kio5",
+          is_composing = function() return true end,
+          has_menu = function() return true end,
+          get_option = function() return false end,
+          get_selected_candidate = function() return selected end,
+          clear = function() cleared = true end,
+        }
+        local env = {
+          engine = {
+            context = context,
+            schema = {
+              config = {
+                get_int = function() return 10 end,
+                get_string = function() return "asdfghjkl;" end,
+              },
+            },
+            commit_text = function(_, text) committed = text end,
+          },
+        }
+        local key = {
+          keycode = 0x20,
+          release = function() return false end,
+          repr = function() return "space" end,
+        }
+
+        local commit = require("phah_taibun_commit")
+        commit.init(env)
+        local result = commit.func(key, env)
+
+        print(result)
+        print(committed)
+        print(cleared)
+        print(env.state.capitalize_next)
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["1", "Tsng-kiô", "true", "false"]
 
 
 def test_lookup_uses_shared_tl_to_poj_converter():
