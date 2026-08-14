@@ -116,6 +116,6 @@ tsiah png → 食飯
 | 找不到「拍台文(台)」／按 F4 沒反應 | 先確認系統輸入法是小狼毫或鼠鬚管，重新部署，再按 `F4` 或 `` Ctrl+` `` |
 | 沒有拼音註解 | 確認 `lua/phah_taibun_*.lua` 已安裝到 Rime 使用者資料夾 |
 | `~` 注音反查沒反應 | 確認有 `bopomofo_tw` 方案 |
-| emoji / 英文候選沒有出現 | 確認已安裝對應的 rime-ice 檔案 |
+| emoji / 英文候選沒有出現 | 0.3.0 未內建這兩類候選；英文請按 `Ctrl+Space`，常用 emoji 可加到 `custom_phrase` |
 
-完整排錯看[使用說明的疑難排解](user-guide.md#十八疑難排解)。
+完整排錯看[使用說明的疑難排解](user-guide.md#十七疑難排解)。

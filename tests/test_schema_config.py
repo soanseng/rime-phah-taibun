@@ -104,3 +104,21 @@ def test_documented_lua_module_count_matches_release_payload():
         "Lua 模組" in line and f"{module_count} 個" in line
         for line in guide.splitlines()
     )
+
+
+def test_docs_describe_unbundled_optional_assets_as_not_enabled():
+    """Release docs must not present rime-ice assets as built-in features."""
+    readme = Path("README.md").read_text(encoding="utf-8")
+    quickstart = Path("docs/quickstart-card.md").read_text(encoding="utf-8")
+    guide = Path("docs/user-guide.md").read_text(encoding="utf-8")
+    docs = "\n".join((readme, quickstart, guide))
+
+    assert "候選區自動顯示相關的 emoji" not in docs
+    assert "| **Emoji** | 自動顯示" not in docs
+    assert "| **英文混打** | 內建" not in docs
+    assert "直接打英文單字" not in docs
+    assert "0.3.0 正式安裝包沒有綁定 rime-ice" in guide
+    assert any(
+        "未內建" in line and "Ctrl+Space" in line
+        for line in readme.splitlines()
+    )
