@@ -339,29 +339,29 @@
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
-            <time datetime="2026-05-17">2026-05-17</time>
-            <h3>修正「水觳仔」這類明確漢字候選的顯示</h3>
-            <p>候選本來已經在主字典內，但漢羅顯示規則會把多字詞裡的明確漢字誤改成羅馬字。現在像 <code>水khok仔</code> 會保留可選的 <strong>水觳仔</strong> 候選。</p>
+            <time datetime="2026-08-14">2026-08-14</time>
+            <h3>0.3.1 正式版：三平台安裝包通過完整驗證</h3>
+            <p>Windows、macOS、Linux 安裝流程與下載資產都加入驗證：Release 前先跑完整測試，下載的資源固定版本並核對 SHA-256，Rime 重新部署失敗會直接報錯，不再產生裝了卻不能用的安裝包。</p>
           </article>
           <article>
-            <time datetime="2026-05-17">2026-05-17</time>
-            <h3>更新教育部台語辭典來源進主字典</h3>
-            <p>教育部 KipSutian ODS 會轉成可重建的 CSV，再匯入主輸入字典、注音反查讀音、TL 全羅候選與 POJ 全羅候選；必要時也保留漢羅混用詞形。</p>
+            <time datetime="2026-08-14">2026-08-14</time>
+            <h3>安裝後按 F4 沒反應的說明</h3>
+            <p>F4 只在小狼毫／鼠鬚管等 Rime 前端的輸入狀態下才會開啟方案選單；若系統輸入法還沒切到小狼毫／鼠鬚管，按 F4 不會有任何變化。安裝說明已補上完整的輸入法切換步驟。</p>
           </article>
           <article>
-            <time datetime="2026-05-17">2026-05-17</time>
-            <h3>加入教育部輸入法增補詞庫建置流程</h3>
-            <p>build pipeline 可納入第三方人工整理的增補 CSV，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。</p>
+            <time datetime="2026-08-14">2026-08-14</time>
+            <h3>跨平台更新流程</h3>
+            <p>Windows／macOS 重跑最新版安裝包即可覆蓋更新，Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。更新會保留自訂詞庫與其他 Rime 方案，完成後自動重新部署。</p>
           </article>
           <article>
-            <time datetime="2026-05-17">2026-05-17</time>
-            <h3>修正 Windows Release 安裝包產物路徑</h3>
-            <p>GitHub Actions 產出的 Windows 安裝檔會使用正確 artifact 路徑，避免 release 流程找不到檔案或漏上傳。</p>
+            <time datetime="2026-08-14">2026-08-14</time>
+            <h3>快捷鍵與 POJ/TL 說明對齊</h3>
+            <p>反引號 <code>`</code> 統一由符號選單處理，POJ/TL 混打的快捷鍵說明修正，按鍵說明（help）也保留完整的快捷鍵提示，不會在特定流程下漏掉。</p>
           </article>
           <article>
-            <time datetime="2026-05-17">2026-05-17</time>
-            <h3>建立 GitHub Releases 發佈流程</h3>
-            <p>專案可透過 CI 發佈跨平台安裝包，讓一般使用者從 Releases 下載，而不必手動複製 Rime 方案檔。</p>
+            <time datetime="2026-08-14">2026-08-14</time>
+            <h3>0.3.1 未內建英文與 emoji 候選</h3>
+            <p>正式安裝包不綁定 rime-ice，也未啟用英文與 emoji 字典；需要英文時切換到英文輸入法，常用 emoji 可用 <code>custom_phrase</code> 自訂。安裝說明已同步標示。</p>
           </article>
         </div>
       </div>

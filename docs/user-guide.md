@@ -1011,7 +1011,7 @@ ls ~/Library/Rime/lua/phah_taibun_*.lua
 dir %AppData%\Rime\lua\phah_taibun_*.lua
 ```
 
-應該要有 16 個 `phah_taibun_*.lua` 檔案。
+應該要有 18 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
