@@ -1,5 +1,7 @@
 """Tests for dictionary validation."""
 
+from pathlib import Path
+
 import pytest
 
 from scripts.validate_dict import main, validate_dict_format
@@ -39,6 +41,17 @@ class TestValidateDictFormat:
         dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n你好\tlí hó\t500\n')
         errors = validate_dict_format(dictfile)
         assert any("rime key" in e.lower() for e in errors)
+
+    def test_detects_editorial_marker_in_candidate(self, tmp_path):
+        dictfile = tmp_path / "test.dict.yaml"
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食(替)\ttsiah8\t500\n')
+        errors = validate_dict_format(dictfile)
+        assert any("editorial marker" in error.lower() for error in errors)
+
+    def test_committed_dictionary_has_no_editorial_markers(self):
+        dictfile = Path(__file__).parents[1] / "schema" / "phah_taibun.dict.yaml"
+        errors = validate_dict_format(dictfile)
+        assert not [error for error in errors if "editorial marker" in error.lower()]
 
 
 class TestValidateCli:

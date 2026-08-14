@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 RIME_KEY_RE = re.compile(r"^[a-z0-9]+(?:[ -]+[a-z0-9]+)*$")
+EDITORIAL_MARKER_RE = re.compile(r"[\uff08(](?:替|文)[\uff09)]")
 
 
 def validate_dict_format(dict_path: Path) -> list[str]:
@@ -14,8 +15,9 @@ def validate_dict_format(dict_path: Path) -> list[str]:
     Checks:
     - YAML header presence (--- ... block)
     - Tab-separated data lines
+    - Canonical Rime keys
+    - Source-only editorial markers in candidate text
     - Duplicate entries
-
     Args:
         dict_path: Path to the dict.yaml file
 
@@ -50,6 +52,8 @@ def validate_dict_format(dict_path: Path) -> list[str]:
         if len(parts) < 2:
             errors.append(f"Line {i}: bad format (expected tab-separated, got: {line!r})")
             continue
+        if EDITORIAL_MARKER_RE.search(parts[0]):
+            errors.append(f"Line {i}: source editorial marker in candidate '{parts[0]}'")
         if not RIME_KEY_RE.fullmatch(parts[1]):
             errors.append(f"Line {i}: non-canonical Rime key '{parts[1]}'")
         key = (parts[0], parts[1])

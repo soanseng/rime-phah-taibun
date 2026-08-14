@@ -3,6 +3,7 @@
 import io
 
 from scripts.convert_chhoetaigi import (
+    clean_hanlo_text,
     clean_kip_input,
     convert_chhoetaigi,
     dedup_entries,
@@ -15,6 +16,16 @@ from scripts.convert_chhoetaigi import (
     strip_tone_numbers,
     write_rime_dict,
 )
+
+
+class TestCleanHanloText:
+    """Strip source-only editorial labels from committed candidate text."""
+
+    def test_removes_parenthesized_editorial_markers(self):
+        assert clean_hanlo_text("食(替)飯\uff08文\uff09") == "食飯"
+
+    def test_preserves_meaningful_parenthetical_text(self):
+        assert clean_hanlo_text("安卓\uff08Android\uff09") == "安卓\uff08Android\uff09"
 
 
 class TestStripToneNumbers:

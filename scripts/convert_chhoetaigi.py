@@ -40,6 +40,8 @@ COMBINING_TONE_TO_NUMBER = {
     "\u0306": "9",  # breve
 }
 
+EDITORIAL_MARKER_RE = re.compile(r"[\uff08(](?:替|文)[\uff09)]")
+
 
 def unicode_tones_to_numeric(text: str) -> str:
     """Normalize Unicode TL/POJ tone marks to syllable-final tone numbers."""
@@ -79,7 +81,8 @@ def is_valid_kip_input(kip_input: str) -> bool:
 
 
 def clean_hanlo_text(text: str) -> str:
-    """Remove TSV-breaking control whitespace from candidate text."""
+    """Remove source-only editorial labels and TSV-breaking whitespace."""
+    text = EDITORIAL_MARKER_RE.sub("", text)
     return re.sub(r"[\t\r\n]+", "", text).strip()
 
 
