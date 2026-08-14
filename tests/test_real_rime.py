@@ -156,4 +156,4 @@ def test_help_descriptions_are_not_rewritten_as_romanization(real_rime_states):
     assert candidates
     assert all("TL:" not in candidate["comment"] for candidate in candidates)
     help_by_key = {candidate["text"]: candidate["comment"] for candidate in candidates}
-    assert help_by_key["[ / ]"] == "以詞定字：選首字 / 尾字"
+    assert help_by_key["[ / ]"] == "以詞定字\uff1a選首字 / 尾字"

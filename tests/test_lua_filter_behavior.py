@@ -254,7 +254,7 @@ def test_origin_defers_capitalization_until_commit():
             input_text="goa2-kio5", poj=True, ascii_mode=False, cap=True, enabled=True
         )
     ).splitlines()
-    assert out == ["X\t [e5]", "<goa2-kio5|poj=true>\t〔羅馬字原文〕"]
+    assert out == ["X\t [e5]", "<goa2-kio5|poj=true>\t\u3014羅馬字原文\u3015"]
 
 
 def test_origin_formats_only_the_active_segment():
@@ -269,7 +269,7 @@ def test_origin_formats_only_the_active_segment():
             segment_end=8,
         )
     ).splitlines()
-    assert out == ["X\t [e5]", "<li2|poj=false>\t〔羅馬字原文〕"]
+    assert out == ["X\t [e5]", "<li2|poj=false>\t\u3014羅馬字原文\u3015"]
 
 
 def test_origin_skips_special_modes_and_non_romanization():
@@ -360,7 +360,7 @@ def test_origin_selection_capitalizes_once_and_consumes_sentence_state():
         local selected = {
           type = "origin",
           text = "tsng-kiô",
-          comment = "〔羅馬字原文〕",
+          comment = "\u{3014}羅馬字原文\u{3015}",
         }
         local context = {
           input = "tsng-kio5",
