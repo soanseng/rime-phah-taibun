@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import yaml
+
 
 def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
@@ -115,6 +117,23 @@ def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
     assert f'#define MyAppVersion "{version}"' in read(
         "packaging/windows/phah-taibun.iss"
     )
+
+
+
+def test_release_packages_wait_for_complete_verification_gate():
+    workflow = yaml.safe_load(read(".github/workflows/release.yml"))
+    jobs = workflow["jobs"]
+    verify_commands = "\n".join(
+        step.get("run", "") for step in jobs["verify"]["steps"]
+    )
+
+    assert "uv run pytest" in verify_commands
+    assert "RIME_SMOKE_REQUIRED=1" in verify_commands
+    assert "uv run ruff check" in verify_commands
+    assert "luac5.4 -p" in verify_commands
+    assert "bash -n" in verify_commands
+    for package_job in ("package-source", "package-macos", "package-windows"):
+        assert jobs[package_job]["needs"] == "verify"
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():

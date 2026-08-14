@@ -9,7 +9,34 @@ permissions:
   contents: write
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Install real Rime test runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++ lua5.4 librime-bin librime-dev librime-plugin-lua \
+            rime-data-bopomofo rime-data-terra-pinyin
+
+      - name: Validate Python, Lua, shell, dictionary, and real Rime behavior
+        run: |
+          uv sync --locked
+          uv run ruff check scripts tests
+          for file in rime.lua lua/*.lua; do luac5.4 -p "$file"; done
+          bash -n install.sh scripts/*.sh packaging/macos/*.sh packaging/macos/scripts/*
+          uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml
+          RIME_SMOKE_REQUIRED=1 uv run pytest
+
   package-source:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +59,7 @@ jobs:
           if-no-files-found: error
 
   package-macos:
+    needs: verify
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +74,7 @@ jobs:
           path: packaging/macos/build/PhahTaiBun.pkg
 
   package-windows:
+    needs: verify
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
