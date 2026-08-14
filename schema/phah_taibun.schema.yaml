@@ -86,7 +86,6 @@ speller:
     # === POJ → TL 對應 ===
     - derive/^ts/ch/
     - derive/^tsh/chh/
-    - derive/^j/l/
     - derive/ing/eng/
     - derive/ik/ek/
     - derive/ua/oa/
@@ -95,6 +94,8 @@ speller:
     - derive/nn/ⁿ/
 
     # === 進一步模糊 ===
+    # 泉腔等來源可能以 l 對應 j；這是腔口模糊，不是 POJ/TL 差異
+    - derive/^j/l/
     - derive/ph/f/
     - derive/nng/ng/
     - derive/h$//

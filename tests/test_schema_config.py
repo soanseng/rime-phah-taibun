@@ -65,3 +65,24 @@ def test_schema_does_not_enable_unbundled_english_or_emoji_assets():
     assert "simplifier@emoji" not in schema["engine"]["filters"]
     assert all(switch["name"] != "emoji" for switch in schema["switches"])
     assert "emoji" not in schema
+
+
+def test_shortcut_docs_only_advertise_switches_enabled_by_the_schema():
+    """F4/Ctrl+` documentation must not expose removed optional switches."""
+    docs = [
+        Path("README.md").read_text(encoding="utf-8"),
+        Path("docs/quickstart-card.md").read_text(encoding="utf-8"),
+        Path("docs/user-guide.md").read_text(encoding="utf-8"),
+    ]
+    shortcut_lines = [
+        line
+        for document in docs
+        for line in document.splitlines()
+        if line.startswith("|") and ("F4" in line or "Ctrl+`" in line)
+    ]
+
+    assert shortcut_lines
+    assert all("emoji" not in line.lower() for line in shortcut_lines)
+    assert "| ㄐ | j | l |" not in docs[2]
+    assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[1]
+    assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[2]
