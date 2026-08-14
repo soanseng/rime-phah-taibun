@@ -167,7 +167,14 @@ def test_formats_direct_poj_input_without_forcing_tl_spelling():
 
 
 def _origin_script(
-    *, input_text: str, poj: bool, ascii_mode: bool, cap: bool, enabled: bool
+    *,
+    input_text: str,
+    poj: bool,
+    ascii_mode: bool,
+    cap: bool,
+    enabled: bool,
+    segment_start: int = 0,
+    segment_end: int | None = None,
 ) -> str:
     """Build a harness that runs phah_taibun_origin over one mocked Han candidate.
 
@@ -175,6 +182,8 @@ def _origin_script(
     the FILTER logic (guards, ordering, label, flag plumbing), not the romanizer
     (which has its own tests above).
     """
+    if segment_end is None:
+        segment_end = len(input_text)
     return textwrap.dedent(
         rf"""
         package.path = "lua/?.lua;" .. package.path
@@ -218,7 +227,7 @@ def _origin_script(
             return function()
               if done then return nil end
               done = true
-              return Candidate("table", 0, 1, "X", " [e5]")
+              return Candidate("table", {segment_start}, {segment_end}, "X", " [e5]")
             end
           end
         }}
@@ -247,6 +256,21 @@ def test_origin_passes_poj_mode_and_capitalize_flag():
     ).splitlines()
     # poj flag forwarded to the romanizer; capitalize_next True -> capitalize_first applied
     assert out == ["X\t [e5]", "CAP:<goa2-kio5|poj=true>\t\u3014\u7f85\u99ac\u5b57\u539f\u6587\u3015"]
+
+
+def test_origin_formats_only_the_active_segment():
+    out = run_lua(
+        _origin_script(
+            input_text="gua2-li2",
+            poj=False,
+            ascii_mode=False,
+            cap=False,
+            enabled=True,
+            segment_start=5,
+            segment_end=8,
+        )
+    ).splitlines()
+    assert out == ["X\t [e5]", "<li2|poj=false>\t〔羅馬字原文〕"]
 
 
 def test_origin_skips_special_modes_and_non_romanization():

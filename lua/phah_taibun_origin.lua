@@ -53,7 +53,8 @@ function M.func(input, env)
   local context = env.engine.context
   if context:get_option("ascii_mode") then return end
 
-  local text = context.input or ""
+  local full_input = context.input or ""
+  local text = full_input:sub(seg_start + 1, seg_end)
   if should_skip(text) then return end
 
   local poj = context:get_option("poj_mode")
