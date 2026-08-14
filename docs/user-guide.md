@@ -1039,12 +1039,12 @@ sudo apt install librime-data-bopomofo
 
 ### Emoji 或英文候選沒有出現
 
-0.3.0 正式安裝包沒有綁定 rime-ice，也沒有啟用 Emoji OpenCC 或 `melt_eng` 英文字典；只把 rime-ice 檔案複製到使用者目錄不會自動啟用。
+0.3.1 正式安裝包沒有綁定 rime-ice，也沒有啟用 Emoji OpenCC 或 `melt_eng` 英文字典；只把 rime-ice 檔案複製到使用者目錄不會自動啟用。
 
 - 輸入英文：按 `Ctrl+Space` 切到 ABC 模式。
 - 常用 emoji 或固定英文片語：加入 Rime `custom_phrase`。
 
-若自行修改 schema 整合第三方字典，該設定與相依檔案需自行維護，不屬於拍台文 0.3.0 發行內容。
+若自行修改 schema 整合第三方字典，該設定與相依檔案需自行維護，不屬於拍台文 0.3.1 發行內容。
 
 ### Lua 錯誤導致候選區異常
 

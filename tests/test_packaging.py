@@ -103,7 +103,7 @@ def test_remote_installer_assets_are_versioned_and_sha256_verified():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.3.0"
+    version = "0.3.1"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
@@ -132,6 +132,7 @@ def test_release_packages_wait_for_complete_verification_gate():
     assert "uv run ruff check" in verify_commands
     assert "luac5.4 -p" in verify_commands
     assert "bash -n" in verify_commands
+    assert "rime-prelude" in verify_commands
     for package_job in ("package-source", "package-macos", "package-windows"):
         assert jobs[package_job]["needs"] == "verify"
 

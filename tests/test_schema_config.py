@@ -117,7 +117,7 @@ def test_docs_describe_unbundled_optional_assets_as_not_enabled():
     assert "| **Emoji** | 自動顯示" not in docs
     assert "| **英文混打** | 內建" not in docs
     assert "直接打英文單字" not in docs
-    assert "0.3.0 正式安裝包沒有綁定 rime-ice" in guide
+    assert "0.3.1 正式安裝包沒有綁定 rime-ice" in guide
     assert any(
         "未內建" in line and "Ctrl+Space" in line
         for line in readme.splitlines()

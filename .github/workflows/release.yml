@@ -24,7 +24,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             g++ lua5.4 librime-bin librime-dev librime-plugin-lua \
-            rime-data-bopomofo rime-data-terra-pinyin
+            rime-prelude rime-data-bopomofo rime-data-terra-pinyin
 
       - name: Validate Python, Lua, shell, dictionary, and real Rime behavior
         run: |
