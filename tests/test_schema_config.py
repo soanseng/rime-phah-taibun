@@ -54,3 +54,14 @@ def test_speller_accepts_hyphen_for_romanization_input():
 
     assert "-" in speller["alphabet"]
     assert "-" in speller["delimiter"]
+
+
+def test_schema_does_not_enable_unbundled_english_or_emoji_assets():
+    """Every enabled schema component must be installable from the release payload."""
+    schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+
+    assert "melt_eng" not in schema["schema"].get("dependencies", [])
+    assert "table_translator@melt_eng" not in schema["engine"]["translators"]
+    assert "simplifier@emoji" not in schema["engine"]["filters"]
+    assert all(switch["name"] != "emoji" for switch in schema["switches"])
+    assert "emoji" not in schema

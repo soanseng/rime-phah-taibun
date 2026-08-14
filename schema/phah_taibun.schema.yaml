@@ -9,7 +9,6 @@ schema:
     - "拍台文開發團隊"
   dependencies:
     - bopomofo_tw
-    - melt_eng
   description: |
     台語輸入法方案 — 漢羅混寫輸出
     支援 POJ/TL 雙拼音系統、聲調可省略
@@ -25,9 +24,6 @@ switches:
     states: [ 漢羅, 全羅 ]
   - name: poj_mode
     states: [ TL, POJ ]
-  - name: emoji
-    states: [ 💀, 😄 ]
-    reset: 1
 
 ascii_composer:
   switch_key:
@@ -60,7 +56,6 @@ engine:
     - script_translator
     - reverse_lookup_translator
     - table_translator@custom_phrase
-    - table_translator@melt_eng
     - lua_translator@*phah_taibun_help
     - lua_translator@*phah_taibun_date
     - lua_translator@*phah_taibun_symbols
@@ -76,7 +71,6 @@ engine:
     - lua_filter@*phah_taibun_long_word
     - reverse_lookup_filter@phah_taibun_reverse_lookup
     - lua_filter@*phah_taibun_reverse_format
-    - simplifier@emoji
     - lua_filter@*phah_taibun_origin
     - uniquifier
 
@@ -188,13 +182,6 @@ phah_taibun_reverse_lookup:
   dictionary: phah_taibun
   comment_format:
     - "xform/^(.*)$/ [$1]/"
-
-emoji:
-  option_name: emoji
-  opencc_config: emoji.json
-  inherit_comment: false
-  tips: char
-  tags: [ abc ]
 
 editor:
   bindings:
