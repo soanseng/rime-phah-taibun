@@ -29,11 +29,16 @@
 
 安裝包仍使用 Rime 作為輸入法核心，但不用手動複製檔案或打開 Rime 資料夾。安裝器會保留既有 Rime 輸入法、自訂詞庫和 `rime.lua`，再把拍台文加入方案清單。
 
-安裝完成後：
+安裝完成後，要分兩層切換。拍台文**不是**系統輸入法清單裡的獨立項目；系統層先進入小狼毫／鼠鬚管，進到 Rime 之後，才用方案選單選「拍台文(台)」。
 
-1. 系統輸入法先切到小狼毫/鼠鬚管。
-2. 重新部署 Rime。
-3. 按 `F4`，選「拍台文(台)」。
+1. **先把系統輸入法切到小狼毫或鼠鬚管**，不要停在微軟注音、微軟拼音或 ABC。
+   - **Windows**：工作列語言圖示選【小狼毫】。圖示常顯示【中】，但微軟注音／拼音也常顯示【中】——請確認選到的是小狼毫，不是微軟輸入法。切換方式見 [Microsoft 說明：管理工作列輸入法](https://support.microsoft.com/zh-tw/windows/hardware/input-devices/manage-the-language-and-keyboard-input-layout-settings-in-windows) 與 [小狼毫 README](https://github.com/rime/weasel)。
+   - **macOS**：選單列輸入法選【鼠鬚管】，圖示是【ㄓ】。切換方式見 [Apple 說明：切換輸入方式](https://support.apple.com/zh-tw/guide/mac-help/mchlp1406/mac) 與 [鼠鬚管 README](https://github.com/rime/squirrel)。
+   - **Linux**：切到 fcitx5-rime 或 ibus-rime。
+2. 重新部署 Rime（小狼毫／鼠鬚管選單 → 重新部署）。
+3. 點進任何可打字的欄位，按 `F4` 或 `` Ctrl+` `` 打開 Rime 方案選單，選「拍台文(台)」。`` ` `` 在數字 `1` 左邊。
+
+> `F4` 只有在已經進入小狼毫／鼠鬚管時才會有反應。按了沒變化，先看工作列／選單列是不是小狼毫【中】或鼠鬚管【ㄓ】；筆電可能要按 `Fn+F4`，或改試 `` Ctrl+` ``。官方說明：[Rime 方案選單](https://github.com/rime/home/wiki/UserGuide#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%A1%88%E9%81%B8%E5%96%AE)。
 
 ### 進階使用者：指令安裝
 
@@ -995,11 +1000,16 @@ uv run python scripts/build_all.py
 
 ## 十八、疑難排解
 
-### 安裝後找不到「拍台文」方案
+### 安裝後找不到「拍台文」方案，或按 F4 沒反應
 
-1. 確認已重新部署 Rime
-2. 按 `F4` 查看方案清單，確認「拍台文(台)」在列表中
-3. 檢查 `default.custom.yaml` 是否包含 `phah_taibun`
+`F4` 是 Rime **方案選單**快捷鍵，不是系統輸入法切換鍵。系統輸入法還停在微軟注音／拼音／ABC 時，按 `F4` 通常不會有任何變化。
+
+1. 確認系統輸入法已經是小狼毫（Windows，圖示【中】且名稱是小狼毫）或鼠鬚管（macOS，圖示【ㄓ】），再點進文字欄位。
+2. 重新部署 Rime。
+3. 按 `F4` 或 `` Ctrl+` `` 查看方案清單，確認「拍台文(台)」在列表中。筆電若 `F4` 被系統占用，改按 `` Ctrl+` `` 或 `Fn+F4`。
+4. 檢查 `default.custom.yaml` 是否包含 `phah_taibun`
+
+切換說明：[Rime 方案選單](https://github.com/rime/home/wiki/UserGuide#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%A1%88%E9%81%B8%E5%96%AE)、[小狼毫](https://github.com/rime/weasel)、[鼠鬚管](https://github.com/rime/squirrel)。
 
 ### 候選區沒有顯示拼音註解
 
@@ -1118,4 +1128,4 @@ cd rime-phah-taibun
 
 ---
 
-*最後更新：2026-03-18*
+*最後更新：2026-08-14*

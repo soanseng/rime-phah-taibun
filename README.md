@@ -32,7 +32,7 @@ Download the latest release for your platform:
 | macOS | Download `PhahTaiBun.pkg` and run the installer | Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
 
-After installation, redeploy Rime and press `F4` to confirm that `拍台文(台)` is available.
+After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active.
 
 You can type without tone numbers, and POJ/TL spellings can be mixed:
 
@@ -69,7 +69,7 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 | macOS | 下載 `PhahTaiBun.pkg`，雙擊安裝 | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 
-Windows/macOS 安裝包仍使用 Rime 作為輸入法核心，但不需要手動複製檔案或打開 Rime 資料夾。安裝後重新部署 Rime，按 `F4` 確認清單中有「拍台文(台)」。
+Windows/macOS 安裝包仍使用 Rime 作為輸入法核心，但不需要手動複製檔案或打開 Rime 資料夾。安裝後先把系統輸入法切到小狼毫／鼠鬚管，重新部署 Rime，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「拍台文(台)」。還沒進入小狼毫／鼠鬚管時按 `F4` 不會有反應。
 
 ### 2. 先打一段
 
@@ -444,9 +444,10 @@ Font="Iansui 12"
 
 ### 安裝後找不到「拍台文」方案
 
-1. 確認已重新部署 Rime
-2. 按 `F4` 查看方案清單，確認「拍台文(台)」在列表中
-3. 檢查 `~/.local/share/fcitx5/rime/default.custom.yaml` 是否包含 `phah_taibun`
+1. 確認系統輸入法已切到 fcitx5-rime / ibus-rime，再點進文字欄位
+2. 確認已重新部署 Rime
+3. 按 `F4`（或 `` Ctrl+` ``）查看方案清單，確認「拍台文(台)」在列表中
+4. 檢查 `~/.local/share/fcitx5/rime/default.custom.yaml` 是否包含 `phah_taibun`
 
 ### 候選區沒有顯示拼音註解
 
