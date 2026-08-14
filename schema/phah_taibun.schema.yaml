@@ -155,6 +155,7 @@ recognizer:
   import_preset: default
   patterns:
     reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
+    symbols: "^`$"
     wildcard: "^[a-z]*\\?[a-z0-9]*$"
     phrase: "^;[a-z0-9]*$"
 
