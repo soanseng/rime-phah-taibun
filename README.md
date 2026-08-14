@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dict Entries](https://img.shields.io/badge/dict-220K%20entries-green?style=flat-square)](#)
-[![Lua Modules](https://img.shields.io/badge/lua-16%20modules-orange?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-18%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
@@ -504,7 +504,7 @@ schema/                        Rime 方案檔（安裝到 Rime 使用者目錄�
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
   default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組（16 個）
+lua/                           Lua 擴充模組（18 個）
   phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換 + 調符顯示
   phah_taibun_input.lua           大寫攔截 + Tab 選字模式
   phah_taibun_commit.lua          全羅輸出處理器 + \ 強制羅馬字
@@ -513,13 +513,16 @@ lua/                           Lua 擴充模組（16 個）
   phah_taibun_recommend.lua       推薦用字標記（◆ 漢字 / ★ 羅馬字）
   phah_taibun_select_char.lua     以詞定字（[ 首字、] 尾字）
   phah_taibun_long_word.lua       長詞優先排序
+  phah_taibun_lighttone.lua       輕聲候選產生
   phah_taibun_wildcard.lua        萬用字元 ?
   phah_taibun_symbols.lua         符號選單
   phah_taibun_help.lua            按鍵說明
   phah_taibun_date.lua            台語日期
   phah_taibun_phrase.lua          造詞模式
-  phah_taibun_synonym.lua         文白讀切換（開發中）
+  phah_taibun_origin.lua          字典外羅馬字原文候選
+  phah_taibun_synonym.lua         文白讀切換（尚未啟用）
   phah_taibun_speedup.lua         簡拼對照
+  phah_taibun_reverse_format.lua  反查讀音調符格式化
 rime.lua                       Lua 模組註冊（舊版 librime 相容）
 scripts/                       Python 資料處理腳本
 tests/                         pytest 測試
@@ -623,7 +626,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 2. **漢羅混寫自動化**：依 LKK 規範自動判斷哪些字用漢字、哪些用羅馬字，使用者不需要自己決定
 3. **華→台反查**：注音打華語字後，自動轉換成台語拼音再查台語字。內建 77K 筆對照表，即使「吃」→「食」這種不同字的轉換也能處理
 4. **語料庫加權**：整合 7 個台語語料庫的詞頻資料，常用詞排更前面
-5. **Linux 原生支援**：唯一支援 Linux（fcitx5/ibus）的台語桌面輸入法
+5. **Linux 原生支援**：透過 fcitx5-rime 或 ibus-rime 使用同一套方案
 6. **完全開源可自訂**：Rime + Lua 架構，可以自己修改規則和功能
 
 ### 適合誰用
@@ -631,7 +634,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 - **會講台語但不太會打台文**：聲調可省、漢羅自動，降低打字門檻
 - **台文寫作者**：LKK 漢羅規範、全羅模式、POJ/TL 切換
 - **台語學習者**：拼音註解、注音反查、萬用查字，邊打邊學
-- **Linux 使用者**：目前唯一的 Linux 台語桌面輸入法
+- **Linux 使用者**：可透過 fcitx5-rime 或 ibus-rime 使用
 
 > 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 試試看，搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音！
 

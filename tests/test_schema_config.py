@@ -86,3 +86,21 @@ def test_shortcut_docs_only_advertise_switches_enabled_by_the_schema():
     assert "| ㄐ | j | l |" not in docs[2]
     assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[1]
     assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[2]
+
+
+
+def test_documented_lua_module_count_matches_release_payload():
+    """The public module count must track every Lua file shipped by installers."""
+    module_count = len(list(Path("lua").glob("phah_taibun_*.lua")))
+    readme = Path("README.md").read_text(encoding="utf-8")
+    guide = Path("docs/user-guide.md").read_text(encoding="utf-8")
+
+    assert f"lua-{module_count}%20modules" in readme
+    assert any(
+        "Lua 擴充模組" in line and f"{module_count} 個" in line
+        for line in readme.splitlines()
+    )
+    assert any(
+        "Lua 模組" in line and f"{module_count} 個" in line
+        for line in guide.splitlines()
+    )
