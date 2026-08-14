@@ -5,31 +5,8 @@
 
 local M = {}
 
--- Simple TL to POJ conversion (same logic as filter)
-local function tl_to_poj(tl_text)
-  if not tl_text or tl_text == "" then
-    return tl_text
-  end
-  local result = tl_text
-  result = result:gsub("tsh", "chh")
-  result = result:gsub("ts", "ch")
-  result = result:gsub("ing([^a-z])", "eng%1")
-  result = result:gsub("ing$", "eng")
-  result = result:gsub("ik([^a-z])", "ek%1")
-  result = result:gsub("ik$", "ek")
-  -- POJ special characters
-  -- nn → ⁿ only when NOT followed by g or combining diacritics
-  -- (nng is syllabic nasal; combining marks \xCC/\xCD mean the n carries a tone)
-  result = result:gsub("nn([^g\204\205])", "\226\129\191%1")    -- nn → ⁿ (U+207F) before non-g
-  result = result:gsub("nn$", "\226\129\191")                    -- nn → ⁿ at end of string
-  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
-  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
-  result = result:gsub("ua", "oa")
-  result = result:gsub("ue", "oe")
-  return result
-end
 
--- Load shared data module for poj_fix_diacritics
+-- Load shared romanization conversion utilities
 local data_mod = nil
 local ok, mod = pcall(require, "phah_taibun_data")
 if ok and mod then
@@ -49,7 +26,7 @@ function M.func(input, env)
     local tl_roman = comment:match("%[(.-)%]")
 
     if tl_roman and tl_roman ~= "" then
-      local poj_roman = tl_to_poj(tl_roman)
+      local poj_roman = data_mod and data_mod.tl_to_poj and data_mod.tl_to_poj(tl_roman) or tl_roman
       if data_mod and data_mod.poj_fix_diacritics then
         poj_roman = data_mod.poj_fix_diacritics(poj_roman)
       end

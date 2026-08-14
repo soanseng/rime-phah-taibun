@@ -325,3 +325,46 @@ def test_full_romanization_return_commits_typed_romanization_directly():
     )
 
     assert run_lua(script).splitlines() == ["1", "Tsng-kio\u0302", "true"]
+
+
+def test_lookup_uses_shared_tl_to_poj_converter():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {
+          tl_to_poj = function(text) return "shared:" .. text end,
+          poj_fix_diacritics = function(text) return text end,
+        }
+
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        local input = {
+          iter = function()
+            local done = false
+            return function()
+              if done then return nil end
+              done = true
+              return Candidate("table", 0, 5, "平", " [ping5]")
+            end
+          end
+        }
+
+        local lookup = require("phah_taibun_lookup")
+        lookup.func(input, {})
+        print(yielded[1].comment)
+        """
+    )
+
+    assert run_lua(script).strip() == "[TL:ping5 POJ:shared:ping5]"
