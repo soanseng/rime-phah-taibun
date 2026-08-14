@@ -9,6 +9,28 @@ permissions:
   contents: write
 
 jobs:
+  package-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build verified source payload
+        run: |
+          mkdir -p packaging/source/build
+          git archive --format=zip --output=packaging/source/build/PhahTaiBun-source.zip HEAD \
+            schema lua icons rime.lua install.sh install_windows.ps1 \
+            scripts/install_linux.sh scripts/install_macos.sh
+          cd packaging/source/build
+          sha256sum PhahTaiBun-source.zip > PhahTaiBun-source.zip.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhahTaiBun-source
+          path: |
+            packaging/source/build/PhahTaiBun-source.zip
+            packaging/source/build/PhahTaiBun-source.zip.sha256
+          if-no-files-found: error
+
   package-macos:
     runs-on: macos-latest
     steps:
@@ -44,7 +66,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: [package-macos, package-windows]
+    needs: [package-source, package-macos, package-windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,3 +83,5 @@ jobs:
           files: |
             release-assets/PhahTaiBun-macOS-pkg/PhahTaiBun.pkg
             release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe
+            release-assets/PhahTaiBun-source/PhahTaiBun-source.zip
+            release-assets/PhahTaiBun-source/PhahTaiBun-source.zip.sha256

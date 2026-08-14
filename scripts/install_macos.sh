@@ -10,7 +10,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-SOURCE_ARCHIVE_URL="${PHAH_TAIBUN_ARCHIVE_URL:-https://github.com/soanseng/rime-phah-taibun/archive/refs/heads/main.tar.gz}"
+RELEASE_VERSION="0.3.0"
+SOURCE_ARCHIVE_URL="${PHAH_TAIBUN_ARCHIVE_URL:-https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION/PhahTaiBun-source.zip}"
+SOURCE_ARCHIVE_SHA256_URL="${PHAH_TAIBUN_ARCHIVE_SHA256_URL:-${SOURCE_ARCHIVE_URL}.sha256}"
 _TEMP_SOURCE_DIR=""
 
 cleanup() {
@@ -61,14 +63,26 @@ else
             echo "錯誤：指令安裝需要 tar。" >&2
             exit 1
         }
+        command -v shasum >/dev/null 2>&1 || {
+            echo "錯誤：指令安裝需要 shasum。" >&2
+            exit 1
+        }
         : "${TMPDIR:=/tmp}"
         _TEMP_SOURCE_DIR="$(mktemp -d "${TMPDIR%/}/phah-taibun.XXXXXX")"
-        archive="$_TEMP_SOURCE_DIR/source.tar.gz"
+        archive="$_TEMP_SOURCE_DIR/PhahTaiBun-source.zip"
+        checksum="$_TEMP_SOURCE_DIR/PhahTaiBun-source.zip.sha256"
         PROJ_DIR="$_TEMP_SOURCE_DIR/source"
         mkdir -p "$PROJ_DIR"
-        echo "正在下載拍台文完整安裝資產..."
+        echo "正在下載拍台文 v$RELEASE_VERSION 完整安裝資產..."
         curl -fsSL "$SOURCE_ARCHIVE_URL" -o "$archive"
-        tar -xzf "$archive" -C "$PROJ_DIR" --strip-components=1
+        curl -fsSL "$SOURCE_ARCHIVE_SHA256_URL" -o "$checksum"
+        expected_sha256="$(awk '{print $1; exit}' "$checksum")"
+        actual_sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
+        if [ -z "$expected_sha256" ] || [ "$actual_sha256" != "$expected_sha256" ]; then
+            echo "錯誤：PhahTaiBun-source.zip SHA-256 驗證失敗。" >&2
+            exit 1
+        fi
+        tar -xf "$archive" -C "$PROJ_DIR"
     fi
 fi
 
@@ -297,11 +311,17 @@ if ls "$FONT_DIR"/Iansui* &>/dev/null || ls "$FONT_DIR"/iansui* &>/dev/null; the
     echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體"
 else
     echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
-    IANSUI_URL="https://raw.githubusercontent.com/ButTaiwan/iansui/main/fonts/ttf/Iansui-Regular.ttf"
-    if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
-        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
+    IANSUI_REVISION="9d9a8e68bf1e138dd91e562eeff28d95bca33196"
+    IANSUI_SHA256="7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5"
+    IANSUI_URL="https://raw.githubusercontent.com/ButTaiwan/iansui/$IANSUI_REVISION/fonts/ttf/Iansui-Regular.ttf"
+    FONT_TMP="$FONT_DIR/.Iansui-Regular.ttf.download"
+    if curl -fsSL "$IANSUI_URL" -o "$FONT_TMP" \
+        && printf '%s  %s\n' "$IANSUI_SHA256" "$FONT_TMP" | shasum -a 256 -c - >/dev/null; then
+        mv -f "$FONT_TMP" "$FONT_DIR/Iansui-Regular.ttf"
+        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已驗證並安裝到 $FONT_DIR"
     else
-        echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
+        rm -f "$FONT_TMP"
+        echo -e "  ${YELLOW}[warn]${NC} 字體下載或 SHA-256 驗證失敗，請手動安裝："
         echo -e "         https://github.com/ButTaiwan/iansui/releases"
     fi
 fi

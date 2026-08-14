@@ -49,7 +49,7 @@ def test_macos_pkg_builder_uses_existing_macos_installer():
     assert "--project-root" in installer
     assert "PHAH_TAIBUN_ARCHIVE_URL" in installer
     assert "mktemp -d" in installer
-    assert "tar -xzf" in installer
+    assert "tar -xf" in installer
     assert "trap cleanup EXIT" in installer
 
 
@@ -68,6 +68,31 @@ def test_installers_fail_loudly_when_rime_deployment_fails():
     assert "Start-Process" in windows
     assert "ExitCode" in windows
     assert "部署失敗" in windows
+
+
+def test_remote_installer_assets_are_versioned_and_sha256_verified():
+    linux = read("scripts/install_linux.sh")
+    macos = read("scripts/install_macos.sh")
+    windows = read("install_windows.ps1")
+    workflow = read(".github/workflows/release.yml")
+
+    assert "/ButTaiwan/iansui/main/" not in linux
+    assert "/ButTaiwan/iansui/main/" not in macos
+    assert "/ButTaiwan/iansui/main/" not in windows
+    assert "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5" in linux
+    assert "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5" in macos
+    assert "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5" in windows
+    assert "sha256sum" in linux
+    assert "shasum -a 256" in macos
+    assert "Get-FileHash" in windows
+    assert "SOURCE_ARCHIVE_SHA256_URL" in macos
+    assert "PhahTaiBun-source.zip.sha256" in windows
+    assert "PhahTaiBun-source.zip.sha256" in workflow
+    resources = read("scripts/download_resources.sh")
+    assert "git clone --depth 1" not in resources
+    assert 'git -C "$dest" fetch -q --depth 1 origin "$revision"' in resources
+    assert ".source-revision" in resources
+    assert "download_verified" in resources
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():

@@ -8,11 +8,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# GitHub 相關設定
-$GITHUB_REPO = "soanseng/rime-phah-taibun"
-$GITHUB_BRANCH = "main"
-$GITHUB_API = "https://api.github.com/repos/$GITHUB_REPO/git/trees/$GITHUB_BRANCH`?recursive=1"
-$GITHUB_RAW = "https://raw.githubusercontent.com/$GITHUB_REPO/$GITHUB_BRANCH"
+# 發行資產固定版本；命令列安裝只下載該版本的完整封存檔。
+$RELEASE_VERSION = "0.3.0"
+$RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
+$SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
+$SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
 
 # 設定路徑
 $RIME_DIR = "$env:APPDATA\Rime"
@@ -23,8 +23,33 @@ $WEASEL_DIR_ALT = "$env:ProgramFiles\Rime\weasel-*"
 # 使用者自訂檔案（保留不覆蓋）
 $CUSTOM_FILES = @("phah_taibun.custom.dict.yaml", "phah_taibun.phrase.dict.yaml")
 
-# 打包安裝器會傳入內建 payload；命令列安裝則維持從 GitHub 下載最新檔案。
-$USE_LOCAL_PAYLOAD = $false
+function Get-VerifiedReleasePayload {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("PhahTaiBun-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
+    $archive = Join-Path $tempRoot "PhahTaiBun-source.zip"
+    $checksum = Join-Path $tempRoot "PhahTaiBun-source.zip.sha256"
+    $sourceRoot = Join-Path $tempRoot "source"
+
+    try {
+        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_URL -OutFile $archive | Out-Null
+        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_SHA256_URL -OutFile $checksum | Out-Null
+        $expected = ((Get-Content $checksum | Select-Object -First 1) -split '\s+')[0].ToUpperInvariant()
+        $actual = (Get-FileHash -Path $archive -Algorithm SHA256).Hash.ToUpperInvariant()
+        if ($expected -notmatch '^[0-9A-F]{64}$' -or $actual -ne $expected) {
+            throw "PhahTaiBun-source.zip SHA-256 驗證失敗。"
+        }
+        Expand-Archive -Path $archive -DestinationPath $sourceRoot -Force
+        return @{ Root = $sourceRoot; Temp = $tempRoot }
+    } catch {
+        Remove-Item -Recurse -Force $tempRoot -ErrorAction SilentlyContinue
+        throw
+    }
+}
+
+# 打包安裝器傳入內建 payload；命令列安裝下載固定版本並驗證封存檔。
+$USE_LOCAL_PAYLOAD = $true
+$DOWNLOADED_PAYLOAD = $false
+$TEMP_SOURCE_DIR = ""
 if ($ProjectRoot -ne "") {
     $resolvedRoot = Resolve-Path $ProjectRoot -ErrorAction SilentlyContinue
     $resolvedRootPath = if ($resolvedRoot) { $resolvedRoot.Path } else { "" }
@@ -32,11 +57,16 @@ if ($ProjectRoot -ne "") {
         (Test-Path (Join-Path $resolvedRootPath "schema")) -and
         (Test-Path (Join-Path $resolvedRootPath "lua"))) {
         $ProjectRoot = $resolvedRootPath
-        $USE_LOCAL_PAYLOAD = $true
     } else {
         Write-Host "錯誤：指定的 ProjectRoot 沒有 schema/ 與 lua/：$ProjectRoot" -ForegroundColor Red
         exit 1
     }
+} else {
+    Write-Host "正在下載並驗證拍台文 v$RELEASE_VERSION 完整安裝資產..."
+    $payload = Get-VerifiedReleasePayload
+    $ProjectRoot = $payload.Root
+    $TEMP_SOURCE_DIR = $payload.Temp
+    $DOWNLOADED_PAYLOAD = $true
 }
 
 # 進度條函數（from rime-liur）
@@ -63,11 +93,7 @@ function Copy-OrDownload {
         [string]$DestinationPath
     )
 
-    if ($USE_LOCAL_PAYLOAD) {
-        Copy-Item -Force (Join-Path $ProjectRoot $SourcePath) $DestinationPath
-    } else {
-        Invoke-WebRequest -Uri "$GITHUB_RAW/$SourcePath" -OutFile $DestinationPath | Out-Null
-    }
+    Copy-Item -Force (Join-Path $ProjectRoot $SourcePath) $DestinationPath
 }
 
 # ============================================================
@@ -104,18 +130,16 @@ if (-not $weaselExists) {
 }
 
 Write-Host "本工具將執行以下作業："
-if ($USE_LOCAL_PAYLOAD) {
-    Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+if ($DOWNLOADED_PAYLOAD) {
+    Write-Host "  1. 從已驗證的 v$RELEASE_VERSION 封存檔安裝拍台文方案"
 } else {
-    Write-Host "  1. 從 GitHub 下載拍台文方案檔案"
+    Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
 }
 Write-Host "  2. 註冊輸入方案"
 Write-Host "  3. 安裝芫荽 iansui 字體"
 Write-Host ""
 Write-Host "Rime 資料夾：$RIME_DIR" -ForegroundColor Green
-if ($USE_LOCAL_PAYLOAD) {
-    Write-Host "安裝包資料夾：$ProjectRoot" -ForegroundColor Green
-}
+Write-Host "安裝來源：$ProjectRoot" -ForegroundColor Green
 Write-Host ""
 
 # 偵測現有方案
@@ -309,12 +333,21 @@ if (Test-Path $fontPath) {
     Write-Host "  芫荽字體（已安裝）" -ForegroundColor Green
 } else {
     Write-Host "  正在下載芫荽 iansui 字體..."
+    $iansuiRevision = "9d9a8e68bf1e138dd91e562eeff28d95bca33196"
+    $iansuiSha256 = "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5"
+    $iansuiUrl = "https://raw.githubusercontent.com/ButTaiwan/iansui/$iansuiRevision/fonts/ttf/Iansui-Regular.ttf"
+    $fontTemp = "$fontPath.download"
     try {
-        $iansui_url = "https://raw.githubusercontent.com/ButTaiwan/iansui/main/fonts/ttf/Iansui-Regular.ttf"
-        Invoke-WebRequest -Uri $iansui_url -OutFile $fontPath | Out-Null
-        Write-Host "  芫荽字體已安裝" -ForegroundColor Green
+        Invoke-WebRequest -Uri $iansuiUrl -OutFile $fontTemp | Out-Null
+        $fontHash = (Get-FileHash -Path $fontTemp -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($fontHash -ne $iansuiSha256) {
+            throw "Iansui-Regular.ttf SHA-256 驗證失敗。"
+        }
+        Move-Item -Force $fontTemp $fontPath
+        Write-Host "  芫荽字體已驗證並安裝" -ForegroundColor Green
     } catch {
-        Write-Host "  無法下載，請手動安裝：" -ForegroundColor Yellow
+        Remove-Item -Force $fontTemp -ErrorAction SilentlyContinue
+        Write-Host "  字體下載或 SHA-256 驗證失敗，請手動安裝：" -ForegroundColor Yellow
         Write-Host "  https://github.com/ButTaiwan/iansui/releases" -ForegroundColor Cyan
     }
 }
@@ -379,5 +412,8 @@ if (-not (Test-Path $weaselCustom) -or -not (Select-String -Path $weaselCustom -
     Write-Host ""
 }
 
-Write-Host "更多資訊：https://github.com/$GITHUB_REPO"
+if ($TEMP_SOURCE_DIR -and (Test-Path $TEMP_SOURCE_DIR)) {
+    Remove-Item -Recurse -Force $TEMP_SOURCE_DIR
+}
+Write-Host "更多資訊：https://github.com/soanseng/rime-phah-taibun"
 Write-Host ""

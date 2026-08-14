@@ -294,13 +294,19 @@ else
     echo -e "  ${YELLOW}[install]${NC} 正在下載芫荽 iansui 字體..."
     FONT_DIR="$HOME/.local/share/fonts/iansui"
     mkdir -p "$FONT_DIR"
-    IANSUI_URL="https://raw.githubusercontent.com/ButTaiwan/iansui/main/fonts/ttf/Iansui-Regular.ttf"
-    if curl -sL "$IANSUI_URL" -o "$FONT_DIR/Iansui-Regular.ttf" 2>/dev/null; then
+    IANSUI_REVISION="9d9a8e68bf1e138dd91e562eeff28d95bca33196"
+    IANSUI_SHA256="7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5"
+    IANSUI_URL="https://raw.githubusercontent.com/ButTaiwan/iansui/$IANSUI_REVISION/fonts/ttf/Iansui-Regular.ttf"
+    FONT_TMP="$FONT_DIR/.Iansui-Regular.ttf.download"
+    if curl -fsSL "$IANSUI_URL" -o "$FONT_TMP" \
+        && printf '%s  %s\n' "$IANSUI_SHA256" "$FONT_TMP" | sha256sum -c - >/dev/null; then
+        mv -f "$FONT_TMP" "$FONT_DIR/Iansui-Regular.ttf"
         fc-cache -f "$FONT_DIR" 2>/dev/null || true
         IANSUI_INSTALLED=true
-        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已安裝到 $FONT_DIR"
+        echo -e "  ${GREEN}[ok]${NC} 芫荽 iansui 字體已驗證並安裝到 $FONT_DIR"
     else
-        echo -e "  ${YELLOW}[warn]${NC} 無法下載 iansui 字體，請手動安裝："
+        rm -f "$FONT_TMP"
+        echo -e "  ${YELLOW}[warn]${NC} 字體下載或 SHA-256 驗證失敗，請手動安裝："
         echo -e "         https://github.com/ButTaiwan/iansui/releases"
     fi
 fi
