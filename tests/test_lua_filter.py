@@ -22,7 +22,12 @@ def lua_files():
 @pytest.mark.parametrize("lua_file", lua_files(), ids=lambda p: p.name)
 def test_lua_syntax(lua_file):
     """Validate Lua file syntax using luac (if available)."""
-    for cmd in [["luac", "-p", str(lua_file)], ["lua5.3", "-e", f"loadfile('{lua_file}')"]]:
+    for cmd in [
+        ["luac", "-p", str(lua_file)],
+        ["luac5.4", "-p", str(lua_file)],
+        ["lua5.4", "-e", f"assert(loadfile('{lua_file}'))"],
+        ["lua5.3", "-e", f"assert(loadfile('{lua_file}'))"],
+    ]:
         try:
             result = subprocess.run(
                 cmd,
@@ -34,4 +39,4 @@ def test_lua_syntax(lua_file):
             return
         except FileNotFoundError:
             continue
-    pytest.skip("luac/lua not found, skipping Lua syntax check")
+    pytest.skip("luac/lua5.4/lua5.3 not found, skipping Lua syntax check")

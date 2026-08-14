@@ -1,15 +1,17 @@
 """Behavior tests for the phah_taibun Lua filter."""
 
+import shutil
 import subprocess
 import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
+LUA_EXECUTABLE = shutil.which("lua") or shutil.which("lua5.4") or "lua"
 
 
 def run_lua(script: str) -> str:
     result = subprocess.run(
-        ["lua", "-"],
+        [LUA_EXECUTABLE, "-"],
         input=script,
         capture_output=True,
         text=True,
