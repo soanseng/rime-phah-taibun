@@ -5,6 +5,11 @@ def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
 
 
+def read_prefix(path: str, lines: int = 10) -> str:
+    with Path(path).open(encoding="utf-8") as handle:
+        return "".join(next(handle, "") for _ in range(lines))
+
+
 def test_windows_inno_setup_runs_existing_powershell_installer():
     iss = read("packaging/windows/phah-taibun.iss")
     installer = read("install_windows.ps1")
@@ -93,6 +98,23 @@ def test_remote_installer_assets_are_versioned_and_sha256_verified():
     assert 'git -C "$dest" fetch -q --depth 1 origin "$revision"' in resources
     assert ".source-revision" in resources
     assert "download_verified" in resources
+
+
+def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
+    version = "0.3.0"
+
+    assert f'version = "{version}"' in read("pyproject.toml")
+    assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
+    assert f'version: "{version}"' in read_prefix("schema/phah_taibun.dict.yaml")
+    assert f'version: "{version}"' in read("scripts/convert_chhoetaigi.py")
+    assert f'RELEASE_VERSION="{version}"' in read("scripts/install_macos.sh")
+    assert f'$RELEASE_VERSION = "{version}"' in read("install_windows.ps1")
+    assert f'VERSION="${{PHAH_TAIBUN_VERSION:-{version}}}"' in read(
+        "packaging/macos/build-pkg.sh"
+    )
+    assert f'#define MyAppVersion "{version}"' in read(
+        "packaging/windows/phah-taibun.iss"
+    )
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():
