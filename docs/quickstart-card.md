@@ -18,7 +18,12 @@
 
 進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。
 
+## 更新拍台文
+
+Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版安裝包，直接執行覆蓋安裝；PowerShell／終端機使用者重跑原安裝指令。Linux 在既有 clone 執行 `git pull --ff-only && ./install.sh`。自訂詞庫和其他 Rime 方案會保留；詳見[完整更新說明](user-guide.md#更新拍台文)。
+
 ---
+
 
 ## 第一分鐘：直接打
 

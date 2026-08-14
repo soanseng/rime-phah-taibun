@@ -66,6 +66,22 @@ cd rime-phah-taibun
 
 腳本會自動偵測 fcitx5-rime 或 ibus-rime，下載方案檔案、Lua 模組、芫荽字體，並觸發 Rime 重新部署。
 
+### 更新拍台文
+
+- **Windows／macOS 安裝包**：到 [GitHub Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 或 `PhahTaiBun.pkg`，直接執行覆蓋安裝。
+- **Windows PowerShell／macOS 終端機**：重新執行上方原本的安裝指令。
+- **Linux**：在既有 clone 內執行：
+
+```bash
+cd rime-phah-taibun
+git pull --ff-only
+./install.sh
+```
+
+更新會保留 `phah_taibun.custom.dict.yaml`、`phah_taibun.phrase.dict.yaml` 等自訂詞庫、其他 Rime 輸入方案與設定；正式的拍台文 schema、主字典、規則檔和 Lua 模組會更新，安裝器完成後會自動重新部署 Rime。
+
+> 若你直接修改過正式的 `phah_taibun` 檔案，更新前請先備份。長期自訂建議放在 Rime custom patch 或自訂詞庫，避免下次更新被正式檔案取代。
+
 ### 手動安裝
 
 1. 從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載 zip 並解壓
@@ -1052,14 +1068,9 @@ cat ~/.local/share/fcitx5/rime/rime.lua | grep phah_taibun
 cat ~/Library/Rime/rime.lua | grep phah_taibun
 ```
 
-### 重新安裝
+### 更新或重新安裝
 
-```bash
-cd rime-phah-taibun
-./install.sh
-```
-
-安裝腳本會更新所有檔案（不會覆蓋你的自訂詞庫）。
+請依[更新拍台文](#更新拍台文)的對應平台步驟重跑安裝器。安裝器會更新正式檔案並重新部署 Rime，不會覆蓋你的自訂詞庫。
 
 ---
 

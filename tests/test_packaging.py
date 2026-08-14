@@ -158,3 +158,20 @@ def test_release_workflow_attaches_packaged_installers():
     assert "Inno Setup 6\\ISCC.exe" in workflow
     assert "PhahTaiBun.pkg" in workflow
     assert "PhahTaiBunSetup.exe" in workflow
+
+
+def test_public_docs_explain_supported_update_paths_and_preservation():
+    readme = read("README.md")
+    guide = read("docs/user-guide.md")
+    quickstart = read("docs/quickstart-card.md")
+    packaged = read("docs/packaged-installers.md")
+    homepage = read("docs/index.html")
+
+    for document in (readme, guide, quickstart, packaged, homepage):
+        assert "更新拍台文" in document
+    assert "git pull --ff-only" in readme
+    assert "git pull --ff-only" in guide
+    assert "PhahTaiBunSetup.exe" in packaged
+    assert "PhahTaiBun.pkg" in packaged
+    assert "自訂詞庫" in guide
+    assert "重新部署" in guide

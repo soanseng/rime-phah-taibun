@@ -34,6 +34,10 @@ Download the latest release for your platform:
 
 After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active.
 
+### Updating
+
+Download and run the newest Windows or macOS installer from [Releases](https://github.com/soanseng/rime-phah-taibun/releases). Command-line users can rerun the installation command above. For an existing Linux clone, run `git pull --ff-only` followed by `./install.sh`. Updates preserve custom dictionaries and other Rime schemas, replace the official Phah Tai-bun files, and redeploy Rime.
+
 You can type without tone numbers, and POJ/TL spellings can be mixed:
 
 ```text
@@ -368,6 +372,20 @@ cd rime-phah-taibun
 ```
 
 腳本會自動偵測 fcitx5-rime 或 ibus-rime，下載方案檔案、Lua 模組、芫荽字體，並觸發 Rime 重新部署。
+
+### 更新拍台文
+
+- **Windows／macOS 安裝包**：到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 或 `PhahTaiBun.pkg`，直接執行覆蓋安裝。
+- **Windows PowerShell／macOS 終端機**：重新執行上方原本的安裝指令。
+- **Linux**：在既有專案目錄更新原始碼後重跑安裝器：
+
+```bash
+cd rime-phah-taibun
+git pull --ff-only
+./install.sh
+```
+
+更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文 schema、主字典、規則檔和 Lua 模組，最後自動重新部署 Rime。若你直接修改過正式的 `phah_taibun` 檔案，請先備份；長期自訂建議使用 Rime custom patch 或自訂詞庫。
 
 ### 手動安裝
 
