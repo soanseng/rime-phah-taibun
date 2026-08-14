@@ -149,3 +149,11 @@ def test_main_dictionary_produces_taiwanese_candidates(real_rime_states):
     state = real_rime_states["tsiah8"]
     assert state["count"] > 0
     assert any(candidate["text"] == "食" for candidate in state["candidates"])
+
+
+def test_help_descriptions_are_not_rewritten_as_romanization(real_rime_states):
+    candidates = real_rime_states["help"]["candidates"]
+    assert candidates
+    assert all("TL:" not in candidate["comment"] for candidate in candidates)
+    help_by_key = {candidate["text"]: candidate["comment"] for candidate in candidates}
+    assert help_by_key["[ / ]"] == "以詞定字：選首字 / 尾字"

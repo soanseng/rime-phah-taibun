@@ -368,3 +368,44 @@ def test_lookup_uses_shared_tl_to_poj_converter():
     )
 
     assert run_lua(script).strip() == "[TL:ping5 POJ:shared:ping5]"
+
+
+def test_help_lists_every_user_facing_shortcut():
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(_, _, _, text, comment)
+          return { text = text, comment = comment }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        require("phah_taibun_help").func("vvh", { start = 0, _end = 3 }, {})
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    keys = set(run_lua(script).splitlines())
+    assert {
+        "F4 / Ctrl+`",
+        "Ctrl+Space",
+        "Space",
+        "Tab / Shift+Tab",
+        "PageUp / PageDown",
+        "[ / ]",
+        "Shift+A-Z",
+        "Enter",
+        "\\",
+        "'",
+        "~",
+        "`",
+        "?",
+        ";",
+        "vvh",
+        "vvjit",
+        "vvsp",
+    } <= keys

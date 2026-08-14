@@ -228,7 +228,7 @@ function M.func(input, env)
 
     -- Extract the raw romanization from Rime's auto-comment
     -- Rime formats it as " [romanization]" via comment_format xform
-    local raw_roman = comment:match("%[(.-)%]") or ""
+    local raw_roman = comment:match("^%s*%[([^%]]+)%]%s*$") or ""
 
     -- Synchronize light-tone "--" from text to romanization.
     -- User dictionary may cache text with "--" but romanization without it.
