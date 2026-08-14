@@ -2,13 +2,23 @@
 # 拍台文 Phah Tai-bun 自動安裝工具 (macOS / 鼠鬚管 Squirrel)
 # 從 bundle installer 呼叫時：bash install_macos.sh --project-root /path/to/staged/files
 
-set -e
+set -euo pipefail
 
 # 顏色定義
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+
+SOURCE_ARCHIVE_URL="${PHAH_TAIBUN_ARCHIVE_URL:-https://github.com/soanseng/rime-phah-taibun/archive/refs/heads/main.tar.gz}"
+_TEMP_SOURCE_DIR=""
+
+cleanup() {
+    if [ -n "$_TEMP_SOURCE_DIR" ] && [ -d "$_TEMP_SOURCE_DIR" ]; then
+        rm -rf "$_TEMP_SOURCE_DIR"
+    fi
+}
+trap cleanup EXIT
 
 # 解析參數：--project-root 覆蓋預設的專案根目錄
 _PROJ_ROOT_OVERRIDE=""
@@ -28,11 +38,43 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# 專案根目錄：優先使用 --project-root 參數，否則從腳本位置推算
-if [ -n "$_PROJ_ROOT_OVERRIDE" ] && [ -d "$_PROJ_ROOT_OVERRIDE" ]; then
+# 專案根目錄：
+# 1. 套件安裝器以 --project-root 指向內含的 payload。
+# 2. 本機 clone 直接使用腳本上層目錄。
+# 3. curl | bash 沒有同目錄資產時，下載完整來源封存檔到暫存目錄。
+if [ -n "$_PROJ_ROOT_OVERRIDE" ]; then
+    if [ ! -d "$_PROJ_ROOT_OVERRIDE" ]; then
+        echo "錯誤：--project-root 不存在：$_PROJ_ROOT_OVERRIDE" >&2
+        exit 1
+    fi
     PROJ_DIR="$(cd "$_PROJ_ROOT_OVERRIDE" && pwd)"
 else
-    PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+    SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    if [ -d "$SCRIPT_ROOT/schema" ] && [ -d "$SCRIPT_ROOT/lua" ]; then
+        PROJ_DIR="$SCRIPT_ROOT"
+    else
+        command -v curl >/dev/null 2>&1 || {
+            echo "錯誤：指令安裝需要 curl。" >&2
+            exit 1
+        }
+        command -v tar >/dev/null 2>&1 || {
+            echo "錯誤：指令安裝需要 tar。" >&2
+            exit 1
+        }
+        : "${TMPDIR:=/tmp}"
+        _TEMP_SOURCE_DIR="$(mktemp -d "${TMPDIR%/}/phah-taibun.XXXXXX")"
+        archive="$_TEMP_SOURCE_DIR/source.tar.gz"
+        PROJ_DIR="$_TEMP_SOURCE_DIR/source"
+        mkdir -p "$PROJ_DIR"
+        echo "正在下載拍台文完整安裝資產..."
+        curl -fsSL "$SOURCE_ARCHIVE_URL" -o "$archive"
+        tar -xzf "$archive" -C "$PROJ_DIR" --strip-components=1
+    fi
+fi
+
+if [ ! -d "$PROJ_DIR/schema" ] || [ ! -d "$PROJ_DIR/lua" ] || [ ! -f "$PROJ_DIR/rime.lua" ]; then
+    echo "錯誤：安裝來源不完整：$PROJ_DIR" >&2
+    exit 1
 fi
 
 # ============================================================

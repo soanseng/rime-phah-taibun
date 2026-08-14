@@ -45,6 +45,12 @@ def test_macos_pkg_builder_uses_existing_macos_installer():
     assert "--project-root" in postinstall
     assert "/dev/console" in postinstall
     assert "sudo -u" in postinstall
+    installer = read("scripts/install_macos.sh")
+    assert "--project-root" in installer
+    assert "PHAH_TAIBUN_ARCHIVE_URL" in installer
+    assert "mktemp -d" in installer
+    assert "tar -xzf" in installer
+    assert "trap cleanup EXIT" in installer
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():
