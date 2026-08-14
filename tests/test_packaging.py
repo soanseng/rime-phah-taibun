@@ -53,6 +53,23 @@ def test_macos_pkg_builder_uses_existing_macos_installer():
     assert "trap cleanup EXIT" in installer
 
 
+def test_installers_fail_loudly_when_rime_deployment_fails():
+    linux = read("scripts/install_linux.sh")
+    macos = read("scripts/install_macos.sh")
+    windows = read("install_windows.ps1")
+
+    assert 'rime_deployer --build "$RIME_DIR" 2>/dev/null || true' not in linux
+    assert 'fcitx5-remote -r 2>/dev/null || true' not in linux
+    assert 'ibus restart 2>/dev/null || true' not in linux
+    assert "部署失敗" in linux
+    assert "if ! open -a Squirrel" in macos
+    assert "部署失敗" in macos
+    assert "WeaselDeployer.exe" in windows
+    assert "Start-Process" in windows
+    assert "ExitCode" in windows
+    assert "部署失敗" in windows
+
+
 def test_packaging_docs_warn_about_rime_engine_dependency():
     windows_doc = read("packaging/windows/README.md")
     mac_doc = read("packaging/macos/README.md")

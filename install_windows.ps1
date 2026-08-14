@@ -320,12 +320,29 @@ if (Test-Path $fontPath) {
 }
 
 # ============================================================
-# Step 4: 部署提示
+# Step 4: 部署 RIME
 # ============================================================
 Write-Host ""
 Write-Host "[ Step 4: 部署 RIME ]" -ForegroundColor Green
 Write-Host ""
-Write-Host "請手動重新部署小狼毫（右鍵點擊系統匣圖示 → 重新部署）" -ForegroundColor Yellow
+
+$weaselInstall = Get-ChildItem -Path @($WEASEL_DIR, $WEASEL_DIR_ALT) -Directory -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+$deployer = if ($weaselInstall) { Join-Path $weaselInstall.FullName "WeaselDeployer.exe" } else { "" }
+if (-not $deployer -or -not (Test-Path $deployer)) {
+    Write-Host "部署失敗：找不到 WeaselDeployer.exe。" -ForegroundColor Red
+    Write-Host "請在小狼毫系統匣選單按「重新部署」，或執行：<小狼毫安裝目錄>\WeaselDeployer.exe /deploy" -ForegroundColor Yellow
+    exit 1
+}
+
+$deployProcess = Start-Process -FilePath $deployer -ArgumentList "/deploy" -Wait -PassThru
+if ($deployProcess.ExitCode -ne 0) {
+    Write-Host "部署失敗：WeaselDeployer.exe 結束碼為 $($deployProcess.ExitCode)。" -ForegroundColor Red
+    Write-Host "請修正上方錯誤後重試：`"$deployer`" /deploy" -ForegroundColor Yellow
+    exit 1
+}
+Write-Host "已重新部署小狼毫。" -ForegroundColor Green
 
 # ============================================================
 # 安裝完成

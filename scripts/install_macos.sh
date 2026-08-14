@@ -317,12 +317,12 @@ echo
 # 終止鼠鬚管並重新啟動以觸發部署（參考 rime-liur）
 killall Squirrel 2>/dev/null || true
 sleep 1
-if [ -d "$SQUIRREL_APP" ]; then
-    open -a Squirrel
-    echo -e "${GREEN}已重新啟動鼠鬚管，正在部署中...${NC}"
-else
-    echo -e "${YELLOW}請手動點選選單列輸入法圖示 → 重新部署${NC}"
+if ! open -a Squirrel; then
+    echo -e "${RED}部署失敗：無法重新啟動鼠鬚管。${NC}" >&2
+    echo "請確認 /Library/Input Methods/Squirrel.app 存在，再手動執行：open -a Squirrel" >&2
+    exit 1
 fi
+echo -e "${GREEN}已重新啟動鼠鬚管，正在部署中...${NC}"
 
 echo
 echo "======================================"

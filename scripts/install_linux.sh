@@ -314,32 +314,45 @@ echo "[ Step 4: 部署 RIME ]"
 echo
 
 if [ "$RIME_FRAMEWORK" = "fcitx5" ]; then
-    if command -v fcitx5-remote &>/dev/null; then
-        echo "正在重新部署 fcitx5-rime..."
-        fcitx5-remote -r 2>/dev/null || true
-        sleep 1
-        if command -v rime_deployer &>/dev/null; then
-            echo "正在編譯字典（可能需要數秒）..."
-            rime_deployer --build "$RIME_DIR" 2>/dev/null || true
-        fi
-        fcitx5-remote -r 2>/dev/null || true
-        echo -e "${GREEN}已重新部署 fcitx5-rime${NC}"
-    else
-        echo -e "${YELLOW}fcitx5-remote 不可用，請手動重啟 fcitx5${NC}"
+    if ! command -v fcitx5-remote >/dev/null 2>&1; then
+        echo -e "${RED}部署失敗：找不到 fcitx5-remote。${NC}" >&2
+        echo "請確認 fcitx5 正在執行，再手動執行：fcitx5-remote -r" >&2
+        exit 1
     fi
+    if command -v rime_deployer >/dev/null 2>&1; then
+        echo "正在編譯字典（可能需要數秒）..."
+        if ! rime_deployer --build "$RIME_DIR"; then
+            echo -e "${RED}部署失敗：Rime 字典編譯未完成。${NC}" >&2
+            echo "請修正上方錯誤後重試：rime_deployer --build \"$RIME_DIR\"" >&2
+            exit 1
+        fi
+    fi
+    if ! fcitx5-remote -r; then
+        echo -e "${RED}部署失敗：fcitx5-rime 無法重新載入。${NC}" >&2
+        echo "請確認 fcitx5 正在執行，再手動執行：fcitx5-remote -r" >&2
+        exit 1
+    fi
+    echo -e "${GREEN}已重新部署 fcitx5-rime${NC}"
 elif [ "$RIME_FRAMEWORK" = "ibus" ]; then
-    if command -v ibus &>/dev/null; then
-        echo "正在重新部署 ibus-rime..."
-        ibus write-cache 2>/dev/null || true
-        if command -v rime_deployer &>/dev/null; then
-            echo "正在編譯字典（可能需要數秒）..."
-            rime_deployer --build "$RIME_DIR" 2>/dev/null || true
-        fi
-        ibus restart 2>/dev/null || true
-        echo -e "${GREEN}已重新部署 ibus-rime${NC}"
-    else
-        echo -e "${YELLOW}ibus 不可用，請手動重啟 ibus${NC}"
+    if ! command -v ibus >/dev/null 2>&1; then
+        echo -e "${RED}部署失敗：找不到 ibus 指令。${NC}" >&2
+        echo "請確認 ibus 正在執行，再手動執行：ibus restart" >&2
+        exit 1
     fi
+    if command -v rime_deployer >/dev/null 2>&1; then
+        echo "正在編譯字典（可能需要數秒）..."
+        if ! rime_deployer --build "$RIME_DIR"; then
+            echo -e "${RED}部署失敗：Rime 字典編譯未完成。${NC}" >&2
+            echo "請修正上方錯誤後重試：rime_deployer --build \"$RIME_DIR\"" >&2
+            exit 1
+        fi
+    fi
+    if ! ibus write-cache || ! ibus restart; then
+        echo -e "${RED}部署失敗：ibus-rime 無法重新載入。${NC}" >&2
+        echo "請確認 ibus 正在執行，再手動執行：ibus restart" >&2
+        exit 1
+    fi
+    echo -e "${GREEN}已重新部署 ibus-rime${NC}"
 fi
 
 # ============================================================
