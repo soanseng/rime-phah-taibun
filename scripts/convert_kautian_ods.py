@@ -1,8 +1,8 @@
 """Convert MOE KipSutian ODS data into the flat kautian.csv shape.
 
 The upstream ODS is a normalized workbook. This script keeps the same flat CSV
-columns already consumed by build_kipsutian_reverse.py and
-extract_kipsutian_sentences.py, without requiring pandas/odfpy at runtime.
+columns consumed by the main dictionary and example-sentence builders, without
+requiring pandas/odfpy at runtime.
 """
 
 from __future__ import annotations

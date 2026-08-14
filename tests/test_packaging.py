@@ -27,6 +27,14 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
 
 
+def test_release_payload_excludes_unused_standalone_reverse_dictionary():
+    assert not Path("schema/phah_taibun_reverse.dict.yaml").exists()
+    assert "phah_taibun_reverse.dict.yaml" not in read("scripts/build_all.py")
+    assert "phah_taibun_reverse.dict.yaml" not in read("scripts/install_linux.sh")
+    assert "phah_taibun_reverse.dict.yaml" not in read("scripts/install_macos.sh")
+    assert "phah_taibun_reverse.dict.yaml" not in read("install_windows.ps1")
+
+
 def test_macos_pkg_builder_uses_existing_macos_installer():
     build = read("packaging/macos/build-pkg.sh")
     postinstall = read("packaging/macos/scripts/postinstall")

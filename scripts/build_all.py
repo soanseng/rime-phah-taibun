@@ -10,7 +10,7 @@ Orchestrates the full preprocessing pipeline:
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
 4c. Parse MOE 700字 → moe700.yaml
-5. Build reverse dictionary (KipSutian or MOE fallback)
+5. Build Mandarin→Taiwanese mapping
 6. Validate generated dictionary
 7. Extract nmtl literary corpus sentences + frequencies
 8. Extract KipSutian example sentences
@@ -268,31 +268,8 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print("SKIP: 700iongji.csv not found (run download_resources.sh)")
 
-    # Step 5: Build reverse dictionary (prefer KipSutian 65K, fallback to MOE 24K)
-    moe_dir = data / "moedict-data-twblg" / "uni"
-    reverse_output = out / "phah_taibun_reverse.dict.yaml"
 
-    if kipsutian_csv and kipsutian_csv.exists():
-        steps_ok &= run_step(
-            "Build KipSutian reverse dictionary (65K entries)",
-            [
-                python,
-                "scripts/build_kipsutian_reverse.py",
-                "--input",
-                str(kipsutian_csv),
-                "--output",
-                str(reverse_output),
-            ],
-        )
-    elif moe_dir.exists():
-        steps_ok &= run_step(
-            "Build MOE reverse dictionary (24K entries, fallback)",
-            [python, "scripts/build_moe_reverse.py", "--input", str(moe_dir), "--output", str(reverse_output)],
-        )
-    else:
-        print("SKIP: No reverse dict source found")
-
-    # Step 5b: Build Mandarin→Taiwanese mapping (hoabun_map.txt)
+    # Step 5: Build Mandarin→Taiwanese mapping (hoabun_map.txt)
     if chhoetaigi_dir.exists():
         steps_ok &= run_step(
             "Build Mandarin→Taiwanese mapping (hoabun_map.txt)",

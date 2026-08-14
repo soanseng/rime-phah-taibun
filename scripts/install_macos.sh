@@ -131,7 +131,6 @@ mkdir -p "$RIME_DIR"
 SCHEMA_FILES=(
     "phah_taibun.schema.yaml"
     "phah_taibun.dict.yaml"
-    "phah_taibun_reverse.dict.yaml"
     "hanlo_rules.yaml"
     "lighttone_rules.json"
     "moe700.yaml"

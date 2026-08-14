@@ -992,7 +992,7 @@ uv run python scripts/build_all.py
 2. 合併 ChhoeTaigi 9 本辭典 CSV 與教育部 KipSutian 詞目，保留原始漢字/漢羅候選，另補 TL/POJ 全羅候選，再加上語料庫頻率加權
 3. 納入建中的教育部臺灣台語輸入法詞庫增補檔
 4. 解析 LKK 漢羅規則、輕聲規則、教育部推薦700字
-5. 建置反查字典（KipSutian，或 MOE 24K 筆備用）
+5. 建置華語對照表，供候選與反查功能使用
 6. 從所有語料庫句子提取雙字詞組（bigram phrases）
 7. 驗證生成的字典
 
@@ -1100,7 +1100,7 @@ cd rime-phah-taibun
 |------|------|
 | [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（9 本辭典） |
 | [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
-| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 主字典 + TL/POJ 全羅候選 + 反查字典 + 例句語料 |
+| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 主字典 + TL/POJ 全羅候選 + 注音反查讀音 + 例句語料 |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 新聞語料詞頻 |
 | [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 文學語料詞頻 |
 | [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻 |
@@ -1121,7 +1121,7 @@ cd rime-phah-taibun
 - [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 開放辭典平台
 - [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
 - [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — UX 功能參考
-- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、反查字典與例句語料資料
+- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、注音反查讀音與例句語料資料
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — 多語料庫資料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具

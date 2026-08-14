@@ -44,7 +44,6 @@ chmod +x scripts/download_resources.sh
 | 4 | YuRen-tw/rime-taigi-tps | 參考方音符號字典 |
 | 5 | ButTaiwan/taigivs | 字咍字型 IVS（Phase 2） |
 | 6 | Taiwanese-Corpus/hue7jip8 | 語料清單、詞頻路徑指引 |
-| 7 | g0v/moedict-data-twblg | 教育部辭典開放資料（反查） |
 | 8 | i3thuan5/khin1siann1-hun1sik4 | **詞頻書寫規範**，分詞邏輯參考 |
 | 11 | LKK 用字表 (Google Sheets CSV) | **漢羅轉換規則核心**（自動從 pubhtml 下載 CSV） |
 | 12 | Taiwanese-Corpus/Ungian_2009_KIPsupin | 楊允言詞頻資料（教育部字詞頻調查） |
@@ -71,7 +70,6 @@ chmod +x scripts/download_resources.sh
 | `data/rime-taigi-tps/` | YuRen-tw/rime-taigi-tps | 參考方音符號鍵盤配置、字典格式 | 1 |
 | `data/taigivs/` | ButTaiwan/taigivs | 字咍字型 IVS 對照表（`readings/` 資料夾）、漢字→讀音映射 | 2 |
 | `data/Taiwanese-Corpus-hue7jip8/` | Taiwanese-Corpus/hue7jip8 | 語料庫匯入清單、楊允言詞頻研究的路徑指引 | 2 |
-| `data/moedict-data-twblg/` | g0v/moedict-data-twblg | 教育部台語辭典開放資料，建反查字典（華語→台語） | 1 |
 | ~~`data/rime-taigi-ithuan/`~~ | ~~i3thuan5/rime-taigi~~ | ❌ repo 已刪除 | — |
 | ~~`data/rime_taigi_poj_hanlo/`~~ | ~~i3thuan5/rime_taigi_poj_hanlo~~ | ❌ repo 已刪除 | — |
 | `data/khin1siann1-hun1sik4/` | i3thuan5/khin1siann1-hun1sik4 | **詞頻書寫規範**：分詞邏輯、輕聲處理規則，計算詞頻的前處理參考 | 1 |
@@ -96,7 +94,6 @@ chmod +x scripts/download_resources.sh
 | 人工增補 | Taigi-Input-method-dictionary-supplement | 條件式 | data 內存在時由 `build_all.py` append 進主字典；缺檔則跳過 |
 | 衍生詞條 | 輕聲規則 + 語料詞頻 | 是，衍生 | `build_lighttone_entries.py` 產生輕聲候選並 append |
 | 衍生詞條 | bigram phrases | 是，衍生 | 有達門檻的新雙字詞時 append；本次建置產生 0 筆 |
-| 反查資料 | moedict-data-twblg | 否 | 只作 KipSutian 缺檔時的反查字典 fallback |
 | 規則資料 | LKK 用字表、LKK 數字用法、MOE 700 字 | 否 | 產生漢羅轉換規則、數字用法、推薦用字標記，不是字典候選來源 |
 | 詞頻語料 | iCorpus、Ungian、康軒、900 例句、NMTL、KipSutian 例句、白話字文獻 | 否，除衍生詞條 | 用於權重、輕聲、bigram；原文語料不逐筆進主字典 |
 | 參考程式/方案 | rime-taigi-glll4678、rime-taigi-tps、rime-liur、tai5-uan5_gian5-gi2_kang1-ku7、KeSi、rime-ice | 否 | 參考 schema、Lua 架構、音標轉換或 UX，不匯入詞條 |
@@ -152,7 +149,6 @@ data/
 │   └── ...                  # 分詞規則、輕聲處理邏輯
 ├── taigivs/
 │   └── readings/            # Phase 2：IVS 漢字→讀音對照表
-├── moedict-data-twblg/      # 教育部辭典 JSON/CSV 格式
 ├── lkk_yongji.csv           # ★ LKK 字表（自動從 Google Sheets 下載 CSV）
 ├── lkk_suji.csv             # LKK 數字用法（自動下載）
 ├── Ungian_2009_KIPsupin/    # 楊允言詞頻資料
@@ -457,8 +453,7 @@ switches:
 
 | 模式 | 觸發 | 流程 | 來源 |
 |------|------|------|------|
-| 注音→台語 | `';` + 注音 | 注音輸入華語字 → 查 reverse dict → 顯示台語讀音 | 參考 rime-liur 注音輸入 `';` |
-| 拼音→台語 | `~` + 拼音 | 漢語拼音輸入 → 查 reverse dict → 顯示台語讀音 | 參考 rime-liur 拼音輸入 `;'` |
+| 注音→台語 | `~` + 注音 | 以 `bopomofo_tw` 輸入華語字，使用 `phah_taibun` 主字典標註台語讀音 | Rime `reverse_lookup` |
 | 查讀音 | `Ctrl+'` | 選字後 comment 顯示完整台語讀音（TL+POJ+華語） | **移植自 rime-liur 查碼模式** |
 
 ### 5-4. 查台語讀音模式 `Ctrl+'`（移植自 rime-liur 查碼模式）
@@ -468,7 +463,7 @@ switches:
 
 使用場景：不知道「蝴蝶」台語怎麼講？打華語選字，直接看到 `ôo-tia̍p / o͘-tia̍p`。
 
-實作：改寫 rime-liur 的查碼 Lua，將查表從蝦米碼表改成 `phah_taibun_reverse.dict.yaml`。
+實作：Rime `reverse_lookup_filter` 直接查 `phah_taibun` 主字典，華語對照由 `hoabun_map.txt` 提供。
 
 ### 5-5. 萬用查字 `?`（移植自 rime-liur 萬用字元 `,,wc`）
 
@@ -637,4 +632,4 @@ return M
 - [ ] `tai5-uan5_gian5-gi2_kang1-ku7` 在 Arch Linux 上的安裝測試
 - [x] iCorpus 新聞語料：已用 extract_icorpus_freq.py 提取 57K 詞、302K tokens
 - [x] nmtl_2006_dadwt 格式分析：2,169 篇 .tbk 純文字（POJ），含 25M nmtl.json 已對齊版
-- [x] KipSutianDataMirror 比對：65K 條目（含解說、例句、又音），比 moedict 的 27K 多 2.4 倍，已建 build_kipsutian_reverse.py
+- [x] KipSutianDataMirror 詞目、例句與又音已整合進主字典及語料流程；未接線的獨立反查字典產物已移除

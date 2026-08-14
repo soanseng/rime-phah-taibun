@@ -14,7 +14,7 @@
 2. **聲調在字典中以數字存儲**，去調號版本透過 derive 規則自動生成（`derive/[1-9]$//`）
 3. **漢羅轉換是 Lua filter 層的責任**，不改動字典本身
 4. **詞頻以整數權重存在字典第三欄**，數值越大越優先
-5. **反查字典獨立於主字典**，教育部 CC BY-ND 資料只進反查不進主字典
+5. **注音反查的台語讀音由主字典提供**，不另建未接線的獨立字典
 
 ## 開發環境設定
 
@@ -22,7 +22,7 @@
 # 安裝依賴
 uv sync
 
-# 下載外部資料（18 個語言資源）
+# 下載外部資料（20 個語言資源）
 chmod +x scripts/download_resources.sh
 ./scripts/download_resources.sh
 ```
@@ -81,9 +81,7 @@ uv run ruff format scripts/ tests/
 | `scripts/convert_chhoetaigi.py` | `tests/test_dict_conversion.py` |
 | `scripts/build_frequency.py` | `tests/test_frequency.py` |
 | `scripts/parse_lkk_rules.py` | `tests/test_hanlo_rules.py` |
-| `scripts/build_reverse_dict.py` | `tests/test_reverse_dict.py` |
 | `scripts/validate_dict.py` | `tests/test_validate.py` |
-| `scripts/build_moe_reverse.py` | `tests/test_moe_reverse.py` |
 | `scripts/extract_icorpus_freq.py` | `tests/test_icorpus_freq.py` |
 | `scripts/extract_ungian_freq.py` | `tests/test_ungian_freq.py` |
 

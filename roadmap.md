@@ -27,7 +27,7 @@
 | 啟發式詞頻權重 | 4 | 2 | 1 | 5 | 分層權重。參考意傳 `khin1siann1-hun1sik4` 的分詞邏輯做前處理 |
 | POJ/TL 雙系統 speller algebra | 5 | 2 | 0 | 8 | **核心差異化**。約 15 條 derive 規則 |
 | 候選區拼音註解 (comment) | 5 | 2 | 0 | 8 | Lua filter 在 comment 附加 TL/POJ 讀音 |
-| 華語反查（注音/拼音→台語）| 4 | 2 | 0 | 6 | 用 Rime `reverse_lookup` + g0v/moedict-data-twblg 資料 |
+| 華語反查（注音→台語）| 4 | 2 | 0 | 6 | 用 Rime `reverse_lookup` + `phah_taibun` 主字典標註台語讀音 |
 | 漢羅混寫輸出 | 5 | 3 | 2 | 5 | **核心差異化**。LKK 用字表 + 意傳 `rime_taigi_poj_hanlo` 邏輯交叉參考 |
 | 輸出模式切換（漢羅/全羅）| 4 | 3 | 0 | 5 | Lua filter 依 switch 狀態決定輸出 |
 | 查台語讀音 `Ctrl+'` | 4 | 2 | 0 | 6 | **移植 rime-liur 查碼模式**，改查表為台語讀音表。學習者殺手功能 |
@@ -59,7 +59,7 @@
 |------|------|------|
 | LKK 漢羅規則 → Lua filter | ✅ 已整合 | hanlo_rules.yaml 893 條 → `phah_taibun_data.lua` 查表 → `phah_taibun_filter.lua` 漢羅轉換 |
 | Ungian/iCorpus 詞頻 → dict 權重 | ✅ 已整合 | 93K+57K 詞頻經 `--corpus-freq` 進入 `compute_weights()`，如 食飯 960→1446 |
-| KipSutian 反查字典 | ✅ 已整合 | `build_all.py` 優先使用 KipSutian 27K（含解說），MOE 為 fallback |
+| 主字典注音反查 | ✅ 已整合 | `reverse_lookup_filter` 直接使用 `phah_taibun` 主字典標註台語讀音，不另建獨立反查字典 |
 | 輕聲規則 → build pipeline | ✅ 已整合 | `lighttone_rules.json` 111 條，隨 install 部署到 Rime |
 | 查讀音 TL+POJ 雙標註 | ✅ 已實作 | `phah_taibun_lookup.lua` 為候選加 `[TL:xxx POJ:yyy]` |
 | 萬用查字 `?` | ✅ 已實作 | `phah_taibun_wildcard.lua` 展開所有可能聲母匹配 |
@@ -67,7 +67,7 @@
 | 簡拼提示 `,,sp` | ✅ 已實作 | `phah_taibun_speedup.lua` 17 個聲母對照表 + 用法提示 |
 | 個人化學習 | ✅ 已啟用 | 主 translator `enable_user_dict: true` + `enable_encoder: false`：學使用者選字偏好但不造臨時詞，保留 c6110d5「不出現臨時候選」設計 |
 | 羅馬字原文候選 | ✅ 已實作 | `phah_taibun_origin.lua` 在候選清單最後附加「照你打的音」羅馬字候選（支援 `-`、`--`、TL/POJ），任何模式皆可選，字典沒有的人名地名新詞也能打 |
-| 文白讀標記 | 🔲 scaffold | `phah_taibun_synonym.lua` 架構就位，需反查字典加入 wen_bai 欄位 |
+| 文白讀標記 | 🔲 scaffold | `phah_taibun_synonym.lua` 架構就位，需先定義文白讀資料模型 |
 | IVS 標音輸出 | 🔲 待開始 | 確認字咍字型 IVS 對照表可提取後 |
 | 查讀音進階 | 🔲 待開始 | 整合教育部辭典例句、解說 |
 
@@ -101,7 +101,7 @@
 | 任務 | 輸出 |
 |------|------|
 | `convert_chhoetaigi.py` + `build_frequency.py` | `phah_taibun.dict.yaml`（2MB，含 Ungian + iCorpus 詞頻加權） |
-| `build_reverse_dict.py` + `build_kipsutian_reverse.py` | `phah_taibun_reverse.dict.yaml`（65K 條目） |
+| `build_hoabun_map.py` | `hoabun_map.txt`（華語對照表） |
 | `parse_lkk_rules.py` | `hanlo_rules.yaml`（893 條漢羅分類） |
 | 131 個 Python 測試通過，71% 覆蓋率 | TDD 品質保證 |
 

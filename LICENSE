@@ -30,7 +30,6 @@ SOFTWARE.
 | 檔案 | 上游資料 | 授權 |
 |------|----------|------|
 | phah_taibun.dict.yaml | iTaigi (CC0) + 台華線頂 (CC BY-SA 4.0) | CC BY-SA 4.0 |
-| phah_taibun_reverse.dict.yaml | 教育部台語辭典 (CC BY-ND 3.0) | CC BY-ND 3.0 |
 | hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
 | icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
 | ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |
