@@ -67,7 +67,7 @@ Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/rele
 | `Space` | 確認目前候選 |
 | `Tab` | 有候選時進入 asdf 選字；打拼音時跳下一音節 |
 | `a s d f g h j k l ;` | Tab 選字模式中的第 1-10 候選 |
-| `F4` / `` Ctrl+` `` | 開 Rime 方案選單，切換漢羅/全羅、TL/POJ |
+| `F4` / `` Ctrl+` `` | 開 Rime 方案選單，切換漢羅/全羅、TL/POJ（選過就會記住，不必每次重選） |
 | `Ctrl+Space` | 台文/英文模式 |
 | `Shift+字母` | 打大寫字母，不切英文模式 |
 | `~` | 注音反查華語，再轉台語候選 |

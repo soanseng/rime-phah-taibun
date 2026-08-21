@@ -1,6 +1,10 @@
 # default.custom.yaml — 拍台文
 # 使用 @next 附加到現有方案列表，不會覆蓋其他輸入法
+# save_options：F4 選過的 TL/POJ、漢羅/全羅 會存到 user.yaml，
+# 重新部署／重開機後不用重選。
 patch:
   schema_list/@next:
     schema: phah_taibun
   menu/page_size: 10
+  switcher/save_options/@before 0: poj_mode
+  switcher/save_options/@next: full_romanization

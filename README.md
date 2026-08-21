@@ -38,6 +38,8 @@ After installation, switch your system input method to Weasel (Windows) or Squir
 
 Download and run the newest Windows or macOS installer from [Releases](https://github.com/soanseng/rime-phah-taibun/releases). Command-line users can rerun the installation command above. For an existing Linux clone, run `git pull --ff-only` followed by `./install.sh`. Updates preserve custom dictionaries and other Rime schemas, replace the official Phah Tai-bun files, and redeploy Rime.
 
+Since 0.3.1, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
+
 You can type without tone numbers, and POJ/TL spellings can be mixed:
 
 ```text
@@ -259,6 +261,8 @@ POJ 模式 goa2-kio5 → 候選最後出現： Góa-kiô 〔羅馬字原文〕
 | 全羅 TL | guá beh khì tshit-thô |
 | 全羅 POJ | goá beh khì chhit-thô |
 
+模式選擇會被記住——重新部署、重開機後不用重選；要換模式時再按 `F4` 開選單即可。
+
 全羅模式下，`Space` 仍會確認目前候選；`Enter` 可直接送出你正在輸入的羅馬字音。這適合人名、地名或字典還沒有的詞，例如輸入 `tsng-kio5` 後按 `Enter` 可直接送出 `Tsng-kiô`，也可以從候選選 `磚橋`。
 
 ### 推薦用字標記
@@ -386,6 +390,8 @@ git pull --ff-only
 ```
 
 更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文 schema、主字典、規則檔和 Lua 模組，最後自動重新部署 Rime。若你直接修改過正式的 `phah_taibun` 檔案，請先備份；長期自訂建議使用 Rime custom patch 或自訂詞庫。
+
+0.3.1 起，你選過的輸出模式（TL/POJ、漢羅/全羅）會被記住，重開機／重新部署後不用重選；既有安裝只需重跑一次安裝指令（會把這兩個開關加進 `default.custom.yaml` 的 `switcher/save_options`），安裝器會自動重新部署。
 
 ### 手動安裝
 

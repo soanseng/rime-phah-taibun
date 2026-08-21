@@ -102,6 +102,24 @@ def test_remote_installer_assets_are_versioned_and_sha256_verified():
     assert "download_verified" in resources
 
 
+def test_installers_upgrade_existing_default_custom_with_save_options():
+    """Re-running an installer on an old default.custom.yaml must add save_options.
+
+    Existing users' files already contain phah_taibun, so the schema
+    registration step skips them; the installer must still add the
+    poj_mode/full_romanization save_options lines or the romanization choice
+    keeps resetting on every new session.
+    """
+    for installer in (
+        read("scripts/install_linux.sh"),
+        read("scripts/install_macos.sh"),
+        read("install_windows.ps1"),
+    ):
+        assert "poj_mode" in installer
+        assert "full_romanization" in installer
+        assert "switcher/save_options" in installer
+
+
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
     version = "0.3.1"
 

@@ -122,3 +122,27 @@ def test_docs_describe_unbundled_optional_assets_as_not_enabled():
         "未內建" in line and "Ctrl+Space" in line
         for line in readme.splitlines()
     )
+
+
+def test_output_mode_choices_persist_across_sessions_and_restarts():
+    """F4-selected TL/POJ and Han/Lo output modes must persist across sessions.
+
+    The schema must not set reset on these two switches (that would force the
+    default every time the schema is activated), and default.custom.yaml must
+    list them under switcher/save_options so librime stores the state in
+    user.yaml and restores it on new sessions.
+    """
+    schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+    switches = {s["name"]: s for s in schema["switches"]}
+
+    for option in ("poj_mode", "full_romanization"):
+        assert option in switches
+        assert "reset" not in switches[option]
+
+    custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
+    saved = {
+        value
+        for key, value in custom["patch"].items()
+        if key.startswith("switcher/save_options/")
+    }
+    assert saved == {"poj_mode", "full_romanization"}

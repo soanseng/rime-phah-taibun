@@ -286,6 +286,16 @@ ${NEW_LINE}" "$RIME_DIR/default.custom.yaml"
         echo -e "  ${GREEN}[ok]${NC} default.custom.yaml（新建）"
     fi
 fi
+# ============================================================
+# Step 2.6: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
+# ============================================================
+if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'poj_mode' "$RIME_DIR/default.custom.yaml"; then
+    sed -i '' '/^patch:/a\
+  switcher/save_options/@before 0: poj_mode\
+  switcher/save_options/@next: full_romanization
+' "$RIME_DIR/default.custom.yaml"
+    echo -e "  ${GREEN}[ok]${NC} 已將 poj_mode / full_romanization 加入 save_options（記住模式選擇）"
+fi
 
 echo
 

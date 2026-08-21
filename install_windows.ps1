@@ -321,6 +321,24 @@ if ($needRegister) {
 }
 
 # ============================================================
+# Step 2.5: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
+# ============================================================
+if (Test-Path $defaultCustom) {
+    if (-not (Select-String -Path $defaultCustom -Pattern "poj_mode" -Quiet)) {
+        $lines = Get-Content $defaultCustom
+        $newLines = foreach ($line in $lines) {
+            $line
+            if ($line -match '^patch:') {
+                "  switcher/save_options/@before 0: poj_mode"
+                "  switcher/save_options/@next: full_romanization"
+            }
+        }
+        $newLines | Set-Content $defaultCustom -Encoding UTF8
+        Write-Host "  已將 poj_mode / full_romanization 加入 save_options（記住模式選擇）" -ForegroundColor Green
+    }
+}
+
+# ============================================================
 # Step 3: 安裝芫荽字體
 # ============================================================
 Write-Host ""
