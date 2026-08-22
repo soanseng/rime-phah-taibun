@@ -1,4 +1,4 @@
-﻿# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
+# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
 # 參考 ryanwuson/rime-liur 安裝腳本架構
 # https://github.com/soanseng/rime-phah-taibun
 
@@ -9,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # 發行資產固定版本；命令列安裝只下載該版本的完整封存檔。
-$RELEASE_VERSION = "0.4.0"
+$RELEASE_VERSION = "0.4.1"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
 $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"

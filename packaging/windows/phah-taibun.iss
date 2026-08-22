@@ -2,7 +2,7 @@
 #define MyAppPublisher "Phah Tai-bun"
 #define MyAppVersion GetEnv("PHAH_TAIBUN_VERSION")
 #if MyAppVersion == ""
-#define MyAppVersion "0.4.0"
+#define MyAppVersion "0.4.1"
 #endif
 
 [Setup]

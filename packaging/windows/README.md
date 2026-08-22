@@ -8,7 +8,7 @@
 2. 從 repo 根目錄執行：
 
    ```powershell
-   $env:PHAH_TAIBUN_VERSION = "0.4.0"
+   $env:PHAH_TAIBUN_VERSION = "0.4.1"
    iscc packaging/windows/phah-taibun.iss
    ```
 

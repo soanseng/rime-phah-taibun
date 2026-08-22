@@ -326,6 +326,15 @@ echo
 echo "[ Step 4: 部署 RIME ]"
 echo
 
+# --build 三參數形式：<使用者目錄> <共享資料目錄> <建置輸出目錄>。
+# 明確指定共享資料目錄，rime_deployer 才找得到 essay.txt 與共用 preset；
+# 只給一個參數時共享目錄會被當成使用者目錄，導致
+# "Error opening db 'essay' read-only" 等錯誤。
+DEPLOY_ARGS=(--build "$RIME_DIR")
+if [ -d "$RIME_SHARED" ]; then
+    DEPLOY_ARGS+=("$RIME_SHARED" "$RIME_DIR/build")
+fi
+
 if [ "$RIME_FRAMEWORK" = "fcitx5" ]; then
     if ! command -v fcitx5-remote >/dev/null 2>&1; then
         echo -e "${RED}部署失敗：找不到 fcitx5-remote。${NC}" >&2
@@ -334,9 +343,9 @@ if [ "$RIME_FRAMEWORK" = "fcitx5" ]; then
     fi
     if command -v rime_deployer >/dev/null 2>&1; then
         echo "正在編譯字典（可能需要數秒）..."
-        if ! rime_deployer --build "$RIME_DIR"; then
+        if ! rime_deployer "${DEPLOY_ARGS[@]}"; then
             echo -e "${RED}部署失敗：Rime 字典編譯未完成。${NC}" >&2
-            echo "請修正上方錯誤後重試：rime_deployer --build \"$RIME_DIR\"" >&2
+            echo "請修正上方錯誤後重試：rime_deployer ${DEPLOY_ARGS[*]}" >&2
             exit 1
         fi
     fi
@@ -354,9 +363,9 @@ elif [ "$RIME_FRAMEWORK" = "ibus" ]; then
     fi
     if command -v rime_deployer >/dev/null 2>&1; then
         echo "正在編譯字典（可能需要數秒）..."
-        if ! rime_deployer --build "$RIME_DIR"; then
+        if ! rime_deployer "${DEPLOY_ARGS[@]}"; then
             echo -e "${RED}部署失敗：Rime 字典編譯未完成。${NC}" >&2
-            echo "請修正上方錯誤後重試：rime_deployer --build \"$RIME_DIR\"" >&2
+            echo "請修正上方錯誤後重試：rime_deployer ${DEPLOY_ARGS[*]}" >&2
             exit 1
         fi
     fi
