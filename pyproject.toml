@@ -1,6 +1,6 @@
 [project]
 name = "rime-phah-taibun"
-version = "0.3.1"
+version = "0.4.0"
 description = "拍台文 — 基於 Rime 的台語輸入法方案，資料前處理工具"
 requires-python = ">=3.10"
 dependencies = [

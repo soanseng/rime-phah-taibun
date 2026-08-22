@@ -121,7 +121,7 @@ def test_installers_upgrade_existing_default_custom_with_save_options():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.3.1"
+    version = "0.4.0"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
