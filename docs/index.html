@@ -172,6 +172,10 @@
             <p>不確定哪一段拼音時，可以打 <code>si?</code>、<code>s?ah</code>、<code>tsh?</code> 這類模式查音節，再進一步選字。</p>
           </article>
           <article>
+            <h3>字典查無的詞也能逐音節組</h3>
+            <p>打 <code>kio-tiann</code> 或整句連打，候選自動逐音節組合；用 <code>-</code> 斷音節，<kbd>Tab</kbd> 逐字選出想要的字——選字就是選調，最後送出如「橋鼎」。</p>
+          </article>
+          <article>
             <h3>注音反查會回到台語候選</h3>
             <p>用 <kbd>~</kbd> 從華語注音找字後，會把台語拼音送回主輸入流程，並在註解和全羅輸出中顯示調符。</p>
           </article>
@@ -338,6 +342,11 @@
           <p>這裡用使用者看得懂的方式整理近期變更；完整技術紀錄仍以 GitHub commit 與 Releases 為準。</p>
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
+          <article>
+            <time datetime="2026-08-23">2026-08-23</time>
+            <h3>0.5.0：字典查無的詞組可逐音節選字</h3>
+            <p>字典沒收的詞（人名、地名、新詞）現在有明確流程：整串輸入或用 <code>-</code> 斷音節，候選自動逐音節組合，按 <code>Tab</code> 一個字一個字選（選字即選調），短句也一樣。行為以真實 librime 引擎測試釘住，輸入法不會自動把打過的內容存成新詞。</p>
+          </article>
           <article>
             <time datetime="2026-08-22">2026-08-22</time>
             <h3>0.4.1：Linux 安裝不再出現 essay 錯誤</h3>

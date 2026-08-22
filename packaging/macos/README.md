@@ -7,7 +7,7 @@
 在 macOS 從 repo 根目錄執行：
 
 ```bash
-PHAH_TAIBUN_VERSION=0.4.1 packaging/macos/build-pkg.sh
+PHAH_TAIBUN_VERSION=0.5.0 packaging/macos/build-pkg.sh
 ```
 
 產物會在 `packaging/macos/build/PhahTaiBun.pkg`。
