@@ -71,6 +71,10 @@ def _parse_states(stdout: str) -> dict[str, dict[str, object]]:
             states[fields[1]] = {"preedit": fields[2], "count": int(fields[3]), "candidates": []}
         elif fields[0] == "CAND":
             states[fields[1]]["candidates"].append({"text": fields[3], "comment": fields[4]})
+        elif fields[0] == "COMMIT":
+            states.setdefault(fields[1], {"preedit": "", "count": 0, "candidates": []})[
+                "commit"
+            ] = fields[2]
     return states
 
 
@@ -157,3 +161,35 @@ def test_help_descriptions_are_not_rewritten_as_romanization(real_rime_states):
     assert all("TL:" not in candidate["comment"] for candidate in candidates)
     help_by_key = {candidate["text"]: candidate["comment"] for candidate in candidates}
     assert help_by_key["[ / ]"] == "以詞定字\uff1a選首字 / 尾字"
+
+
+def test_known_hyphenated_phrase_still_matches_dictionary(real_rime_states):
+    """Typing a known phrase with the hyphen break must keep the whole-word candidate."""
+    state = real_rime_states["known_hyphen"]
+    assert state["count"] > 0
+    assert any(candidate["text"] == "台灣" for candidate in state["candidates"])
+
+
+def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states):
+    """Out-of-dictionary phrases (kio-tiann) must compose from single-syllable entries.
+
+    The user picks the word — and therefore the tone — for each syllable by
+    navigating the per-segment menu; the composed candidate shows real hanzi
+    rather than only the raw-romanization fallback.
+    """
+    state = real_rime_states["ood_hyphen"]
+    assert state["count"] > 0
+    assert any("橋" in candidate["text"] for candidate in state["candidates"])
+
+
+def test_word_by_word_selection_commits_chosen_hanzi(real_rime_states):
+    """Full OOD journey: pick 橋 for kio, then 鼎 for tiann, commit 橋鼎.
+
+    Tone is chosen by choosing the word: each syllable is selected
+    individually (Tab + asdf), the composition carries the converted hanzi,
+    and the final Space commits exactly the picked characters.
+    """
+    mid = real_rime_states["word_by_word_mid"]
+    assert "橋" in mid["preedit"]
+    assert any(candidate["text"] == "鼎" for candidate in mid["candidates"])
+    assert real_rime_states["word_by_word"]["commit"] == "橋鼎"

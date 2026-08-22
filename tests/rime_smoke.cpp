@@ -85,6 +85,41 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "tsiah8");
   api->clear_composition(session);
 
+  api->simulate_key_sequence(session, "tai5-uan5");
+  print_state(api, session, "known_hyphen");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "kio-tiann");
+  print_state(api, session, "ood_hyphen");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "kiotiann");
+  print_state(api, session, "ood_concat");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tshui-sit");
+  print_state(api, session, "ood_compose");
+  api->clear_composition(session);
+
+  // Word-by-word journey for an out-of-dictionary phrase (kio-tiann -> 橋鼎):
+  // pick the word (= tone) per syllable via Tab selection mode, then commit.
+  api->simulate_key_sequence(session, "kio");
+  api->process_key(session, 0xFF09, 0);  // Tab: enter selection mode
+  api->simulate_key_sequence(session, "d");  // index 2: 橋
+  api->simulate_key_sequence(session, "tiann");
+  print_state(api, session, "word_by_word_mid");
+  api->process_key(session, 0xFF09, 0);
+  api->simulate_key_sequence(session, "d");  // index 2: 鼎
+  api->simulate_key_sequence(session, " ");  // confirm and commit
+  RIME_STRUCT(RimeCommit, commit);
+  if (api->get_commit(session, &commit)) {
+    std::cout << "COMMIT\tword_by_word\t" << sanitize(commit.text) << '\n';
+    api->free_commit(&commit);
+  } else {
+    std::cout << "COMMIT\tword_by_word\t\n";
+  }
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "tsiah8 ");
   api->simulate_key_sequence(session, "qxyz");
   print_state(api, session, "origin_after_commit");

@@ -5,21 +5,19 @@ from pathlib import Path
 import yaml
 
 
-def test_main_translator_learns_user_preferences_without_ad_hoc_phrases():
-    """The IME must personalise to the user's own picks, but never invent phrases.
+def test_main_translator_learns_and_composes_without_inventing_user_words():
+    """The IME must personalise, compose unknown phrases, but never memorise junk.
 
-    A daily-use input method is expected to learn: words you select should rank
-    higher next time. That is exactly what a user dictionary provides.
-
-    The original "no ad hoc candidates" guarantee (commit c6110d5) must survive,
-    so it is pinned to the two flags that actually cause ad hoc output:
+    Users type out-of-dictionary phrases (e.g. kio-tiann) and short sentences
+    and select each syllable's word one by one. Notes on the three flags:
 
     - enable_user_dict True  -> picked words rise in ranking over time (learning)
     - enable_encoder  False  -> commits are NOT encoded into new user phrases
-    - enable_sentence False  -> no ad hoc multi-word sentence candidates
-
-    Re-enabling the encoder or sentence flag would regress c6110d5; disabling the
-    user dict would strip the personalisation a daily IME needs. Pin all three.
+    - enable_sentence True   -> intent flag: keep composition enabled. librime's
+      script_translator composes unknown phrases unconditionally since 1.6
+      (verified in 1.6.0/1.7.3/1.8.5/1.9.0/1.11.2/1.13.1 sources; the flag is
+      only consulted by table_translator), so the behavioural contract is
+      pinned by the real-engine tests, not this YAML value.
     """
     schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
 
@@ -27,7 +25,7 @@ def test_main_translator_learns_user_preferences_without_ad_hoc_phrases():
 
     assert translator["enable_user_dict"] is True
     assert translator["enable_encoder"] is False
-    assert translator["enable_sentence"] is False
+    assert translator["enable_sentence"] is True
 
 
 def test_origin_filter_runs_last_before_uniquifier():

@@ -4,7 +4,7 @@
 schema:
   schema_id: phah_taibun
   name: "拍台文(台)"
-  version: "0.4.1"
+  version: "0.5.0"
   author:
     - "拍台文開發團隊"
   dependencies:
@@ -108,9 +108,13 @@ translator:
   prism: phah_taibun
   # 個人化學習：記住使用者選過的字詞，下次排前面。
   enable_user_dict: true
-  # 但不從輸入歷史造新詞、也不組臨時句子，維持 c6110d5「不出現臨時候選」的設計。
+  # 但不從輸入歷史造新詞（encoder 關閉：使用者字典只記你選過的詞，不累積臨時詞）。
+  # enable_sentence 維持 true：librime ≥1.6 的 script_translator 對「查無整詞、
+  # ≥2 音節」一律自動組句（與此旗標無關），此值僅表明立場，並讓未來會讀取
+  # 此旗標的引擎/翻譯器維持組句。逐音節選字的行為由 tests/test_real_rime.py
+  # 以真引擎釘住（kio-tiann → 橋鼎）。
   enable_encoder: false
-  enable_sentence: false
+  enable_sentence: true
   spelling_hints: 5
   comment_format:
     - "xform/^(.*)$/ [$1]/"

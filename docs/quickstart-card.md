@@ -34,6 +34,7 @@ Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/rele
 | 食飯 | `chiah png` | 食飯 |
 | 台灣 / 臺灣 | `tai uan` | 臺灣、台灣 |
 | 好 | `ho` 或 `ho2` | 好 |
+| 橋鼎（字典沒有的詞） | `kio` `Tab` `d`，再 `tiann` `Tab` `d` | 橋鼎（逐音節選字） |
 
 不用先背聲調。想縮小候選範圍時，再補數字調：`ho2`、`tsiah8 png7`。
 
@@ -84,7 +85,7 @@ Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/rele
 
 ---
 
-## 三個好用情境
+## 好用情境
 
 ### 不知道台語怎麼講
 
