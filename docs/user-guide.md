@@ -876,7 +876,7 @@ Step 4: 選「掠」→ 輸出
 | **Emoji** | 未內建；可用 `custom_phrase` 自訂常用符號 | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
 | **輕聲辨識** | **29K 詞條 + 即時產生** | 無 | 無 |
-| **自訂擴充** | Lua 模組（18 個） | 無 | 無 |
+| **自訂擴充** | Lua 模組（19 個） | 無 | 無 |
 
 ### 拍台文的核心差異
 
@@ -1029,7 +1029,7 @@ ls ~/Library/Rime/lua/phah_taibun_*.lua
 dir %AppData%\Rime\lua\phah_taibun_*.lua
 ```
 
-應該要有 18 個 `phah_taibun_*.lua` 檔案。
+應該要有 19 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 

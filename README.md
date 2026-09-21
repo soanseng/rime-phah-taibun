@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dict Entries](https://img.shields.io/badge/dict-220K%20entries-green?style=flat-square)](#)
-[![Lua Modules](https://img.shields.io/badge/lua-18%20modules-orange?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-19%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
@@ -477,7 +477,7 @@ Font="Iansui 12"
 ```bash
 ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
 ```
-應該要有 18 個 `phah_taibun_*.lua` 檔案。
+應該要有 19 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
@@ -526,7 +526,7 @@ schema/                        Rime 方案檔（安裝到 Rime 使用者目錄�
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
   default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組（18 個）
+lua/                           Lua 擴充模組（19 個）
   phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換 + 調符顯示
   phah_taibun_input.lua           大寫攔截 + Tab 選字模式
   phah_taibun_commit.lua          全羅輸出處理器 + \ 強制羅馬字
