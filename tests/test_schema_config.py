@@ -144,3 +144,48 @@ def test_output_mode_choices_persist_across_sessions_and_restarts():
         if key.startswith("switcher/save_options/")
     }
     assert saved == {"poj_mode", "full_romanization"}
+
+
+def test_telex_schema_shares_main_dictionary_and_normalizes_input():
+    """拍台文(Telex) is an input-layer variant: same dict, Telex spellings in.
+
+    The Telex schema must reuse the main dictionary (one canonical numeric-TL
+    source of truth, one user dict) and must normalize input through the
+    phah_taibun_telex Lua processor before the speller sees it. The ph→f
+    fuzzy derive is forbidden here: f is the Telex syllable-hyphen key.
+    """
+    schema = yaml.safe_load(Path("schema/phah_taibun_telex.schema.yaml").read_text(encoding="utf-8"))
+
+    assert schema["schema"]["schema_id"] == "phah_taibun_telex"
+    assert schema["translator"]["dictionary"] == "phah_taibun"
+    assert schema["translator"]["prism"] == "phah_taibun_telex"
+
+    algebra = "\n".join(schema["speller"]["algebra"])
+    assert "derive/ph/f/" not in algebra
+
+    processors = schema["engine"]["processors"]
+    assert processors[0] == "lua_processor@*phah_taibun_telex"
+
+
+def test_telex_schema_is_registered_alongside_the_main_schema():
+    """Fresh installs get both schemas from default.custom.yaml and rime.lua."""
+    custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
+    patch = custom["patch"]
+    schemas = [
+        entry["schema"]
+        for key, entry in patch.items()
+        if key.startswith("schema_list/")
+    ]
+
+    assert "phah_taibun" in schemas
+    assert "phah_taibun_telex" in schemas
+
+    rime_lua = Path("rime.lua").read_text(encoding="utf-8")
+    assert 'phah_taibun_telex = require("phah_taibun_telex")' in rime_lua
+
+
+def test_main_schema_does_not_load_the_telex_processor():
+    """The 拍台文(台) schema keeps its exact current input behavior."""
+    schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+
+    assert all("telex" not in p for p in schema["engine"]["processors"])

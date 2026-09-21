@@ -1,0 +1,183 @@
+# Rime schema — 拍台文(Telex) Phah Tâi-bûn Telex
+# Advanced input layer for fluent TL/POJ typists: kahiok-style tone keys.
+# Shares the main dictionary — Telex spellings are normalized to numeric TL
+# keys by lua/phah_taibun_telex.lua before the speller sees them.
+
+schema:
+  schema_id: phah_taibun_telex
+  name: "拍台文(Telex)"
+  version: "0.5.0"
+  author:
+    - "拍台文開發團隊"
+  dependencies:
+    - bopomofo_tw
+  description: |
+    台語輸入法方案（進階）— Telex 調鍵連續輸入
+    v=2/8、y=3、d=5、w=7、q=9；z→ts、zh→tsh；f=音節連字符
+    與「拍台文(台)」共用詞典、詞頻與使用者詞庫
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 台文, ABC ]
+  - name: full_shape
+    states: [ 半形, 全形 ]
+  - name: full_romanization
+    states: [ 漢羅, 全羅 ]
+  - name: poj_mode
+    states: [ TL, POJ ]
+
+ascii_composer:
+  switch_key:
+    Shift_L: noop
+    Shift_R: noop
+    Caps_Lock: clear
+
+engine:
+  processors:
+    - lua_processor@*phah_taibun_telex
+    - lua_processor@*phah_taibun_input
+    - ascii_composer
+    - lua_processor@*phah_taibun_select_char
+    - recognizer
+    - key_binder
+    - speller
+    - lua_processor@*phah_taibun_commit
+    - punctuator
+    - selector
+    - navigator
+    - fluency_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - echo_translator
+    - punct_translator
+    - script_translator
+    - reverse_lookup_translator
+    - table_translator@custom_phrase
+    - lua_translator@*phah_taibun_help
+    - lua_translator@*phah_taibun_date
+    - lua_translator@*phah_taibun_symbols
+    - lua_translator@*phah_taibun_wildcard
+    - lua_translator@*phah_taibun_phrase
+    - lua_translator@*phah_taibun_speedup
+  filters:
+    - lua_filter@*phah_taibun_lighttone
+    - lua_filter@*phah_taibun_filter
+    - lua_filter@*phah_taibun_lookup
+    - lua_filter@*phah_taibun_recommend
+    - lua_filter@*phah_taibun_synonym
+    - lua_filter@*phah_taibun_long_word
+    - reverse_lookup_filter@phah_taibun_reverse_lookup
+    - lua_filter@*phah_taibun_reverse_format
+    - lua_filter@*phah_taibun_origin
+    - uniquifier
+
+speller:
+  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890-"
+  initials: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '-"
+  algebra:
+    # === 聲調完全可省略（Telex 調鍵由 Lua 預先轉成數字調） ===
+    - derive/[1-9]$//
+
+    # === POJ → TL 對應 ===
+    - derive/^ts/ch/
+    - derive/^tsh/chh/
+    - derive/ing/eng/
+    - derive/ik/ek/
+    - derive/ua/oa/
+    - derive/ue/oe/
+    - derive/oo/ou/
+    - derive/nn/ⁿ/
+
+    # === 進一步模糊（注意：f 已作為 Telex 音節連字符，不可有 ph/f 模糊） ===
+    - derive/^j/l/
+    - derive/nng/ng/
+    - derive/h$//
+
+    # === 簡拼 ===
+    - abbrev/^([ptkmnbglsjhiuc]g?s?h?h?).*/$1/
+
+translator:
+  dictionary: phah_taibun
+  prism: phah_taibun_telex
+  enable_user_dict: true
+  enable_encoder: false
+  enable_sentence: true
+  spelling_hints: 5
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
+
+reverse_lookup:
+  dictionary: terra_pinyin
+  prism: bopomofo_tw
+  prefix: "~"
+  suffix: "'"
+  tips: "〔注音反查〕"
+
+custom_phrase:
+  dictionary: ""
+  user_dict: phah_taibun_custom
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+menu:
+  page_size: 10
+  alternative_select_keys: "asdfghjkl;"
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+  bindings:
+    - { when: always, accept: Control+space, toggle: ascii_mode }
+    - { when: composing, accept: Tab, send: Shift+Right }
+    - { when: composing, accept: Shift+Tab, send: Shift+Left }
+    - { when: paging, accept: bracketleft, send: Page_Up }
+    - { when: paging, accept: bracketright, send: Page_Down }
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
+    symbols: "^`$"
+    wildcard: "^[a-z]*\\?[a-z0-9]*$"
+    phrase: "^;[a-z0-9]*$"
+
+phah_taibun_select_char:
+  first_key: bracketleft
+  last_key: bracketright
+
+phah_taibun_long_word:
+  count: 2
+  idx: 4
+
+phah_taibun_recommend:
+  enabled: true
+
+phah_taibun_origin:
+  enabled: true
+
+phah_taibun_reverse_lookup:
+  tags: [ reverse_lookup ]
+  overwrite_comment: true
+  dictionary: phah_taibun
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
+
+editor:
+  bindings:
+    space: confirm
+    Return: commit_raw_input
+    Control+Return: commit_script_text
+    BackSpace: revert
+    Control+BackSpace: back_syllable
+    Escape: cancel
