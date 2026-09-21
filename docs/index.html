@@ -84,6 +84,7 @@
       <nav class="site-nav" id="site-nav" aria-label="主要導覽">
         <a href="#features">特色</a>
         <a href="#typing-schemes">拼音方案</a>
+        <a href="#telex">Telex</a>
         <a href="#compare">比較</a>
         <a href="#updates">更新</a>
         <a href="#install">安裝</a>
@@ -124,6 +125,7 @@
         <a href="#install">我要找台語輸入法安裝</a>
         <a href="#typing-schemes">我要用白話字 POJ 打字</a>
         <a href="#typing-schemes">我要用台羅 TL 打字</a>
+        <a href="#telex">我想用 Telex 調鍵（可選）</a>
         <a href="#reverse">我只知道華語想查台語</a>
       </div>
     </section>
@@ -284,6 +286,97 @@
           <div role="row"><code>taidfgiv</code><strong>臺語（Telex 方案）</strong></div>
           <div role="row"><code>ziahv</code><strong>食（Telex 方案）</strong></div>
         </div>
+      </div>
+    </section>
+
+    <section class="section telex-section" id="telex">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">可以用，也可以不用</p>
+          <h2>Telex 調鍵：熟台羅的人可選，新手完全不必學。</h2>
+        </div>
+        <p class="telex-lead">Telex 來自電傳打字時代的越南文輸入：線路只能送 ASCII，就用字母後面多打一顆鍵來標聲調。拍台文把同一想法做成<strong>平行進階方案</strong>——主方案「拍台文(台)」維持無調／數字調；<kbd>F4</kbd> 另選「拍台文(Telex)」才啟用調鍵。詞典、詞頻、漢羅輸出完全共用。</p>
+        <div class="telex-paths" aria-label="同一詞三種打法">
+          <article class="telex-path is-default">
+            <span class="path-kicker">預設 · 不必學</span>
+            <h3>無調</h3>
+            <p>會講就先打，聲調以後再補。</p>
+            <code>tsiah png</code>
+            <strong class="result">食飯</strong>
+          </article>
+          <article class="telex-path is-default">
+            <span class="path-kicker">預設 · 精準時用</span>
+            <h3>數字調</h3>
+            <p>要縮小候選再伸到數字列。</p>
+            <code>tsiah8 png7</code>
+            <strong class="result">食飯</strong>
+          </article>
+          <article class="telex-path is-optional">
+            <span class="path-kicker">可選 · Telex 方案</span>
+            <h3>字母調鍵</h3>
+            <p>手不離字母列，連續補調。</p>
+            <code>ziahv pngw</code>
+            <strong class="result">食飯</strong>
+          </article>
+        </div>
+        <div class="telex-charts">
+          <figure class="tone-chart">
+            <h3>調類頻率決定鍵位，不是抽象好記</h3>
+            <p>依拍台文主詞典權重粗估。第 5、第 2 調最高頻，放 <kbd>d</kbd>、<kbd>v</kbd>；第 8 調與第 2 調共用 <kbd>v</kbd>（入聲尾即可判定）；第 1／4 調繼續不打。</p>
+            <div role="img" aria-label="調類頻率長條圖：第5調 18.86% 鍵 d，第2調 18.64% 鍵 v，第7調 14.61% 鍵 w，第3調 13.60% 鍵 y，第8調 7.24% 鍵 v，第9調 0.02% 鍵 q">
+              <div class="tone-bar"><span>第 5 調</span><span class="bar-track"><span class="bar-fill" style="width:94%"></span></span><span class="bar-meta">18.86% · <kbd>d</kbd></span></div>
+              <div class="tone-bar"><span>第 2 調</span><span class="bar-track"><span class="bar-fill" style="width:93%"></span></span><span class="bar-meta">18.64% · <kbd>v</kbd></span></div>
+              <div class="tone-bar"><span>第 7 調</span><span class="bar-track"><span class="bar-fill" style="width:73%"></span></span><span class="bar-meta">14.61% · <kbd>w</kbd></span></div>
+              <div class="tone-bar"><span>第 3 調</span><span class="bar-track"><span class="bar-fill" style="width:68%"></span></span><span class="bar-meta">13.60% · <kbd>y</kbd></span></div>
+              <div class="tone-bar"><span>第 8 調</span><span class="bar-track"><span class="bar-fill is-shared" style="width:36%"></span></span><span class="bar-meta">7.24% · <kbd>v</kbd></span></div>
+              <div class="tone-bar"><span>第 9 調</span><span class="bar-track"><span class="bar-fill" style="width:4%"></span></span><span class="bar-meta">0.02% · <kbd>q</kbd></span></div>
+            </div>
+          </figure>
+          <figure class="kb-chart">
+            <h3>調鍵留在字母列</h3>
+            <p><kbd>d</kbd> 在左手中指 home row；<kbd>v</kbd> 食指可及（2／8）；<kbd>y</kbd> 給右手；<kbd>w</kbd>、<kbd>q</kbd> 較遠。<kbd>z</kbd> 簡寫 <code>ts</code>，<kbd>f</kbd> 只在此方案當連字符。</p>
+            <div class="kb-rows" aria-hidden="true">
+              <div class="kb-row">
+                <span class="kb-key is-tone">q<small>9</small></span>
+                <span class="kb-key is-tone">w<small>7</small></span>
+                <span class="kb-key">e</span>
+                <span class="kb-key">r</span>
+                <span class="kb-key">t</span>
+                <span class="kb-key is-tone">y<small>3</small></span>
+                <span class="kb-key">u</span>
+                <span class="kb-key">i</span>
+                <span class="kb-key">o</span>
+                <span class="kb-key">p</span>
+              </div>
+              <div class="kb-row">
+                <span class="kb-key">a</span>
+                <span class="kb-key">s</span>
+                <span class="kb-key is-tone">d<small>5</small></span>
+                <span class="kb-key is-hyphen">f<small>-</small></span>
+                <span class="kb-key">g</span>
+                <span class="kb-key">h</span>
+                <span class="kb-key">j</span>
+                <span class="kb-key">k</span>
+                <span class="kb-key">l</span>
+              </div>
+              <div class="kb-row">
+                <span class="kb-key is-alias">z<small>ts</small></span>
+                <span class="kb-key">x</span>
+                <span class="kb-key">c</span>
+                <span class="kb-key is-tone">v<small>2/8</small></span>
+                <span class="kb-key">b</span>
+                <span class="kb-key">n</span>
+                <span class="kb-key">m</span>
+              </div>
+            </div>
+            <ul class="kb-legend">
+              <li><span class="swatch-tone"></span>調鍵</li>
+              <li><span class="swatch-alias"></span>聲母簡寫</li>
+              <li><span class="swatch-hyphen"></span>音節連字符</li>
+            </ul>
+          </figure>
+        </div>
+        <p class="telex-footnote">越南文 Telex 用 <code>s/f/r/x/j</code> 標調；那些字母在台羅有音位或主方案用途，所以拍台文改採 kahiok 排列，並且<strong>不要求</strong>用 <code>x</code> 標第 1／4 調。完整歷史與鍵位理由見<a class="text-link" href="guide.html#/user-guide?id=進階拍台文telex-調鍵輸入">使用說明</a>。</p>
       </div>
     </section>
 
@@ -486,6 +579,10 @@ cd rime-phah-taibun
           <details open>
             <summary>拍台文適合完全不懂台文的人嗎？</summary>
             <p>如果會講台語、知道大概怎麼拼，就可以開始。候選拼音註解、聲調省略和華語反查，都是為了降低入門門檻。</p>
+          </details>
+          <details>
+            <summary>一定要學 Telex 調鍵嗎？</summary>
+            <p>不必。預設「拍台文(台)」用無調和數字調就夠用。Telex 是 <kbd>F4</kbd> 裡的平行進階方案，給熟台羅、想連續補調的人；詞典和輸出與主方案相同。說明與鍵位圖見<a href="#telex">Telex 一節</a>。</p>
           </details>
           <details>
             <summary>這是手機輸入法嗎？</summary>

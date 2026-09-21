@@ -46,7 +46,7 @@ Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/rele
 | 食 | `ziahv` | 食 [tsia̍h] |
 | 斜 | `zhiahv` | 斜 [tshia̍h] |
 
-調鍵：`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9；`z`→`ts`、`zh`→`tsh`；`f`=音節連字符。詞典與輸出模式和「拍台文(台)」完全相同。
+調鍵：`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9；`z`→`ts`、`zh`→`tsh`；`f`=音節連字符。這是可選方案，不是預設。詞典與輸出模式和「拍台文(台)」完全相同。歷史與鍵位理由見[完整使用說明](user-guide.md#進階拍台文telex-調鍵輸入)。
 
 ---
 
