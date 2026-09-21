@@ -186,6 +186,7 @@ mkdir -p "$RIME_DIR"
 
 SCHEMA_FILES=(
     "phah_taibun.schema.yaml"
+    "phah_taibun_telex.schema.yaml"
     "phah_taibun.dict.yaml"
     "hanlo_rules.yaml"
     "lighttone_rules.json"
@@ -286,6 +287,16 @@ ${NEW_LINE}" "$RIME_DIR/default.custom.yaml"
         echo -e "  ${GREEN}[ok]${NC} default.custom.yaml（新建）"
     fi
 fi
+# ============================================================
+# Step 2.55: 舊安裝補註冊 Telex 方案（既有 default.custom.yaml 已含
+# phah_taibun，主註冊步驟會跳過，需另行追加）
+# ============================================================
+if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'phah_taibun_telex' "$RIME_DIR/default.custom.yaml"; then
+    cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
+    printf '  schema_list/@next 1:\n    schema: phah_taibun_telex\n' >> "$RIME_DIR/default.custom.yaml"
+    echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun_telex 追加到 default.custom.yaml（保留現有方案）"
+fi
+
 # ============================================================
 # Step 2.6: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
 # ============================================================

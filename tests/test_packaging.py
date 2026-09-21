@@ -120,6 +120,25 @@ def test_installers_upgrade_existing_default_custom_with_save_options():
         assert "switcher/save_options" in installer
 
 
+def test_installers_ship_and_register_the_telex_schema():
+    """拍台文(Telex) must be shipped and registered like the main schema.
+
+    Existing users' default.custom.yaml already contains phah_taibun, so the
+    main registration step skips; each installer needs its own append step for
+    phah_taibun_telex (Step 2.55) or upgrades never expose the new schema.
+    """
+    linux = read("scripts/install_linux.sh")
+    macos = read("scripts/install_macos.sh")
+    windows = read("install_windows.ps1")
+
+    assert '"phah_taibun_telex.schema.yaml"' in linux
+    assert '"phah_taibun_telex.schema.yaml"' in macos
+    # Windows ships every schema/*.yaml via glob; assert registration instead.
+    assert "已將 phah_taibun_telex 追加到 default.custom.yaml" in linux
+    assert "已將 phah_taibun_telex 追加到 default.custom.yaml" in macos
+    assert "已將 phah_taibun_telex 追加到 default.custom.yaml" in windows
+
+
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
     version = "0.5.0"
 

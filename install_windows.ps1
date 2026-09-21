@@ -321,6 +321,17 @@ if ($needRegister) {
 }
 
 # ============================================================
+# Step 2.55: 舊安裝補註冊 Telex 方案（既有 default.custom.yaml 已含
+# phah_taibun，主註冊步驟會跳過，需另行追加）
+# ============================================================
+if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_telex" -Quiet)) {
+    Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
+
+    Add-Content -Path $defaultCustom -Value "  schema_list/@next 1:`n    schema: phah_taibun_telex"
+    Write-Host "  已將 phah_taibun_telex 追加到 default.custom.yaml" -ForegroundColor Green
+}
+
+# ============================================================
 # Step 2.5: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
 # ============================================================
 if (Test-Path $defaultCustom) {
