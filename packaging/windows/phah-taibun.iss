@@ -46,10 +46,10 @@ var
   Params: String;
 begin
   PowerShellPath := ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe');
-  Params := '-NoProfile -ExecutionPolicy Bypass -File "' + ExpandConstant('{app}\install_windows.ps1') +
+  Params := '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + ExpandConstant('{app}\install_windows.ps1') +
     '" -ProjectRoot "' + ExpandConstant('{app}') + '"';
 
-  if not Exec(PowerShellPath, Params, ExpandConstant('{app}'), SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+  if not Exec(PowerShellPath, Params, ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin
     RaiseException('無法啟動 PowerShell 安裝拍台文：' + SysErrorMessage(ResultCode));
   end;

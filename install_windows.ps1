@@ -1,4 +1,4 @@
-# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
+﻿# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
 # 參考 ryanwuson/rime-liur 安裝腳本架構
 # https://github.com/soanseng/rime-phah-taibun
 
@@ -417,16 +417,28 @@ $deployer = if ($weaselInstall) { Join-Path $weaselInstall.FullName "WeaselDeplo
 if (-not $deployer -or -not (Test-Path $deployer)) {
     Write-Host "部署失敗：找不到 WeaselDeployer.exe。" -ForegroundColor Red
     Write-Host "請在小狼毫系統匣選單按「重新部署」，或執行：<小狼毫安裝目錄>\WeaselDeployer.exe /deploy" -ForegroundColor Yellow
-    exit 1
+    Write-Host "或右鍵工作列小狼毫圖示 →「重新部署」。" -ForegroundColor Yellow
+    if (-not $DOWNLOADED_PAYLOAD) {
+        Write-Host "方案檔已寫入 Rime 資料夾，安裝程式不會因此失敗。" -ForegroundColor Yellow
+    } else {
+        exit 1
+    }
+} else {
+    $deployProcess = Start-Process -FilePath $deployer -ArgumentList "/deploy" -Wait -PassThru
+    $deployExit = $deployProcess.ExitCode
+    if ($null -ne $deployExit -and $deployExit -ne 0) {
+        Write-Host "部署失敗：WeaselDeployer.exe 結束碼為 $deployExit。" -ForegroundColor Red
+        Write-Host "請修正上方錯誤後重試：`"$deployer`" /deploy" -ForegroundColor Yellow
+        Write-Host "或右鍵工作列小狼毫圖示 →「重新部署」。" -ForegroundColor Yellow
+        if (-not $DOWNLOADED_PAYLOAD) {
+            Write-Host "方案檔已寫入 Rime 資料夾，安裝程式不會因此失敗。" -ForegroundColor Yellow
+        } else {
+            exit 1
+        }
+    } else {
+        Write-Host "已重新部署小狼毫。" -ForegroundColor Green
+    }
 }
-
-$deployProcess = Start-Process -FilePath $deployer -ArgumentList "/deploy" -Wait -PassThru
-if ($deployProcess.ExitCode -ne 0) {
-    Write-Host "部署失敗：WeaselDeployer.exe 結束碼為 $($deployProcess.ExitCode)。" -ForegroundColor Red
-    Write-Host "請修正上方錯誤後重試：`"$deployer`" /deploy" -ForegroundColor Yellow
-    exit 1
-}
-Write-Host "已重新部署小狼毫。" -ForegroundColor Green
 
 # ============================================================
 # 安裝完成

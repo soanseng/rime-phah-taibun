@@ -34,6 +34,29 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
 
 
+
+def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
+    """GUI setup must not flash a console; deploy fail is manual 重新部署 like rime-liur."""
+    iss = read("packaging/windows/phah-taibun.iss")
+    installer = read("install_windows.ps1")
+    homepage = read("docs/index.html")
+
+    assert "SW_HIDE" in iss
+    assert "SW_SHOW" not in iss
+    assert "-WindowStyle Hidden" in iss
+    assert "DOWNLOADED_PAYLOAD" in installer
+    assert 'if (-not $DOWNLOADED_PAYLOAD)' in installer
+    assert "右鍵工作列小狼毫圖示" in installer
+    windows_panel = homepage.split('id="panel-windows"', 1)[1].split('id="panel-macos"', 1)[0]
+    assert "install_windows.ps1" in windows_panel
+    assert "irm " in windows_panel
+    assert "| iex" in windows_panel
+
+
+def test_windows_powershell_installer_has_utf8_bom():
+    raw = Path("install_windows.ps1").read_bytes()
+    assert raw.startswith(b"\xef\xbb\xbf"), "Windows PowerShell 5.1 -File needs UTF-8 BOM"
+
 def test_release_payload_excludes_unused_standalone_reverse_dictionary():
     assert not Path("schema/phah_taibun_reverse.dict.yaml").exists()
     assert "phah_taibun_reverse.dict.yaml" not in read("scripts/build_all.py")

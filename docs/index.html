@@ -513,11 +513,12 @@
             <button type="button" role="tab" aria-selected="false" data-tab="android">Android</button>
           </div>
           <div class="tab-panel is-active" id="panel-windows" role="tabpanel">
-            <h3>Windows：小狼毫 Weasel + PhahTaiBunSetup.exe</h3>
+            <h3>Windows：小狼毫 Weasel + 安裝包或 PowerShell</h3>
             <ol>
               <li>先安裝小狼毫 Weasel。</li>
-              <li>從 Releases 下載 <code>PhahTaiBunSetup.exe</code>。</li>
-              <li>雙擊安裝後，把系統輸入法切到小狼毫（圖示【中】），重新部署 Rime，按 <kbd>F4</kbd> 或 <kbd>Ctrl+`</kbd> 選「拍台文(台)」。</li>
+              <li>一般使用者：從 Releases 下載 <code>PhahTaiBunSetup.exe</code> 雙擊安裝。</li>
+              <li>或打開 PowerShell，貼上：<code>irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex</code></li>
+              <li>把系統輸入法切到小狼毫（圖示【中】），重新部署 Rime，按 <kbd>F4</kbd> 或 <kbd>Ctrl+`</kbd> 選「拍台文(台)」。</li>
             </ol>
           </div>
           <div class="tab-panel" id="panel-macos" role="tabpanel" hidden>
