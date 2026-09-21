@@ -441,8 +441,8 @@
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
-            <h3>0.6.2：發行包內附 Android 部署說明</h3>
-            <p><code>PhahTaiBun-source.zip</code> 現在包含 <code>docs/android.md</code>：解壓後照著把 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 放進<a href="https://github.com/osfans/trime">同文 Trime</a> 或 <a href="https://github.com/fcitx5-android/fcitx5-android">fcitx5-android</a> 的 Rime 使用者資料夾，在 App 裡重新部署即可。注音反查 <code>~</code> 需另拷 <code>terra_pinyin</code> / <code>bopomofo_tw</code>，路徑與限制見<a href="android.md">Android 部署</a>。</p>
+            <h3>0.6.2：Android 說明入 zip；macOS 改指令安裝</h3>
+            <p><code>PhahTaiBun-source.zip</code> 包含 <code>docs/android.md</code>。macOS <strong>不再提供</strong> <code>PhahTaiBun.pkg</code>（無法在本專案驗證 Gatekeeper／notarize），請先裝鼠鬚管後執行 <code>curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash</code>，或複製 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 到 <code>~/Library/Rime/</code>。Windows 仍用 <code>PhahTaiBunSetup.exe</code> 或 PowerShell <code>irm … | iex</code>。</p>
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
@@ -522,11 +522,12 @@
             </ol>
           </div>
           <div class="tab-panel" id="panel-macos" role="tabpanel" hidden>
-            <h3>macOS：鼠鬚管 Squirrel + PhahTaiBun.pkg</h3>
+            <h3>macOS：鼠鬚管 Squirrel + 指令（無 .pkg）</h3>
             <ol>
               <li>先安裝鼠鬚管 Squirrel。</li>
-              <li>從 Releases 下載 <code>PhahTaiBun.pkg</code>。</li>
-              <li>安裝後，把系統輸入法切到鼠鬚管（圖示【ㄓ】），重新部署 Rime，按 <kbd>F4</kbd> 或 <kbd>Ctrl+`</kbd> 選「拍台文(台)」。</li>
+              <li>打開「終端機」，貼上：<code>curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash</code></li>
+              <li>也可 <code>git clone</code> 後執行 <code>./install.sh</code>，或把 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 複製到 <code>~/Library/Rime/</code> 後重新部署。</li>
+              <li>把系統輸入法切到鼠鬚管（圖示【ㄓ】），按 <kbd>F4</kbd> 或 <kbd>Ctrl+`</kbd> 選「拍台文(台)」。</li>
             </ol>
           </div>
           <div class="tab-panel" id="panel-linux" role="tabpanel" hidden>
@@ -548,8 +549,8 @@ cd rime-phah-taibun
         <div class="ai-install-card" id="update-install">
           <div>
             <p class="eyebrow">更新拍台文</p>
-            <h3>重跑最新版安裝器，就能保留個人詞庫並更新正式檔案。</h3>
-            <p>Windows／macOS 從 Releases 下載最新版安裝包後直接覆蓋安裝；Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 覆蓋正式方案檔後重新部署，見 <a href="android.md">Android 部署</a>。安裝器會保留自訂詞庫和其他 Rime 方案，完成後自動重新部署。</p>
+            <h3>重跑最新版安裝方式，就能保留個人詞庫並更新正式檔案。</h3>
+            <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 覆蓋正式方案檔後重新部署，見 <a href="android.md">Android 部署</a>。</p>
           </div>
           <a class="btn btn-secondary" href="guide.html#/user-guide?id=更新拍台文">查看完整更新方法</a>
         </div>

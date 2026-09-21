@@ -1,31 +1,28 @@
-# Windows / macOS 安裝包
+# Windows 安裝包
 
-拍台文仍使用 Rime 作為輸入法核心，但 Windows 和 macOS 可以用比較接近一般軟體的安裝方式。
+拍台文仍使用 Rime 作為輸入法核心。Windows 可以用雙擊安裝包；macOS 與 Linux 用指令或複製檔案，不提供 `.pkg`（無法在本專案驗證 Gatekeeper／notarize）。
 
 ## 給一般使用者
 
 到 [GitHub Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載：
 
-| 系統 | 下載檔案 | 你會看到 |
-|------|----------|----------|
-| Windows | `PhahTaiBunSetup.exe` | 一般 Windows 安裝精靈 |
-| macOS | `PhahTaiBun.pkg` | 一般 macOS 安裝包 |
+| 系統 | 方式 |
+|------|------|
+| Windows | `PhahTaiBunSetup.exe`，或 PowerShell：`irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` |
+| macOS | 先裝鼠鬚管，再 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash`。也可 `git clone` 後執行 `./install.sh`，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。見[完整使用說明](user-guide.md#進階使用者指令安裝)。 |
+| Linux | `git clone` 後 `./install.sh` |
 
-如果電腦尚未安裝 Rime 核心：
+Windows 尚未安裝小狼毫時，安裝器會提示先裝 Weasel。macOS 請先裝[鼠鬚管 Squirrel](https://github.com/rime/squirrel/releases)。
 
-- Windows 需要先安裝小狼毫 Weasel。
-- macOS 需要先安裝鼠鬚管 Squirrel。
-
-安裝器會保留既有 Rime 輸入法、自訂詞庫和設定檔。安裝完成後，系統輸入法仍先選小狼毫/鼠鬚管（Windows 圖示【中】、macOS 圖示【ㄓ】），再按 `F4`（或 `` Ctrl+` ``）選「拍台文(台)」；熟台羅的使用者可改選「拍台文(Telex)」。
+Windows 安裝器會保留既有 Rime 輸入法、自訂詞庫和設定檔。安裝完成後，系統輸入法仍先選小狼毫（圖示【中】），再按 `F4`（或 `` Ctrl+` ``）選「拍台文(台)」；熟台羅的使用者可改選「拍台文(Telex)」。
 
 ## 更新拍台文
 
-已有舊版時，到 [GitHub Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版安裝包，直接執行覆蓋安裝：
+- Windows：重新執行 `PhahTaiBunSetup.exe`，或重跑 PowerShell 指令。
+- macOS：重跑 `curl .../scripts/install_macos.sh | bash`，或在 clone 裡 `git pull --ff-only && ./install.sh`。
+- Linux：在既有 clone 執行 `git pull --ff-only && ./install.sh`。
 
-- Windows：重新執行 `PhahTaiBunSetup.exe`。
-- macOS：重新執行 `PhahTaiBun.pkg`。
-
-更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文檔案，並自動重新部署 Rime。若曾直接修改正式的 `phah_taibun` 檔案，請先備份。PowerShell、終端機與 Linux 更新方式見[完整使用說明](user-guide.md#更新拍台文)。
+更新會保留自訂詞庫、其他 Rime 輸入方案與設定。若曾直接修改正式的 `phah_taibun` 檔案，請先備份。詳見[完整使用說明](user-guide.md#更新拍台文)。
 
 Android 沒有安裝包。同一套 Rime 方案可手動放進同文（Trime）或 fcitx5-android 的 Rime 外掛，見[Android 部署](android.md)。
 
@@ -42,14 +39,4 @@ iscc packaging/windows/phah-taibun.iss
 
 產物：`packaging/windows/Output/PhahTaiBunSetup.exe`
 
-### macOS
-
-macOS 安裝包使用 Apple 內建的 `pkgbuild` 和 `productbuild`：
-
-```bash
-PHAH_TAIBUN_VERSION=0.6.2 packaging/macos/build-pkg.sh
-```
-
-產物：`packaging/macos/build/PhahTaiBun.pkg`
-
-正式發佈前若要降低安全性警告，Windows 需要 code signing，macOS 需要 Developer ID Installer 簽章和 notarization。
+正式發佈前若要降低安全性警告，Windows 需要 code signing。macOS `.pkg` 不再隨 release 發佈。

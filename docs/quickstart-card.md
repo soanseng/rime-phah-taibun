@@ -6,22 +6,22 @@
 
 ## 先裝起來
 
-一般使用者先到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載安裝包：
+一般使用者：Windows 下載安裝包；macOS／Linux 用指令。
 
 | 系統 | 安裝拍台文 | 需要先有 |
 |------|------------|----------|
 | Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
-| macOS | 下載 `PhahTaiBun.pkg`，雙擊安裝 | 鼠鬚管 Squirrel |
+| macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 | Android | 手動複製方案到同文或 fcitx5-android，見[Android 部署](android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
-裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者下載安裝包)。
+裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者windows-安裝包macos-指令)。
 
 進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。
 
 ## 更新拍台文
 
-Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版安裝包，直接執行覆蓋安裝；PowerShell／終端機使用者重跑原安裝指令。Linux 在既有 clone 執行 `git pull --ff-only && ./install.sh`。Android 覆蓋正式方案檔後重新部署，步驟見[Android 部署](android.md)。自訂詞庫和其他 Rime 方案會保留；詳見[完整更新說明](user-guide.md#更新拍台文)。
+Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 覆蓋安裝。macOS 重跑 `curl .../scripts/install_macos.sh | bash`，或 clone 裡 `git pull --ff-only && ./install.sh`。Linux 在既有 clone 執行 `git pull --ff-only && ./install.sh`。Android 覆蓋正式方案檔後重新部署，步驟見[Android 部署](android.md)。自訂詞庫和其他 Rime 方案會保留；詳見[完整更新說明](user-guide.md#更新拍台文)。
 
 ---
 

@@ -193,8 +193,9 @@ def test_release_packages_wait_for_complete_verification_gate():
     assert "luac5.4 -p" in verify_commands
     assert "bash -n" in verify_commands
     assert "rime-prelude" in verify_commands
-    for package_job in ("package-source", "package-macos", "package-windows"):
+    for package_job in ("package-source", "package-windows"):
         assert jobs[package_job]["needs"] == "verify"
+    assert "package-macos" not in jobs
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():
@@ -207,19 +208,36 @@ def test_packaging_docs_warn_about_rime_engine_dependency():
     assert "不會覆蓋" in windows_doc
     assert "不會覆蓋" in mac_doc
     assert "PhahTaiBunSetup.exe" in user_doc
-    assert "PhahTaiBun.pkg" in user_doc
 
 
 def test_release_workflow_attaches_packaged_installers():
     workflow = read(".github/workflows/release.yml")
 
-    assert "package-macos" in workflow
+    assert "package-macos" not in workflow
     assert "package-windows" in workflow
-    assert "packaging/macos/build-pkg.sh" in workflow
+    assert "packaging/macos/build-pkg.sh" not in workflow
     assert "Inno Setup 6\\ISCC.exe" in workflow
-    assert "PhahTaiBun.pkg" in workflow
+    assert "PhahTaiBun.pkg" not in workflow
     assert "PhahTaiBunSetup.exe" in workflow
 
+
+def test_macos_public_install_is_cli_not_pkg():
+    """macOS follows rime-liur/Linux: curl or copy, no unverifiable .pkg."""
+    homepage = read("docs/index.html")
+    readme = read("README.md")
+    guide = read("docs/user-guide.md")
+    quickstart = read("docs/quickstart-card.md")
+    macos_panel = homepage.split('id="panel-macos"', 1)[1].split('id="panel-linux"', 1)[0]
+
+    assert "install_macos.sh" in macos_panel
+    assert "curl -fsSL" in macos_panel
+    assert "PhahTaiBun.pkg" not in macos_panel
+    assert "scripts/install_macos.sh" in readme
+    assert "scripts/install_macos.sh" in guide
+    assert "scripts/install_macos.sh" in quickstart
+    assert "PhahTaiBun.pkg" not in readme
+    assert "PhahTaiBun.pkg" not in guide
+    assert "PhahTaiBun.pkg" not in quickstart
 
 def test_public_docs_explain_supported_update_paths_and_preservation():
     readme = read("README.md")
@@ -233,7 +251,7 @@ def test_public_docs_explain_supported_update_paths_and_preservation():
     assert "git pull --ff-only" in readme
     assert "git pull --ff-only" in guide
     assert "PhahTaiBunSetup.exe" in packaged
-    assert "PhahTaiBun.pkg" in packaged
+    assert "scripts/install_macos.sh" in packaged
     assert "自訂詞庫" in guide
     assert "重新部署" in guide
 
