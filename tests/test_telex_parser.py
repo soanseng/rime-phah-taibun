@@ -14,11 +14,11 @@ CASES = [
     ("taiv", "tai2"),
     ("giv", "gi2"),
     ("tsiahv", "tsiah8"),
-    ("ziahv", "tsiah8"),
-    ("zhiahv", "tshiah8"),
+    ("ziahv", "ziah8"),
+    ("zhiahv", "zhiah8"),
     ("taidfgiv", "tai5-gi2"),
     ("taid-giv", "tai5-gi2"),
-    ("taidgiv", "tai5-gi2"),
+    ("taidgiv", "tai5gi2"),
     ("tngyflaid", "tng3-lai5"),
     ("tai5-gi2", "tai5-gi2"),
     ("tai5", "tai5"),
@@ -27,8 +27,8 @@ CASES = [
     ("tsiah8 png7", "tsiah8 png7"),
     ("tsiahv pngw", "tsiah8 png7"),
     ("taid--giv", "tai5--gi2"),
-    ("z", "ts"),
-    ("zh", "tsh"),
+    ("z", "z"),
+    ("zh", "zh"),
     ("chiahv", "chiah8"),
     ("goav", "goa2"),
     ("sannv", "sann2"),
@@ -73,5 +73,11 @@ def test_telex_normalizes_to_numeric_tl_keys(lua_bin):
     assert actual == expected
 
 
-def test_zh_is_consumed_before_z(lua_bin):
-    assert run_normalize(lua_bin, ["zhiahv"]) == ["tshiah8"]
+def test_lua_leaves_z_and_zh_unexpanded(lua_bin):
+    """z/zh stay 1:1 so backspace is honest; prism derive maps them to ts/tsh."""
+    assert run_normalize(lua_bin, ["ziahv", "zhiahv", "z", "zh"]) == [
+        "ziah8",
+        "zhiah8",
+        "z",
+        "zh",
+    ]

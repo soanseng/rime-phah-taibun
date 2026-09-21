@@ -214,16 +214,28 @@ def test_telex_f_hyphen_composes_two_syllables(real_rime_states):
     assert any(candidate["text"] in ("台語", "臺語") for candidate in state["candidates"])
 
 
+def test_telex_v_on_unchecked_syllable_finds_gi(real_rime_states):
+    """giv must normalize to gi2 (v=2 on a non-checked syllable) and find 語."""
+    state = real_rime_states["telex_giv"]
+    assert state["preedit"] == "gi2"
+    assert state["count"] > 0
+    assert any(candidate["text"] == "語" for candidate in state["candidates"])
+    comments = [unicodedata.normalize("NFC", c["comment"]) for c in state["candidates"]]
+    assert any("gí" in comment for comment in comments)
+
+
 def test_telex_z_alias_maps_to_ts(real_rime_states):
-    """ziahv must normalize to tsiah8 and find 食."""
+    """ziahv stays ziah8 in preedit; prism derive/^ts/z/ finds 食."""
     state = real_rime_states["telex_ziahv"]
+    assert state["preedit"] == "ziah8"
     assert state["count"] > 0
     assert any(candidate["text"] == "食" for candidate in state["candidates"])
 
 
 def test_telex_zh_alias_maps_to_tsh(real_rime_states):
-    """zhiahv must normalize to tshiah8 (not tsiah8): 斜 is the tshiah8 entry."""
+    """zhiahv stays zhiah8 in preedit; prism derive/^tsh/zh/ finds 斜."""
     state = real_rime_states["telex_zhiahv"]
+    assert state["preedit"] == "zhiah8"
     assert state["count"] > 0
     assert any(candidate["text"] == "斜" for candidate in state["candidates"])
 

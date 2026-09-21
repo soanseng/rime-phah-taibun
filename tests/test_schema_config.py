@@ -162,6 +162,9 @@ def test_telex_schema_shares_main_dictionary_and_normalizes_input():
 
     algebra = "\n".join(schema["speller"]["algebra"])
     assert "derive/ph/f/" not in algebra
+    assert "derive/^tsh/zh/" in algebra
+    assert "derive/^ts/z/" in algebra
+    assert algebra.index("derive/^tsh/zh/") < algebra.index("derive/^ts/z/")
 
     processors = schema["engine"]["processors"]
     assert processors[0] == "lua_processor@*phah_taibun_telex"

@@ -95,6 +95,10 @@ speller:
     - derive/oo/ou/
     - derive/nn/ⁿ/
 
+    # === Telex 聲母簡寫：z/zh 保持 1:1，由 prism 對到 ts/tsh ===
+    - derive/^tsh/zh/
+    - derive/^ts/z/
+
     # === 進一步模糊（注意：f 已作為 Telex 音節連字符，不可有 ph/f 模糊） ===
     - derive/^j/l/
     - derive/nng/ng/

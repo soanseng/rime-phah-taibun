@@ -8,12 +8,17 @@
 --   d = tone 5
 --   w = tone 7
 --   q = tone 9
---   1/4 stay unmarked (x is not required)
---   z  → ts
---   zh → tsh
+--   z / zh stay 1:1 in composition; prism derive/^ts/z/ and derive/^tsh/zh/
+--   map them onto the shared TL dictionary
 --   f  → syllable hyphen after a complete syllable
 
 local M = {}
+
+local data_mod = nil
+local ok, mod = pcall(require, "phah_taibun_data")
+if ok and mod then
+  data_mod = mod
+end
 
 local TL_FINALS = {
   "iaunnh", "iaunn", "aunnh", "ainnh", "uainnh", "iannh", "iunnh", "uinnh",
@@ -62,18 +67,16 @@ do
   end)
 end
 
--- Longest raw initial first. canon is the spelling written back.
+-- Longest raw initial first. z/zh are NOT rewritten here (prism derive).
 local INITIALS = {
   { "tsh", "tsh" },
   { "chh", "chh" },
-  { "zh", "tsh" },
   { "ts", "ts" },
   { "th", "th" },
   { "ph", "ph" },
   { "kh", "kh" },
   { "ng", "ng" },
   { "ch", "ch" },
-  { "z", "ts" },
   { "p", "p" },
   { "b", "b" },
   { "m", "m" },
@@ -168,9 +171,6 @@ function M.normalize(input)
   local last_kind
 
   local function emit(piece, kind)
-    if last_kind == "syl" and (kind == "syl" or kind == "raw") then
-      out[#out + 1] = "-"
-    end
     out[#out + 1] = piece
     last_kind = kind
   end
@@ -188,12 +188,6 @@ function M.normalize(input)
       i = i + 1
     elseif input:sub(i, i) == "f" and last_kind == "syl" then
       emit("-", "delim")
-      i = i + 1
-    elseif input:sub(i, i + 1) == "zh" then
-      emit("tsh", "raw")
-      i = i + 2
-    elseif input:sub(i, i) == "z" then
-      emit("ts", "raw")
       i = i + 1
     else
       emit(input:sub(i, i), "raw")
@@ -219,10 +213,15 @@ local function should_skip_input(input, next_char)
   return input:find("?", 1, true) ~= nil
 end
 
-local INTERCEPT_KEY = {}
-for code = 0x61, 0x7a do  -- a-z: tone keys (v y d w q), z→ts, f→hyphen, …
-  INTERCEPT_KEY[code] = true
-end
+-- Only 1:1 rewrites: tone letters and f. z/zh pass through to the prism.
+local INTERCEPT_KEY = {
+  [0x76] = true, -- v
+  [0x79] = true, -- y
+  [0x64] = true, -- d
+  [0x77] = true, -- w
+  [0x71] = true, -- q
+  [0x66] = true, -- f
+}
 
 function M.init(env)
   env.shared = data_mod and data_mod.get_shared_state() or { selection_mode = false }

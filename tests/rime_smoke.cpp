@@ -138,6 +138,10 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "telex_taid");
   api->clear_composition(session);
 
+  api->simulate_key_sequence(session, "giv");
+  print_state(api, session, "telex_giv");
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "taidfgiv");
   print_state(api, session, "telex_taidfgiv");
   api->clear_composition(session);
