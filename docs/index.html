@@ -441,6 +441,11 @@
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
+            <h3>0.6.2：發行包內附 Android 部署說明</h3>
+            <p><code>PhahTaiBun-source.zip</code> 現在包含 <code>docs/android.md</code>：解壓後照著把 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 放進<a href="https://github.com/osfans/trime">同文 Trime</a> 或 <a href="https://github.com/fcitx5-android/fcitx5-android">fcitx5-android</a> 的 Rime 使用者資料夾，在 App 裡重新部署即可。注音反查 <code>~</code> 需另拷 <code>terra_pinyin</code> / <code>bopomofo_tw</code>，路徑與限制見<a href="android.md">Android 部署</a>。</p>
+          </article>
+          <article>
+            <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.1：既有安裝升級不會弄壞方案列表</h3>
             <p>修復從舊版升級到 0.6 時，Linux／macOS／Windows 安裝器會把既有的 <code>default.custom.yaml</code>（尤其是 rime-ice 風格的 <code>__patch:</code> 列表）寫壞的問題：方案選單可能消失，或 YAML 解析失敗。重跑一次安裝即可自動修好；拍台文(Telex) 與主方案行為不變。</p>
           </article>
@@ -533,7 +538,7 @@ cd rime-phah-taibun
             <h3>Android：同文 Trime 或 fcitx5-android（手動，無 APK）</h3>
             <ol>
               <li>先裝 <a href="https://github.com/osfans/trime">同文 Trime</a>，或小企鵝輸入法 5 + <a href="https://github.com/fcitx5-android/fcitx5-android">RIME 外掛</a>。兩個前端都有 librime-lua，方案檔不用改。</li>
-              <li>從 Releases 下載 <code>PhahTaiBun-source.zip</code>，把 schema、lua 複製進該前端的 Rime 使用者資料夾，並把 <code>phah_taibun</code> / <code>phah_taibun_telex</code> 寫進 <code>default.custom.yaml</code>。</li>
+              <li>從 Releases 下載 <code>PhahTaiBun-source.zip</code>（內附 <code>docs/android.md</code>），把 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 複製進該前端的 Rime 使用者資料夾，並把 <code>phah_taibun</code> / <code>phah_taibun_telex</code> 寫進 <code>default.custom.yaml</code>。</li>
               <li>重新部署後，系統輸入法選同文或小企鵝，再在 Rime 方案清單選「拍台文(台)」。螢幕鍵盤請點候選，不要期待桌面的 <kbd>F4</kbd>。</li>
             </ol>
             <p><a href="android.md">完整 Android 步驟、路徑與限制</a></p>

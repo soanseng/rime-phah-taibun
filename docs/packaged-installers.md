@@ -36,7 +36,7 @@ Android 沒有安裝包。同一套 Rime 方案可手動放進同文（Trime）�
 Windows 安裝器使用 Inno Setup：
 
 ```powershell
-$env:PHAH_TAIBUN_VERSION = "0.6.1"
+$env:PHAH_TAIBUN_VERSION = "0.6.2"
 iscc packaging/windows/phah-taibun.iss
 ```
 
@@ -47,7 +47,7 @@ iscc packaging/windows/phah-taibun.iss
 macOS 安裝包使用 Apple 內建的 `pkgbuild` 和 `productbuild`：
 
 ```bash
-PHAH_TAIBUN_VERSION=0.6.1 packaging/macos/build-pkg.sh
+PHAH_TAIBUN_VERSION=0.6.2 packaging/macos/build-pkg.sh
 ```
 
 產物：`packaging/macos/build/PhahTaiBun.pkg`

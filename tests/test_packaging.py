@@ -140,7 +140,7 @@ def test_installers_ship_and_register_the_telex_schema():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.6.1"
+    version = "0.6.2"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
@@ -234,3 +234,6 @@ def test_android_community_install_is_documented_without_apk():
     assert "android.md" in guide
     assert "docs/android.md" in readme
     assert "panel-android" in homepage
+
+    workflow = read(".github/workflows/release.yml")
+    assert "docs/android.md" in workflow
