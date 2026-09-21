@@ -109,6 +109,7 @@
 
 .tab-list {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   border-bottom: 2px solid var(--color-ink);
   background: var(--color-surface-alt);

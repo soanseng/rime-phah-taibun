@@ -213,3 +213,24 @@ def test_public_docs_explain_supported_update_paths_and_preservation():
     assert "PhahTaiBun.pkg" in packaged
     assert "自訂詞庫" in guide
     assert "重新部署" in guide
+
+
+def test_android_community_install_is_documented_without_apk():
+    """Android uses existing Rime frontends; no schema change, no official APK."""
+    android = read("docs/android.md")
+    homepage = read("docs/index.html")
+    sidebar = read("docs/_sidebar.md")
+    guide = read("docs/user-guide.md")
+    readme = read("README.md")
+
+    assert "Trime" in android
+    assert "fcitx5-android" in android
+    assert "librime-lua" in android
+    assert "phah_taibun.schema.yaml" in android
+    assert "沒有官方 APK" in android or "沒有 APK" in android
+    assert "android.md" in sidebar
+    assert 'data-tab="android"' in homepage
+    assert "android.md" in homepage
+    assert "android.md" in guide
+    assert "docs/android.md" in readme
+    assert "panel-android" in homepage

@@ -45,7 +45,7 @@
         "name": "拍台文 Phah Tai-bun",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Windows, macOS, Linux",
-        "softwareRequirements": "Rime, Weasel, Squirrel, fcitx5-rime, ibus-rime",
+        "softwareRequirements": "Rime, Weasel, Squirrel, fcitx5-rime, ibus-rime, Trime, fcitx5-android",
         "url": "https://soanseng.github.io/rime-phah-taibun/",
         "downloadUrl": "https://github.com/soanseng/rime-phah-taibun/releases",
         "codeRepository": "https://github.com/soanseng/rime-phah-taibun",
@@ -127,6 +127,7 @@
         <a href="#typing-schemes">我要用台羅 TL 打字</a>
         <a href="#telex">我想用 Telex 調鍵（可選）</a>
         <a href="#reverse">我只知道華語想查台語</a>
+        <a href="#install">我要在 Android 打台文</a>
       </div>
     </section>
 
@@ -445,6 +446,11 @@
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
+            <h3>Android：同文 / fcitx5-android 可手動部署</h3>
+            <p>拍台文方案本身不用改。Android 沒有官方 APK，但同一套檔案可放進<a href="https://github.com/osfans/trime">同文 Trime</a> 或 <a href="https://github.com/fcitx5-android/fcitx5-android">fcitx5-android</a> 的 Rime 外掛（兩者都有 librime-lua）。詳細步驟見<a href="android.md">Android 部署</a>。虛擬鍵盤快捷鍵與桌面不同，請用候選點選。</p>
+          </article>
+          <article>
+            <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.0：拍台文(Telex) 進階調鍵方案</h3>
             <p>給熟台羅、想連續輸入的人：方案選單多了「拍台文(Telex)」，聲調用字母鍵（<code>v</code>=2/8、<code>y</code>=3、<code>d</code>=5、<code>w</code>=7、<code>q</code>=9），<code>z</code>→<code>ts</code>、<code>zh</code>→<code>tsh</code>，<code>f</code> 當音節連字符，<code>taidfgiv</code> 就能打出臺語。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式，只換輸入鍵位；主方案行為完全不變。歷史、鍵位圖與「可以用也可以不用」見首頁 <a href="#telex">Telex</a> 一節。</p>
           </article>
@@ -492,13 +498,14 @@
         <div class="section-heading narrow">
           <p class="eyebrow">下載與安裝</p>
           <h2>先裝 Rime 核心，再加入拍台文方案。</h2>
-          <p>拍台文不是另一個輸入法引擎，而是 Rime 的台語方案。Windows 使用小狼毫，macOS 使用鼠鬚管，Linux 使用 fcitx5-rime 或 ibus-rime。</p>
+          <p>拍台文不是另一個輸入法引擎，而是 Rime 的台語方案。Windows 使用小狼毫，macOS 使用鼠鬚管，Linux 使用 fcitx5-rime 或 ibus-rime。Android 沒有安裝包，可手動部署到同文或 fcitx5-android。</p>
         </div>
         <div class="install-tabs" data-tabs>
           <div class="tab-list" role="tablist" aria-label="選擇作業系統">
             <button type="button" role="tab" aria-selected="true" data-tab="windows">Windows</button>
             <button type="button" role="tab" aria-selected="false" data-tab="macos">macOS</button>
             <button type="button" role="tab" aria-selected="false" data-tab="linux">Linux</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="android">Android</button>
           </div>
           <div class="tab-panel is-active" id="panel-windows" role="tabpanel">
             <h3>Windows：小狼毫 Weasel + PhahTaiBunSetup.exe</h3>
@@ -522,12 +529,21 @@
 cd rime-phah-taibun
 ./install.sh</code></pre>
           </div>
+          <div class="tab-panel" id="panel-android" role="tabpanel" hidden>
+            <h3>Android：同文 Trime 或 fcitx5-android（手動，無 APK）</h3>
+            <ol>
+              <li>先裝 <a href="https://github.com/osfans/trime">同文 Trime</a>，或小企鵝輸入法 5 + <a href="https://github.com/fcitx5-android/fcitx5-android">RIME 外掛</a>。兩個前端都有 librime-lua，方案檔不用改。</li>
+              <li>從 Releases 下載 <code>PhahTaiBun-source.zip</code>，把 schema、lua 複製進該前端的 Rime 使用者資料夾，並把 <code>phah_taibun</code> / <code>phah_taibun_telex</code> 寫進 <code>default.custom.yaml</code>。</li>
+              <li>重新部署後，系統輸入法選同文或小企鵝，再在 Rime 方案清單選「拍台文(台)」。螢幕鍵盤請點候選，不要期待桌面的 <kbd>F4</kbd>。</li>
+            </ol>
+            <p><a href="android.md">完整 Android 步驟、路徑與限制</a></p>
+          </div>
         </div>
         <div class="ai-install-card" id="update-install">
           <div>
             <p class="eyebrow">更新拍台文</p>
             <h3>重跑最新版安裝器，就能保留個人詞庫並更新正式檔案。</h3>
-            <p>Windows／macOS 從 Releases 下載最新版安裝包後直接覆蓋安裝；Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。安裝器會保留自訂詞庫和其他 Rime 方案，完成後自動重新部署。</p>
+            <p>Windows／macOS 從 Releases 下載最新版安裝包後直接覆蓋安裝；Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 覆蓋正式方案檔後重新部署，見 <a href="android.md">Android 部署</a>。安裝器會保留自訂詞庫和其他 Rime 方案，完成後自動重新部署。</p>
           </div>
           <a class="btn btn-secondary" href="guide.html#/user-guide?id=更新拍台文">查看完整更新方法</a>
         </div>
@@ -592,7 +608,7 @@ cd rime-phah-taibun
           </details>
           <details>
             <summary>這是手機輸入法嗎？</summary>
-            <p>不是。拍台文主打電腦輸入法，支援 Windows、macOS、Linux，使用 Rime 作為輸入法核心。</p>
+            <p>官方安裝包是電腦版（Windows、macOS、Linux）。同一套 Rime 方案可以手動裝進 Android 的同文（Trime）或 fcitx5-android 的 Rime 外掛，沒有 APK，鍵盤快捷鍵也不等於桌面。步驟見 <a href="android.md">Android 部署</a>。</p>
           </details>
           <details>
             <summary>會覆蓋我原本的 Rime 設定嗎？</summary>

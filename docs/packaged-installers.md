@@ -27,6 +27,8 @@
 
 更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文檔案，並自動重新部署 Rime。若曾直接修改正式的 `phah_taibun` 檔案，請先備份。PowerShell、終端機與 Linux 更新方式見[完整使用說明](user-guide.md#更新拍台文)。
 
+Android 沒有安裝包。同一套 Rime 方案可手動放進同文（Trime）或 fcitx5-android 的 Rime 外掛，見[Android 部署](android.md)。
+
 ## 給維護者
 
 ### Windows

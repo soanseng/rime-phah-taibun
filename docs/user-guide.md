@@ -17,6 +17,7 @@
 - **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
 - **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
 - **Linux**：fcitx5-rime 或 ibus-rime
+- **Android（社群手動，無安裝包）**：同文 Trime，或 fcitx5-android + RIME 外掛。步驟見[Android 部署](android.md)
 
 ### 一般使用者：下載安裝包
 
@@ -78,6 +79,8 @@ git pull --ff-only
 ./install.sh
 ```
 
+- **Android**：覆蓋正式的 `phah_taibun*` 方案檔與 `lua/phah_taibun_*.lua` 後，在同文／Rime 外掛裡重新部署。不要覆蓋自訂詞庫。見[Android 部署](android.md#更新)。
+
 更新會保留 `phah_taibun.custom.dict.yaml`、`phah_taibun.phrase.dict.yaml` 等自訂詞庫、其他 Rime 輸入方案與設定；正式的拍台文 schema、主字典、規則檔和 Lua 模組會更新，安裝器完成後會自動重新部署 Rime。
 
 > 若你直接修改過正式的 `phah_taibun` 檔案，更新前請先備份。長期自訂建議放在 Rime custom patch 或自訂詞庫，避免下次更新被正式檔案取代。
@@ -90,6 +93,7 @@ git pull --ff-only
    - **Windows**：`%AppData%\Rime\`
    - **Linux (fcitx5)**：`~/.local/share/fcitx5/rime/`
    - **Linux (ibus)**：`~/.config/ibus/rime/`
+   - **Android**：同文或 fcitx5-android 的 Rime 使用者資料夾，見[Android 部署](android.md)
 3. 將 `lua/` 內的檔案複製到 Rime 使用者資料夾的 `lua/` 子目錄
 4. 將 `rime.lua` 複製到 Rime 使用者資料夾根目錄（若已有 `rime.lua`，將內容追加合併）
 5. 重新部署 Rime
@@ -1280,4 +1284,4 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 
 ---
 
-*最後更新：2026-08-23*
+*最後更新：2026-09-21*

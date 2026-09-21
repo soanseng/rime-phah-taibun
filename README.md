@@ -31,12 +31,13 @@ Download the latest release for your platform:
 | Windows | Download `PhahTaiBunSetup.exe` and run the installer | Weasel |
 | macOS | Download `PhahTaiBun.pkg` and run the installer | Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
+| Android | Community/manual: copy the schema into Trime or fcitx5-android. See [Android 部署](docs/android.md) | Trime, or Fcitx5 for Android + RIME plugin |
 
-After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active.
+After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active. Android has no installer; follow the Android guide after installing Trime or the fcitx5-android RIME plugin.
 
 ### Updating
 
-Download and run the newest Windows or macOS installer from [Releases](https://github.com/soanseng/rime-phah-taibun/releases). Command-line users can rerun the installation command above. For an existing Linux clone, run `git pull --ff-only` followed by `./install.sh`. Updates preserve custom dictionaries and other Rime schemas, replace the official Phah Tai-bun files, and redeploy Rime.
+Download and run the newest Windows or macOS installer from [Releases](https://github.com/soanseng/rime-phah-taibun/releases). Command-line users can rerun the installation command above. For an existing Linux clone, run `git pull --ff-only` followed by `./install.sh`. Android: replace the official schema/Lua files and redeploy; see [Android 部署](docs/android.md). Updates preserve custom dictionaries and other Rime schemas, replace the official Phah Tai-bun files, and redeploy Rime.
 
 Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
 
@@ -76,8 +77,9 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 | Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
 | macOS | 下載 `PhahTaiBun.pkg`，雙擊安裝 | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
+| Android | 手動複製方案到同文或 fcitx5-android，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
-Windows/macOS 安裝包仍使用 Rime 作為輸入法核心，但不需要手動複製檔案或打開 Rime 資料夾。安裝後先把系統輸入法切到小狼毫／鼠鬚管，重新部署 Rime，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「拍台文(台)」。還沒進入小狼毫／鼠鬚管時按 `F4` 不會有反應。
+Windows/macOS 安裝包仍使用 Rime 作為輸入法核心，但不需要手動複製檔案或打開 Rime 資料夾。安裝後先把系統輸入法切到小狼毫／鼠鬚管，重新部署 Rime，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「拍台文(台)」。還沒進入小狼毫／鼠鬚管時按 `F4` 不會有反應。Android 沒有安裝包，請先裝同文或 fcitx5-android 的 Rime 外掛再複製方案。
 
 ### 2. 先打一段
 
@@ -355,6 +357,7 @@ vvjit  → 2026年3月15 拜六
 - **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
 - **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
 - **Linux**：fcitx5-rime 或 ibus-rime
+- **Android（社群手動）**：同文 Trime 或 fcitx5-android + RIME 外掛，見[Android 部署](docs/android.md)
 
 ### 一般使用者：下載安裝包
 
@@ -405,6 +408,8 @@ git pull --ff-only
 ./install.sh
 ```
 
+- **Android**：覆蓋正式方案檔與 `lua/phah_taibun_*.lua` 後重新部署，見[Android 部署](docs/android.md)。
+
 更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文 schema、主字典、規則檔和 Lua 模組，最後自動重新部署 Rime。若你直接修改過正式的 `phah_taibun` 檔案，請先備份；長期自訂建議使用 Rime custom patch 或自訂詞庫。
 
 0.4.0 起，你選過的輸出模式（TL/POJ、漢羅/全羅）會被記住，重開機／重新部署後不用重選；既有安裝只需重跑一次安裝指令（會把這兩個開關加進 `default.custom.yaml` 的 `switcher/save_options`），安裝器會自動重新部署。
@@ -417,6 +422,7 @@ git pull --ff-only
    - **Windows**：`%AppData%\Rime\`
    - **Linux (fcitx5)**：`~/.local/share/fcitx5/rime/`
    - **Linux (ibus)**：`~/.config/ibus/rime/`
+   - **Android**：同文或 fcitx5-android 的 Rime 使用者資料夾，見[Android 部署](docs/android.md)
 3. 將 `lua/` 內的檔案複製到 Rime 使用者資料夾的 `lua/` 子目錄
 4. 將 `rime.lua` 複製到 Rime 使用者資料夾根目錄（若已有 `rime.lua`，將內容追加合併）
 5. 重新部署 Rime
