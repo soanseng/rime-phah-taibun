@@ -123,6 +123,46 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "tsiah8 ");
   api->simulate_key_sequence(session, "qxyz");
   print_state(api, session, "origin_after_commit");
+  api->clear_composition(session);
+
+  // 拍台文(Telex): tone letters (d=5, w=7, y=3, v=2/8, q=9), z→ts, zh→tsh,
+  // f = syllable hyphen. The Lua processor normalizes input to numeric TL
+  // keys before the speller, so dictionary/user-dict stay canonical.
+  if (!api->select_schema(session, "phah_taibun_telex")) {
+    std::cerr << "cannot select phah_taibun_telex\n";
+    api->finalize();
+    return 1;
+  }
+
+  api->simulate_key_sequence(session, "taid");
+  print_state(api, session, "telex_taid");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "taidfgiv");
+  print_state(api, session, "telex_taidfgiv");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "ziahv");
+  print_state(api, session, "telex_ziahv");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "zhiahv");
+  print_state(api, session, "telex_zhiahv");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tngyflaid");
+  print_state(api, session, "telex_tngyflaid");
+  api->clear_composition(session);
+
+  // Main schema isolation: "taid" must NOT become tai5 there.
+  if (!api->select_schema(session, "phah_taibun")) {
+    std::cerr << "cannot select phah_taibun\n";
+    api->finalize();
+    return 1;
+  }
+  api->simulate_key_sequence(session, "taid");
+  print_state(api, session, "main_taid");
+  api->clear_composition(session);
 
   api->destroy_session(session);
   api->finalize();

@@ -204,41 +204,72 @@ function M.normalize(input)
   return table.concat(out)
 end
 
-local function should_skip(input)
-  return not input or input == "" or SKIP_EXACT[input]
-      or input:sub(1, 1) == "~" or input:sub(1, 1) == ";"
-      or input:sub(1, 1) == "`" or input:find("?", 1, true)
+local function should_skip_input(input, next_char)
+  input = (input or "") .. (next_char or "")
+  if input == "" then
+    return true
+  end
+  if SKIP_EXACT[input] then
+    return true
+  end
+  local first = input:sub(1, 1)
+  if first == "~" or first == ";" or first == "`" then
+    return true
+  end
+  return input:find("?", 1, true) ~= nil
+end
+
+local INTERCEPT_KEY = {}
+for code = 0x61, 0x7a do  -- a-z: tone keys (v y d w q), z→ts, f→hyphen, …
+  INTERCEPT_KEY[code] = true
 end
 
 function M.init(env)
-  local context = env.engine.context
-  env.normalizing = false
-  env.notifier = context.update_notifier:connect(function(ctx)
-    if env.normalizing then
-      return
-    end
-    local input = ctx.input
-    if should_skip(input) then
-      return
-    end
-    local normalized = M.normalize(input)
-    if normalized ~= input then
-      env.normalizing = true
-      ctx.input = normalized
-      env.normalizing = false
-    end
-  end)
+  env.shared = data_mod and data_mod.get_shared_state() or { selection_mode = false }
 end
 
 function M.func(key, env)
-  return 2
+  if key:release() then
+    return 2  -- kNoop
+  end
+  local repr = key:repr()
+  if repr:find("Shift+", 1, true) or repr:find("Control+", 1, true)
+      or repr:find("Alt+", 1, true) or repr:find("Super+", 1, true) then
+    return 2  -- modifiers: uppercase / shortcuts stay with phah_taibun_input
+  end
+  local code = key.keycode
+  if not INTERCEPT_KEY[code] then
+    return 2
+  end
+
+  local context = env.engine.context
+  if context:get_option("ascii_mode") then
+    return 2
+  end
+  local shared = env.shared
+  if shared and shared.selection_mode then
+    return 2  -- Tab selection: letters pick candidates, phah_taibun_input owns them
+  end
+
+  local input = context.input or ""
+  local next_char = string.char(code)
+  if should_skip_input(input, next_char) then
+    return 2
+  end
+
+  local new_input = input .. next_char
+  local normalized = M.normalize(new_input)
+  if normalized == new_input then
+    return 2  -- let the speller handle the plain pass-through key
+  end
+
+  context:clear()
+  context:push_input(normalized)
+  return 1  -- kAccepted: the key is already part of the rewritten input
 end
 
 function M.fini(env)
-  if env.notifier then
-    env.notifier:disconnect()
-    env.notifier = nil
-  end
+  env.shared = nil
 end
 
 return M

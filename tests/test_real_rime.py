@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -100,19 +101,20 @@ def real_rime_states(tmp_path_factory):
     env["LD_LIBRARY_PATH"] = os.pathsep.join(
         filter(None, (str(runtime.library_dir), str(runtime.lua_plugin.parent), env.get("LD_LIBRARY_PATH")))
     )
-    subprocess.run(
-        [
-            str(runtime.deployer),
-            "--compile",
-            str(user_data / "phah_taibun.schema.yaml"),
-            str(user_data),
-            str(runtime.shared_data_dir),
-            str(build_dir),
-        ],
-        check=True,
-        cwd=ROOT,
-        env=env,
-    )
+    for schema_name in ("phah_taibun.schema.yaml", "phah_taibun_telex.schema.yaml"):
+        subprocess.run(
+            [
+                str(runtime.deployer),
+                "--compile",
+                str(user_data / schema_name),
+                str(user_data),
+                str(runtime.shared_data_dir),
+                str(build_dir),
+            ],
+            check=True,
+            cwd=ROOT,
+            env=env,
+        )
 
     executable = work / "rime_smoke"
     subprocess.run(
@@ -193,3 +195,51 @@ def test_word_by_word_selection_commits_chosen_hanzi(real_rime_states):
     assert "橋" in mid["preedit"]
     assert any(candidate["text"] == "鼎" for candidate in mid["candidates"])
     assert real_rime_states["word_by_word"]["commit"] == "橋鼎"
+
+
+def test_telex_tone_letter_finds_tai_candidates(real_rime_states):
+    """taid must normalize to tai5 and surface 台/臺 with the TL reading."""
+    state = real_rime_states["telex_taid"]
+    assert state["preedit"] == "tai5"
+    assert state["count"] > 0
+    assert any(candidate["text"] in ("台", "臺") for candidate in state["candidates"])
+    comments = [unicodedata.normalize("NFC", c["comment"]) for c in state["candidates"]]
+    assert any("tâi" in comment for comment in comments)
+
+
+def test_telex_f_hyphen_composes_two_syllables(real_rime_states):
+    """taidfgiv must normalize to tai5-gi2 and hit the 台語 dictionary entry."""
+    state = real_rime_states["telex_taidfgiv"]
+    assert state["count"] > 0
+    assert any(candidate["text"] in ("台語", "臺語") for candidate in state["candidates"])
+
+
+def test_telex_z_alias_maps_to_ts(real_rime_states):
+    """ziahv must normalize to tsiah8 and find 食."""
+    state = real_rime_states["telex_ziahv"]
+    assert state["count"] > 0
+    assert any(candidate["text"] == "食" for candidate in state["candidates"])
+
+
+def test_telex_zh_alias_maps_to_tsh(real_rime_states):
+    """zhiahv must normalize to tshiah8 (not tsiah8): 斜 is the tshiah8 entry."""
+    state = real_rime_states["telex_zhiahv"]
+    assert state["count"] > 0
+    assert any(candidate["text"] == "斜" for candidate in state["candidates"])
+
+
+def test_telex_multi_syllable_sentence_composes(real_rime_states):
+    """tngyflaid must normalize to tng3-lai5 and compose from both syllables."""
+    state = real_rime_states["telex_tngyflaid"]
+    assert state["count"] > 0
+    assert any("來" in candidate["text"] for candidate in state["candidates"])
+
+
+def test_main_schema_keeps_raw_taid_without_telex_mapping(real_rime_states):
+    """拍台文(台) must not know Telex: its preedit keeps the raw letters.
+
+    (The main speller still segments "tai"+"d" and may list partial-syllable
+    candidates like 台 — the input layer itself is what must stay untouched.)
+    """
+    assert real_rime_states["main_taid"]["preedit"] == "taid"
+    assert real_rime_states["telex_taid"]["preedit"] == "tai5"
