@@ -41,8 +41,11 @@ def _find_runtime() -> RimeRuntime:
         include_dir = prefix / "include"
         if not (include_dir / "rime_api.h").exists():
             continue
-        library_candidates = sorted((prefix / "lib").glob("*/librime.so"))
-        library_candidates += sorted((prefix / "lib").glob("librime.so"))
+        # The dev library lives directly in lib/; addon dirs like
+        # /usr/lib/fcitx5 also contain a librime.so (the IM module) and
+        # must not shadow it.
+        library_candidates = sorted((prefix / "lib").glob("librime.so"))
+        library_candidates += sorted((prefix / "lib").glob("*/librime.so"))
         plugin_candidates = sorted((prefix / "lib").glob("*/rime-plugins/librime-lua.so"))
         plugin_candidates += sorted((prefix / "lib").glob("rime-plugins/librime-lua.so"))
         shared_data_dir = Path(os.environ.get("RIME_SHARED_DATA_DIR", prefix / "share/rime-data"))

@@ -291,9 +291,21 @@ fi
 # Step 2.55: 舊安裝補註冊 Telex 方案（既有 default.custom.yaml 已含
 # phah_taibun，主註冊步驟會跳過，需另行追加）
 # ============================================================
+# default.custom.yaml 有兩種格式：__patch:（patch 列表）與 patch:（單一 map）。
+# 直接把 schema_list/@next 1: 附加到檔尾會落在結構外，造成 YAML 解析失敗
+# （所有方案註冊失效），必須依格式插入。
 if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'phah_taibun_telex' "$RIME_DIR/default.custom.yaml"; then
     cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
-    printf '  schema_list/@next 1:\n    schema: phah_taibun_telex\n' >> "$RIME_DIR/default.custom.yaml"
+    LAST_SCHEMA_LINE=$(grep -n '^[[:space:]]*- schema: phah_taibun[[:space:]]*$' "$RIME_DIR/default.custom.yaml" | tail -1 | cut -d: -f1)
+    if [ -n "$LAST_SCHEMA_LINE" ]; then
+        INDENT=$(sed -n "${LAST_SCHEMA_LINE}s/^\([[:space:]]*\).*/\1/p" "$RIME_DIR/default.custom.yaml")
+        sed -i '' "${LAST_SCHEMA_LINE}a\\
+${INDENT}- schema: phah_taibun_telex" "$RIME_DIR/default.custom.yaml"
+    elif grep -q '^__patch:' "$RIME_DIR/default.custom.yaml"; then
+        printf '\n  - patch/+:\n      schema_list/@next 1:\n        schema: phah_taibun_telex\n' >> "$RIME_DIR/default.custom.yaml"
+    else
+        printf '\n  schema_list/@next 1:\n    schema: phah_taibun_telex\n' >> "$RIME_DIR/default.custom.yaml"
+    fi
     echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun_telex 追加到 default.custom.yaml（保留現有方案）"
 fi
 
@@ -301,10 +313,15 @@ fi
 # Step 2.6: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
 # ============================================================
 if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'poj_mode' "$RIME_DIR/default.custom.yaml"; then
-    sed -i '' '/^patch:/a\
+    cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
+    if grep -q '^__patch:' "$RIME_DIR/default.custom.yaml"; then
+        printf '\n  - patch/+:\n      switcher/save_options/@before 0: poj_mode\n      switcher/save_options/@next: full_romanization\n' >> "$RIME_DIR/default.custom.yaml"
+    else
+        sed -i '' '/^patch:/a\
   switcher/save_options/@before 0: poj_mode\
   switcher/save_options/@next: full_romanization
 ' "$RIME_DIR/default.custom.yaml"
+    fi
     echo -e "  ${GREEN}[ok]${NC} 已將 poj_mode / full_romanization 加入 save_options（記住模式選擇）"
 fi
 

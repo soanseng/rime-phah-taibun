@@ -324,10 +324,28 @@ if ($needRegister) {
 # Step 2.55: 舊安裝補註冊 Telex 方案（既有 default.custom.yaml 已含
 # phah_taibun，主註冊步驟會跳過，需另行追加）
 # ============================================================
+# default.custom.yaml 有兩種格式：__patch:（patch 列表）與 patch:（單一 map）。
+# 直接把 schema_list/@next 1: 附加到檔尾會落在結構外，造成 YAML 解析失敗
+# （所有方案註冊失效），必須依格式插入。
 if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_telex" -Quiet)) {
     Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
 
-    Add-Content -Path $defaultCustom -Value "  schema_list/@next 1:`n    schema: phah_taibun_telex"
+    $content = Get-Content $defaultCustom -Raw
+    if ($content -match '(?m)^\s*- schema: phah_taibun\s*$') {
+        $lines = Get-Content $defaultCustom
+        $lastIdx = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^\s*- schema: phah_taibun\s*$') { $lastIdx = $i }
+        }
+        $indent = $lines[$lastIdx] -replace '- schema:.*', ''
+        $newLine = "${indent}- schema: phah_taibun_telex"
+        $newLines = $lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)]
+        $newLines | Set-Content $defaultCustom -Encoding UTF8
+    } elseif ((Get-Content $defaultCustom -TotalCount 1) -match '^__patch:') {
+        Add-Content -Path $defaultCustom -Value "  - patch/+:`n      schema_list/@next 1:`n        schema: phah_taibun_telex"
+    } else {
+        Add-Content -Path $defaultCustom -Value "  schema_list/@next 1:`n    schema: phah_taibun_telex"
+    }
     Write-Host "  已將 phah_taibun_telex 追加到 default.custom.yaml" -ForegroundColor Green
 }
 
@@ -336,15 +354,19 @@ if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pa
 # ============================================================
 if (Test-Path $defaultCustom) {
     if (-not (Select-String -Path $defaultCustom -Pattern "poj_mode" -Quiet)) {
-        $lines = Get-Content $defaultCustom
-        $newLines = foreach ($line in $lines) {
-            $line
-            if ($line -match '^patch:') {
-                "  switcher/save_options/@before 0: poj_mode"
-                "  switcher/save_options/@next: full_romanization"
+        if ((Get-Content $defaultCustom -TotalCount 1) -match '^__patch:') {
+            Add-Content -Path $defaultCustom -Value "  - patch/+:`n      switcher/save_options/@before 0: poj_mode`n      switcher/save_options/@next: full_romanization"
+        } else {
+            $lines = Get-Content $defaultCustom
+            $newLines = foreach ($line in $lines) {
+                $line
+                if ($line -match '^patch:') {
+                    "  switcher/save_options/@before 0: poj_mode"
+                    "  switcher/save_options/@next: full_romanization"
+                }
             }
+            $newLines | Set-Content $defaultCustom -Encoding UTF8
         }
-        $newLines | Set-Content $defaultCustom -Encoding UTF8
         Write-Host "  已將 poj_mode / full_romanization 加入 save_options（記住模式選擇）" -ForegroundColor Green
     }
 }
