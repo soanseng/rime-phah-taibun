@@ -1,6 +1,6 @@
-# macOS 安裝包
+# macOS 安裝包（本機、未發行）
 
-這個目錄提供給發佈者使用，目標是產生一般使用者可雙擊的 `PhahTaiBun.pkg`。
+這個目錄的 `build-pkg.sh` **不再隨 GitHub Release 發佈**。公開安裝方式是 `scripts/install_macos.sh`（curl 或 clone 後 `./install.sh`）。本目錄僅供本機實驗；未簽章／未 notarize，無法在本專案驗證。
 
 ## 使用方式
 

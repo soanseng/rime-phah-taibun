@@ -238,6 +238,9 @@ def test_macos_public_install_is_cli_not_pkg():
     assert "PhahTaiBun.pkg" not in readme
     assert "PhahTaiBun.pkg" not in guide
     assert "PhahTaiBun.pkg" not in quickstart
+    faq = homepage.split("這是手機輸入法嗎", 1)[1].split("</details>", 1)[0]
+    assert "官方安裝包是電腦版" not in faq
+    assert "指令" in faq
 
 def test_public_docs_explain_supported_update_paths_and_preservation():
     readme = read("README.md")

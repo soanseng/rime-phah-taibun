@@ -1,6 +1,6 @@
 # Android 部署（同文 / fcitx5-android）
 
-拍台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows / macOS / Linux 仍是官方安裝包；Android **沒有 APK**。把發行包裡的方案檔放進現成的 Rime 前端，再在 App 裡重新部署。
+拍台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows 有安裝包；macOS／Linux 用指令或複製檔案；Android **沒有 APK**。把發行包裡的方案檔放進現成的 Rime 前端，再在 App 裡重新部署。
 
 兩個前端都內建 **librime-lua**（拼音註解、漢羅、Telex 都靠它）：
 
