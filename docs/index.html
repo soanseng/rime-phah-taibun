@@ -440,6 +440,11 @@
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
+            <h3>0.6.1：既有安裝升級不會弄壞方案列表</h3>
+            <p>修復從舊版升級到 0.6 時，Linux／macOS／Windows 安裝器會把既有的 <code>default.custom.yaml</code>（尤其是 rime-ice 風格的 <code>__patch:</code> 列表）寫壞的問題：方案選單可能消失，或 YAML 解析失敗。重跑一次安裝即可自動修好；拍台文(Telex) 與主方案行為不變。</p>
+          </article>
+          <article>
+            <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.0：拍台文(Telex) 進階調鍵方案</h3>
             <p>給熟台羅、想連續輸入的人：方案選單多了「拍台文(Telex)」，聲調用字母鍵（<code>v</code>=2/8、<code>y</code>=3、<code>d</code>=5、<code>w</code>=7、<code>q</code>=9），<code>z</code>→<code>ts</code>、<code>zh</code>→<code>tsh</code>，<code>f</code> 當音節連字符，<code>taidfgiv</code> 就能打出臺語。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式，只換輸入鍵位；主方案行為完全不變。歷史、鍵位圖與「可以用也可以不用」見首頁 <a href="#telex">Telex</a> 一節。</p>
           </article>
