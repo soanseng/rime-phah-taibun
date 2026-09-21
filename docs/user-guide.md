@@ -36,7 +36,7 @@
    - **macOS**：選單列輸入法選【鼠鬚管】，圖示是【ㄓ】。切換方式見 [Apple 說明：切換輸入方式](https://support.apple.com/zh-tw/guide/mac-help/mchlp1406/mac) 與 [鼠鬚管 README](https://github.com/rime/squirrel)。
    - **Linux**：切到 fcitx5-rime 或 ibus-rime。
 2. 重新部署 Rime（小狼毫／鼠鬚管選單 → 重新部署）。
-3. 點進任何可打字的欄位，按 `F4` 或 `` Ctrl+` `` 打開 Rime 方案選單，選「拍台文(台)」。`` ` `` 在數字 `1` 左邊。
+3. 點進任何可打字的欄位，按 `F4` 或 `` Ctrl+` `` 打開 Rime 方案選單，選「拍台文(台)」；熟台羅、想用調鍵連續輸入的人可改選「拍台文(Telex)」。`` ` `` 在數字 `1` 左邊。
 
 > `F4` 只有在已經進入小狼毫／鼠鬚管時才會有反應。按了沒變化，先看工作列／選單列是不是小狼毫【中】或鼠鬚管【ㄓ】；筆電可能要按 `Fn+F4`，或改試 `` Ctrl+` ``。官方說明：[Rime 方案選單](https://github.com/rime/home/wiki/UserGuide#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%A1%88%E9%81%B8%E5%96%AE)。
 
@@ -204,6 +204,35 @@ to2 → 只列出第2聲：倒、島...
 | 第7聲 | 7 | kun7 (郡) | 陽去 |
 | 第8聲 | 8 | kut8 (滑) | 陽入 |
 | 第9聲 | 9 | 高升調 | （部分腔調） |
+
+### 進階：拍台文(Telex) 調鍵輸入
+
+熟悉台羅、想連續輸入的人，可以在方案選單（`F4`）切到 **「拍台文(Telex)」**。它和「拍台文(台)」共用同一份詞典、詞頻、使用者詞庫與輸出模式，差別只在輸入鍵位：不用離開字母列就能補聲調。
+
+| 鍵 | 意義 |
+|----|------|
+| `v` | 第 2 聲；音節以 `-p/-t/-k/-h` 收尾時為第 8 聲 |
+| `y` | 第 3 聲 |
+| `d` | 第 5 聲 |
+| `w` | 第 7 聲 |
+| `q` | 第 9 聲 |
+| （不打調鍵） | 第 1／4 聲，沿用省略習慣 |
+| `z` / `zh` | `ts` / `tsh`（高頻聲母少一鍵） |
+| `f` | 音節連字符（等同 `-`） |
+
+```
+taid      == tai5    → 臺／台 [tâi]
+taidfgiv  == tai5-gi2 → 台語 [tâi-gí]
+ziahv     == tsiah8  → 食 [tsia̍h]
+zhiahv    == tshiah8 → 斜 [tshia̍h]
+tngyflaid == tng3-lai5
+```
+
+注意：
+
+- 數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。
+- `f` 在 Telex 方案是音節連字符，`ph` 的 `f` 模糊拼寫只在「拍台文(台)」提供。
+- 詞典、使用者詞庫與漢羅／全羅輸出兩個方案完全相同；只換輸入鍵位，換來換去都不會亂。
 
 ### 拼音註解
 
@@ -1009,7 +1038,7 @@ uv run python scripts/build_all.py
 
 1. 確認系統輸入法已經是小狼毫（Windows，圖示【中】且名稱是小狼毫）或鼠鬚管（macOS，圖示【ㄓ】），再點進文字欄位。
 2. 重新部署 Rime。
-3. 按 `F4` 或 `` Ctrl+` `` 查看方案清單，確認「拍台文(台)」在列表中。筆電若 `F4` 被系統占用，改按 `` Ctrl+` `` 或 `Fn+F4`。
+3. 按 `F4` 或 `` Ctrl+` `` 查看方案清單，確認「拍台文(台)」或「拍台文(Telex)」在列表中。筆電若 `F4` 被系統占用，改按 `` Ctrl+` `` 或 `Fn+F4`。
 4. 檢查 `default.custom.yaml` 是否包含 `phah_taibun`
 
 切換說明：[Rime 方案選單](https://github.com/rime/home/wiki/UserGuide#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%A1%88%E9%81%B8%E5%96%AE)、[小狼毫](https://github.com/rime/weasel)、[鼠鬚管](https://github.com/rime/squirrel)。

@@ -14,7 +14,7 @@
 | macOS | 下載 `PhahTaiBun.pkg`，雙擊安裝 | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 
-裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者下載安裝包)。
+裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者下載安裝包)。
 
 進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。
 
@@ -37,6 +37,16 @@ Windows／macOS 到 [Releases](https://github.com/soanseng/rime-phah-taibun/rele
 | 橋鼎（字典沒有的詞） | `kio` `Tab` `d`，再 `tiann` `Tab` `d` | 橋鼎（逐音節選字） |
 
 不用先背聲調。想縮小候選範圍時，再補數字調：`ho2`、`tsiah8 png7`。
+
+「拍台文(Telex)」方案（`F4` 切換）可以把調號打在字母列上：
+
+| 想打 | 輸入（Telex） | 會看到 |
+|------|---------------|--------|
+| 臺語 | `taidfgiv` | 臺語 [tâi-gí] |
+| 食 | `ziahv` | 食 [tsia̍h] |
+| 斜 | `zhiahv` | 斜 [tshia̍h] |
+
+調鍵：`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9；`z`→`ts`、`zh`→`tsh`；`f`=音節連字符。詞典與輸出模式和「拍台文(台)」完全相同。
 
 ---
 

@@ -49,6 +49,8 @@ chiah png              ->  食飯
 tai uan                ->  臺灣 / 台灣
 ```
 
+Prefer staying on the letter keys for tones? Switch to the optional `拍台文(Telex)` schema (`F4`) and type `taidfgiv` for 臺語, `ziahv` for 食 — details in the [Chinese section](#中文說明).
+
 For full documentation, see the [project website](https://soanseng.github.io/rime-phah-taibun/), [online guide](https://soanseng.github.io/rime-phah-taibun/guide.html), and [quickstart card](docs/quickstart-card.md).
 
 ## 中文說明
@@ -90,6 +92,19 @@ tai uan                →  臺灣 / 台灣
 
 候選區會顯示完整讀音，例如 `食飯 [tsia̍h-pn̄g]`。想更精準時，再補聲調數字：`ho2`、`tai5 uan5`。
 
+#### 進階：拍台文(Telex)
+
+`F4` 方案選單裡另有一個 **「拍台文(Telex)」**，給熟台羅、想連續輸入的人：聲調用字母鍵（`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9），`z`→`ts`、`zh`→`tsh`，`f` 當音節連字符。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式：
+
+```text
+taid      == tai5     → 臺／台 [tâi]
+taidfgiv  == tai5-gi2 → 台語 [tâi-gí]
+ziahv     == tsiah8   → 食 [tsia̍h]
+zhiahv    == tshiah8  → 斜 [tshia̍h]
+```
+
+詳細鍵位與注意事項見[完整使用說明](docs/user-guide.md#進階拍台文telex-調鍵輸入)。
+
 ### 3. 記住 8 個按鍵
 
 | 按鍵 | 用途 |
@@ -110,6 +125,7 @@ tai uan                →  臺灣 / 台灣
 - **漢羅混寫**：依 LKK 李江却用字規範，自動輸出漢字+羅馬字混寫
 - **POJ/TL 雙系統**：打 `tsiah` (TL) 或 `chiah` (POJ) 都能輸入「食」
 - **聲調可省略**：打 `gua beh khi` 就能找到「我 beh 去」
+- **進階 Telex 調鍵**：`拍台文(Telex)` 方案用 `d`/`v`/`y`/`w`/`q` 補調、`z`/`zh` 簡寫聲母，與主方案共用詞典
 - **連字符輸入**：可直接輸入 `tsng-kio5`、`kio3--i` 這類連字符與輕聲標記
 - **拼音註解**：候選區永遠顯示讀音，邊打邊學
 - **多種輸出模式**：漢羅TL、漢羅POJ、全羅TL、全羅POJ 一鍵切換
@@ -468,7 +484,7 @@ Font="Iansui 12"
 
 1. 確認系統輸入法已切到 fcitx5-rime / ibus-rime，再點進文字欄位
 2. 確認已重新部署 Rime
-3. 按 `F4`（或 `` Ctrl+` ``）查看方案清單，確認「拍台文(台)」在列表中
+3. 按 `F4`（或 `` Ctrl+` ``）查看方案清單，確認「拍台文(台)」或「拍台文(Telex)」在列表中
 4. 檢查 `~/.local/share/fcitx5/rime/default.custom.yaml` 是否包含 `phah_taibun`
 
 ### 候選區沒有顯示拼音註解
@@ -521,6 +537,7 @@ cd rime-phah-taibun
 ```
 schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
   phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
+  phah_taibun_telex.schema.yaml  進階 Telex 調鍵方案（共用主字典）
   phah_taibun.dict.yaml           主字典（220K 條目）
   hanlo_rules.yaml                LKK 漢羅分類規則
   lighttone_rules.json            輕聲規則
@@ -545,6 +562,7 @@ lua/                           Lua 擴充模組（19 個）
   phah_taibun_synonym.lua         文白讀切換（尚未啟用）
   phah_taibun_speedup.lua         簡拼對照
   phah_taibun_reverse_format.lua  反查讀音調符格式化
+  phah_taibun_telex.lua           拍台文(Telex) 調鍵正規化
 rime.lua                       Lua 模組註冊（舊版 librime 相容）
 scripts/                       Python 資料處理腳本
 tests/                         pytest 測試
