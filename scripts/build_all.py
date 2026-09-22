@@ -416,9 +416,14 @@ def main(argv: list[str] | None = None) -> None:
     if dict_yaml.exists():
         steps_ok &= run_step(
             "Re-validate dictionary (with new phrases)",
-            [python, "scripts/validate_dict.py", str(dict_yaml)],
+            [
+                python,
+                "scripts/validate_dict.py",
+                str(dict_yaml),
+                "--known-keys",
+                "tests/fixtures/known_keys.yaml",
+            ],
         )
-
 
     # Step 11b: Enforce long-word-first weight invariant (PLAN section 9-1A)
     if dict_yaml.exists():

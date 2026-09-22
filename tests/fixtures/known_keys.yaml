@@ -1,0 +1,27 @@
+# Known-keys smoke gate (PLAN 9-2G)
+# Each line: <rime key>: <minimum rows>. A row hits a key on exact match
+# or first-syllable prefix. Thresholds calibrated at ~70% of the v0.6.2+
+# dictionary (2026-09); catches large-scale regressions such as converter
+# breakage or a dropped source database.
+#
+# Recalibrate after intentional dictionary changes:
+#   uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml \
+#       --known-keys tests/fixtures/known_keys.yaml
+
+tsiah8: 400
+png7: 80
+tai5: 240
+uan5: 130
+gua2: 60
+beh4: 65
+sui2: 70
+kha1: 380
+tsit8: 400
+e7: 260
+si7: 240
+a2: 18
+i1: 100
+u7: 440
+tsiah8 png7: 8
+tai5 uan5: 35
+tsit8 e7: 10

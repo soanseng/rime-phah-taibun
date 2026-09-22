@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_dict import main, validate_dict_format, verify_poj_integrity
+from scripts.validate_dict import main, validate_dict_format, verify_known_keys, verify_poj_integrity
 
 
 class TestValidateDictFormat:
@@ -105,3 +105,61 @@ class TestVerifyPojIntegrity:
             {"hanlo": "Doraemon", "kip_input": "lo1-la2-e2-bong7", "rime_key": "lo1 la2 e2 bong7", "source": "taihoa"},
         ]
         assert verify_poj_integrity(entries) == []
+
+
+class TestVerifyKnownKeys:
+    """Post-build smoke: fixed queries must hit at least N rows (PLAN 9-2G)."""
+
+    def _write(self, path, rows):
+        body = "".join(f"{t}\t{k}\t{w}\n" for t, k, w in rows)
+        path.write_text(f'---\nname: t\nversion: "1"\n...\n{body}', encoding="utf-8")
+
+    def _fixture(self, tmp_path, spec):
+        fx = tmp_path / "known_keys.yaml"
+        fx.write_text(spec, encoding="utf-8")
+        return fx
+
+    def test_counts_exact_and_first_syllable_prefix(self, tmp_path):
+        d = tmp_path / "d.dict.yaml"
+        self._write(
+            d,
+            [
+                ("食", "tsiah8", 500),
+                ("食飯", "tsiah8 png7", 900),
+                ("飯", "png7", 300),
+            ],
+        )
+        fx = self._fixture(tmp_path, "tsiah8: 2\npng7: 1\n")
+        assert verify_known_keys(d, fx) == []
+
+    def test_below_threshold_fails(self, tmp_path):
+        d = tmp_path / "d.dict.yaml"
+        self._write(d, [("食", "tsiah8", 500)])
+        fx = self._fixture(tmp_path, "tsiah8: 5\n")
+        errors = verify_known_keys(d, fx)
+        assert errors and "tsiah8" in errors[0]
+
+    def test_missing_fixture_fails(self, tmp_path):
+        d = tmp_path / "d.dict.yaml"
+        self._write(d, [("食", "tsiah8", 500)])
+        errors = verify_known_keys(d, tmp_path / "nope.yaml")
+        assert errors and "fixture" in errors[0].lower()
+
+
+    def test_committed_dictionary_meets_fixture(self):
+        root = Path(__file__).parents[1]
+        errors = verify_known_keys(
+            root / "schema" / "phah_taibun.dict.yaml",
+            root / "tests" / "fixtures" / "known_keys.yaml",
+        )
+        assert errors == []
+
+
+
+    def test_cli_known_keys_flag_fails_below_threshold(self, tmp_path):
+        d = tmp_path / "d.dict.yaml"
+        self._write(d, [("食", "tsiah8", 500)])
+        fx = self._fixture(tmp_path, "tsiah8: 5\n")
+        with pytest.raises(SystemExit) as exc_info:
+            main([str(d), "--known-keys", str(fx)])
+        assert exc_info.value.code == 1
