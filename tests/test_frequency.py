@@ -1,8 +1,15 @@
 """Tests for heuristic frequency weighting."""
 
+import math
+import random
+import re
+from pathlib import Path
+
 from scripts.build_frequency import (
     assign_source_weight,
     compute_weights,
+    enforce_dict_file_invariant,
+    enforce_long_word_invariant,
     load_corpus_frequencies,
     word_length_modifier,
 )
@@ -117,3 +124,144 @@ class TestComputeWeightsWithCorpus:
         ]
         result = compute_weights(entries)
         assert result[0]["weight"] == 960
+
+
+class TestEnforceLongWordInvariant:
+    """Long-word-first invariant (PLAN section 9-1A).
+
+    weight(W) >= k * sum(weights of strongest single-syllable entries
+    with the same readings), so sentence composition never prefers
+    fragmenting a dictionary word into single characters.
+    """
+
+    def test_long_word_raised_to_threshold(self):
+        entries = [
+            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+        ]
+        result, raised = enforce_long_word_invariant(entries)
+        word = next(e for e in result if e["hanlo"] == "食飯")
+        # ceil(1.2 * (640 + 640)) = 1536
+        assert word["weight"] == 1536
+        assert raised == 1
+
+    def test_no_change_when_already_above(self):
+        entries = [
+            {"hanlo": "食", "rime_key": "tsiah", "source": "taijit", "weight": 160},
+            {"hanlo": "飯", "rime_key": "png", "source": "taijit", "weight": 160},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+        ]
+        result, raised = enforce_long_word_invariant(entries)
+        word = next(e for e in result if e["hanlo"] == "食飯")
+        assert word["weight"] == 960
+        assert raised == 0
+
+
+    def test_single_syllable_entries_untouched(self):
+        entries = [
+            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
+        ]
+        result, raised = enforce_long_word_invariant(entries)
+        assert all(e["weight"] == 640 for e in result)
+        assert raised == 0
+
+    def test_missing_standalone_syllable_noop(self):
+        """No single-syllable competitors means nothing to enforce."""
+        entries = [
+            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+        ]
+        # "png" has no standalone entry -> fragmented sum = 640, threshold 768 < 960
+        result, raised = enforce_long_word_invariant(entries)
+        word = next(e for e in result if e["hanlo"] == "食飯")
+        assert word["weight"] == 960
+        assert raised == 0
+
+    def test_idempotent(self):
+        entries = [
+            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+        ]
+        first, raised1 = enforce_long_word_invariant(entries)
+        _, raised2 = enforce_long_word_invariant(first)
+        assert raised1 == 1
+        assert raised2 == 0
+
+
+class TestEnforceDictFileInvariant:
+    """File-level long-word invariant pass over an assembled dict.yaml."""
+
+    def _write_dict(self, path):
+        path.write_text(
+            "---\n"
+            "name: test\n"
+            "version: \"0.1\"\n"
+            "...\n"
+            "食\ttsiah8\t640\n"
+            "飯\tpng7\t640\n"
+            "食飯\ttsiah8 png7\t960\n"
+            "菜\ttshai3\t100\n",
+            encoding="utf-8",
+        )
+
+    def test_violating_word_weight_rewritten(self, tmp_path):
+        dict_path = tmp_path / "test.dict.yaml"
+        self._write_dict(dict_path)
+        raised = enforce_dict_file_invariant(dict_path)
+        lines = dict_path.read_text(encoding="utf-8").splitlines()
+        assert lines[6] == "食飯\ttsiah8 png7\t1536"
+        assert lines[4] == "食\ttsiah8\t640"  # singles untouched
+        assert raised == 1
+
+    def test_already_compliant_file_unchanged(self, tmp_path):
+        dict_path = tmp_path / "test.dict.yaml"
+        path_lines = [
+            "---",
+            "name: test",
+            "...",
+            "食\ttsiah8\t160",
+            "飯\tpng7\t160",
+            "食飯\ttsiah8 png7\t960",
+        ]
+        dict_path.write_text("\n".join(path_lines) + "\n", encoding="utf-8")
+        raised = enforce_dict_file_invariant(dict_path)
+        assert raised == 0
+        assert dict_path.read_text(encoding="utf-8").splitlines()[5] == "食飯\ttsiah8 png7\t960"
+
+
+class TestCommittedDictInvariant:
+    """The long-word invariant must be restorable on the shipped dictionary."""
+
+    DICT_PATH = Path(__file__).parents[1] / "schema" / "phah_taibun.dict.yaml"
+
+    @staticmethod
+    def _split_tokens(rime_key: str) -> list[str]:
+        return [t for t in re.split(r"[ \-]+", rime_key) if t]
+
+    def test_enforcement_restores_invariant_on_committed_dict(self, tmp_path):
+        copied = tmp_path / "phah_taibun.dict.yaml"
+        copied.write_bytes(self.DICT_PATH.read_bytes())
+        enforce_dict_file_invariant(copied)
+
+        singles: dict[str, int] = {}
+        words: list[tuple[str, int]] = []
+        for line in copied.read_text(encoding="utf-8").splitlines():
+            parts = line.split("\t")
+            if len(parts) < 3 or not parts[2].strip().isdigit():
+                continue
+            tokens = self._split_tokens(parts[1])
+            if len(tokens) == 1:
+                token = tokens[0]
+                singles[token] = max(singles.get(token, 0), int(parts[2]))
+            elif len(tokens) >= 2:
+                words.append((parts[1], int(parts[2])))
+
+        random.seed(42)
+        sample = random.sample(words, min(1000, len(words)))
+        for rime_key, weight in sample:
+            total = sum(singles.get(token, 0) for token in self._split_tokens(rime_key))
+            if total > 0:
+                assert weight >= math.ceil(1.2 * total), f"invariant violated: {rime_key}"

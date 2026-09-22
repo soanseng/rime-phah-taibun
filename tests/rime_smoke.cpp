@@ -89,6 +89,13 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "known_hyphen");
   api->clear_composition(session);
 
+
+  // Long-word-first invariant (PLAN section 9-1A): a dictionary word's
+  // reading must surface the whole word, ranked above fragment candidates.
+  api->simulate_key_sequence(session, "tsiah8-png7");
+  print_state(api, session, "long_word");
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "kio-tiann");
   print_state(api, session, "ood_hyphen");
   api->clear_composition(session);

@@ -5,6 +5,7 @@ and optional corpus frequency data.
 """
 
 import math
+import re
 import unicodedata
 from pathlib import Path
 
@@ -141,3 +142,98 @@ def compute_weights(
         result.append(entry)
 
     return result
+
+
+# rime_key syllable tokens: split on spaces and hyphen runs (covers "--" light tone)
+_SYLLABLE_SPLIT_RE = re.compile(r"[ \-]+")
+
+
+
+def enforce_long_word_invariant(entries: list[dict], k: float = 1.2) -> tuple[list[dict], int]:
+    """Enforce the long-word-first weight invariant (PLAN section 9-1A).
+
+    For every multi-syllable entry W, raise weight(W) to at least
+    ceil(k * sum(weights of the strongest single-syllable entries with
+    the same readings)). This guarantees the Rime sentence composer can
+    never prefer fragmenting a dictionary word into single characters.
+
+    Single-syllable entries are never modified; multi-syllable entries
+    whose syllables have no standalone competitors are left unchanged.
+    Idempotent: a second run raises nothing.
+
+    Args:
+        entries: Output of compute_weights (each dict has rime_key and weight).
+            Dicts are modified in place and the same list is returned.
+        k: Safety margin over the fragmented sum (default 1.2).
+
+    Returns:
+        (entries, number of entries whose weight was raised)
+    """
+    syllable_best: dict[str, int] = {}
+    for entry in entries:
+        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
+        if len(tokens) == 1:
+            weight = entry["weight"]
+            if weight > syllable_best.get(tokens[0], 0):
+                syllable_best[tokens[0]] = weight
+
+    raised = 0
+    for entry in entries:
+        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
+        if len(tokens) < 2:
+            continue
+        fragmented_sum = sum(syllable_best.get(token, 0) for token in tokens)
+        if fragmented_sum <= 0:
+            continue
+        threshold = math.ceil(k * fragmented_sum)
+        if entry["weight"] < threshold:
+            entry["weight"] = threshold
+            raised += 1
+
+    return entries, raised
+
+
+def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
+    """Enforce the long-word invariant on an assembled Rime dict.yaml.
+
+    Reads the dict file, applies enforce_long_word_invariant to its data
+    rows, and rewrites only the weights that changed. Use as the final
+    pass after all append steps (phrases, light tone) so the whole
+    assembled dictionary satisfies the invariant.
+
+    Args:
+        dict_path: Path to a dict.yaml with a --- header block.
+        k: Safety margin over the fragmented sum (default 1.2).
+
+    Returns:
+        Number of rows whose weight was raised.
+    """
+    lines = dict_path.read_text(encoding="utf-8").splitlines()
+
+    # Locate data rows (after the closing "..." of the YAML header)
+    data_start = 0
+    for i, line in enumerate(lines):
+        if line == "...":
+            data_start = i + 1
+            break
+
+    entries: list[dict] = []
+    row_index: list[int] = []  # entries[i] lives at lines[row_index[i]]
+    for i in range(data_start, len(lines)):
+        parts = lines[i].split("\t")
+        if len(parts) < 3 or not parts[2].strip().isdigit():
+            continue
+        entries.append(
+            {"hanlo": parts[0], "rime_key": parts[1], "weight": int(parts[2])}
+        )
+        row_index.append(i)
+
+    _, raised = enforce_long_word_invariant(entries, k=k)
+
+    for entry, line_no in zip(entries, row_index, strict=True):
+        parts = lines[line_no].split("\t")
+        parts[2] = str(entry["weight"])
+        lines[line_no] = "\t".join(parts)
+
+    dict_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return raised
