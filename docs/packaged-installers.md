@@ -12,6 +12,8 @@
 | macOS | 先裝鼠鬚管，再 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash`。也可 `git clone` 後執行 `./install.sh`，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。見[完整使用說明](user-guide.md#進階使用者指令安裝)。 |
 | Linux | `git clone` 後 `./install.sh` |
 
+Windows 的 PowerShell 指令安裝是互動式的：可選裝拍台文、嘸蝦米（`rime-liur`）或兩者；改寫 `default.custom.yaml` 前會先做時間戳備份，並詢問要保留哪些既有輸入法（可保留注音 `bopomofo`）。`PhahTaiBunSetup.exe` 走非互動模式，只安裝拍台文。
+
 Windows 尚未安裝小狼毫時，安裝器會提示先裝 Weasel。macOS 請先裝[鼠鬚管 Squirrel](https://github.com/rime/squirrel/releases)。
 
 Windows 安裝器會保留既有 Rime 輸入法、自訂詞庫和設定檔。安裝完成後，系統輸入法仍先選小狼毫（圖示【中】），再按 `F4`（或 `` Ctrl+` ``）選「拍台文(台)」；熟台羅的使用者可改選「拍台文(Telex)」。

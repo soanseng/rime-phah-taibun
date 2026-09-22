@@ -17,7 +17,7 @@
 
 裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者windows-安裝包macos-指令)。
 
-進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。
+進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。Windows 這行指令是互動式的：可選裝拍台文、嘸蝦米（`rime-liur`）或兩者；改設定前會先做時間戳備份，並詢問要保留哪些既有輸入法（含注音）。
 
 ## 更新拍台文
 

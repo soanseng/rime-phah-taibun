@@ -57,6 +57,15 @@ curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scri
 irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex
 ```
 
+指令安裝是互動式的：
+
+- **選方案**：`1` 拍台文、`2` 嘸蝦米（`rime-liur`）、`3` 兩者（預設，直接按 Enter）。選到嘸蝦米時再選完整版（含英文詞庫）或基礎版。
+- **先備份**：動任何設定前，把 `default.custom.yaml` 複製成 `default.custom.yaml.backup-<時間戳>`。
+- **保留既有輸入法**：列出目前的方案清單，讓你挑要保留哪些（Enter＝全部保留）；若清單裡沒有注音 `bopomofo`，會問要不要一併留下。
+- **只追加不取代**：既有方案清單與自訂詞庫不會被蓋掉。嘸蝦米檔案即時從 [soanseng/rime-liur-arch](https://github.com/soanseng/rime-liur-arch) 下載（第三方方案，授權依原 repo）。
+
+要非互動執行（自動化）可加參數：`-Schemas phah`、`-Schemas liur`、`-Schemas both`。雙擊安裝的 `PhahTaiBunSetup.exe` 是以 `-Schemas phah` 非互動執行。
+
 #### Linux
 
 ```bash

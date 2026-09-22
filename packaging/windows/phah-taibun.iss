@@ -35,7 +35,9 @@ Source: "icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs c
 [Code]
 function InitializeSetup(): Boolean;
 begin
-  MsgBox('拍台文使用小狼毫 Weasel / Rime 作為輸入法核心。安裝程式會保留既有 Rime 方案與自訂詞庫。', mbInformation, MB_OK);
+  MsgBox('拍台文使用小狼毫 Weasel / Rime 作為輸入法核心。安裝程式會保留既有 Rime 方案與自訂詞庫。' + #13#10 + #13#10 +
+    '需要一併安裝嘸蝦米，或選擇保留哪些既有輸入法（含注音），請改用命令列：' + #13#10 +
+    'irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex', mbInformation, MB_OK);
   Result := True;
 end;
 
@@ -47,7 +49,7 @@ var
 begin
   PowerShellPath := ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe');
   Params := '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + ExpandConstant('{app}\install_windows.ps1') +
-    '" -ProjectRoot "' + ExpandConstant('{app}') + '"';
+    '" -ProjectRoot "' + ExpandConstant('{app}') + '" -Schemas phah';
 
   if not Exec(PowerShellPath, Params, ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin

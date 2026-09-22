@@ -3,16 +3,31 @@
 # https://github.com/soanseng/rime-phah-taibun
 
 param(
-    [string]$ProjectRoot = ""
+    [string]$ProjectRoot = "",
+    [string]$Schemas = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+# 本腳本自己畫進度條；Invoke-WebRequest 的原生進度條會與它交錯，且在
+# Windows PowerShell 5.1 會讓每個下載慢上數倍（嘸蝦米需要 100+ 個檔案）。
+$ProgressPreference = "SilentlyContinue"
+
+# 互動模式＝命令列安裝（irm | iex），必須在 $ProjectRoot 被填成解壓目錄前判定；
+# 打包安裝器（PhahTaiBunSetup.exe）以 -ProjectRoot 非互動執行，不顯示任何提示。
+$INTERACTIVE = ($ProjectRoot -eq "")
 
 # 發行資產固定版本；命令列安裝只下載該版本的完整封存檔。
 $RELEASE_VERSION = "0.6.2"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
 $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
+
+# 嘸蝦米（rime-liur）來源：公開 fork，含 librime 1.16+/Lua 5.4+ 相容修正。
+$LIUR_REPO = "soanseng/rime-liur-arch"
+$LIUR_BRANCH = "main"
+$LIUR_API = "https://api.github.com/repos/$LIUR_REPO/git/trees/$LIUR_BRANCH`?recursive=1"
+$LIUR_RAW = "https://raw.githubusercontent.com/$LIUR_REPO/$LIUR_BRANCH"
 
 # 設定路徑
 $RIME_DIR = "$env:APPDATA\Rime"
@@ -79,6 +94,54 @@ function Repair-RimeTextEncoding {
             Write-Host "請先還原原本的 Rime 設定，再重跑安裝。安裝只會追加拍台文，不會取代方案清單。" -ForegroundColor Yellow
             exit 1
         }
+    }
+}
+
+# PowerShell 的降冪範圍會反向取值：$lines[4..3] 會回傳索引 4 與 3（把檔尾重複一次）。
+# 最後一筆方案剛好是檔尾時，尾段必須是空陣列。
+function Get-RimeTail {
+    param([string[]]$Lines, [int]$AfterIndex)
+    if ($AfterIndex + 1 -le $Lines.Count - 1) { return $Lines[($AfterIndex + 1)..($Lines.Count - 1)] }
+    return @()
+}
+
+# 追加單一方案到 default.custom.yaml，支援三種檔案格式，且已存在就不重複：
+# patch: 單一 map（追加到最後一筆 - schema: 之後）、__patch: 列表、@next 形式。
+function Add-SchemaEntry {
+    param([string]$SchemaId)
+
+    if (Select-String -Path $defaultCustom -Pattern ("schema: " + $SchemaId + "\s*$") -Quiet) {
+        return
+    }
+
+    $content = Read-RimeText $defaultCustom
+    if ($content -match '- schema:') {
+        $lines = @(Get-RimeLines $defaultCustom)
+        $lastIdx = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^\s*- schema:') { $lastIdx = $i }
+        }
+        if ($lastIdx -ge 0) {
+            $indent = $lines[$lastIdx] -replace '- schema:.*', ''
+            $newLines = @($lines[0..$lastIdx] + "${indent}- schema: $SchemaId" + (Get-RimeTail -Lines $lines -AfterIndex $lastIdx))
+            Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
+            return
+        }
+    }
+
+    # 同一個 @next key 在同一份 YAML 只能出現一次，否則後者會覆蓋前者
+    # （librime 1.13 實測：重複的 schema_list/@next 只保留最後一筆），故取未占用的序號。
+    $nextKey = "schema_list/@next"
+    $nextIdx = 1
+    while (Select-String -Path $defaultCustom -Pattern ("^\s*" + [regex]::Escape($nextKey) + "\s*:") -Quiet) {
+        $nextKey = "schema_list/@next $nextIdx"
+        $nextIdx++
+    }
+
+    if ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
+        Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      ${nextKey}:`n        schema: $SchemaId"
+    } else {
+        Add-RimeText -Path $defaultCustom -Text "  ${nextKey}:`n    schema: $SchemaId"
     }
 }
 
@@ -188,14 +251,59 @@ if (-not $weaselExists) {
     exit 1
 }
 
-Write-Host "本工具將執行以下作業："
-if ($DOWNLOADED_PAYLOAD) {
-    Write-Host "  1. 從已驗證的 v$RELEASE_VERSION 封存檔安裝拍台文方案"
+# ============================================================
+# Step 0.5: 選擇要安裝的輸入方案
+# ============================================================
+if ($Schemas -eq "" -and -not $INTERACTIVE) { $Schemas = "phah" }
+if ($Schemas -eq "" -or $Schemas -eq "both") {
+    $INSTALL_PHAH = $true
+    $INSTALL_LIUR = $true
+} elseif ($Schemas -eq "liur") {
+    $INSTALL_PHAH = $false
+    $INSTALL_LIUR = $true
+} elseif ($Schemas -eq "phah") {
+    $INSTALL_PHAH = $true
+    $INSTALL_LIUR = $false
 } else {
-    Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+    Write-Host "錯誤：-Schemas 必須是 phah、liur 或 both（目前：$Schemas）" -ForegroundColor Red
+    exit 1
 }
-Write-Host "  2. 註冊輸入方案"
-Write-Host "  3. 安裝芫荽 iansui 字體"
+
+if ($INTERACTIVE) {
+    Write-Host "請選擇要安裝的輸入方案：" -ForegroundColor Yellow
+    Write-Host "  1. 拍台文（台語）"
+    Write-Host "  2. 嘸蝦米（rime-liur）"
+    Write-Host "  3. 拍台文 + 嘸蝦米（預設）"
+    $schemaChoice = Read-Host "請輸入選項 (1/2/3，Enter=3)"
+    if ($schemaChoice -eq "1") {
+        $INSTALL_PHAH = $true
+        $INSTALL_LIUR = $false
+    } elseif ($schemaChoice -eq "2") {
+        $INSTALL_PHAH = $false
+        $INSTALL_LIUR = $true
+    } else {
+        $INSTALL_PHAH = $true
+        $INSTALL_LIUR = $true
+    }
+    Write-Host ""
+}
+
+Write-Host "本工具將執行以下作業："
+if ($INSTALL_PHAH) {
+    if ($DOWNLOADED_PAYLOAD) {
+        Write-Host "  1. 從已驗證的 v$RELEASE_VERSION 封存檔安裝拍台文方案"
+    } else {
+        Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+    }
+    Write-Host "  2. 註冊輸入方案"
+    Write-Host "  3. 安裝芫荽 iansui 字體"
+}
+if ($INSTALL_LIUR) {
+    Write-Host "  4. 下載並安裝嘸蝦米（rime-liur，來源 soanseng/rime-liur-arch）"
+}
+if ($INTERACTIVE) {
+    Write-Host "  5. 先備份原設定，再詢問要保留哪些既有輸入法（可保留注音）"
+}
 Write-Host ""
 Write-Host "Rime 資料夾：$RIME_DIR" -ForegroundColor Green
 Write-Host "安裝來源：$ProjectRoot" -ForegroundColor Green
@@ -263,6 +371,13 @@ if ($USE_LOCAL_PAYLOAD) {
             $HAS_RIME_LUA = $true
         }
     }
+}
+
+if (-not $INSTALL_PHAH) {
+    $SCHEMA_FILES = @()
+    $LUA_FILES = @()
+    $HAS_RIME_LUA = $false
+    Write-Host "略過拍台文方案檔案（僅安裝嘸蝦米）" -ForegroundColor Yellow
 }
 
 $TOTAL = $SCHEMA_FILES.Count + $LUA_FILES.Count + $(if ($HAS_RIME_LUA) { 1 } else { 0 })
@@ -342,6 +457,13 @@ Write-Host ""
 Write-Host ""
 Write-Host "[ Step 2: 註冊輸入方案 ]" -ForegroundColor Green
 
+# 變動任何設定前先備份原設定（時間戳備份，不覆蓋先前的備份檔）。
+if (Test-Path "$RIME_DIR\default.custom.yaml") {
+    $backupStamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    Copy-Item -Force "$RIME_DIR\default.custom.yaml" "$RIME_DIR\default.custom.yaml.backup-$backupStamp"
+    Write-Host "  已備份原設定：default.custom.yaml.backup-$backupStamp" -ForegroundColor Green
+}
+
 Repair-RimeTextEncoding "$RIME_DIR\default.custom.yaml"
 Repair-RimeTextEncoding "$RIME_DIR\rime.lua"
 
@@ -354,6 +476,8 @@ if (Test-Path $defaultCustom) {
         Write-Host "  default.custom.yaml 已含 phah_taibun，跳過" -ForegroundColor Green
     }
 }
+
+if (-not $INSTALL_PHAH) { $needRegister = $false }
 
 if ($needRegister) {
     if (Test-Path $defaultCustom) {
@@ -369,7 +493,7 @@ if ($needRegister) {
             if ($lastIdx -ge 0) {
                 $indent = $lines[$lastIdx] -replace '- schema:.*', ''
                 $newLine = "${indent}- schema: phah_taibun"
-                $newLines = @($lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)])
+                $newLines = @($lines[0..$lastIdx] + $newLine + (Get-RimeTail -Lines $lines -AfterIndex $lastIdx))
                 Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
             }
         } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
@@ -392,7 +516,7 @@ if ($needRegister) {
 # default.custom.yaml 有兩種格式：__patch:（patch 列表）與 patch:（單一 map）。
 # 直接把 schema_list/@next 1: 附加到檔尾會落在結構外，造成 YAML 解析失敗
 # （所有方案註冊失效），必須依格式插入。
-if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_telex" -Quiet)) {
+if ($INSTALL_PHAH -and (Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_telex" -Quiet)) {
     Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
 
     $content = Read-RimeText $defaultCustom
@@ -404,7 +528,7 @@ if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pa
         }
         $indent = $lines[$lastIdx] -replace '- schema:.*', ''
         $newLine = "${indent}- schema: phah_taibun_telex"
-        $newLines = @($lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)])
+        $newLines = @($lines[0..$lastIdx] + $newLine + (Get-RimeTail -Lines $lines -AfterIndex $lastIdx))
         Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
     } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
         Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      schema_list/@next 1:`n        schema: phah_taibun_telex"
@@ -417,7 +541,7 @@ if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pa
 # ============================================================
 # Step 2.5: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
 # ============================================================
-if (Test-Path $defaultCustom) {
+if ($INSTALL_PHAH -and (Test-Path $defaultCustom)) {
     if (-not (Select-String -Path $defaultCustom -Pattern "poj_mode" -Quiet)) {
         Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
         if ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
@@ -438,34 +562,283 @@ if (Test-Path $defaultCustom) {
 }
 
 # ============================================================
+# 確保 default.custom.yaml 存在（僅安裝嘸蝦米且全新環境時建立最小檔案）
+# ============================================================
+if (-not (Test-Path $defaultCustom)) {
+    if ($INSTALL_PHAH) {
+        Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom
+    } else {
+        Write-RimeText -Path $defaultCustom -Text "patch:`n"
+    }
+    Write-Host "  default.custom.yaml（新建）" -ForegroundColor Green
+}
+
+# ============================================================
+# Step 2.6: 詢問要保留哪些既有輸入法（原設定已於前面時間戳備份）
+# ============================================================
+if ($INTERACTIVE) {
+    $currentSchemaIds = @()
+    foreach ($line in @(Get-RimeLines $defaultCustom)) {
+        if ($line -match '^\s*- schema:\s*(\S+)\s*$') { $currentSchemaIds += $Matches[1] }
+    }
+
+    if ($currentSchemaIds.Count -gt 0) {
+        Write-Host "目前 default.custom.yaml 的方案清單："
+        for ($i = 0; $i -lt $currentSchemaIds.Count; $i++) {
+            Write-Host ("  {0}. {1}" -f ($i + 1), $currentSchemaIds[$i]) -ForegroundColor Cyan
+        }
+        $keepAnswer = Read-Host "要保留哪些？（Enter=全部保留，或輸入編號如 1,3）"
+        if ($null -ne $keepAnswer -and $keepAnswer.Trim() -ne "") {
+            $keepIds = @()
+            foreach ($token in ($keepAnswer -split '[,，\s]+')) {
+                if ($token -match '^\d+$') {
+                    $idx = [int]$token - 1
+                    if ($idx -ge 0 -and $idx -lt $currentSchemaIds.Count) { $keepIds += $currentSchemaIds[$idx] }
+                }
+            }
+            # 剛安裝的方案不可被剪掉，否則會變成「裝了卻沒註冊」。
+            $protectedIds = @()
+            if ($INSTALL_PHAH) { $protectedIds += @("phah_taibun", "phah_taibun_telex") }
+            if ($INSTALL_LIUR) { $protectedIds += "liur" }
+
+            $dropIds = @($currentSchemaIds | Where-Object { $keepIds -notcontains $_ -and $protectedIds -notcontains $_ })
+            if ($dropIds.Count -gt 0) {
+                $keptLines = @(Get-RimeLines $defaultCustom | Where-Object {
+                    $line = $_
+                    $drop = $false
+                    if ($line -match '^\s*- schema:\s*(\S+)\s*$') { $drop = ($dropIds -contains $Matches[1]) }
+                    -not $drop
+                })
+                Write-RimeText -Path $defaultCustom -Text (($keptLines -join "`n") + "`n")
+                Write-Host "  已移除未選擇的方案：$($dropIds -join ', ')" -ForegroundColor Yellow
+            } else {
+                Write-Host "  保留全部既有方案" -ForegroundColor Green
+            }
+        } else {
+            Write-Host "  保留全部既有方案" -ForegroundColor Green
+        }
+    }
+}
+
+# ============================================================
+# Step 2.7: 保留注音輸入法（bopomofo）— 預設保留
+# ============================================================
+if ($INTERACTIVE -and -not (Select-String -Path $defaultCustom -Pattern "schema: bopomofo\s*$" -Quiet)) {
+    $bopomofoAnswer = Read-Host "要保留注音輸入法（bopomofo）嗎？(Y/n)"
+    if ($bopomofoAnswer -notmatch '^[nN]') {
+        Add-SchemaEntry -SchemaId "bopomofo"
+        Write-Host "  已將 bopomofo（注音）加入方案清單" -ForegroundColor Green
+    }
+}
+
+# ============================================================
 # Step 3: 安裝芫荽字體
 # ============================================================
-Write-Host ""
-Write-Host "[ Step 3: 安裝芫荽 iansui 字體 ]" -ForegroundColor Green
+if ($INSTALL_PHAH) {
+    Write-Host ""
+    Write-Host "[ Step 3: 安裝芫荽 iansui 字體 ]" -ForegroundColor Green
 
-New-Item -ItemType Directory -Force -Path $FONT_DIR | Out-Null
+    New-Item -ItemType Directory -Force -Path $FONT_DIR | Out-Null
 
-$fontPath = "$FONT_DIR\Iansui-Regular.ttf"
-if (Test-Path $fontPath) {
-    Write-Host "  芫荽字體（已安裝）" -ForegroundColor Green
-} else {
-    Write-Host "  正在下載芫荽 iansui 字體..."
-    $iansuiRevision = "9d9a8e68bf1e138dd91e562eeff28d95bca33196"
-    $iansuiSha256 = "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5"
-    $iansuiUrl = "https://raw.githubusercontent.com/ButTaiwan/iansui/$iansuiRevision/fonts/ttf/Iansui-Regular.ttf"
-    $fontTemp = "$fontPath.download"
-    try {
-        Invoke-WebRequest -Uri $iansuiUrl -OutFile $fontTemp | Out-Null
-        $fontHash = (Get-FileHash -Path $fontTemp -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($fontHash -ne $iansuiSha256) {
-            throw "Iansui-Regular.ttf SHA-256 驗證失敗。"
+    $fontPath = "$FONT_DIR\Iansui-Regular.ttf"
+    if (Test-Path $fontPath) {
+        Write-Host "  芫荽字體（已安裝）" -ForegroundColor Green
+    } else {
+        Write-Host "  正在下載芫荽 iansui 字體..."
+        $iansuiRevision = "9d9a8e68bf1e138dd91e562eeff28d95bca33196"
+        $iansuiSha256 = "7f1aa62e9dcbf40d0ce41a5d3f1e5ea602e66c295778ac6fefb6b84d8ed08bd5"
+        $iansuiUrl = "https://raw.githubusercontent.com/ButTaiwan/iansui/$iansuiRevision/fonts/ttf/Iansui-Regular.ttf"
+        $fontTemp = "$fontPath.download"
+        try {
+            Invoke-WebRequest -Uri $iansuiUrl -OutFile $fontTemp | Out-Null
+            $fontHash = (Get-FileHash -Path $fontTemp -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($fontHash -ne $iansuiSha256) {
+                throw "Iansui-Regular.ttf SHA-256 驗證失敗。"
+            }
+            Move-Item -Force $fontTemp $fontPath
+            Write-Host "  芫荽字體已驗證並安裝" -ForegroundColor Green
+        } catch {
+            Remove-Item -Force $fontTemp -ErrorAction SilentlyContinue
+            Write-Host "  字體下載或 SHA-256 驗證失敗，請手動安裝：" -ForegroundColor Yellow
+            Write-Host "  https://github.com/ButTaiwan/iansui/releases" -ForegroundColor Cyan
         }
-        Move-Item -Force $fontTemp $fontPath
-        Write-Host "  芫荽字體已驗證並安裝" -ForegroundColor Green
+    }
+}
+
+# ============================================================
+# Step 3.5: 選裝嘸蝦米（rime-liur）— 下載公開 fork 的整份方案
+# ============================================================
+if ($INSTALL_LIUR) {
+    Write-Host ""
+    Write-Host "[ Step 3.5: 安裝嘸蝦米（rime-liur） ]" -ForegroundColor Green
+    Write-Host ""
+
+    if ($INTERACTIVE) {
+        Write-Host "請選擇嘸蝦米版本：" -ForegroundColor Yellow
+        Write-Host "  1. 完整版（中打含英文詞庫版）（推薦）"
+        Write-Host "  2. 基礎版（中打不含英文詞庫）"
+        $liurChoice = Read-Host "請輸入選項 (1 或 2，Enter=1)"
+        if ($liurChoice -eq "2") { $LIUR_VERSION = "chinese-only" } else { $LIUR_VERSION = "mixed" }
+    } else {
+        $LIUR_VERSION = "mixed"
+    }
+    Write-Host ""
+
+    try {
+        Write-Host "正在從 GitHub 取得嘸蝦米檔案清單（$LIUR_REPO）..."
+        $liurTree = Invoke-RestMethod -Uri $LIUR_API -Method Get
+        if (-not $liurTree.tree) { throw "無法解析檔案清單" }
+
+        $LIUR_EXCLUDE = @(
+            "^docs/",
+            "^README\.md$",
+            "^LICENSE$",
+            "^\.gitignore$",
+            "^rime_liur_installer\.sh$",
+            "^rime_liur_installer\.ps1$",
+            "^rime_liur_installer_linux\.sh$"
+        )
+        # 使用者的自訂檔一律保留，不覆蓋（同嘸蝦米安裝腳本的「保留」選項）。
+        $LIUR_CUSTOM_FILES = @("openxiami_CustomWord.dict.yaml", "default.custom.yaml", "weasel.custom.yaml")
+
+        $liurRoot = @()
+        $liurLua = @()
+        $liurLunar = @()
+        $liurOpencc = @()
+        $liurConfigs = @()
+        $liurFonts = @()
+        $liurFontsWin = @()
+
+        foreach ($item in $liurTree.tree) {
+            if ($item.type -ne "blob") { continue }
+            $path = $item.path
+            $excluded = $false
+            foreach ($pattern in $LIUR_EXCLUDE) {
+                if ($path -match $pattern) { $excluded = $true; break }
+            }
+            if ($excluded) { continue }
+
+            if ($path -match "^lua/lunar_calendar/") { $liurLunar += $path }
+            elseif ($path -match "^lua/") { $liurLua += $path }
+            elseif ($path -match "^opencc/") { $liurOpencc += $path }
+            elseif ($path -match "^configs/") { $liurConfigs += $path }
+            elseif ($path -match "^fonts/Windows Only/") { $liurFontsWin += $path }
+            elseif ($path -match "^fonts/") { $liurFonts += $path }
+            elseif ($path -notmatch "/" -and $path -ne "rime.lua") { $liurRoot += $path }
+        }
+
+        $liurFileCount = $liurRoot.Count + $liurLua.Count + $liurLunar.Count + $liurOpencc.Count + $liurConfigs.Count + 1
+        Write-Host "找到 $liurFileCount 個方案檔案、$($liurFonts.Count + $liurFontsWin.Count) 個字體"
+
+        New-Item -ItemType Directory -Force -Path "$RIME_DIR\lua\lunar_calendar" | Out-Null
+        New-Item -ItemType Directory -Force -Path "$RIME_DIR\opencc" | Out-Null
+        New-Item -ItemType Directory -Force -Path "$RIME_DIR\configs" | Out-Null
+
+        $liurCurrent = 0
+
+        foreach ($file in $liurRoot) {
+            $liurCurrent++
+            if ($LIUR_CUSTOM_FILES -contains $file -and (Test-Path "$RIME_DIR\$file")) {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$file [保留]"
+            } else {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $file
+                Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\$file" | Out-Null
+            }
+        }
+
+        foreach ($file in $liurLua) {
+            $liurCurrent++
+            $filename = Split-Path $file -Leaf
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\$filename" | Out-Null
+        }
+
+        foreach ($file in $liurLunar) {
+            $liurCurrent++
+            $filename = Split-Path $file -Leaf
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\lunar_calendar\$filename" | Out-Null
+        }
+
+        foreach ($file in $liurOpencc) {
+            $liurCurrent++
+            $filename = Split-Path $file -Leaf
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\opencc\$filename" | Out-Null
+        }
+
+        foreach ($file in $liurConfigs) {
+            $liurCurrent++
+            $filename = Split-Path $file -Leaf
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\configs\$filename" | Out-Null
+        }
+
+        # rime.lua：嘸蝦米的 rime.lua 含完整函式定義，逐行比對會誤判（例如 end 這類短行），
+        # 故以整份附加合併，並用註冊符號偵測避免重複追加。
+        $liurCurrent++
+        $rimeLuaDest = "$RIME_DIR\rime.lua"
+        $liurRimeLua = Join-Path $env:TEMP "rime_liur_rime.lua"
+        Invoke-WebRequest -Uri "$LIUR_RAW/rime.lua" -OutFile $liurRimeLua | Out-Null
+        if (-not (Test-Path $rimeLuaDest)) {
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "rime.lua"
+            Copy-Item -Force $liurRimeLua $rimeLuaDest
+        } elseif (-not (Select-String -Path $rimeLuaDest -Pattern "liu_w2c_sorter" -Quiet)) {
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "rime.lua [合併]"
+            Copy-Item -Force $rimeLuaDest "$RIME_DIR\rime.lua.bak"
+            Add-RimeText -Path $rimeLuaDest -Text ((Read-RimeText $liurRimeLua).TrimEnd("`n"))
+        } else {
+            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "rime.lua [已含嘸蝦米]"
+        }
+        Remove-Item -Force $liurRimeLua -ErrorAction SilentlyContinue
+
+        Write-Host ""
+
+        # 依版本配置 liur.schema.yaml（與嘸蝦米安裝腳本相同的兩種版本）
+        if ($LIUR_VERSION -eq "mixed") {
+            Copy-Item -Force "$RIME_DIR\configs\liur.schema.yaml" "$RIME_DIR\liur.schema.yaml"
+            Write-Host "  已配置嘸蝦米完整版（中打含英文詞庫版）" -ForegroundColor Green
+        } else {
+            Copy-Item -Force "$RIME_DIR\configs\liur.chinese-only.schema.yaml" "$RIME_DIR\liur.schema.yaml"
+            Write-Host "  已配置嘸蝦米基礎版（中打不含英文詞庫）" -ForegroundColor Green
+        }
+        Remove-Item -Recurse -Force "$RIME_DIR\configs" -ErrorAction SilentlyContinue
+
+        # 註冊方案（只追加，不動既有清單）
+        Add-SchemaEntry -SchemaId "liur"
+        if ($LIUR_VERSION -eq "mixed") { Add-SchemaEntry -SchemaId "easy_en" }
+        Write-Host "  已將 liur 加入 default.custom.yaml（保留既有方案）" -ForegroundColor Green
+
+        # 字體（已安裝則跳過）
+        $liurFontTotal = $liurFonts.Count + $liurFontsWin.Count
+        if ($liurFontTotal -gt 0) { New-Item -ItemType Directory -Force -Path $FONT_DIR | Out-Null }
+        $liurFontCurrent = 0
+        foreach ($file in $liurFonts) {
+            $liurFontCurrent++
+            $filename = Split-Path $file -Leaf
+            if (Test-Path "$FONT_DIR\$filename") {
+                Show-Progress -Current $liurFontCurrent -Total $liurFontTotal -FileName "$filename [已安裝]"
+            } else {
+                Show-Progress -Current $liurFontCurrent -Total $liurFontTotal -FileName $filename
+                Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$FONT_DIR\$filename" | Out-Null
+            }
+        }
+        foreach ($file in $liurFontsWin) {
+            $liurFontCurrent++
+            $filename = Split-Path $file -Leaf
+            if (Test-Path "$FONT_DIR\$filename") {
+                Show-Progress -Current $liurFontCurrent -Total $liurFontTotal -FileName "$filename [已安裝]"
+            } else {
+                Show-Progress -Current $liurFontCurrent -Total $liurFontTotal -FileName $filename
+                $encodedPath = $file -replace " ", "%20"
+                Invoke-WebRequest -Uri "$LIUR_RAW/$encodedPath" -OutFile "$FONT_DIR\$filename" | Out-Null
+            }
+        }
+        if ($liurFontTotal -gt 0) { Write-Host "" }
     } catch {
-        Remove-Item -Force $fontTemp -ErrorAction SilentlyContinue
-        Write-Host "  字體下載或 SHA-256 驗證失敗，請手動安裝：" -ForegroundColor Yellow
-        Write-Host "  https://github.com/ButTaiwan/iansui/releases" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "嘸蝦米安裝失敗：$($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "拍台文不受影響。可稍後重試，或手動參考 https://github.com/$LIUR_REPO" -ForegroundColor Yellow
     }
 }
 

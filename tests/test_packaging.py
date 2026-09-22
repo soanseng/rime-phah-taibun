@@ -293,3 +293,68 @@ def test_android_community_install_is_documented_without_apk():
 
     workflow = read(".github/workflows/release.yml")
     assert "docs/android.md" in workflow
+
+
+def test_windows_installer_offers_boshiamy_as_optional_schema_choice():
+    """irm|iex must let the user pick 拍台文 / 嘸蝦米 / both, from the public rime-liur-arch fork."""
+    installer = read("install_windows.ps1")
+    iss = read("packaging/windows/phah-taibun.iss")
+
+    assert "soanseng/rime-liur-arch" in installer
+    assert "嘸蝦米" in installer
+    assert "$Schemas" in installer
+    assert "-Schemas" in iss
+    assert "configs\\liur.schema.yaml" in installer
+    assert "liur.chinese-only.schema.yaml" in installer
+    assert "easy_en" in installer
+
+
+def test_windows_installer_merges_liur_rime_lua_and_preserves_custom_files():
+    """liur rime.lua defines full functions; append whole file by marker, never clobber phah requires."""
+    installer = read("install_windows.ps1")
+
+    assert "liu_w2c_sorter" in installer
+    assert "openxiami_CustomWord.dict.yaml" in installer
+    # rime.lua must not be in the bulk root-file download list, or it overwrites
+    # the phah registrations before the merge can detect them.
+    assert '$path -notmatch "/" -and $path -ne "rime.lua"' in installer
+
+
+def test_windows_installer_backs_up_and_asks_which_existing_schemas_to_keep():
+    """Installer must back up default.custom.yaml (timestamped) and ask what to keep."""
+    installer = read("install_windows.ps1")
+
+    assert "default.custom.yaml.backup-" in installer
+    assert "要保留" in installer
+
+
+def test_windows_installer_keeps_bopomofo_by_default():
+    """注音 must survive the install; offer to add bopomofo when missing."""
+    installer = read("install_windows.ps1")
+
+    assert "bopomofo" in installer
+    assert "注音" in installer
+
+
+def test_windows_installer_never_prunes_the_schemas_it_installs():
+    """A 'keep only these' answer must not unregister what this run is installing."""
+    installer = read("install_windows.ps1")
+
+    assert "$protectedIds" in installer
+    assert '$protectedIds += @("phah_taibun", "phah_taibun_telex")' in installer
+    assert '$protectedIds += "liur"' in installer
+
+
+def test_windows_installer_never_slices_a_powershell_descending_range():
+    """$lines[($lastIdx+1)..($count-1)] yields 4,3 when the schema list ends the file, duplicating the tail."""
+    installer = read("install_windows.ps1")
+
+    assert "function Get-RimeTail" in installer
+    assert "[($lastIdx+1)..($lines.Count-1)]" not in installer
+    assert installer.count("(Get-RimeTail -Lines $lines -AfterIndex $lastIdx)") >= 3
+
+
+def test_readme_documents_boshiamy_install_option():
+    readme = read("README.md")
+
+    assert "嘸蝦米" in readme
