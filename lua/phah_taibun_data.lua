@@ -78,6 +78,22 @@ local function find_rules_path()
   return nil
 end
 
+
+--- Canonical word identity: the (hanlo, normalized reading) pair (PLAN 9-1D).
+-- Same hanji with different readings are different words (重/tîng ≠ 重/tāng);
+-- case and hyphen/space spacing are typography, not identity. Data is
+-- expected to be in NFC already (the build pipeline normalizes).
+-- All per-word maps (dedup, recommendation state, future wen/bai
+function M.word_identity(hanlo, reading)
+  local function norm(s)
+    s = tostring(s or ""):lower()
+    s = s:gsub("-", " ")
+    return s:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+  end
+
+  return norm(hanlo) .. "\t" .. norm(reading)
+end
+
 -- Load and cache hanlo_rules
 function M.get_hanlo_rules()
   if _hanlo_rules then

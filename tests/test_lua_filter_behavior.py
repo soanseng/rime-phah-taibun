@@ -486,3 +486,52 @@ def test_help_lists_every_user_facing_shortcut():
         "vvjit",
         "vvsp",
     } <= keys
+
+
+def test_word_identity_distinguishes_same_hanzi_different_reading():
+    """Word identity = (hanji, reading) pair (PLAN 9-1D).
+
+    重/tîng and 重/tāng are two different words and must never merge
+    into one identity key.
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        local data = require("phah_taibun_data")
+        local a = data.word_identity("重", "ting5")
+        local b = data.word_identity("重", "tang7")
+        assert(a ~= b, "same hanji different readings must differ")
+        print("OK")
+        """
+    )
+    assert run_lua(script).strip() == "OK"
+
+
+def test_word_identity_unifies_case_and_separators():
+    """Case and hyphen/space are typography, not identity (PLAN 9-1D)."""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        local data = require("phah_taibun_data")
+        local a = data.word_identity("Uân-á", "Uan5-A2")
+        local b = data.word_identity("uân á", "uan5 a2")
+        assert(a == b, "case/hyphen variants must share identity")
+        print("OK")
+        """
+    )
+    assert run_lua(script).strip() == "OK"
+
+
+def test_word_identity_never_collides_across_hanzi():
+    """Different hanji with identical readings stay distinct."""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        local data = require("phah_taibun_data")
+        local a = data.word_identity("飯", "png7")
+        local b = data.word_identity("夢", "png7")
+        assert(a ~= b, "identical readings must not merge hanji")
+        print("OK")
+        """
+    )
+    assert run_lua(script).strip() == "OK"
