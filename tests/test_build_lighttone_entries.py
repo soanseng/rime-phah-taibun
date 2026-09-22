@@ -468,3 +468,49 @@ class TestEndToEnd:
         assert output_file.exists()
         content = output_file.read_text()
         assert "轉--來" in content
+
+
+class TestBuildDeterminism:
+    """Output order must not depend on the process hash seed (PLAN 9-2H spirit)."""
+
+    def test_output_is_hash_seed_independent(self, tmp_path):
+        import subprocess
+        import sys
+
+        dict_file = tmp_path / "test.dict.yaml"
+        dict_file.write_text(
+            "---\n...\n"
+            "轉\ttng2\t947\n"
+            "傳\ttng2\t800\n"
+            "團\ttng2\t700\n"
+            "屯\ttng2\t600\n",
+            encoding="utf-8",
+        )
+        rules_file = tmp_path / "rules.json"
+        rules_file.write_text('[{"tl": "--lâi", "hanzi": "來", "rule": "補語"}]', encoding="utf-8")
+        freq_file = tmp_path / "freq.tsv"
+        freq_file.write_text("tng2--lai5\t678\n", encoding="utf-8")
+
+        outputs = []
+        for seed in ("1", "2"):
+            out = tmp_path / f"out-{seed}.tsv"
+            env = {"PYTHONHASHSEED": seed, "PATH": "/usr/bin:/bin"}
+            subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/build_lighttone_entries.py",
+                    "--dict",
+                    str(dict_file),
+                    "--rules",
+                    str(rules_file),
+                    "--corpus-freq",
+                    str(freq_file),
+                    "--output",
+                    str(out),
+                ],
+                check=True,
+                env=env,
+            )
+            outputs.append(out.read_text(encoding="utf-8"))
+
+        assert outputs[0] == outputs[1], "light-tone output order varies with hash seed"
