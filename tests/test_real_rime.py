@@ -190,6 +190,17 @@ def test_dictionary_word_outranks_fragments(real_rime_states):
             assert whole < i, f"single-char candidate {text!r} outranks 食飯"
 
 
+def test_hot_single_chars_do_not_fragment_dictionary_word(real_rime_states):
+    """Hot-char no-hijack (PLAN section 9-1C).
+
+    High-frequency single characters (我 gua2) must not break up a
+    dictionary word in the composed sentence: 食飯 stays whole in a
+    top-ranked candidate.
+    """
+    candidates = real_rime_states["hot_char_word"]["candidates"]
+    assert any("食飯" in candidate["text"] for candidate in candidates[:5])
+
+
 def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states):
     """Out-of-dictionary phrases (kio-tiann) must compose from single-syllable entries.
 

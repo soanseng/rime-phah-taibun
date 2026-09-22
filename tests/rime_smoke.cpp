@@ -96,6 +96,13 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "long_word");
   api->clear_composition(session);
 
+
+  // Hot-char no-hijack (PLAN section 9-1C): high-frequency single
+  // characters (我 gua2) must not fragment a dictionary word (食飯).
+  api->simulate_key_sequence(session, "gua2-tsiah8-png7");
+  print_state(api, session, "hot_char_word");
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "kio-tiann");
   print_state(api, session, "ood_hyphen");
   api->clear_composition(session);
