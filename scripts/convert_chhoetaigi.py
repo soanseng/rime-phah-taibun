@@ -413,9 +413,9 @@ def convert_chhoetaigi(
         kipsutian_paths: Optional KipSutian kautian.csv files to include in the main dictionary
     """
     try:
-        from scripts.build_frequency import compute_weights
+        from scripts.build_frequency import compute_weights, enforce_long_word_invariant
     except ModuleNotFoundError:
-        from build_frequency import compute_weights
+        from build_frequency import compute_weights, enforce_long_word_invariant
 
     all_entries = []
     for path in itaigi_paths:
@@ -431,6 +431,8 @@ def convert_chhoetaigi(
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_kipsutian_main_csv(f))
     weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
+    weighted, raised = enforce_long_word_invariant(weighted)
+    print(f"Long-word invariant raised {raised} entries")
     write_rime_dict(weighted, output_path)
 
 

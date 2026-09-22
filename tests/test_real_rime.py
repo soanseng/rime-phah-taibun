@@ -175,6 +175,21 @@ def test_known_hyphenated_phrase_still_matches_dictionary(real_rime_states):
     assert any(candidate["text"] == "台灣" for candidate in state["candidates"])
 
 
+def test_dictionary_word_outranks_fragments(real_rime_states):
+    """Long-word-first invariant (PLAN section 9-1A).
+
+    Typing a dictionary word's full reading must surface the whole word,
+    and no single-character fragment may rank above it.
+    """
+    candidates = real_rime_states["long_word"]["candidates"]
+    texts = [candidate["text"] for candidate in candidates]
+    assert "食飯" in texts
+    whole = texts.index("食飯")
+    for i, text in enumerate(texts):
+        if len(text.strip()) == 1:
+            assert whole < i, f"single-char candidate {text!r} outranks 食飯"
+
+
 def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states):
     """Out-of-dictionary phrases (kio-tiann) must compose from single-syllable entries.
 

@@ -419,6 +419,16 @@ def main(argv: list[str] | None = None) -> None:
             [python, "scripts/validate_dict.py", str(dict_yaml)],
         )
 
+
+    # Step 11b: Enforce long-word-first weight invariant (PLAN section 9-1A)
+    if dict_yaml.exists():
+        try:
+            from scripts.build_frequency import enforce_dict_file_invariant
+        except ModuleNotFoundError:
+            from build_frequency import enforce_dict_file_invariant
+        raised = enforce_dict_file_invariant(dict_yaml)
+        print(f"  Long-word invariant raised {raised} entries")
+
     # Summary
     print(f"\n{'=' * 60}")
     if steps_ok:
