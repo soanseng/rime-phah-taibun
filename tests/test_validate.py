@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_dict import main, validate_dict_format
+from scripts.validate_dict import main, validate_dict_format, verify_poj_integrity
 
 
 class TestValidateDictFormat:
@@ -75,3 +75,33 @@ class TestValidateCli:
         with pytest.raises(SystemExit) as exc_info:
             main([str(tmp_path / "nonexistent.yaml")])
         assert exc_info.value.code == 0
+
+
+class TestVerifyPojIntegrity:
+    """Fatal TL-POJ conversion integrity gate (PLAN section 9-2F)."""
+
+    @staticmethod
+    def _triple(poj_text="chia̍h-pn̄g"):
+        return [
+            {"hanlo": "食飯", "kip_input": "tsiah8-png7", "rime_key": "tsiah8 png7", "source": "moe"},
+            {"hanlo": "tsia̍h-pn̄g", "kip_input": "tsiah8-png7", "rime_key": "tsiah8 png7", "source": "moe_tl"},
+            {"hanlo": poj_text, "kip_input": "tsiah8-png7", "rime_key": "tsiah8 png7", "source": "moe_poj"},
+        ]
+
+    def test_consistent_triple_passes(self):
+        assert verify_poj_integrity(self._triple()) == []
+
+    def test_stale_poj_text_fails(self):
+        errors = verify_poj_integrity(self._triple(poj_text="chhia̍h-pn̄g"))
+        assert errors and "tsiah8-png7" in errors[0]
+
+    def test_missing_poj_sibling_fails(self):
+        entries = self._triple()[:2]
+        errors = verify_poj_integrity(entries)
+        assert errors and "moe_poj" in errors[0]
+
+    def test_non_moe_sources_ignored(self):
+        entries = [
+            {"hanlo": "Doraemon", "kip_input": "lo1-la2-e2-bong7", "rime_key": "lo1 la2 e2 bong7", "source": "taihoa"},
+        ]
+        assert verify_poj_integrity(entries) == []

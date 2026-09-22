@@ -417,6 +417,11 @@ def convert_chhoetaigi(
     except ModuleNotFoundError:
         from build_frequency import compute_weights, enforce_long_word_invariant
 
+    try:
+        from scripts.validate_dict import verify_poj_integrity
+    except ModuleNotFoundError:
+        from validate_dict import verify_poj_integrity
+
     all_entries = []
     for path in itaigi_paths:
         with open(path, encoding="utf-8-sig") as f:
@@ -430,6 +435,12 @@ def convert_chhoetaigi(
     for path in kipsutian_paths or []:
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_kipsutian_main_csv(f))
+
+    poj_errors = verify_poj_integrity(all_entries)
+    if poj_errors:
+        for error in poj_errors[:10]:
+            print(f"  POJ INTEGRITY: {error}")
+        raise SystemExit(f"TL→POJ integrity gate failed: {len(poj_errors)} errors")
     weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
     weighted, raised = enforce_long_word_invariant(weighted)
     print(f"Long-word invariant raised {raised} entries")

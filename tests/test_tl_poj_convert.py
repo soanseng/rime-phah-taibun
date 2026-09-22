@@ -38,6 +38,22 @@ class TestTlToPoj:
         assert tl_to_poj("") == ""
 
 
+class TestTlToPojCapitalized:
+    """Capitalized syllables must convert too, preserving initial case."""
+
+    def test_capitalized_ts(self):
+        assert tl_to_poj("Tsuí") == "Chuí"
+
+    def test_capitalized_tsh(self):
+        assert tl_to_poj("Tshiū-nâ") == "Chhiū-nâ"
+
+    def test_capitalized_ing(self):
+        assert tl_to_poj("Ing-ko") == "Eng-ko"
+
+    def test_capitalized_ua(self):
+        assert tl_to_poj("Uan-á") == "Oan-á"
+
+
 class TestPojToTl:
     """Convert POJ to TL."""
 

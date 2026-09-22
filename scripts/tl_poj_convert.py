@@ -18,8 +18,38 @@ COMBINING_TONE_TO_NUMBER = {
 }
 
 
+def _replace_pair(text: str, source: str, target: str) -> str:
+    """Plain replace for both lowercase and Capitalized forms of source."""
+    text = text.replace(source, target)
+    return text.replace(source.capitalize(), target.capitalize())
+
+
+
+
+def _sub_pair(text: str, source: str, target: str) -> str:
+    """Word-boundary regex replace that preserves the matched initial case.
+
+    Matches both lower- and Capitalized forms of source (ing/Ing) and maps
+    the case onto the target (eng/Eng).
+    """
+
+    pattern = re.compile(rf"[{source[0].upper()}{source[0]}]{source[1:]}\b")
+
+    def _repl(match: re.Match) -> str:
+        matched = match.group(0)
+        return target.capitalize() if matched[0].isupper() else target
+
+    return pattern.sub(_repl, text)
+
+
+
+
+
 def tl_to_poj(tl_text: str) -> str:
     """Convert TL romanization to POJ.
+
+    Case-preserving: capitalized syllables (Tsuí, Ing-ko) convert with the
+    initial capital kept (Chuí, Eng-ko).
 
     Args:
         tl_text: Text in TL romanization
@@ -31,12 +61,12 @@ def tl_to_poj(tl_text: str) -> str:
         return tl_text
     result = tl_text
     # Order matters: longer patterns first to avoid partial matches
-    result = result.replace("tsh", "chh")
-    result = result.replace("ts", "ch")
-    result = re.sub(r"ing\b", "eng", result)
-    result = re.sub(r"ik\b", "ek", result)
-    result = result.replace("ua", "oa")
-    result = result.replace("ue", "oe")
+    result = _replace_pair(result, "tsh", "chh")
+    result = _replace_pair(result, "ts", "ch")
+    result = _sub_pair(result, "ing", "eng")
+    result = _sub_pair(result, "ik", "ek")
+    result = _replace_pair(result, "ua", "oa")
+    result = _replace_pair(result, "ue", "oe")
     return result
 
 
