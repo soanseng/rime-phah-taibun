@@ -12,6 +12,7 @@ from scripts.build_frequency import (
     enforce_long_word_invariant,
     load_corpus_frequencies,
     word_length_modifier,
+    write_word_keys,
 )
 
 
@@ -265,3 +266,30 @@ class TestCommittedDictInvariant:
             total = sum(singles.get(token, 0) for token in self._split_tokens(rime_key))
             if total > 0:
                 assert weight >= math.ceil(1.2 * total), f"invariant violated: {rime_key}"
+
+
+class TestWriteWordKeys:
+    """Key-set snapshot for release diffing (PLAN 9-2H)."""
+
+    def test_writes_versioned_sorted_unique_pairs(self, tmp_path):
+        dict_path = tmp_path / "d.dict.yaml"
+        dict_path.write_text(
+            "---\n"
+            "name: test\n"
+            "version: \"0.6.2\"\n"
+            "...\n"
+            "飯\tpng7\t100\n"
+            "食\ttsiah8\t200\n"
+            "食飯\ttsiah8 png7\t300\n"
+            "食\ttsiah8\t999\n",
+            encoding="utf-8",
+        )
+        out = write_word_keys(dict_path, tmp_path / "dist")
+        assert out.name == "word-keys-v0.6.2.tsv"
+        lines = out.read_text(encoding="utf-8").splitlines()
+        assert lines[0] == "# word-keys v0.6.2"
+        assert lines[1:] == [
+            "食\ttsiah8",
+            "食飯\ttsiah8 png7",
+            "飯\tpng7",
+        ]
