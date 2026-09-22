@@ -346,6 +346,7 @@ Repair-RimeTextEncoding "$RIME_DIR\default.custom.yaml"
 Repair-RimeTextEncoding "$RIME_DIR\rime.lua"
 
 $defaultCustom = "$RIME_DIR\default.custom.yaml"
+$needRegister = $true
 
 if (Test-Path $defaultCustom) {
     if (Select-String -Path $defaultCustom -Pattern "phah_taibun" -Quiet) {
@@ -371,6 +372,8 @@ if ($needRegister) {
                 $newLines = @($lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)])
                 Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
             }
+        } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
+            Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      schema_list/@next:`n        schema: phah_taibun"
         } else {
             Add-RimeText -Path $defaultCustom -Text "  schema_list/@next:`n    schema: phah_taibun"
         }
@@ -416,6 +419,7 @@ if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pa
 # ============================================================
 if (Test-Path $defaultCustom) {
     if (-not (Select-String -Path $defaultCustom -Pattern "poj_mode" -Quiet)) {
+        Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
         if ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
             Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      switcher/save_options/@before 0: poj_mode`n      switcher/save_options/@next: full_romanization"
         } else {

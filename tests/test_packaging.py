@@ -42,6 +42,9 @@ def test_windows_installer_appends_schema_without_utf16_rewrite():
     assert "Set-Content" not in installer
     assert "schema_list/@next" in installer
     assert "不會因此取代" in installer or "保留既有方案" in installer
+    assert '$needRegister = $true' in installer
+    assert 'schema_list/@next:`n        schema: phah_taibun' in installer
+    assert "default.custom.yaml.bak" in installer
 
 
 def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
