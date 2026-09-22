@@ -208,7 +208,7 @@ def test_installers_ship_and_register_the_telex_schema():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.6.2"
+    version = "0.7.0"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")

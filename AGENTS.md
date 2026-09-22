@@ -97,7 +97,7 @@ rime-phah-taibun/
 ├── docs/                          # GitHub Pages 網站 + 使用文件
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）
 ├── install.sh / install_windows.ps1
-└── tests/                         # pytest（25 檔）
+└── tests/                         # pytest（23 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
@@ -118,7 +118,7 @@ rime-phah-taibun/
 | 白話字文獻館 | Taiwanese-Corpus/Khin-hoan_2010_pojbh | 待確認 |
 | 楊允言詞頻 (2009) | Taiwanese-Corpus/Ungian_2009_KIPsupin | 待確認 |
 | LKK 用字表 | 李江却基金會 Google Sheets | 已確認可用，需註明出處 |
-| rime-liur Lua 模組 | ryanwuson/rime-liur | 開源（README 聲明） |
+| rime-liur Lua 模組 | ryanwuson/rime-liur | 已確認可使用，需註明出處（PLAN §8） |
 | KeSi POJ↔TL | i3thuan5/KeSi | MIT |
 | 教育部輸入法詞庫增補 | luke871016/Taigi-Input-method-dictionary-supplement | 待確認 |
 | 芫荽字體 | ChhoeTaigi/iansui | SIL OFL 1.1（建議安裝） |
@@ -208,7 +208,7 @@ uv run python scripts/build_all.py     # 一鍵管線（語料→字典→規則
 - 字典 `.dict.yaml` 修改後需重新部署。
 - `hanlo_rules.yaml` 等規則檔由 Lua 初始化時載入記憶體。
 - 台語一字多音（文白讀）：白讀優先，文讀次要候選。
-- librime ≥1.6 的 `script_translator` 對「查無整詞、≥2 音節」一律自動組句（與 `enable_sentence` 旗標無關）；逐音節選字行為由 `tests/test_real_rime.py` 以真引擎釘住。
+- librime 的 `script_translator` 對「查無整詞、≥2 音節」一律自動組句（與 `enable_sentence` 旗標無關；1.6.0–1.13.1 原始碼驗證，見 tests/test_schema_config.py）；逐音節選字行為由 `tests/test_real_rime.py` 以真引擎釘住。
 - 輸出模式（TL/POJ、漢羅/全羅）自 0.4.0 起跨 session 記憶（`default.custom.yaml` 的 `switcher/save_options`）。
 
 ## 改進計畫

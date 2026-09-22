@@ -440,6 +440,11 @@
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
+            <time datetime="2026-09-22">2026-09-22</time>
+            <h3>0.7.0：連續輸入更愛整詞，下載可驗證</h3>
+            <p>字典內約 2.8 萬個多音節詞的權重重校：連續輸入時，字典裡的整詞（如「食飯」）不再被拆成單字組句。修正大寫音節（Tsuí、Ing-ko 類）的 POJ 候選轉換錯誤。字典構建完全確定化——同樣的資料重建兩次，結果逐位元組相同。每個 Release 附 <code>SHA256SUMS</code>，發佈時自動匿名下載驗證，安裝包可自行核對雜湊。</p>
+          </article>
+          <article>
             <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.2：Android 說明入 zip；macOS 改指令安裝</h3>
             <p><code>PhahTaiBun-source.zip</code> 包含 <code>docs/android.md</code>。macOS <strong>不再提供</strong> <code>PhahTaiBun.pkg</code>（無法在本專案驗證 Gatekeeper／notarize），請先裝鼠鬚管後執行 <code>curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash</code>，或複製 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 到 <code>~/Library/Rime/</code>。Windows 仍用 <code>PhahTaiBunSetup.exe</code> 或 PowerShell <code>irm … | iex</code>。</p>

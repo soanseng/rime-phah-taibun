@@ -44,6 +44,8 @@ The Windows PowerShell command is interactive: it asks whether to install 拍台
 Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the `curl .../install_macos.sh | bash` command, or `git pull --ff-only && ./install.sh` in a clone. Linux: `git pull --ff-only && ./install.sh`. Android: replace the official schema/Lua files and redeploy; see [Android 部署](docs/android.md). Updates preserve custom dictionaries and other Rime schemas.
 
 Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
+Since 0.7.0, every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)); dictionary weights favor whole words in continuous typing, and builds are byte-for-byte reproducible.
+
 
 You can type without tone numbers, and POJ/TL spellings can be mixed:
 
