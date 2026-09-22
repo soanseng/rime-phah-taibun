@@ -354,6 +354,31 @@ def test_windows_installer_never_slices_a_powershell_descending_range():
     assert installer.count("(Get-RimeTail -Lines $lines -AfterIndex $lastIdx)") >= 3
 
 
+def test_windows_installer_normalizes_default_custom_with_comments():
+    """After install, default.custom.yaml must be clean, commented, and normalized before deploy."""
+    installer = read("install_windows.ps1")
+
+    assert "function Convert-RimeDefaultCustom" in installer
+    assert "Convert-RimeDefaultCustom -Path $defaultCustom" in installer
+    assert "拍台文安裝工具維護" in installer
+    # @next 形式必須保持 @next（不能改成明確列表，否則會蓋掉小狼毫內建注音/倉頡）
+    assert "以 @next 附加在小狼毫內建清單之後" in installer
+    assert "  schema_list/@next {0}:" in installer
+    # normalizer 必須跳過自己輸出的區塊註解，否則重跑會在尾段累積（破壞冪等）
+    assert "$managedComments" in installer
+    call = installer.index("Convert-RimeDefaultCustom -Path $defaultCustom")
+    deploy = installer.index("# Step 4: 部署 RIME")
+    assert call < deploy
+
+
+def test_windows_installer_reports_unexpected_errors_with_line_numbers():
+    installer = read("install_windows.ps1")
+
+    assert "\ntrap {" in installer
+    assert "發生位置" in installer
+    assert "PSVersionTable.PSVersion" in installer
+
+
 def test_readme_documents_boshiamy_install_option():
     readme = read("README.md")
 

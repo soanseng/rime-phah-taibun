@@ -13,6 +13,19 @@ $ErrorActionPreference = "Stop"
 # Windows PowerShell 5.1 會讓每個下載慢上數倍（嘸蝦米需要 100+ 個檔案）。
 $ProgressPreference = "SilentlyContinue"
 
+# 任何未預期的終止錯誤：印出錯誤訊息、行號與 PowerShell 版本，方便使用者回報；
+# 不影響既有 try/catch（嘸蝦米、字體）與各步驟的 exit 流程。
+trap {
+    Write-Host ""
+    Write-Host "安裝失敗：$($_.Exception.Message)" -ForegroundColor Red
+    $errLine = "$($_.InvocationInfo.Line)".Trim()
+    if ($errLine.Length -gt 120) { $errLine = $errLine.Substring(0, 120) + "..." }
+    Write-Host "發生位置：第 $($_.InvocationInfo.ScriptLineNumber) 行：$errLine" -ForegroundColor Red
+    Write-Host "PowerShell 版本：$($PSVersionTable.PSVersion)" -ForegroundColor Red
+    Write-Host "請將上方完整輸出（含行號）貼到 GitHub Issues：https://github.com/soanseng/rime-phah-taibun/issues" -ForegroundColor Yellow
+    exit 1
+}
+
 # 互動模式＝命令列安裝（irm | iex），必須在 $ProjectRoot 被填成解壓目錄前判定；
 # 打包安裝器（PhahTaiBunSetup.exe）以 -ProjectRoot 非互動執行，不顯示任何提示。
 $INTERACTIVE = ($ProjectRoot -eq "")
@@ -103,6 +116,118 @@ function Get-RimeTail {
     param([string[]]$Lines, [int]$AfterIndex)
     if ($AfterIndex + 1 -le $Lines.Count - 1) { return $Lines[($AfterIndex + 1)..($Lines.Count - 1)] }
     return @()
+}
+
+# 列出 default.custom.yaml 內註冊的方案 id（涵蓋 - schema: 與 schema_list/@next 兩種形式，去重、依出現順序）。
+function Get-RimeSchemaIds {
+    param([string]$Path)
+    $ids = @()
+    $lines = @(Get-RimeLines $Path)
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -match '^\s*- schema:\s*(\S+)\s*$') {
+            if ($ids -notcontains $Matches[1]) { $ids += $Matches[1] }
+        }
+        elseif ($lines[$i] -match '^\s*schema_list/@next(\s+\d+)?:\s*$' -and
+                $i + 1 -lt $lines.Count -and $lines[$i + 1] -match '^\s+schema:\s*(\S+)\s*$') {
+            if ($ids -notcontains $Matches[1]) { $ids += $Matches[1] }
+            $i++
+        }
+    }
+    return $ids
+}
+
+# 把安裝工具管理的 default.custom.yaml 整理成乾淨排版並加上說明註解。
+# 只處理 patch: 單一 map 格式；__patch: 複合格式與其他檔案原封不動。
+# 使用者自己的設定（menu、key_binder、自訂註解…）會原樣保留在正規化區塊之後。
+function Convert-RimeDefaultCustom {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    $lines = @(Get-RimeLines $Path)
+    if ($lines.Count -eq 0) { return }
+
+    $bodyStart = 0
+    while ($bodyStart -lt $lines.Count -and $lines[$bodyStart] -match '^\s*(#|$)') { $bodyStart++ }
+    if ($bodyStart -ge $lines.Count -or $lines[$bodyStart] -notmatch '^patch:\s*$') { return }
+
+    $schemaIds = @(Get-RimeSchemaIds -Path $Path)
+    $hasSaveOptions = $false
+    $isDashList = $false
+    foreach ($line in $lines) {
+        if ($line -match 'switcher/save_options') { $hasSaveOptions = $true }
+        if ($line -match '^\s*- schema:') { $isDashList = $true }
+    }
+
+    $out = New-Object System.Collections.Generic.List[string]
+    $out.Add("# default.custom.yaml — 拍台文安裝工具維護")
+    $out.Add("#")
+    $out.Add("# 安裝工具只會「追加」設定，不會覆蓋小狼毫內建方案與你的其他設定；")
+    $out.Add("# 每次安裝前，原始內容都會備份成 default.custom.yaml.backup-<時間戳>。")
+    $out.Add("#")
+    $out.Add("# schema_list：可用的輸入方案，順序＝F4 選單順序。")
+    if ($hasSaveOptions) {
+        $out.Add("# switcher/save_options：記住 F4 選過的 TL/POJ、漢羅/全羅，重新部署或重開機不用重選。")
+    }
+    $out.Add("")
+    $out.Add("patch:")
+
+    if ($hasSaveOptions) {
+        $out.Add("  # 記住 F4 的輸出模式選擇")
+        $out.Add("  switcher/save_options/@before 0: poj_mode")
+        $out.Add("  switcher/save_options/@next: full_romanization")
+    }
+
+    if ($schemaIds.Count -gt 0) {
+        if ($isDashList) {
+            $out.Add("  # 輸入方案清單（明確列表：以此為準，小狼毫內建方案不會出現在 F4）；要增刪方案就增減下面幾行。")
+            $out.Add("  schema_list:")
+            foreach ($id in $schemaIds) { $out.Add("    - schema: $id") }
+        } else {
+            $out.Add("  # 以下方案以 @next 附加在小狼毫內建清單之後（內建注音、倉頡等仍可用）；新增方案建議重跑安裝工具。")
+            $out.Add("  schema_list/@next:")
+            $out.Add("    schema: " + $schemaIds[0])
+            for ($i = 1; $i -lt $schemaIds.Count; $i++) {
+                $out.Add(("  schema_list/@next {0}:" -f $i))
+                $out.Add("    schema: " + $schemaIds[$i])
+            }
+        }
+    }
+
+    # 正規化自己輸出的區塊註解：重跑時要跳過，否則會在尾段累積（破壞冪等）
+    $managedComments = @(
+        "  # 記住 F4 的輸出模式選擇",
+        "  # 輸入方案清單（明確列表",
+        "  # 以下方案以 @next"
+    )
+
+    # 原檔中非安裝工具管理的行（menu、key_binder、自訂註解…）原樣接在後面
+    $seenPatch = $false
+    $leading = $true
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        if ($leading) {
+            if ($line -match '^\s*(#|$)') { continue }
+            $leading = $false
+        }
+        if (-not $seenPatch) {
+            if ($line -match '^patch:\s*$') { $seenPatch = $true }
+            continue
+        }
+        $isManagedComment = $false
+        foreach ($mc in $managedComments) {
+            if ($line.StartsWith($mc)) { $isManagedComment = $true; break }
+        }
+        if ($isManagedComment) { continue }
+        if ($line -match '^\s*- schema:\s*(\S+)\s*$') { continue }
+        if ($isDashList -and $line -match '^\s*schema_list:\s*$') { continue }
+        if ($line -match '^\s*schema_list/@next(\s+\d+)?:\s*$') {
+            if ($i + 1 -lt $lines.Count -and $lines[$i + 1] -match '^\s+schema:\s*(\S+)\s*$') { $i++ }
+            continue
+        }
+        if ($line -match 'switcher/save_options') { continue }
+        $out.Add($line)
+    }
+
+    Write-RimeText -Path $Path -Text (($out -join "`n") + "`n")
 }
 
 # 追加單一方案到 default.custom.yaml，支援三種檔案格式，且已存在就不重複：
@@ -577,10 +702,7 @@ if (-not (Test-Path $defaultCustom)) {
 # Step 2.6: 詢問要保留哪些既有輸入法（原設定已於前面時間戳備份）
 # ============================================================
 if ($INTERACTIVE) {
-    $currentSchemaIds = @()
-    foreach ($line in @(Get-RimeLines $defaultCustom)) {
-        if ($line -match '^\s*- schema:\s*(\S+)\s*$') { $currentSchemaIds += $Matches[1] }
-    }
+    $currentSchemaIds = @(Get-RimeSchemaIds -Path $defaultCustom)
 
     if ($currentSchemaIds.Count -gt 0) {
         Write-Host "目前 default.custom.yaml 的方案清單："
@@ -603,12 +725,25 @@ if ($INTERACTIVE) {
 
             $dropIds = @($currentSchemaIds | Where-Object { $keepIds -notcontains $_ -and $protectedIds -notcontains $_ })
             if ($dropIds.Count -gt 0) {
-                $keptLines = @(Get-RimeLines $defaultCustom | Where-Object {
-                    $line = $_
-                    $drop = $false
-                    if ($line -match '^\s*- schema:\s*(\S+)\s*$') { $drop = ($dropIds -contains $Matches[1]) }
-                    -not $drop
-                })
+                $origLines = @(Get-RimeLines $defaultCustom)
+                $keptLines = New-Object System.Collections.Generic.List[string]
+                for ($i = 0; $i -lt $origLines.Count; $i++) {
+                    $line = $origLines[$i]
+                    if ($line -match '^\s*- schema:\s*(\S+)\s*$') {
+                        if ($dropIds -contains $Matches[1]) { continue }
+                        $keptLines.Add($line)
+                        continue
+                    }
+                    if ($line -match '^\s*schema_list/@next(\s+\d+)?:\s*$' -and
+                            $i + 1 -lt $origLines.Count -and $origLines[$i + 1] -match '^\s+schema:\s*(\S+)\s*$') {
+                        if ($dropIds -contains $Matches[1]) { $i++; continue }
+                        $keptLines.Add($line)
+                        $i++
+                        $keptLines.Add($origLines[$i])
+                        continue
+                    }
+                    $keptLines.Add($line)
+                }
                 Write-RimeText -Path $defaultCustom -Text (($keptLines -join "`n") + "`n")
                 Write-Host "  已移除未選擇的方案：$($dropIds -join ', ')" -ForegroundColor Yellow
             } else {
@@ -841,6 +976,12 @@ if ($INSTALL_LIUR) {
         Write-Host "拍台文不受影響。可稍後重試，或手動參考 https://github.com/$LIUR_REPO" -ForegroundColor Yellow
     }
 }
+
+# ============================================================
+# Step 3.9: 整理 default.custom.yaml（乾淨排版＋說明註解；
+# 使用者自有設定原樣保留，__patch: 複合格式不動）
+# ============================================================
+Convert-RimeDefaultCustom -Path $defaultCustom
 
 # ============================================================
 # Step 4: 部署 RIME
