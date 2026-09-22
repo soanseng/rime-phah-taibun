@@ -34,6 +34,15 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
 
 
+def test_windows_installer_appends_schema_without_utf16_rewrite():
+    """Existing Rime schema_list must stay; PS 5.1 Add-Content would UTF-16-corrupt it."""
+    installer = read("install_windows.ps1")
+    assert "UTF8Encoding $false" in installer
+    assert "Add-Content" not in installer
+    assert "Set-Content" not in installer
+    assert "schema_list/@next" in installer
+    assert "不會因此取代" in installer or "保留既有方案" in installer
+
 
 def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
     """GUI setup must not flash a console; deploy fail is manual 重新部署 like rime-liur."""

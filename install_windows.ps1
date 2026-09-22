@@ -23,6 +23,65 @@ $WEASEL_DIR_ALT = "$env:ProgramFiles\Rime\weasel-*"
 # 使用者自訂檔案（保留不覆蓋）
 $CUSTOM_FILES = @("phah_taibun.custom.dict.yaml", "phah_taibun.phrase.dict.yaml")
 
+# Windows PowerShell 5.1 預設把追加文字寫成 UTF-16，UTF8 編碼旗標還會加 BOM。
+# 兩者都會讓既有 default.custom.yaml 解析失敗，小狼毫退回內建預設方案。
+function Read-RimeText {
+    param([string]$Path)
+    $reader = New-Object System.IO.StreamReader($Path, $true)
+    try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
+}
+
+function Write-RimeText {
+    param([string]$Path, [string]$Text)
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($Path, $Text, $utf8)
+}
+
+function Add-RimeText {
+    param([string]$Path, [string]$Text)
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    $existing = ""
+    if (Test-Path $Path) { $existing = Read-RimeText $Path }
+    if ($existing.Length -gt 0 -and -not $existing.EndsWith("`n")) { $Text = "`n" + $Text }
+    if (-not $Text.EndsWith("`n")) { $Text = $Text + "`n" }
+    [System.IO.File]::AppendAllText($Path, $Text, $utf8)
+}
+
+function Get-RimeLines {
+    param([string]$Path)
+    $text = Read-RimeText $Path
+    if ([string]::IsNullOrEmpty($text)) { return @() }
+    return ($text -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n").Split("`n")
+}
+
+function Test-RimeUtf16 {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return $false }
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) { return $true }
+    $sample = [Math]::Min(400, $bytes.Length)
+    $nul = 0
+    for ($i = 0; $i -lt $sample; $i++) { if ($bytes[$i] -eq 0) { $nul++ } }
+    return ($sample -gt 8 -and $nul -gt ($sample / 4))
+}
+
+function Repair-RimeTextEncoding {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    $name = [System.IO.Path]::GetFileName($Path)
+    if (Test-RimeUtf16 $Path) {
+        $bak = "$Path.bak"
+        if ((Test-Path $bak) -and -not (Test-RimeUtf16 $bak)) {
+            Copy-Item -Force $bak $Path
+            Write-Host "  $name 曾被寫成 UTF-16，已從 .bak 還原既有方案" -ForegroundColor Yellow
+        } else {
+            Write-Host "錯誤：$name 編碼已壞，且沒有可用的 .bak。" -ForegroundColor Red
+            Write-Host "請先還原原本的 Rime 設定，再重跑安裝。安裝只會追加拍台文，不會取代方案清單。" -ForegroundColor Yellow
+            exit 1
+        }
+    }
+}
+
 function Get-VerifiedReleasePayload {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("PhahTaiBun-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
@@ -257,12 +316,13 @@ if ($HAS_RIME_LUA) {
             Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $tmpFile | Out-Null
         }
 
-        $existingContent = Get-Content $rimeLuaDest -Raw -ErrorAction SilentlyContinue
-        Get-Content $tmpFile | ForEach-Object {
+        $existingContent = Read-RimeText $rimeLuaDest
+        Get-RimeLines $tmpFile | ForEach-Object {
             $line = $_
             if ($line -match '^\s*$' -or $line -match '^\s*--') { return }
             if ($existingContent -notlike "*$line*") {
-                Add-Content -Path $rimeLuaDest -Value $line
+                Add-RimeText -Path $rimeLuaDest -Text $line
+                $existingContent = $existingContent + "`n" + $line
             }
         }
         if (-not $USE_LOCAL_PAYLOAD) {
@@ -282,8 +342,10 @@ Write-Host ""
 Write-Host ""
 Write-Host "[ Step 2: 註冊輸入方案 ]" -ForegroundColor Green
 
+Repair-RimeTextEncoding "$RIME_DIR\default.custom.yaml"
+Repair-RimeTextEncoding "$RIME_DIR\rime.lua"
+
 $defaultCustom = "$RIME_DIR\default.custom.yaml"
-$needRegister = $true
 
 if (Test-Path $defaultCustom) {
     if (Select-String -Path $defaultCustom -Pattern "phah_taibun" -Quiet) {
@@ -296,9 +358,9 @@ if ($needRegister) {
     if (Test-Path $defaultCustom) {
         Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
 
-        $content = Get-Content $defaultCustom -Raw
+        $content = Read-RimeText $defaultCustom
         if ($content -match '- schema:') {
-            $lines = Get-Content $defaultCustom
+            $lines = @(Get-RimeLines $defaultCustom)
             $lastIdx = -1
             for ($i = 0; $i -lt $lines.Count; $i++) {
                 if ($lines[$i] -match '- schema:') { $lastIdx = $i }
@@ -306,13 +368,13 @@ if ($needRegister) {
             if ($lastIdx -ge 0) {
                 $indent = $lines[$lastIdx] -replace '- schema:.*', ''
                 $newLine = "${indent}- schema: phah_taibun"
-                $newLines = $lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)]
-                $newLines | Set-Content $defaultCustom -Encoding UTF8
+                $newLines = @($lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)])
+                Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
             }
         } else {
-            Add-Content -Path $defaultCustom -Value "`n  schema_list/@next:`n    schema: phah_taibun"
+            Add-RimeText -Path $defaultCustom -Text "  schema_list/@next:`n    schema: phah_taibun"
         }
-        Write-Host "  已將 phah_taibun 追加到 default.custom.yaml" -ForegroundColor Green
+        Write-Host "  已將 phah_taibun 追加到 default.custom.yaml（保留既有方案，不會因此取代）" -ForegroundColor Green
     } else {
         # 安裝預設的 default.custom.yaml
         Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom
@@ -330,23 +392,23 @@ if ($needRegister) {
 if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_telex" -Quiet)) {
     Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
 
-    $content = Get-Content $defaultCustom -Raw
+    $content = Read-RimeText $defaultCustom
     if ($content -match '(?m)^\s*- schema: phah_taibun\s*$') {
-        $lines = Get-Content $defaultCustom
+        $lines = @(Get-RimeLines $defaultCustom)
         $lastIdx = -1
         for ($i = 0; $i -lt $lines.Count; $i++) {
             if ($lines[$i] -match '^\s*- schema: phah_taibun\s*$') { $lastIdx = $i }
         }
         $indent = $lines[$lastIdx] -replace '- schema:.*', ''
         $newLine = "${indent}- schema: phah_taibun_telex"
-        $newLines = $lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)]
-        $newLines | Set-Content $defaultCustom -Encoding UTF8
-    } elseif ((Get-Content $defaultCustom -TotalCount 1) -match '^__patch:') {
-        Add-Content -Path $defaultCustom -Value "  - patch/+:`n      schema_list/@next 1:`n        schema: phah_taibun_telex"
+        $newLines = @($lines[0..$lastIdx] + $newLine + $lines[($lastIdx+1)..($lines.Count-1)])
+        Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
+    } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
+        Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      schema_list/@next 1:`n        schema: phah_taibun_telex"
     } else {
-        Add-Content -Path $defaultCustom -Value "  schema_list/@next 1:`n    schema: phah_taibun_telex"
+        Add-RimeText -Path $defaultCustom -Text "  schema_list/@next 1:`n    schema: phah_taibun_telex"
     }
-    Write-Host "  已將 phah_taibun_telex 追加到 default.custom.yaml" -ForegroundColor Green
+    Write-Host "  已將 phah_taibun_telex 追加到 default.custom.yaml（保留既有方案，不會因此取代）" -ForegroundColor Green
 }
 
 # ============================================================
@@ -354,10 +416,10 @@ if ((Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pa
 # ============================================================
 if (Test-Path $defaultCustom) {
     if (-not (Select-String -Path $defaultCustom -Pattern "poj_mode" -Quiet)) {
-        if ((Get-Content $defaultCustom -TotalCount 1) -match '^__patch:') {
-            Add-Content -Path $defaultCustom -Value "  - patch/+:`n      switcher/save_options/@before 0: poj_mode`n      switcher/save_options/@next: full_romanization"
+        if ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
+            Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      switcher/save_options/@before 0: poj_mode`n      switcher/save_options/@next: full_romanization"
         } else {
-            $lines = Get-Content $defaultCustom
+            $lines = @(Get-RimeLines $defaultCustom)
             $newLines = foreach ($line in $lines) {
                 $line
                 if ($line -match '^patch:') {
@@ -365,7 +427,7 @@ if (Test-Path $defaultCustom) {
                     "  switcher/save_options/@next: full_romanization"
                 }
             }
-            $newLines | Set-Content $defaultCustom -Encoding UTF8
+            Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
         }
         Write-Host "  已將 poj_mode / full_romanization 加入 save_options（記住模式選擇）" -ForegroundColor Green
     }
