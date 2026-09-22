@@ -99,3 +99,35 @@ jobs:
             release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe
             release-assets/PhahTaiBun-source/PhahTaiBun-source.zip
             release-assets/PhahTaiBun-source/PhahTaiBun-source.zip.sha256
+
+
+      - name: Generate SHA256SUMS for all release assets (PLAN 9-3J)
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets/flat
+          cp release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe release-assets/flat/
+          cp release-assets/PhahTaiBun-source/PhahTaiBun-source.zip release-assets/flat/
+          cd release-assets/flat
+          sha256sum PhahTaiBunSetup.exe PhahTaiBun-source.zip > SHA256SUMS
+
+
+      - name: Attach SHA256SUMS to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/flat/SHA256SUMS
+
+
+
+  verify-download:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Anonymous download and hash verification (PLAN 9-3J)
+        run: |
+          set -euo pipefail
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          mkdir dl && cd dl
+          for f in PhahTaiBunSetup.exe PhahTaiBun-source.zip SHA256SUMS; do
+            curl -fL --retry 5 --retry-delay 3 -O "${base}/${f}"
+          done
+          sha256sum -c SHA256SUMS
