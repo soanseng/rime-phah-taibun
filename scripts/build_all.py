@@ -434,6 +434,14 @@ def main(argv: list[str] | None = None) -> None:
         raised = enforce_dict_file_invariant(dict_yaml)
         print(f"  Long-word invariant raised {raised} entries")
 
+    # Step 11c: Snapshot the dictionary key set for release diffing (PLAN 9-2H)
+    if dict_yaml.exists():
+        try:
+            from scripts.build_frequency import write_word_keys
+        except ModuleNotFoundError:
+            from build_frequency import write_word_keys
+        snapshot = write_word_keys(dict_yaml, Path("dist"))
+        print(f"  Word-key snapshot: {snapshot}")
     # Summary
     print(f"\n{'=' * 60}")
     if steps_ok:

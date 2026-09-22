@@ -31,6 +31,9 @@ packaging/macos/build/
 
 # Claude Code（AI 開發指令，不進公開 repo）
 .claude/
+
+# Release artifacts (word-key snapshots etc.)
+dist/
 docs/superpowers/
 
 # Worktrees

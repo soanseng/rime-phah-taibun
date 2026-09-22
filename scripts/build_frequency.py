@@ -237,3 +237,39 @@ def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
 
     dict_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return raised
+
+
+_VERSION_RE = re.compile(r'^version:\s*"?([^"\n]+)"?\s*$')
+
+
+
+def write_word_keys(dict_path: Path, output_dir: Path) -> Path:
+    """Snapshot a dict.yaml's (hanzi, key) set for release diffing (PLAN 9-2H).
+
+    Writes ``word-keys-v<version>.tsv``: one header line plus sorted unique
+    ``hanzi<TAB>key`` rows, no weights. Diffing two snapshots yields the exact
+    word-level additions/removals between releases.
+
+    Args:
+        dict_path: Assembled dict.yaml (header carries the version).
+        output_dir: Destination directory (created if missing).
+
+    Returns:
+        Path to the written snapshot file.
+    """
+    lines = dict_path.read_text(encoding="utf-8").splitlines()
+    version = "unknown"
+    pairs: set[tuple[str, str]] = set()
+    for line in lines:
+        version_match = _VERSION_RE.match(line)
+        if version_match:
+            version = version_match.group(1)
+        parts = line.split("\t")
+        if len(parts) >= 2 and "\t" in line and not line.startswith(("#", "---")):
+            pairs.add((parts[0], parts[1]))
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"word-keys-v{version}.tsv"
+    body = "\n".join(f"{hanlo}\t{key}" for hanlo, key in sorted(pairs))
+    output_path.write_text(f"# word-keys v{version}\n{body}\n", encoding="utf-8")
+    return output_path
