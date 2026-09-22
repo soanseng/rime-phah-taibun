@@ -103,6 +103,13 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "hot_char_word");
   api->clear_composition(session);
 
+
+  // Slot-0 verbatim candidate (PLAN section 9-1E): invalid pinyin must
+  // offer the raw input itself as the first candidate.
+  api->simulate_key_sequence(session, "xqzv");
+  print_state(api, session, "invalid_input");
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "kio-tiann");
   print_state(api, session, "ood_hyphen");
   api->clear_composition(session);

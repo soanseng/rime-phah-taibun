@@ -201,6 +201,18 @@ def test_hot_single_chars_do_not_fragment_dictionary_word(real_rime_states):
     assert any("食飯" in candidate["text"] for candidate in candidates[:5])
 
 
+
+def test_invalid_input_offers_verbatim_at_slot_zero(real_rime_states):
+    """Slot-0 verbatim escape hatch (PLAN 9-1E).
+
+    Typing a string that matches nothing must offer the raw input itself
+    as the first candidate: one selection commits exactly what was typed.
+    """
+    state = real_rime_states["invalid_input"]
+    candidates = state["candidates"]
+    assert candidates, "invalid input must still produce candidates"
+    assert candidates[0]["text"] == "xqzv"
+
 def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states):
     """Out-of-dictionary phrases (kio-tiann) must compose from single-syllable entries.
 
