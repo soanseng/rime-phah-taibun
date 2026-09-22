@@ -659,11 +659,14 @@ return M
 
 **現況**：librime user_dict 只記選詞次數，缺少「夠用即止」與「久不用退燒」的行為；Lua 端推薦 boost（`phah_taibun_recommend`）也無上限。
 
-**做法**：
-1. 先研究並文件化 librime user_dict 既有的 aging/decay 可調參數（schema/translator 設定），能用原生參數就不用 Lua 補。
-2. Lua 推薦 boost 加入飽和：boost 隨次數成長至上限後不再增加（如 40 次飽和）；概念上支援時間衰減（如 30 天半衰期），若原生參數可達成則以原生為準。
+**研究結論（librime 1.13.1，2026-09）**：
+1. user db 每筆記錄 `UserDbValue{commits, dee, tick}`（`dict/user_db.h`）：commits＝選詞次數、tick＝以「輸入活動」計齡的 tick 數（非牆鐘）、dee＝內部衰減因子。
+2. 衰減與權重公式是**編譯期內建常數**（實作於 `user_dictionary.cc`/`memory.cc`），schema/translator 設定面（`enable_user_dict`、`user_dict`、`db_class`）**沒有任何可調的 aging/decay/saturation 參數**——要用原生參數達成本項目，結論是：無。
+3. tick 語意近似「久不用相對老化」（總 tick 前進、舊條目相對退燒），但不可調；commits 無飽和上限。
 
-**驗收**：參數研究結論寫入本節；`tests/test_real_rime.py` 以「重複選詞 N 次後排序提升、超過上限後不再提升」案例釘住行為。
+**後續行動**：`phah_taibun_recommend` 目前只做標記（◆/★）不做排序 boost——飽和上限（如 40 次）與時間衰減（如 30 天半衰期，需自記時間戳）**等到 Lua 排序 boost 實作時一併做**，鍵用 `word_identity`。學習行為的行為契約已由既有測試釘住：旗標組合（`tests/test_schema_config.py::test_main_translator_learns_and_composes_without_inventing_user_words`）、逐音節選字學習（`tests/test_real_rime.py::test_word_by_word_selection_commits_chosen_hanzi`）。
+
+**驗收**：研究結論寫入本節 ✅；行為由上述既有測試釘住 ✅；飽和/衰減實作移至未來排序 boost 工作（不另開測試）。
 
 #### C. 單音節熱字不得劫持組句路徑
 
@@ -685,11 +688,9 @@ return M
 
 無調輸入時，第一候選前插入「原文照送」候選：顯示使用者輸入的原串、commit 原樣。字典查無的拼音一步送出，不進組句。
 
-與現有 `Return = commit_raw_input` 的差別：候選區可見、可用數字鍵選——對手機前端（無輕鬆按 Return 的情境）與新手都更明確。
+**實證結論（2026-09，真引擎 1.13.1）**：現有 `echo_translator` 路徑**已經提供**此行為——打無效拼音（如 `xqzv`），第一候選即原文本身，選後送出等於輸入。因此**不新增 Lua filter**（避免與 echo、逐音節三路重複），改以真引擎測試釘住：`tests/test_real_rime.py::test_invalid_input_offers_verbatim_at_slot_zero`。
 
-**做法**：Lua filter 實作（唯讀插入，不影響既有候選排序）；先評估與 echo_translator、逐音節路徑 (`kio-tiann` 類) 的疊合度，避免三條路做同一件事。
-
-**驗收**：`tests/test_real_rime.py` 案例：打無效拼音串，第一候選為原文；選後輸出等於輸入。
+**驗收**： ✅（既有行為＋釘住測試；若未來 echo 行為變動，測試會先紅。）
 
 ### 9-2. 資料管線驗證強化
 
