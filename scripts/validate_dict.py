@@ -122,10 +122,58 @@ def _poj_identity(text: str) -> str:
     return text.casefold().replace("-", " ")
 
 
+def verify_known_keys(dict_path: Path, fixture_path: Path) -> list[str]:
+    """Post-build smoke gate: fixed queries must hit at least N rows (PLAN 9-2G).
+
+    Each fixture line is ``<rime key>: <min rows>``. A row hits a key when
+    its rime key equals the query or starts with it as a syllable prefix.
+    Calibrated thresholds catch large-scale dictionary regressions
+    (converter breakage, dropped sources) that format checks miss.
+
+    Args:
+        dict_path: Assembled dict.yaml to scan.
+        fixture_path: YAML fixture of key/min-count pairs.
+
+    Returns:
+        List of error descriptions (empty = all thresholds met).
+    """
+    if not fixture_path.exists():
+        return [f"known-keys fixture not found: {fixture_path}"]
+
+    minimums: dict[str, int] = {}
+    for line in fixture_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        match = re.fullmatch(r"([A-Za-z0-9 \-]+):\s*(\d+)", line)
+        if match:
+            minimums[match.group(1)] = int(match.group(2))
+
+    counts: dict[str, int] = {key: 0 for key in minimums}
+    for line in dict_path.read_text(encoding="utf-8").splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2:
+            continue
+        key = parts[1]
+        for query in minimums:
+            if key == query or key.startswith(query + " "):
+                counts[query] += 1
+
+    errors = []
+    for query, minimum in minimums.items():
+        if counts[query] < minimum:
+            errors.append(f"known key '{query}': {counts[query]} rows < required {minimum}")
+    return errors
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for dictionary validation."""
     parser = argparse.ArgumentParser(description="Validate Rime dict.yaml files")
     parser.add_argument("files", type=Path, nargs="+", help="Dict.yaml files to validate")
+    parser.add_argument(
+        "--known-keys",
+        type=Path,
+        default=None,
+        help="Optional known-keys fixture (lines of 'key: min rows') for the smoke gate",
+    )
     args = parser.parse_args(argv)
 
     total_errors = 0
@@ -134,6 +182,8 @@ def main(argv: list[str] | None = None) -> None:
             print(f"SKIP: {dict_path} not found")
             continue
         errors = validate_dict_format(dict_path)
+        if args.known_keys:
+            errors += verify_known_keys(dict_path, args.known_keys)
         if errors:
             print(f"FAIL: {dict_path} ({len(errors)} issues)")
             for err in errors:
