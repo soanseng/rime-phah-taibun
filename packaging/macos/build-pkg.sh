@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-VERSION="${PHAH_TAIBUN_VERSION:-0.6.2}"
+VERSION="${PHAH_TAIBUN_VERSION:-0.7.0}"
 BUILD_DIR="$ROOT/packaging/macos/build"
 PAYLOAD_DIR="$BUILD_DIR/payload/Library/Application Support/PhahTaiBun"
 COMPONENT_PKG="$BUILD_DIR/PhahTaiBunComponent.pkg"

@@ -42,3 +42,18 @@ iscc packaging/windows/phah-taibun.iss
 產物：`packaging/windows/Output/PhahTaiBunSetup.exe`
 
 正式發佈前若要降低安全性警告，Windows 需要 code signing。macOS `.pkg` 不再隨 release 發佈。
+
+## 驗證下載（0.7.0 起）
+
+每個 Release 附 `SHA256SUMS`（涵蓋 `PhahTaiBunSetup.exe` 與 `PhahTaiBun-source.zip`），發佈時 CI 會以匿名下載自動核對一次。自行核對方式：
+
+```bash
+# Linux / macOS（在下載目錄）
+sha256sum -c SHA256SUMS        # macOS 改用：shasum -a 256 -c SHA256SUMS
+```
+
+```powershell
+# Windows PowerShell
+Get-FileHash PhahTaiBunSetup.exe -Algorithm SHA256
+# 再與 SHA256SUMS 內對應行比對
+```

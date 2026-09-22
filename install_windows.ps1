@@ -18,7 +18,7 @@ $ProgressPreference = "SilentlyContinue"
 $INTERACTIVE = ($ProjectRoot -eq "")
 
 # 發行資產固定版本；命令列安裝只下載該版本的完整封存檔。
-$RELEASE_VERSION = "0.6.2"
+$RELEASE_VERSION = "0.7.0"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
 $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
