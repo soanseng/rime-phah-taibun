@@ -2,6 +2,8 @@
 
 import io
 
+import pytest
+
 from scripts.convert_chhoetaigi import (
     clean_hanlo_text,
     clean_kip_input,
@@ -486,3 +488,17 @@ class TestConvertCli:
         assert "食飯\ttsiah8 png7" in content
         assert "tsia̍h-pn̄g\ttsiah8 png7" in content
         assert "chia̍h-pn̄g\ttsiah8 png7" in content
+
+
+class TestPojIntegrityGate:
+    """Fatal gate: a poisoned TL-to-POJ converter must abort the build (PLAN 9-2F)."""
+
+    def test_broken_converter_aborts_build(self, tmp_path, monkeypatch):
+        import scripts.convert_chhoetaigi as conv
+
+        csv = tmp_path / "kautian.csv"
+        csv.write_text("漢字,羅馬字\n食飯,tsia̍h-pn̄g\n", encoding="utf-8")
+        monkeypatch.setattr(conv, "tl_to_poj", lambda tl: "XX" + tl)
+
+        with pytest.raises(SystemExit):
+            conv.convert_chhoetaigi([], [], tmp_path / "out.dict.yaml", kipsutian_paths=[csv])
