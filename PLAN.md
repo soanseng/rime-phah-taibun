@@ -676,7 +676,7 @@ return M
 **原則**：全專案的「同一個詞」定義 = (漢字文本, 正規化 TL 讀音) 成對。只有漢字或只有讀音都不構成身份——`重/tîng` 與 `重/tāng` 是兩個詞，不得在任何去重、推薦、學習計數中合併。
 
 **做法**：
-1. 原則寫入 CLAUDE.md（設計原則區）。
+1. 原則寫入 AGENTS.md（設計原則區；已於遷移時完成）。
 2. Lua 端（`phah_taibun_filter` / `phah_taibun_recommend` / `phah_taibun_synonym`）共用同一個鍵推導函數（放 `phah_taibun_data.lua`），統一正規化（空白↔連字符、大小寫、NFC）。
 
 **驗收**：`tests/test_lua_filter_behavior.py` 新增「同漢字異讀不合併」案例（重 兩讀、青 tshenn/tshing 等）。
