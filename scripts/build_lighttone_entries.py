@@ -365,7 +365,7 @@ def reverse_lookup_hanzi(
         # Strategy 1: Whole-word match
         whole_kip = prefix_kip + "-" + suffix_kip
         if whole_kip in kip_to_hanlo:
-            for hanlo in kip_to_hanlo[whole_kip]:
+            for hanlo in sorted(kip_to_hanlo[whole_kip]):
                 marked = insert_lighttone_marker(hanlo, prefix_syllable_count)
                 if "--" in marked and marked != hanlo:
                     results.append(marked)
@@ -378,7 +378,7 @@ def reverse_lookup_hanzi(
         suffix_hz = _lookup_segment_hanzi(suffix_kip, kip_to_hanlo, suffix_hanzi)
 
         if prefix_hanzi_set and suffix_hz is not None:
-            for prefix_hz in prefix_hanzi_set:
+            for prefix_hz in sorted(prefix_hanzi_set):
                 assembled = prefix_hz + "--" + suffix_hz
                 results.append(assembled)
 
@@ -398,7 +398,7 @@ def reverse_lookup_hanzi(
             return results  # Can't resolve all segments
         suffix_parts.append(hz)
 
-    for prefix_hz in prefix_hanzi_set:
+    for prefix_hz in sorted(prefix_hanzi_set):
         assembled = prefix_hz + "--" + "--".join(suffix_parts)
         results.append(assembled)
 
@@ -444,7 +444,7 @@ def build_lighttone_entries(
 
         weight = compute_lighttone_weight(count, non_lt_weight)
 
-        for hanlo in hanlo_candidates:
+        for hanlo in sorted(hanlo_candidates):
             key = (hanlo, rime_key)
             if key in existing_rimekeys or key in seen:
                 continue
