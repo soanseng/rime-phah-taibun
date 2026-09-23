@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>拍台文 Phah Tai-bun｜電腦台語輸入法、Rime 台語輸入法、POJ/TL 漢羅打字</title>
-  <meta name="description" content="拍台文 Phah Tai-bun 是給 Windows、macOS、Linux 電腦使用的 Rime 台語輸入法方案。整合 ChhoeTaigi、iTaigi、教育部辭典、楊允言詞頻、建中詞庫增補與 21 個台文外部資源，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫、候選拼音註解、華語反查台語，適合創作者、老師、學生與日常台文書寫。">
+  <title>拍台文 Phah Tai-bun｜台語輸入法、白話字輸入法、電腦台語打字（Rime）</title>
+  <meta name="description" content="拍台文 Phah Tai-bun 是給 Windows、macOS、Linux 電腦使用的免費開源 Rime 台語輸入法方案。整合 ChhoeTaigi、iTaigi、教育部辭典、楊允言詞頻、建中詞庫增補與 21 個台文外部資源，支援 POJ 白話字與 TL 台羅混打、聲調可省略、漢羅混寫、候選拼音註解、華語反查台語，適合創作者、老師、學生與日常台語打字、台文書寫。">
   <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,電腦台語輸入法,Rime 台語輸入法,白話字輸入法,台羅輸入法,POJ 輸入法,TL 輸入法,漢羅輸入,漢羅混寫,台語打字,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,拍台文,Phah Tai-bun">
   <meta name="author" content="Soan Seng">
   <meta name="robots" content="index,follow,max-image-preview:large">
@@ -15,13 +15,13 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_TW">
   <meta property="og:site_name" content="拍台文 Phah Tai-bun">
-  <meta property="og:title" content="拍台文｜電腦台語輸入法">
-  <meta property="og:description" content="會講台語，就可以開始打台文。POJ/TL 都通、聲調可省略、候選顯示拼音、預設漢羅混寫。">
+  <meta property="og:title" content="拍台文｜台語輸入法·白話字輸入法（電腦 Rime）">
+  <meta property="og:description" content="會講台語，就可以開始用台語輸入法打字。POJ 白話字、TL 台羅都通、聲調可省略、候選顯示拼音、預設漢羅混寫。">
   <meta property="og:url" content="https://soanseng.github.io/rime-phah-taibun/">
   <meta property="og:image" content="https://soanseng.github.io/rime-phah-taibun/icon.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="拍台文｜電腦台語輸入法">
-  <meta name="twitter:description" content="Rime 台語輸入法方案：POJ/TL 雙拼音、聲調可省略、漢羅混寫、華語反查台語。">
+  <meta name="twitter:title" content="拍台文｜台語輸入法·白話字輸入法（電腦 Rime）">
+  <meta name="twitter:description" content="Rime 台語輸入法方案：POJ/TL 雙拼音、聲調可省略、漢羅混寫、華語反查台語，電腦台語打字免費開源。">
   <meta name="theme-color" content="#0b6f55">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/layout.css">
@@ -61,6 +61,37 @@
           "price": "0",
           "priceCurrency": "TWD"
         }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://soanseng.github.io/rime-phah-taibun/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "拍台文適合完全不懂台文的人嗎？",
+            "acceptedAnswer": { "@type": "Answer", "text": "如果會講台語、知道大概怎麼拼，就可以開始。候選拼音註解、聲調省略和華語反查，都是為了降低入門門檻。" }
+          },
+          {
+            "@type": "Question",
+            "name": "一定要學 Telex 調鍵嗎？",
+            "acceptedAnswer": { "@type": "Answer", "text": "不必。預設「拍台文(台)」用無調和數字調就夠用。Telex 是 F4 裡的平行進階方案，給熟台羅、想連續補調的人；詞典和輸出與主方案相同。" }
+          },
+          {
+            "@type": "Question",
+            "name": "這是手機輸入法嗎？",
+            "acceptedAnswer": { "@type": "Answer", "text": "官方安裝包只有 Windows。macOS 用指令安裝，Linux 用 ./install.sh。同一套 Rime 方案可以手動裝進 Android 的同文（Trime）或 fcitx5-android 的 Rime 外掛，沒有 APK。" }
+          },
+          {
+            "@type": "Question",
+            "name": "會覆蓋我原本的 Rime 設定嗎？",
+            "acceptedAnswer": { "@type": "Answer", "text": "安裝流程會保留既有 Rime 輸入法、自訂詞庫與 rime.lua，再加入拍台文方案。" }
+          },
+          {
+            "@type": "Question",
+            "name": "教育部輸入法的增補詞庫匯入後，操作方式也一樣嗎？",
+            "acceptedAnswer": { "@type": "Answer", "text": "不一樣。拍台文只把有用的詞庫資料納入建置流程；操作仍維持拍台文設計：數字鍵打聲調，候選選字按 Tab 後用 asdfghjkl;，符號選單按反引號。" }
+          }
+        ]
       }
     ]
   }
@@ -99,7 +130,7 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">Windows / macOS / Linux 電腦台語輸入法</p>
-          <h1>會講台語，就會開始打台文。</h1>
+          <h1>會講台語，就會開始用台語輸入法打台文。</h1>
           <p class="lead">拍台文是基於 Rime 的台語輸入法方案。白話字 POJ、台羅 TL 可以混著打，聲調可以先省略，候選區會顯示完整讀音，預設輸出適合日常書寫的漢羅混寫。</p>
           <div class="hero-actions" aria-label="主要行動">
             <a class="btn btn-primary" href="https://github.com/soanseng/rime-phah-taibun/releases">下載安裝包</a>
@@ -113,7 +144,7 @@
         </div>
         <div class="hero-media">
           <figure class="demo-frame">
-            <img src="demo/demo-part1.gif" alt="拍台文在電腦上輸入台語句子的候選示範">
+            <video src="demo/demo-part1.mp4" autoplay muted loop playsinline preload="metadata" width="640" height="386" aria-label="拍台文在電腦上輸入台語句子的候選示範"></video>
             <figcaption>輸入 <code>gua beh khi tshit tho</code>，候選顯示「我 beh 去 tshit-thô」。</figcaption>
           </figure>
         </div>
@@ -425,7 +456,7 @@
     <section class="section reverse-section" id="reverse">
       <div class="container reverse-grid">
         <div class="screen-shot">
-          <img src="注音反查.png" alt="拍台文用注音反查華語再轉台語候選">
+          <img src="注音反查.png" alt="拍台文用注音反查華語再轉台語候選" width="389" height="328" loading="lazy">
         </div>
         <div>
           <p class="eyebrow">搜尋：華語查台語 / 台語讀音反查</p>
@@ -618,7 +649,7 @@ cd rime-phah-taibun
     </div>
   </footer>
 
-  <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-  <script src="assets/js/landing.js"></script>
+  <script src="https://code.jquery.com/jquery-4.0.0.min.js" defer></script>
+  <script src="assets/js/landing.js" defer></script>
 </body>
 </html>

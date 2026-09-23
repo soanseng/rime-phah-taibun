@@ -6,7 +6,7 @@
 
 第一次使用可以先看[快速上手小卡](quickstart-card.md)：安裝、第一句練習、常用快捷鍵和基本排錯都整理在一頁。
 
-![拍台文打字示範：基本輸入](demo/demo-part1.gif)
+<video src="demo/demo-part1.mp4" controls muted playsinline preload="metadata" aria-label="拍台文打字示範：基本輸入" style="max-width:100%;border-radius:8px"></video>
 
 ---
 
@@ -514,7 +514,7 @@ POJ 模式輸入: goa2-kio5  → 候選最後： Góa-kiô 〔羅馬字原文〕
 
 ### 流程
 
-![拍台文打字示範：選字與候選](demo/demo-part2.gif)
+<video src="demo/demo-part2.mp4" controls muted playsinline preload="metadata" aria-label="拍台文打字示範：選字與候選" style="max-width:100%;border-radius:8px"></video>
 
 ```
 Step 1: 打拼音 tsiah8png7 → 候選字出現
@@ -983,7 +983,7 @@ Step 4: 選「掠」→ 輸出
 
 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 網站，有各種台語文章可以練習打字。搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音和漢羅混寫！
 
-![拍台文打字示範：完成練習](demo/demo-part3.gif)
+<video src="demo/demo-part3.mp4" controls muted playsinline preload="metadata" aria-label="拍台文打字示範：完成練習" style="max-width:100%;border-radius:8px"></video>
 
 ### 教學四：POJ 使用者無痛轉移
 

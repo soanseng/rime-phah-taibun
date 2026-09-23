@@ -61,7 +61,8 @@
   overflow: hidden;
 }
 
-.demo-frame img {
+.demo-frame img,
+.demo-frame video {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: contain;
