@@ -80,6 +80,7 @@ zip / repo 對應 Linux 安裝器會鋪的內容：
 | `schema/phah_taibun.schema.yaml` | 根目錄 |
 | `schema/phah_taibun_telex.schema.yaml` | 根目錄 |
 | `schema/phah_taibun.dict.yaml` | 根目錄 |
+| `schema/phah_taibun.wordlist` | 根目錄（全羅整句詞界格式需要） |
 | `schema/hanlo_rules.yaml` | 根目錄 |
 | `schema/lighttone_rules.json` | 根目錄 |
 | `schema/moe700.yaml` | 根目錄 |

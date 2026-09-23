@@ -116,7 +116,7 @@ rime-phah-taibun/
 | 教育部台語辭典（KipSutian） | ChhoeTaigi/KipSutianDataMirror | CC BY-ND 3.0 |
 | 台日大辭典 | ChhoeTaigi/ChhoeTaigiDatabase | CC BY-NC-SA 3.0（非商用） |
 | 甘字典 | ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian | CC BY-NC-SA |
-| iCorpus 臺華平行新聞語料 | Taiwanese-Corpus/icorpus_ka1_han3-ji7 | 待確認 |
+| iCorpus 臺華平行新聞語料 | Taiwanese-Corpus/icorpus_ka1_han3-ji7 | CC BY 4.0（README 明載） |
 | NMTL 台語文學 2,169 篇 | Taiwanese-Corpus/nmtl_2006_dadwt | 待確認 |
 | 白話字文獻館 | Taiwanese-Corpus/Khin-hoan_2010_pojbh | 待確認 |
 | 楊允言詞頻 (2009) | Taiwanese-Corpus/Ungian_2009_KIPsupin | 待確認 |
