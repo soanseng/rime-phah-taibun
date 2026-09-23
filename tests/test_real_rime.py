@@ -389,7 +389,15 @@ def test_full_roman_tab_selection_keeps_composition(real_rime_states):
     # The chosen hanzi stays visible in the preedit while the rest composes.
     assert "是按怎" in resumed["preedit"], resumed["preedit"]
     commit = _nfc(real_rime_states["liantua_full_roman_resumed"]["commit"])
-    assert commit == "Sī-án-tsuánn lâng thè-tsiú liáu-āu", commit
+    # Version-independent contract: the buffered prefix survives and the
+    # remainder is fully romanized. Word boundaries in the remainder depend
+    # on the running librime's script-text layout (observed: librime 1.13
+    # re-segments "lâng thè-tsiú liáu-āu"; older CI librime falls back to
+    # the candidate comment "lâng-thè-tsiú-liáu-āu").
+    assert commit in (
+        "Sī-án-tsuánn lâng thè-tsiú liáu-āu",
+        "Sī-án-tsuánn lâng-thè-tsiú-liáu-āu",
+    ), commit
 
 
 def test_manual_mix_marked_word_roman_rest_hanzi(real_rime_states):
