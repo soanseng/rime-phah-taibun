@@ -44,6 +44,52 @@ class TestKipToRimeKey:
         assert kip_to_rime_key("a-b-c") == "a b c"
 
 
+class TestToneBareSuffixes:
+    """Bare particle syllables must gain a digit before reaching the dict.
+
+    Source corpus light-tone particles carry no diacritic (`khi3--ah`), so
+    kip_to_rime_key emits a bare token. Bare tokens create exact prism
+    edges that shadow abbrev edges (typing `ah`/`tsiah` then finds
+    nothing), and validate_dict now fails the build on them.
+    """
+
+    def test_bare_suffix_gains_attested_digit(self):
+        from scripts.build_lighttone_entries import tone_bare_suffixes
+
+        att = {"啊": {"ah": "ah4"}}
+        assert tone_bare_suffixes("khi3  ah", "去--啊", att) == "khi3  ah4"
+
+    def test_already_toned_unchanged(self):
+        from scripts.build_lighttone_entries import tone_bare_suffixes
+
+        assert tone_bare_suffixes("khi3  ah4", "去--啊", {}) == "khi3  ah4"
+
+    def test_unattested_returns_none(self):
+        from scripts.build_lighttone_entries import tone_bare_suffixes
+
+        assert tone_bare_suffixes("khi2  lih", "起--哩", {}) is None
+
+    def test_bare_middle_token_rejected(self):
+        from scripts.build_lighttone_entries import tone_bare_suffixes
+
+        # 僅最終粒子可補調; 中段裸碼(語料異常)必須整條拒絕, 不局部修
+        assert tone_bare_suffixes("khi3  ah  e", "去--啊--的", {"的": {"e": "e5"}}) is None
+
+    def test_pipeline_reports_rejected_bare_entries(self, tmp_path, capsys):
+        """無典據的裸碼條目必須被明確回報, 不得靜默消失."""
+        dict_file = tmp_path / "test.dict.yaml"
+        dict_file.write_text("---\nname: test\n...\n轉來\ttng2 lai5\t947\n起\tkhi2\t500\n")
+        rules_file = tmp_path / "rules.json"
+        rules_file.write_text('[{"hanzi": "來", "tl": "--lâi"}, {"hanzi": "哩", "tl": "--lih"}]')
+        freq_file = tmp_path / "freq.tsv"
+        freq_file.write_text("khi2--lih\t100\n")
+        entries = build_lighttone_entries(dict_file, rules_file, [freq_file])
+        hanlo_map = {e["hanlo"] for e in entries}
+        assert "起--哩" not in hanlo_map
+        err = capsys.readouterr().err
+        assert "rejected bare-code entry" in err
+
+
 class TestUnicodeTlToNumeric:
     """Convert Unicode TL diacritics to numeric tones."""
 
@@ -154,7 +200,7 @@ class TestLoadDict:
 
     def test_basic_load(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
-        dict_file.write_text("---\nname: test\n...\n轉來\ttng2 lai5\t947\n出來\ttshut lai5\t1320\n")
+        dict_file.write_text("---\nname: test\n...\n轉來\ttng2 lai5\t947\n出來\ttshut4 lai5\t1320\n")
         kip_to_hanlo, existing, _kip_to_weight, _hw = load_dict(dict_file)
         assert "tng2-lai5" in kip_to_hanlo
         assert "轉來" in kip_to_hanlo["tng2-lai5"]
@@ -403,7 +449,7 @@ class TestEndToEnd:
         dict_file.write_text(
             "---\nname: test\n...\n"
             "轉來\ttng2 lai5\t947\n"
-            "出來\ttshut lai5\t1320\n"
+            "出來\ttshut4 lai5\t1320\n"
             "起來\tkhi2 lai5\t2146\n"
             "去\tkhi3\t800\n"
             "死\tsi2\t700\n"
@@ -417,7 +463,7 @@ class TestEndToEnd:
 
         # Create freq TSV
         freq_file = tmp_path / "freq.tsv"
-        freq_file.write_text("tng2--lai5\t678\ntshut--lai5\t371\nkhi2--lai5\t319\nsi2--khi3\t142\n")
+        freq_file.write_text("tng2--lai5\t678\ntshut4--lai5\t371\nkhi2--lai5\t319\nsi2--khi3\t142\n")
 
         entries = build_lighttone_entries(dict_file, rules_file, [freq_file])
 
@@ -429,7 +475,7 @@ class TestEndToEnd:
 
         # Check rime_key format
         assert hanlo_map["轉--來"]["rime_key"] == "tng2  lai5"
-        assert hanlo_map["出--來"]["rime_key"] == "tshut  lai5"
+        assert hanlo_map["出--來"]["rime_key"] == "tshut4  lai5"
         assert hanlo_map["死--去"]["rime_key"] == "si2  khi3"
 
         # Check weights are within bounds
@@ -440,13 +486,13 @@ class TestEndToEnd:
         output_file = tmp_path / "output.tsv"
         entries = [
             {"hanlo": "轉--來", "rime_key": "tng2  lai5", "weight": 500},
-            {"hanlo": "出--來", "rime_key": "tshut  lai5", "weight": 400},
+            {"hanlo": "出--來", "rime_key": "tshut4  lai5", "weight": 400},
         ]
         write_entries(entries, output_file)
         lines = output_file.read_text().strip().split("\n")
         assert len(lines) == 2
         assert lines[0] == "轉--來\ttng2  lai5\t500"
-        assert lines[1] == "出--來\ttshut  lai5\t400"
+        assert lines[1] == "出--來\ttshut4  lai5\t400"
 
     def test_weight_capped_below_non_lighttone(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"

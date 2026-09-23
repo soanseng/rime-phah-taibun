@@ -220,6 +220,12 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "telex_tngyflaid");
   api->clear_composition(session);
 
+  // Digitless POJ in the Telex schema is a documented limitation (the
+  // toneless boost filter is main-schema only); toned POJ works.
+  api->simulate_key_sequence(session, "chhia1");
+  print_state(api, session, "telex_chhia1");
+  api->clear_composition(session);
+
   // Main schema isolation: "taid" must NOT become tai5 there.
   if (!api->select_schema(session, "phah_taibun")) {
     std::cerr << "cannot select phah_taibun\n";
@@ -507,6 +513,79 @@ int main(int argc, char* argv[]) {
   api->clear_composition(session);
   api->simulate_key_sequence(session, "chioh8");
   print_state(api, session, "tone8_chioh8");
+  api->clear_composition(session);
+
+  // Remaining checked codas at tone 4 (-p: 接 tsiap4/chiap, -k: 積
+  // tsik4/chik) and the landing-page promise 食 tsiah8/chiah (tone 8, -h).
+  api->simulate_key_sequence(session, "tsiap");
+  print_state(api, session, "tone4_tsiap");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chiap");
+  print_state(api, session, "tone4_chiap");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsik");
+  print_state(api, session, "tone4_tsik");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chik");
+  print_state(api, session, "tone4_chik");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsiah");
+  print_state(api, session, "landing_tsiah");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chiah");
+  print_state(api, session, "landing_chiah");
+  api->clear_composition(session);
+
+  // Diagnostic control: toned form of the failing digitless probe.
+  api->simulate_key_sequence(session, "tsiah8");
+  print_state(api, session, "landing_tsiah8");
+  api->clear_composition(session);
+
+  // Digitless hyphenated dict word (頭前 thau5 tsing5): the word must be a
+  // candidate directly, matching toned input behavior.
+  api->simulate_key_sequence(session, "tai-uan");
+  print_state(api, session, "taiuan_digitless");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "uan");
+  print_state(api, session, "single_uan");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsing");
+  print_state(api, session, "single_tsing");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsi");
+  print_state(api, session, "single_tsi");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsit");
+  print_state(api, session, "single_tsit");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "thau");
+  print_state(api, session, "single_thau");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "ah");
+  print_state(api, session, "single_ah");
+  api->clear_composition(session);
+  // Coda-h omission fuzzy (derive/h$//): typing POJ without the final -h
+  // (chia/chio) must still surface 食/石.
+  api->simulate_key_sequence(session, "chia");
+  print_state(api, session, "fuzzy_chia");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chio");
+  print_state(api, session, "fuzzy_chio");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsia");
+  print_state(api, session, "single_tsia");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "phah");
+  print_state(api, session, "single_phah");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "pah");
+  print_state(api, session, "single_pah");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "siah");
+  print_state(api, session, "single_siah");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "thau-tsing");
+  print_state(api, session, "tl_multi_digitless");
   api->clear_composition(session);
 
   // Multi-syllable POJ word with ts->ch in the SECOND syllable

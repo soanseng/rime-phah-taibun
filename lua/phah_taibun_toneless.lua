@@ -73,14 +73,20 @@ local function plain_forms(comment)
 end
 
 function M.func(input, env)
-  -- 每個候選用自身 preedit（覆蓋的原始輸入片段）判斷：單一 token、
-  -- 純小寫字母＝無調輸入意圖；讀音（註解）單音節完全覆蓋該片段者
-  -- 排到最前。整句組合（preedit 含空白）與帶調輸入不受影響。
+  -- 升權條件：候選 span 是單一 token、純小寫字母（無調輸入意圖）、
+  -- 讀音（註解）單音節完全覆蓋該 span，且 span 覆蓋輸入的**尾段**
+  -- （cand._end == #context.input）。尾段＝使用者正在打的那個詞：
+  -- 逐字選字（kio→橋 確認後打 tiann→鼎）要升權；中段單字（tai-uan
+  -- 的 帶）不得升權，否則選單被單字塞滿，免調連字號字典詞（台灣）
+  -- 被擠出候選。
+  local ctx = env.engine and env.engine.context
+  local ctx_input = ctx and ctx.input
   local full, rest = {}, {}
   for cand in input:iter() do
     local span = cand.preedit
     local covered = false
-    if type(span) == "string" and span:match("^[a-z]+$") then
+    if type(span) == "string" and span:match("^[a-z]+$") and ctx_input
+      and span == ctx_input:sub(cand.start + 1, cand._end) and cand._end == #ctx_input then
       for _, form in ipairs(plain_forms(cand.comment)) do
         if form == span then
           covered = true

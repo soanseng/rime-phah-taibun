@@ -11,6 +11,7 @@ except ModuleNotFoundError:
     from tl_poj_convert import tl_to_poj
 
 RIME_KEY_RE = re.compile(r"^[a-z0-9]+(?:[ -]+[a-z0-9]+)*$")
+TONE_DIGIT_RE = re.compile(r"[1-9]$")
 EDITORIAL_MARKER_RE = re.compile(r"[\uff08(](?:替|文)[\uff09)]")
 
 
@@ -61,6 +62,12 @@ def validate_dict_format(dict_path: Path) -> list[str]:
             errors.append(f"Line {i}: source editorial marker in candidate '{parts[0]}'")
         if not RIME_KEY_RE.fullmatch(parts[1]):
             errors.append(f"Line {i}: non-canonical Rime key '{parts[1]}'")
+        bare = [syl for syl in parts[1].split() if not TONE_DIGIT_RE.search(syl)]
+        if bare:
+            # Bare syllables create exact prism edges that shadow the
+            # abbrev edges digitless input relies on (typing `ah`/`tsi`
+            # then finds nothing). Every syllable must carry its tone digit.
+            errors.append(f"Line {i}: digitless syllable in code '{parts[1]}': {','.join(bare)}")
         key = (parts[0], parts[1])
         if key in seen:
             errors.append(f"Line {i}: duplicate entry '{parts[0]}' with key '{parts[1]}'")

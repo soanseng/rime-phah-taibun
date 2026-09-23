@@ -9,8 +9,16 @@ import argparse
 import json
 import math
 import re
+import sys
 import unicodedata
 from pathlib import Path
+
+try:
+    from scripts.repair_bare_syllables import build_attestation
+    from scripts.repair_bare_syllables import load_entries as _load_repair_entries
+except ModuleNotFoundError:
+    from repair_bare_syllables import build_attestation
+    from repair_bare_syllables import load_entries as _load_repair_entries
 
 _CJK = re.compile(r"[\u3400-\u9fff]")
 
@@ -28,6 +36,36 @@ def kip_to_rime_key(kip: str) -> str:
     result = result.replace("-", " ")
     result = result.replace("\x00", "  ")
     return result
+
+
+_TONE_DIGIT_RE = re.compile(r"[1-9]$")
+
+
+def tone_bare_suffixes(rime_key: str, hanlo: str, attestation: dict) -> str | None:
+    """Append the attested tone digit to a bare final particle syllable.
+
+    Corpus light-tone particles carry no diacritic (kip `khi3--ah`), so the
+    rime key would end with a bare token. Bare tokens create exact prism
+    edges that shadow the abbrev edges digitless input relies on, and
+    validate_dict fails the build on them. The digit comes only from
+    character-level attestation in the existing dictionary (same policy as
+    scripts/repair_bare_syllables.py); unattested entries are rejected
+    (None) rather than guessed. The double-space `--` boundary encoding is
+    preserved.
+    """
+    tokens = rime_key.split()
+    if all(_TONE_DIGIT_RE.search(t) for t in tokens):
+        return rime_key
+    if any(not _TONE_DIGIT_RE.search(t) for t in tokens[:-1]):
+        return None
+    bare = tokens[-1]
+    if _TONE_DIGIT_RE.search(bare) or not hanlo:
+        return None
+    hanzi = hanlo[-1]
+    fix = attestation.get(hanzi, {}).get(bare)
+    if not fix:
+        return None
+    return re.sub(rf"(?<!\S){re.escape(bare)}(?!\S)", fix, rime_key)
 
 
 def unicode_tl_to_numeric(text: str) -> str:
@@ -453,9 +491,6 @@ def build_lighttone_entries(
 ) -> list[dict[str, str | int]]:
     """Build light-tone dictionary entries.
 
-    Main orchestration function that loads data, performs lookups, and
-    generates entries.
-
     Args:
         dict_path: Path to phah_taibun.dict.yaml
         rules_path: Path to lighttone_rules.json
@@ -467,8 +502,10 @@ def build_lighttone_entries(
     kip_to_hanlo, existing_rimekeys, kip_to_weight, hanlo_weight = load_dict(dict_path)
     suffix_hanzi = load_lighttone_rules(rules_path)
     lighttone_words = collect_lighttone_words(freq_paths)
+    attestation = build_attestation(_load_repair_entries(dict_path))
 
     new_entries: list[dict[str, str | int]] = []
+    rejected = 0
     seen: set[tuple[str, str]] = set()
 
     for kip_input, count in sorted(lighttone_words.items(), key=lambda x: -x[1]):
@@ -477,7 +514,7 @@ def build_lighttone_entries(
         if not hanlo_candidates:
             continue
 
-        rime_key = kip_to_rime_key(kip_input)
+        raw_key = kip_to_rime_key(kip_input)
 
         # Find non-light-tone variant weight for capping
         non_lt_kip = kip_input.replace("--", "-")
@@ -486,6 +523,16 @@ def build_lighttone_entries(
         weight = compute_lighttone_weight(count, non_lt_weight)
 
         for hanlo in sorted(hanlo_candidates):
+            # Corpus light-tone particles carry no diacritic: append the
+            # attested digit (or reject) so codes never ship bare tokens.
+            rime_key = tone_bare_suffixes(raw_key, hanlo, attestation)
+            if rime_key is None:
+                rejected += 1
+                print(
+                    f"[lighttone] rejected bare-code entry: {hanlo} <- {raw_key!r}",
+                    file=sys.stderr,
+                )
+                continue
             key = (hanlo, rime_key)
             if key in existing_rimekeys or key in seen:
                 continue

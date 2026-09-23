@@ -98,10 +98,10 @@ def test_toneless_single_token_full_coverage_candidate_ranked_first():
           }
         end
         local items = {
-          Candidate("table", 0, 2, "你姆", " [li2 m2]"),
-          Candidate("table", 0, 1, "林", " [lím]"),
-          Candidate("table", 0, 1, "臨", " [lim5]"),
-          Candidate("table", 0, 1, "姆", " [m̄]"),
+          Candidate("table", 0, 3, "你姆", " [li2 m2]"),
+          Candidate("table", 0, 3, "林", " [lím]"),
+          Candidate("table", 0, 3, "臨", " [lim5]"),
+          Candidate("table", 2, 3, "姆", " [m̄]"),
         }
         local yielded = {}
         function yield(cand)
@@ -206,8 +206,8 @@ def test_toneless_dual_format_comment_covers_poj_input():
           }
         end
         local items = {
-          Candidate("table", 0, 2, "刺仔", " ◆ [TL:tshì-á POJ:chhì-á]"),
-          Candidate("table", 0, 1, "車", " ◆ [TL:tshia1 POJ:chhia1]"),
+          Candidate("table", 0, 5, "刺仔", " ◆ [TL:tshì-á POJ:chhì-á]"),
+          Candidate("table", 0, 5, "車", " ◆ [TL:tshia1 POJ:chhia1]"),
         }
         local yielded = {}
         function yield(cand)
@@ -237,6 +237,56 @@ def test_toneless_dual_format_comment_covers_poj_input():
     out = run_lua(script).split()
     assert out[0] == "車", out
     assert out[1] == "刺仔", out
+
+
+def test_toneless_multi_segment_input_does_not_boost_segment_singles():
+    """多段輸入 (tai-uan): 只覆蓋第一段的單字 (帶) 不得升權壓過整詞 (台灣).
+
+    升權只屬於「候選覆蓋整個輸入」的單 token 場景; 段內單字全體升權會
+    把 10 格選單塞滿單字, 免調連字號字典詞被擠出候選.
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type, start = start, _end = end_pos,
+            text = text, comment = comment, quality = 0,
+          }
+        end
+        local items = {
+          Candidate("table", 0, 7, "台灣", " [tai5 uan5]"),
+          Candidate("table", 0, 3, "帶", " [tài]"),
+          Candidate("table", 0, 3, "戴", " [tài]"),
+        }
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        local filter = require("phah_taibun_toneless")
+        items[1].preedit = "tai-uan"
+        items[2].preedit = "tai"
+        items[3].preedit = "tai"
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        local env = { engine = { context = { input = "tai-uan" } } }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    out = run_lua(script).split()
+    assert out[0] == "台灣", out
 
 
 def test_formats_direct_tl_input_with_hyphen_and_light_tone_marker():

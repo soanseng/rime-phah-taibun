@@ -12,26 +12,43 @@ class TestValidateDictFormat:
 
     def test_valid_dict(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
-        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah png\t500\n')
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah8 png7\t500\n')
         errors = validate_dict_format(dictfile)
         assert len(errors) == 0
 
+    def test_detects_digitless_syllable_in_code(self, tmp_path):
+        """Bare syllables create exact prism edges that shadow abbrev edges.
+
+        Typing `ah`/`tsi`/`tsiah` then finds no candidates (verified against
+        a pure librime scratch build); every code syllable must carry a tone
+        digit.
+        """
+        dictfile = tmp_path / "test.dict.yaml"
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n去--啊\tkhi3 ah\t100\n')
+        errors = validate_dict_format(dictfile)
+        assert any("digitless" in error for error in errors)
+
+    def test_committed_dictionary_codes_all_toned(self):
+        dictfile = Path(__file__).parents[1] / "schema" / "phah_taibun.dict.yaml"
+        errors = validate_dict_format(dictfile)
+        assert not [error for error in errors if "digitless" in error.lower()]
+
     def test_missing_header(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
-        dictfile.write_text("食飯\ttsiah png\t500\n")
+        dictfile.write_text("食飯\ttsiah8 png7\t500\n")
         errors = validate_dict_format(dictfile)
         assert any("header" in e.lower() for e in errors)
 
     def test_bad_tab_count(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
-        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯 tsiah png 500\n')
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯 tsiah8 png7 500\n')
         errors = validate_dict_format(dictfile)
         assert any("tab" in e.lower() or "format" in e.lower() for e in errors)
 
     def test_detects_duplicates(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
         dictfile.write_text(
-            '---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah png\t500\n食飯\ttsiah png\t300\n'
+            '---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah8 png7\t500\n食飯\ttsiah8 png7\t300\n'
         )
         errors = validate_dict_format(dictfile)
         assert any("duplicate" in e.lower() for e in errors)
@@ -42,7 +59,6 @@ class TestValidateDictFormat:
         errors = validate_dict_format(dictfile)
         assert any("rime key" in e.lower() for e in errors)
 
-    def test_detects_editorial_marker_in_candidate(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
         dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食(替)\ttsiah8\t500\n')
         errors = validate_dict_format(dictfile)
@@ -59,14 +75,14 @@ class TestValidateCli:
 
     def test_valid_file_exits_zero(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
-        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah png\t500\n')
+        dictfile.write_text('---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n食飯\ttsiah8 png7\t500\n')
         with pytest.raises(SystemExit) as exc_info:
             main([str(dictfile)])
         assert exc_info.value.code == 0
 
     def test_invalid_file_exits_nonzero(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"
-        dictfile.write_text("食飯\ttsiah png\t500\n")
+        dictfile.write_text("食飯\ttsiah8 png7\t500\n")
         with pytest.raises(SystemExit) as exc_info:
             main([str(dictfile)])
         assert exc_info.value.code == 1

@@ -448,12 +448,19 @@ def test_tone1_digitless_and_poj_input_visibility(real_rime_states):
 
 POJ_TL_DIGITLESS_VISIBLE = [
     # (label, typed, target) — 高權重目標: 免調要直接選得到, 不被切碎.
+    # 入聲四尾: -t (tsat), -p (tsiap), -k (tsik) at tone 4, -h (tsioh/tsiah) at tone 8.
     ("tone1_tshia", "tshia", "車"),
     ("tone1_chhia", "chhia", "車"),
     ("tone4_tsat", "tsat", "節"),
     ("tone4_chat", "chat", "節"),
+    ("tone4_tsiap", "tsiap", "接"),
+    ("tone4_chiap", "chiap", "接"),
+    ("tone4_tsik", "tsik", "積"),
+    ("tone4_chik", "chik", "積"),
     ("tone8_tsioh", "tsioh", "石"),
     ("tone8_chioh", "chioh", "石"),
+    ("landing_tsiah", "tsiah", "食"),
+    ("landing_chiah", "chiah", "食"),
 ]
 
 POJ_TL_DIGITLESS_NO_FRAGMENT = [
@@ -506,3 +513,51 @@ def test_poj_multisyllable_second_syllable_ts(real_rime_states):
     state = real_rime_states["poj_multi_toned"]
     texts = [c["text"] for c in state["candidates"]]
     assert "頭前" in texts[:10], texts
+
+
+def test_telex_toned_poj_resolves(real_rime_states):
+    """Telex 方案帶調 POJ (chhia1) 直接命中; 免調 POJ 為已知限制
+    (toneless 升權 filter 僅主方案, Telex 使用者以調鍵輸入為主)."""
+    state = real_rime_states["telex_chhia1"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert "車" in texts[:10], texts
+
+
+def test_bare_syllable_poisoning_repaired(real_rime_states):
+    """碼內裸音節(無調號)會建立 exact 邊遮蔽 abbrev 邊: 免調輸入整個死掉.
+
+    輕聲生成器曾輸出 `khi3 ah` 這類缺調碼; validate_dict 現以 fatal gate
+    擋下. 引擎層契約: 免調單音節選單復活——ah 直接選到鴨; tsi 選單要有
+    tsi 家族候選(之 tsi1 權重低於同音詞, 只釘選單存活不釘排名).
+    """
+    ah_state = real_rime_states["single_ah"]
+    ah_texts = [c["text"] for c in ah_state["candidates"]]
+    assert "鴨" in ah_texts[:10], ah_texts
+    tsi_state = real_rime_states["single_tsi"]
+    assert tsi_state["count"] >= 5, tsi_state
+
+
+def test_coda_h_omission_fuzzy(real_rime_states):
+    r"""derive/h$// 的 -h 尾省略模糊: chia/chio 免尾 h 仍要選到 食/石."""
+    for label, target in (("fuzzy_chia", "食"), ("fuzzy_chio", "石")):
+        state = real_rime_states[label]
+        texts = [c["text"] for c in state["candidates"]]
+        assert target in texts[:10], (label, texts)
+
+
+def test_tone4_h_coda_reading_also_surfaces(real_rime_states):
+    """4聲 -h 尾讀音(借 tsioh4)與 8聲(石 tsioh8)共用免調拼式 tsioh:
+
+    同一個免調輸入要同時看得到兩個聲調的詞, 釘住 4聲 -h 家族.
+    """
+    state = real_rime_states["tone8_tsioh"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert "借" in texts, texts
+
+
+def test_digitless_hyphenated_dict_word(real_rime_states):
+    """免調+連字號字典詞(台灣 tai-uan, 頭前 thau-tsing)要直接上候選."""
+    for label, target in (("taiuan_digitless", "台灣"), ("tl_multi_digitless", "頭前")):
+        state = real_rime_states[label]
+        texts = [c["text"] for c in state["candidates"]]
+        assert target in texts[:10], (label, texts)
