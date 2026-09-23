@@ -1,4 +1,4 @@
-- [首頁](https://soanseng.github.io/rime-phah-taibun/)
+- [首頁](https://taigi.anatomind.com/)
 - [快速上手小卡](quickstart-card.md)
 - [完整使用說明](user-guide.md)
 - [Windows 安裝包](packaged-installers.md)

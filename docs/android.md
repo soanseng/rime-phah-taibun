@@ -137,4 +137,4 @@ patch:
 - 同文芫荽字體可放使用者資料夾 `fonts/`，再於主題指定：[iansui](https://github.com/ButTaiwan/iansui)。
 - 依公開文件整理，**未做官方真機簽核**。路徑以 App 內顯示為準。
 
-打字方式見[快速上手小卡](https://soanseng.github.io/rime-phah-taibun/quickstart-card.html)與[完整使用說明](https://soanseng.github.io/rime-phah-taibun/guide.html)。
+打字方式見[快速上手小卡](https://taigi.anatomind.com/guide.html#/quickstart-card)與[完整使用說明](https://taigi.anatomind.com/guide.html)。

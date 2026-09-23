@@ -71,7 +71,7 @@ def test_landing_multi_reading_stat_and_examples_match_dictionary():
 
     # Each example chip shows a hanzi with its diacritic readings; convert
     # them back to tone numbers and require every reading in the dictionary.
-    chips = re.findall(r'<li class="multi-example">(\S+) — ([^<]+)</li>', html)
+    chips = re.findall(r'<li class="multi-example"[^>]*>(\S+) — ([^<]+)</li>', html)
     assert len(chips) >= 3, "expected at least three multi-reading examples"
     for hanzi, shown in chips:
         for syllable in shown.split("·"):

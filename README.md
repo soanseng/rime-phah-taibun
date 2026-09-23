@@ -9,7 +9,7 @@
 [![Dict Entries](https://img.shields.io/badge/dict-218K%20entries-green?style=flat-square)](#)
 [![Lua Modules](https://img.shields.io/badge/lua-19%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://taigi.anatomind.com/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
 
 English | [繁體中文（台灣）](#中文說明)
@@ -58,18 +58,18 @@ tai uan                ->  臺灣 / 台灣
 
 Prefer staying on the letter keys for tones? Switch to the optional `拍台文(Telex)` schema (`F4`) and type `taidfgiv` for 臺語, `ziahv` for 食 — details in the [Chinese section](#中文說明).
 
-For full documentation, see the [project website](https://soanseng.github.io/rime-phah-taibun/), [online guide](https://soanseng.github.io/rime-phah-taibun/guide.html), and [quickstart card](docs/quickstart-card.md).
+For full documentation, see the [project website](https://taigi.anatomind.com/), [online guide](https://taigi.anatomind.com/guide.html), and [quickstart card](docs/quickstart-card.md).
 
 ## 中文說明
 
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
 
-> **快速入口**：[專案首頁](https://soanseng.github.io/rime-phah-taibun/) · [線上使用說明](https://soanseng.github.io/rime-phah-taibun/guide.html) · [快速上手小卡](docs/quickstart-card.md)
+> **快速入口**：[專案首頁](https://taigi.anatomind.com/) · [線上使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
 
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 
 <p align="center">
-  <a href="https://soanseng.github.io/rime-phah-taibun/demo/demo-part1.mp4" title="看示範影片：基本輸入"><img src="docs/demo/demo-part1-poster.png" alt="拍台文打字示範：基本輸入（點圖播放影片）" width="600"></a>
+  <a href="https://taigi.anatomind.com/demo/demo-part1.mp4" title="看示範影片：基本輸入"><img src="docs/demo/demo-part1-poster.png" alt="拍台文打字示範：基本輸入（點圖播放影片）" width="600"></a>
 </p>
 
 ## 3 分鐘上手
@@ -163,7 +163,7 @@ Telex 源自越南文在電傳打字機上用字母標調的做法；拍台文�
 漢羅混寫自動處理：「我」「去」輸出漢字，「beh」「tshit-thô」依 LKK 規範輸出羅馬字。
 
 <p align="center">
-  <a href="https://soanseng.github.io/rime-phah-taibun/demo/demo-part2.mp4" title="看示範影片：選字與候選"><img src="docs/demo/demo-part2-poster.png" alt="拍台文打字示範：選字與候選（點圖播放影片）" width="600"></a>
+  <a href="https://taigi.anatomind.com/demo/demo-part2.mp4" title="看示範影片：選字與候選"><img src="docs/demo/demo-part2-poster.png" alt="拍台文打字示範：選字與候選（點圖播放影片）" width="600"></a>
 </p>
 
 ### POJ / TL 都可以打
@@ -703,7 +703,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 > 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 試試看，搭配拍台文輸入法一起使用，邊打邊熟悉台語拼音！
 
 <p align="center">
-  <a href="https://soanseng.github.io/rime-phah-taibun/demo/demo-part3.mp4" title="看示範影片：完成練習"><img src="docs/demo/demo-part3-poster.png" alt="拍台文打字示範：完成練習（點圖播放影片）" width="600"></a>
+  <a href="https://taigi.anatomind.com/demo/demo-part3.mp4" title="看示範影片：完成練習"><img src="docs/demo/demo-part3-poster.png" alt="拍台文打字示範：完成練習（點圖播放影片）" width="600"></a>
 </p>
 
 ## TODO
