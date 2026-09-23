@@ -44,9 +44,12 @@ $INTERACTIVE = ($ProjectRoot -eq "")
 # 發行資產版本（後備值）：命令列安裝會先查 GitHub 最新 release，
 # 查詢失敗或被網路擋下時才使用此固定版本。
 $RELEASE_VERSION = "0.8.0"
-$RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
-$SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
-$RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"
+$GITHUB_REPO = "soanseng/rime-phah-taibun"
+# 命令列安裝逐檔從固定 release tag 下載（raw.githubusercontent.com），不下載整份
+# 來源封存檔：release 資產經 objects.githubusercontent.com 轉址，部分網路對它
+# 極慢或直接逾時；raw 逐檔下載可邊抓邊裝，單檔失敗也能即時回報是哪個檔案。
+$GITHUB_API = "https://api.github.com/repos/$GITHUB_REPO/git/trees/v$RELEASE_VERSION`?recursive=1"
+$GITHUB_RAW = "https://raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION"
 
 # 嘸蝦米（rime-liur）來源：公開 fork，含 librime 1.16+/Lua 5.4+ 相容修正。
 $LIUR_REPO = "soanseng/rime-liur-arch"
@@ -282,42 +285,8 @@ function Add-SchemaEntry {
     }
 }
 
-function Get-VerifiedReleasePayload {
-    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("PhahTaiBun-" + [guid]::NewGuid().ToString("N"))
-    New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
-    $archive = Join-Path $tempRoot "PhahTaiBun-source.zip"
-    $checksum = Join-Path $tempRoot "SHA256SUMS"
-    $sourceRoot = Join-Path $tempRoot "source"
-
-    try {
-        Write-Host "  下載來源封存檔（逾時上限 180 秒）..."
-        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_URL -OutFile $archive -TimeoutSec 180 | Out-Null
-        Write-Host "  下載 SHA256SUMS（逾時上限 30 秒）..."
-        Invoke-WebRequest -Uri $RELEASE_CHECKSUMS_URL -OutFile $checksum -TimeoutSec 30 | Out-Null
-        $expected = ""
-        foreach ($line in Get-Content $checksum) {
-            if ($line -match '^\s*([0-9A-Fa-f]{64})\s+\*?PhahTaiBun-source\.zip\s*$') {
-                $expected = $Matches[1].ToUpperInvariant()
-                break
-            }
-        }
-        $actual = (Get-FileHash -Path $archive -Algorithm SHA256).Hash.ToUpperInvariant()
-        if (-not $expected -or $actual -ne $expected) {
-            throw "PhahTaiBun-source.zip SHA-256 驗證失敗（SHA256SUMS 無對應項目或雜湊不符）。"
-        }
-        Expand-Archive -Path $archive -DestinationPath $sourceRoot -Force
-        return @{ Root = $sourceRoot; Temp = $tempRoot }
-    } catch {
-        Remove-Item -Recurse -Force $tempRoot -ErrorAction SilentlyContinue
-        throw
-    }
-}
-
-
-# 打包安裝器傳入內建 payload；命令列安裝下載固定版本並驗證封存檔。
+# 打包安裝器傳入內建 payload；命令列安裝逐檔從固定 release tag 下載。
 $USE_LOCAL_PAYLOAD = $true
-$DOWNLOADED_PAYLOAD = $false
-$TEMP_SOURCE_DIR = ""
 if ($ProjectRoot -ne "") {
     $resolvedRoot = Resolve-Path $ProjectRoot -ErrorAction SilentlyContinue
     $resolvedRootPath = if ($resolvedRoot) { $resolvedRoot.Path } else { "" }
@@ -330,19 +299,17 @@ if ($ProjectRoot -ne "") {
         exit 1
     }
 } else {
-    # 單行安裝：自動跟隨 GitHub 最新 release（查詢失敗就退回上方固定版本）。
+    # 單行安裝：自動跟隨 GitHub 最新 release（查詢失敗就退回上方固定版本），
+    # 之後逐檔下載，不抓整份來源封存檔。
     try {
-        $latestRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/soanseng/rime-phah-taibun/releases/latest" -Method Get -TimeoutSec 10
-        if ($latestRelease.tag_name -match '^v(\d+\.\d+\.\d+)$') { $RELEASE_VERSION = $Matches[1] }
+        $latestRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$GITHUB_REPO/releases/latest" -Method Get -TimeoutSec 10
+        if ($latestRelease.tag_name -match '^v(\d+\.\d+\.\d+)$') {
+            $RELEASE_VERSION = $Matches[1]
+            $GITHUB_API = "https://api.github.com/repos/$GITHUB_REPO/git/trees/v$RELEASE_VERSION`?recursive=1"
+            $GITHUB_RAW = "https://raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION"
+        }
     } catch { }
-    $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
-    $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
-    $RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"
-    Write-Host "正在下載並驗證拍台文 v$RELEASE_VERSION 完整安裝資產..."
-    $payload = Get-VerifiedReleasePayload
-    $ProjectRoot = $payload.Root
-    $TEMP_SOURCE_DIR = $payload.Temp
-    $DOWNLOADED_PAYLOAD = $true
+    $USE_LOCAL_PAYLOAD = $false
 }
 
 # 進度條函數（from rime-liur）
@@ -369,7 +336,12 @@ function Copy-OrDownload {
         [string]$DestinationPath
     )
 
-    Copy-Item -Force (Join-Path $ProjectRoot $SourcePath) $DestinationPath
+    if ($USE_LOCAL_PAYLOAD) {
+        Copy-Item -Force (Join-Path $ProjectRoot $SourcePath) $DestinationPath
+    } else {
+        $uri = "$GITHUB_RAW/$SourcePath"
+        Invoke-WebRequest -Uri $uri -OutFile $DestinationPath -TimeoutSec 180 | Out-Null
+    }
 }
 
 # ============================================================
@@ -444,10 +416,10 @@ if ($INTERACTIVE) {
 
 Write-Host "本工具將執行以下作業："
 if ($INSTALL_PHAH) {
-    if ($DOWNLOADED_PAYLOAD) {
-        Write-Host "  1. 從已驗證的 v$RELEASE_VERSION 封存檔安裝拍台文方案"
-    } else {
+    if ($USE_LOCAL_PAYLOAD) {
         Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+    } else {
+        Write-Host "  1. 從 GitHub v$RELEASE_VERSION 下載並安裝拍台文方案"
     }
     Write-Host "  2. 註冊輸入方案"
     Write-Host "  3. 安裝芫荽 iansui 字體"
@@ -460,7 +432,8 @@ if ($INTERACTIVE) {
 }
 Write-Host ""
 Write-Host "Rime 資料夾：$RIME_DIR" -ForegroundColor Green
-Write-Host "安裝來源：$ProjectRoot" -ForegroundColor Green
+$installSource = if ($USE_LOCAL_PAYLOAD) { $ProjectRoot } else { "GitHub v$RELEASE_VERSION" }
+Write-Host "安裝來源：$installSource" -ForegroundColor Green
 Write-Host ""
 
 # 偵測現有方案
@@ -498,7 +471,7 @@ if ($USE_LOCAL_PAYLOAD) {
     }
     $HAS_RIME_LUA = Test-Path (Join-Path $ProjectRoot "rime.lua")
 } else {
-    Write-Host "正在從 GitHub 取得檔案清單..."
+    Write-Host "正在從 GitHub v$RELEASE_VERSION 取得檔案清單..."
     try {
         $response = Invoke-RestMethod -Uri $GITHUB_API -Method Get
     } catch {
@@ -582,7 +555,7 @@ if ($HAS_RIME_LUA) {
             $tmpFile = Join-Path $ProjectRoot "rime.lua"
         } else {
             $tmpFile = "$env:TEMP\phah_taibun_rime.lua"
-            Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $tmpFile | Out-Null
+            Invoke-WebRequest -Uri "$GITHUB_RAW/rime.lua" -OutFile $tmpFile -TimeoutSec 180 | Out-Null
         }
 
         $existingContent = Read-RimeText $rimeLuaDest
@@ -1052,7 +1025,7 @@ if (-not $deployer -or -not (Test-Path $deployer)) {
     Write-Host "部署失敗：找不到 WeaselDeployer.exe。" -ForegroundColor Red
     Write-Host "請在小狼毫系統匣選單按「重新部署」，或執行：<小狼毫安裝目錄>\WeaselDeployer.exe /deploy" -ForegroundColor Yellow
     Write-Host "或右鍵工作列小狼毫圖示 →「重新部署」。" -ForegroundColor Yellow
-    if (-not $DOWNLOADED_PAYLOAD) {
+    if ($USE_LOCAL_PAYLOAD) {
         Write-Host "方案檔已寫入 Rime 資料夾，安裝程式不會因此失敗。" -ForegroundColor Yellow
     } else {
         exit 1
@@ -1064,7 +1037,7 @@ if (-not $deployer -or -not (Test-Path $deployer)) {
         Write-Host "部署失敗：WeaselDeployer.exe 結束碼為 $deployExit。" -ForegroundColor Red
         Write-Host "請修正上方錯誤後重試：`"$deployer`" /deploy" -ForegroundColor Yellow
         Write-Host "或右鍵工作列小狼毫圖示 →「重新部署」。" -ForegroundColor Yellow
-        if (-not $DOWNLOADED_PAYLOAD) {
+        if ($USE_LOCAL_PAYLOAD) {
             Write-Host "方案檔已寫入 Rime 資料夾，安裝程式不會因此失敗。" -ForegroundColor Yellow
         } else {
             exit 1
@@ -1109,8 +1082,5 @@ if (-not (Test-Path $weaselCustom) -or -not (Select-String -Path $weaselCustom -
     Write-Host ""
 }
 
-if ($TEMP_SOURCE_DIR -and (Test-Path $TEMP_SOURCE_DIR)) {
-    Remove-Item -Recurse -Force $TEMP_SOURCE_DIR
-}
 Write-Host "更多資訊：https://github.com/soanseng/rime-phah-taibun"
 Write-Host ""

@@ -49,14 +49,15 @@ def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files()
     assert "[已安裝]" in installer
 
 
-def test_windows_release_download_uses_published_manifest_and_has_timeouts():
-    """The current release publishes SHA256SUMS, not a per-source sidecar."""
+def test_windows_installer_downloads_versioned_files_without_source_archive():
+    """One-liner fetches only required files from the selected release tag."""
     installer = read("install_windows.ps1")
 
-    assert '$RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"' in installer
-    assert "-TimeoutSec 180" in installer
-    assert "-TimeoutSec 30" in installer
-    assert r"PhahTaiBun-source\.zip" in installer
+    assert '$GITHUB_REPO = "soanseng/rime-phah-taibun"' in installer
+    assert "git/trees/v$RELEASE_VERSION`?recursive=1" in installer
+    assert '$GITHUB_RAW = "https://raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION"' in installer
+    assert "Invoke-WebRequest -Uri $uri -OutFile $DestinationPath -TimeoutSec 180" in installer
+    assert "PhahTaiBun-source.zip" not in installer
 
 
 def test_windows_installer_appends_schema_without_utf16_rewrite():
@@ -81,8 +82,8 @@ def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
     assert "SW_HIDE" in iss
     assert "SW_SHOW" not in iss
     assert "-WindowStyle Hidden" in iss
-    assert "DOWNLOADED_PAYLOAD" in installer
-    assert "if (-not $DOWNLOADED_PAYLOAD)" in installer
+    assert "USE_LOCAL_PAYLOAD" in installer
+    assert "if ($USE_LOCAL_PAYLOAD)" in installer
     assert "右鍵工作列小狼毫圖示" in installer
     windows_panel = homepage.split('id="panel-windows"', 1)[1].split('id="panel-macos"', 1)[0]
     assert "install_windows.ps1" in windows_panel
@@ -143,10 +144,13 @@ def test_macos_pkg_builder_uses_existing_macos_installer():
     assert "sudo -u" in postinstall
     installer = read("scripts/install_macos.sh")
     assert "--project-root" in installer
-    assert "PHAH_TAIBUN_ARCHIVE_URL" in installer
+    assert "git/trees/v$RELEASE_VERSION?recursive=1" in installer
+    assert "raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION" in installer
+    assert 'actual_size" != "$size"' in installer
     assert "mktemp -d" in installer
-    assert "tar -xf" in installer
     assert "trap cleanup EXIT" in installer
+    assert "PhahTaiBun-source.zip" not in installer
+    assert "PHAH_TAIBUN_ARCHIVE_URL" not in installer
 
 
 def test_installers_fail_loudly_when_rime_deployment_fails():
@@ -181,7 +185,7 @@ def test_remote_installer_assets_are_versioned_and_sha256_verified():
     assert "sha256sum" in linux
     assert "shasum -a 256" in macos
     assert "Get-FileHash" in windows
-    assert "SHA256SUMS" in windows
+    assert "raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION" in windows
     assert "PhahTaiBun-source.zip" in workflow
     assert "SHA256SUMS" in workflow
     resources = read("scripts/download_resources.sh")

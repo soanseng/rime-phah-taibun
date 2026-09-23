@@ -11,8 +11,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 RELEASE_VERSION="0.8.0"
-SOURCE_ARCHIVE_URL="${PHAH_TAIBUN_ARCHIVE_URL:-https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION/PhahTaiBun-source.zip}"
-SOURCE_ARCHIVE_SHA256_URL="${PHAH_TAIBUN_ARCHIVE_SHA256_URL:-${SOURCE_ARCHIVE_URL}.sha256}"
+GITHUB_REPO="soanseng/rime-phah-taibun"
 _TEMP_SOURCE_DIR=""
 
 cleanup() {
@@ -43,7 +42,7 @@ done
 # 專案根目錄：
 # 1. 套件安裝器以 --project-root 指向內含的 payload。
 # 2. 本機 clone 直接使用腳本上層目錄。
-# 3. curl | bash 沒有同目錄資產時，下載完整來源封存檔到暫存目錄。
+# 3. curl | bash 沒有同目錄資產時，從固定 release tag 逐檔下載到暫存目錄。
 if [ -n "$_PROJ_ROOT_OVERRIDE" ]; then
     if [ ! -d "$_PROJ_ROOT_OVERRIDE" ]; then
         echo "錯誤：--project-root 不存在：$_PROJ_ROOT_OVERRIDE" >&2
@@ -59,38 +58,51 @@ else
             echo "錯誤：指令安裝需要 curl。" >&2
             exit 1
         }
-        command -v tar >/dev/null 2>&1 || {
-            echo "錯誤：指令安裝需要 tar。" >&2
-            exit 1
-        }
         command -v shasum >/dev/null 2>&1 || {
             echo "錯誤：指令安裝需要 shasum。" >&2
             exit 1
         }
         : "${TMPDIR:=/tmp}"
         _TEMP_SOURCE_DIR="$(mktemp -d "${TMPDIR%/}/phah-taibun.XXXXXX")"
-        archive="$_TEMP_SOURCE_DIR/PhahTaiBun-source.zip"
-        checksum="$_TEMP_SOURCE_DIR/PhahTaiBun-source.zip.sha256"
+        # 自動跟隨 GitHub 最新 release（查詢失敗就退回上方固定版本），
+        # 之後從固定 tag 逐檔下載，不抓整份來源封存檔：release 資產經
+        # objects.githubusercontent.com 轉址，部分網路對它極慢或逾時。
+        latest_tag="$(curl -fsSL --connect-timeout 10 --max-time 15 "https://api.github.com/repos/$GITHUB_REPO/releases/latest" 2>/dev/null | sed -n 's/.*"tag_name": *"\(v[0-9][0-9.]*\)".*/\1/p' | head -1)"
+        case "$latest_tag" in
+            v[0-9]*) RELEASE_VERSION="${latest_tag#v}" ;;
+        esac
+        tree_json="$_TEMP_SOURCE_DIR/tree.json"
+        curl -fsSL --connect-timeout 10 --max-time 30 "https://api.github.com/repos/$GITHUB_REPO/git/trees/v$RELEASE_VERSION?recursive=1" -o "$tree_json" \
+            || { echo "錯誤：取得檔案清單失敗。" >&2; exit 1; }
+        # 從 tree JSON 取出（路徑, 大小）；清單遭截斷時整批拒絕，避免裝出半套。
+        files_tsv="$_TEMP_SOURCE_DIR/files.tsv"
+        awk '
+            /"truncated": *true/ { bad = 1 }
+            /"path":/ { p = $0; sub(/.*"path": "/, "", p); sub(/".*/, "", p) }
+            /"type":/ { t = $0; sub(/.*"type": "/, "", t); sub(/".*/, "", t) }
+            /"size":/ {
+                s = $0; sub(/.*"size": /, "", s); sub(/,.*/, "", s)
+                if (t == "blob" && (p == "rime.lua" || p ~ /^lua\/phah_taibun_.*\.lua$/ || p ~ /^schema\//))
+                    print p "\t" s
+                p = ""; t = ""; s = ""
+            }
+            END { if (bad) exit 1 }
+        ' "$tree_json" > "$files_tsv" || { echo "錯誤：檔案清單不完整。" >&2; exit 1; }
+        echo "正在從 GitHub v$RELEASE_VERSION 逐檔下載拍台文..."
         PROJ_DIR="$_TEMP_SOURCE_DIR/source"
         mkdir -p "$PROJ_DIR"
-        if [ -z "${PHAH_TAIBUN_ARCHIVE_URL:-}" ]; then
-            latest_tag="$(curl -fsSL --connect-timeout 10 --max-time 15 https://api.github.com/repos/soanseng/rime-phah-taibun/releases/latest 2>/dev/null | sed -n 's/.*"tag_name": *"\(v[0-9][0-9.]*\)".*/\1/p' | head -1)"
-            case "$latest_tag" in
-                v[0-9]*) RELEASE_VERSION="${latest_tag#v}" ;;
-            esac
-            SOURCE_ARCHIVE_URL="https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION/PhahTaiBun-source.zip"
-            SOURCE_ARCHIVE_SHA256_URL="$SOURCE_ARCHIVE_URL.sha256"
-        fi
-        echo "正在下載拍台文 v$RELEASE_VERSION 完整安裝資產..."
-        curl -fsSL "$SOURCE_ARCHIVE_URL" -o "$archive"
-        curl -fsSL "$SOURCE_ARCHIVE_SHA256_URL" -o "$checksum"
-        expected_sha256="$(awk '{print $1; exit}' "$checksum")"
-        actual_sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
-        if [ -z "$expected_sha256" ] || [ "$actual_sha256" != "$expected_sha256" ]; then
-            echo "錯誤：PhahTaiBun-source.zip SHA-256 驗證失敗。" >&2
-            exit 1
-        fi
-        tar -xf "$archive" -C "$PROJ_DIR"
+        while IFS=$'\t' read -r rel size; do
+            dest="$PROJ_DIR/$rel"
+            mkdir -p "$(dirname "$dest")"
+            echo "  下載 $rel"
+            curl -fsSL --retry 3 --connect-timeout 10 --max-time 300 "https://raw.githubusercontent.com/$GITHUB_REPO/v$RELEASE_VERSION/$rel" -o "$dest" \
+                || { echo "錯誤：下載 $rel 失敗。" >&2; exit 1; }
+            actual_size="$(wc -c < "$dest" | tr -d ' ')"
+            if [ "$actual_size" != "$size" ]; then
+                echo "錯誤：$rel 大小不符（預期 $size，實得 $actual_size）。" >&2
+                exit 1
+            fi
+        done < "$files_tsv"
     fi
 fi
 
