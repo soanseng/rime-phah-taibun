@@ -467,6 +467,53 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "chhia1");
   print_state(api, session, "tone1_chhia1");
   api->clear_composition(session);
+
+  // Checked tones (4/8 with -t/-p/-k/-h codas) and further POJ families:
+  // digitless input must behave the same in TL and POJ spellings.
+  // 節 tsat4/chat4, 石 tsioh8/chioh8, 豬 tsu1/chu1, 英 ing1/eng1,
+  // 山 suann1/soann1 (ua->oa). Tone-4 tone digit sanity at the end.
+  api->simulate_key_sequence(session, "tsat");
+  print_state(api, session, "tone4_tsat");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chat");
+  print_state(api, session, "tone4_chat");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsioh");
+  print_state(api, session, "tone8_tsioh");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chioh");
+  print_state(api, session, "tone8_chioh");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "tsu");
+  print_state(api, session, "tone1_tsu");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chu");
+  print_state(api, session, "tone1_chu");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "ing");
+  print_state(api, session, "tone1_ing");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "eng");
+  print_state(api, session, "tone1_eng");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "suann");
+  print_state(api, session, "tone1_suann");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "soann");
+  print_state(api, session, "tone1_soann");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chat4");
+  print_state(api, session, "tone4_chat4");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chioh8");
+  print_state(api, session, "tone8_chioh8");
+  api->clear_composition(session);
+
+  // Multi-syllable POJ word with ts->ch in the SECOND syllable
+  // (頭前 thau5 tsing5 -> thau5 cheng5): algebra applies per syllable.
+  api->simulate_key_sequence(session, "thau5-cheng5");
+  print_state(api, session, "poj_multi_toned");
+  api->clear_composition(session);
   api->destroy_session(session);
   api->finalize();
   dlclose(lua);

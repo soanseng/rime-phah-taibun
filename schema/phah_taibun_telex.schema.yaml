@@ -97,6 +97,19 @@ speller:
     - derive/oo/ou/
     - derive/nn/ⁿ/
 
+    # === POJ 無調拼式（與主方案對齊；直接 derive 避免雙音節切分壓過） ===
+    - derive/^ts([a-z]*)ua([a-z]*)[1-9]$/ch$1oa$2/
+    - derive/^ts([a-z]*)ue([a-z]*)[1-9]$/ch$1oe$2/
+    - derive/^ts([a-z]*)ing[1-9]$/ch$1eng/
+    - derive/^ts([a-z]*)ik[1-9]$/ch$1ek/
+    - derive/^ts([a-z]*)oo([a-z]*)[1-9]$/ch$1ou$2/
+    - derive/^ts([a-z]+)[1-9]$/ch$1/
+    - derive/^([a-z]*)ing[1-9]$/$1eng/
+    - derive/^([a-z]*)ik[1-9]$/$1ek/
+    - derive/^([a-z]*)ua([a-z]*)[1-9]$/$1oa$2/
+    - derive/^([a-z]*)ue([a-z]*)[1-9]$/$1oe$2/
+    - derive/^([a-z]*)oo([a-z]*)[1-9]$/$1ou$2/
+
     # === Telex 聲母簡寫：z/zh 保持 1:1，由 prism 對到 ts/tsh ===
     - derive/^tsh/zh/
     - derive/^ts/z/

@@ -96,6 +96,21 @@ speller:
     - derive/oo/ou/
     - derive/nn/ⁿ/
 
+    # === POJ 無調拼式（與 TL 無調輸入對齊） ===
+    # 單規則直接自原碼 derive「無調 POJ」。ts/ch 家族免調 POJ 輸入若只能
+    # 靠兩層規則組合，會被可行的雙音節切分壓過（chhia→chhi a、chat→cha t）。
+    - derive/^ts([a-z]*)ua([a-z]*)[1-9]$/ch$1oa$2/
+    - derive/^ts([a-z]*)ue([a-z]*)[1-9]$/ch$1oe$2/
+    - derive/^ts([a-z]*)ing[1-9]$/ch$1eng/
+    - derive/^ts([a-z]*)ik[1-9]$/ch$1ek/
+    - derive/^ts([a-z]*)oo([a-z]*)[1-9]$/ch$1ou$2/
+    - derive/^ts([a-z]+)[1-9]$/ch$1/
+    - derive/^([a-z]*)ing[1-9]$/$1eng/
+    - derive/^([a-z]*)ik[1-9]$/$1ek/
+    - derive/^([a-z]*)ua([a-z]*)[1-9]$/$1oa$2/
+    - derive/^([a-z]*)ue([a-z]*)[1-9]$/$1oe$2/
+    - derive/^([a-z]*)oo([a-z]*)[1-9]$/$1ou$2/
+
     # === 進一步模糊 ===
     # 泉腔等來源可能以 l 對應 j；這是腔口模糊，不是 POJ/TL 差異
     - derive/^j/l/

@@ -446,14 +446,63 @@ def test_tone1_digitless_and_poj_input_visibility(real_rime_states):
         assert "車" in texts[:10], (label, texts)
 
 
-@pytest.mark.xfail(
-    reason="已知限制(實測): POJ 無調輸入 chhia 被引擎切成 chhi a 雙段, "
-    "車 不在候選前 10; 帶調 chhia1 正常. "
-    "成因推測(未單獨驗證)是單段 abbrev 邊信度懲罰輸給兩段 derive 邊的分段選擇; "
-    "修復涉及分段信度語意, 另行處理."
-)
-def test_poj_digitless_tone1_fragments_today(real_rime_states):
-    poj = real_rime_states["tone1_chhia"]
-    texts = [c["text"] for c in poj["candidates"]]
-    assert poj["preedit"] == "chhia", poj
-    assert "車" in texts[:10], texts
+POJ_TL_DIGITLESS_VISIBLE = [
+    # (label, typed, target) — 高權重目標: 免調要直接選得到, 不被切碎.
+    ("tone1_tshia", "tshia", "車"),
+    ("tone1_chhia", "chhia", "車"),
+    ("tone4_tsat", "tsat", "節"),
+    ("tone4_chat", "chat", "節"),
+    ("tone8_tsioh", "tsioh", "石"),
+    ("tone8_chioh", "chioh", "石"),
+]
+
+POJ_TL_DIGITLESS_NO_FRAGMENT = [
+    # (label, typed) — 目標字可能被同音高權重詞蓋過(排名層次), 但輸入
+    # 不得被切成兩段: TL 不碎的, POJ 同家族也不得碎.
+    ("tone1_tsu", "tsu"),
+    ("tone1_chu", "chu"),
+    ("tone1_ing", "ing"),
+    ("tone1_eng", "eng"),
+    ("tone1_suann", "suann"),
+    ("tone1_soann", "soann"),
+]
+
+
+@pytest.mark.parametrize("label,typed,target", POJ_TL_DIGITLESS_VISIBLE)
+def test_digitless_input_matches_across_tl_poj_families(real_rime_states, label, typed, target):
+    """無調輸入的 TL/POJ 對齊: 高權重字免調就要選得到, 不被切碎.
+
+    聲調可省略是主打功能; POJ 拼式(chhia/chat/chioh)與 TL(tshia/tsat/
+    tsioh) 行為必須一致——含入聲 4/8 聲(-t/-p/-k/-h 尾)。
+    """
+    state = real_rime_states[label]
+    texts = [c["text"] for c in state["candidates"]]
+    assert state["preedit"] == typed, (label, state["preedit"], texts)
+    assert target in texts[:10], (label, texts)
+
+
+@pytest.mark.parametrize("label,typed", POJ_TL_DIGITLESS_NO_FRAGMENT)
+def test_digitless_poj_does_not_fragment(real_rime_states, label, typed):
+    """無調 POJ 拼式不得被切成兩段(TL 對照組不碎)."""
+    state = real_rime_states[label]
+    assert state["preedit"] == typed, (label, state["preedit"])
+
+
+def test_checked_tone_poj_toned_input_visibility(real_rime_states):
+    """帶調 POJ 對照組: chat4/chioh8 直接命中(derive 邊本身沒問題)."""
+    for label, target in (("tone4_chat4", "節"), ("tone8_chioh8", "石")):
+        state = real_rime_states[label]
+        texts = [c["text"] for c in state["candidates"]]
+        assert target in texts[:10], (label, texts)
+
+
+def test_poj_multisyllable_second_syllable_ts(real_rime_states):
+    """POJ 多音節詞、ts->ch 在第二音節(頭前 thau5-cheng5)帶調要直接選得到.
+
+    speller algebra 逐音節套用, ^ts 錨定不影響非首音節. 免調對照組(thau-tsing)
+    與 TL(thau-cheng)行為一致: 分段逐詞選字, 字典詞不直接上候選——此為
+    TL/POJ 對等的既有性質, 非本測試範圍.
+    """
+    state = real_rime_states["poj_multi_toned"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert "頭前" in texts[:10], texts
