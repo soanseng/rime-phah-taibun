@@ -179,6 +179,10 @@
             <p>打 <code>kio-tiann</code> 或整句連打，候選自動逐音節組合；用 <code>-</code> 斷音節，<kbd>Tab</kbd> 逐字選出想要的字——選字就是選調，最後送出如「橋鼎」。</p>
           </article>
           <article>
+            <h3>字典裡的詞，連打會整詞出現</h3>
+            <p>詞典權重保證整詞優先：連續輸入 <code>tsiah8-png7</code>，「食飯」會以整詞排在前頭，不會被拆成單字組句；高頻單字也搶不走整詞的位置。字典外的詞才走逐音節組合。</p>
+          </article>
+          <article>
             <h3>注音反查會回到台語候選</h3>
             <p>用 <kbd>~</kbd> 從華語注音找字後，會把台語拼音送回主輸入流程，並在註解和全羅輸出中顯示調符。</p>
           </article>
@@ -436,7 +440,7 @@
         <div class="section-heading narrow">
           <p class="eyebrow">最近更新</p>
           <h2>最近 5 個變更，重點都放在更準、更好裝、更可重建。</h2>
-          <p>這裡用使用者看得懂的方式整理近期變更；完整技術紀錄仍以 GitHub commit 與 Releases 為準。</p>
+          <p>這裡用使用者看得懂的方式整理近期變更，保留最近五個版本；更早的版本歷史請看 <a href="https://github.com/soanseng/rime-phah-taibun/releases">GitHub Releases</a>。</p>
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
@@ -456,11 +460,6 @@
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
-            <h3>Android：同文 / fcitx5-android 可手動部署</h3>
-            <p>拍台文方案本身不用改。Android 沒有官方 APK，但同一套檔案可放進<a href="https://github.com/osfans/trime">同文 Trime</a> 或 <a href="https://github.com/fcitx5-android/fcitx5-android">fcitx5-android</a> 的 Rime 外掛（兩者都有 librime-lua）。詳細步驟見<a href="android.md">Android 部署</a>。虛擬鍵盤快捷鍵與桌面不同，請用候選點選。</p>
-          </article>
-          <article>
-            <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.0：拍台文(Telex) 進階調鍵方案</h3>
             <p>給熟台羅、想連續輸入的人：方案選單多了「拍台文(Telex)」，聲調用字母鍵（<code>v</code>=2/8、<code>y</code>=3、<code>d</code>=5、<code>w</code>=7、<code>q</code>=9），<code>z</code>→<code>ts</code>、<code>zh</code>→<code>tsh</code>，<code>f</code> 當音節連字符，<code>taidfgiv</code> 就能打出臺語。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式，只換輸入鍵位；主方案行為完全不變。歷史、鍵位圖與「可以用也可以不用」見首頁 <a href="#telex">Telex</a> 一節。</p>
           </article>
@@ -468,36 +467,6 @@
             <time datetime="2026-08-23">2026-08-23</time>
             <h3>0.5.0：字典查無的詞組可逐音節選字</h3>
             <p>字典沒收的詞（人名、地名、新詞）現在有明確流程：整串輸入或用 <code>-</code> 斷音節，候選自動逐音節組合，按 <code>Tab</code> 一個字一個字選（選字即選調），短句也一樣。行為以真實 librime 引擎測試釘住，輸入法不會自動把打過的內容存成新詞。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-22">2026-08-22</time>
-            <h3>0.4.1：Linux 安裝不再出現 essay 錯誤</h3>
-            <p>修復 Linux 安裝時 Rime 字典編譯找不到 <code>essay.txt</code> 的問題：安裝器現在會明確指定系統共用資料目錄，不再出現 <code>Error opening db 'essay' read-only</code> 錯誤訊息，重新安裝舊版本的使用者也會自動套用。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-22">2026-08-22</time>
-            <h3>0.4.0：輸出模式會記住你的選擇</h3>
-            <p>用 F4 選過的 TL/POJ、漢羅/全羅模式會存進 Rime 使用者設定，重開機、重新部署後不用再重選。既有安裝重跑一次安裝指令即可自動升級。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-14">2026-08-14</time>
-            <h3>0.3.1 正式版：三平台安裝包通過完整驗證</h3>
-            <p>Windows、macOS、Linux 安裝流程與下載資產都加入驗證：Release 前先跑完整測試，下載的資源固定版本並核對 SHA-256，Rime 重新部署失敗會直接報錯，不再產生裝了卻不能用的安裝包。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-14">2026-08-14</time>
-            <h3>安裝後按 F4 沒反應的說明</h3>
-            <p>F4 只在小狼毫／鼠鬚管等 Rime 前端的輸入狀態下才會開啟方案選單；若系統輸入法還沒切到小狼毫／鼠鬚管，按 F4 不會有任何變化。安裝說明已補上完整的輸入法切換步驟。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-14">2026-08-14</time>
-            <h3>跨平台更新流程</h3>
-            <p>Windows／macOS 重跑最新版安裝包即可覆蓋更新，Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。更新會保留自訂詞庫與其他 Rime 方案，完成後自動重新部署。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-14">2026-08-14</time>
-            <h3>快捷鍵與 POJ/TL 說明對齊</h3>
-            <p>反引號 <code>`</code> 統一由符號選單處理，POJ/TL 混打的快捷鍵說明修正，按鍵說明（help）也保留完整的快捷鍵提示，不會在特定流程下漏掉。</p>
           </article>
         </div>
       </div>
@@ -557,6 +526,7 @@ cd rime-phah-taibun
             <p class="eyebrow">更新拍台文</p>
             <h3>重跑最新版安裝方式，就能保留個人詞庫並更新正式檔案。</h3>
             <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 覆蓋正式方案檔後重新部署，見 <a href="android.md">Android 部署</a>。</p>
+            <p><strong>下載可驗證</strong>：每個 Release 附 <code>SHA256SUMS</code>，涵蓋所有安裝資產，發佈時已由 CI 自動核對；想自行核對雜湊，見<a href="packaged-installers.md">安裝包說明</a>。</p>
           </div>
           <a class="btn btn-secondary" href="guide.html#/user-guide?id=更新拍台文">查看完整更新方法</a>
         </div>
