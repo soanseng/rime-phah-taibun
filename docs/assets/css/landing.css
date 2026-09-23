@@ -686,9 +686,14 @@ html.js .wl-row.inview .wl-fill {
   margin-bottom: 0.5rem;
 }
 
-.updates-list p {
+.updates-list ul {
   color: var(--color-muted);
-  margin-bottom: 0;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.updates-list li + li {
+  margin-top: 0.35rem;
 }
 
 .creator-section {

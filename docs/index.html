@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>拍台文 Phah Tai-bun｜台語輸入法、白話字輸入法、電腦台語打字（Rime）</title>
-  <meta name="description" content="拍台文是免費開源的 Rime 台語輸入方案，支援 POJ 白話字與 TL 台羅混打、免打聲調、漢羅輸出與整句輸入。Windows、macOS、Linux、Android 均可使用。">
+  <meta name="description" content="拍台文是免費開源的 Rime 台語輸入方案，支援 POJ 白話字與 TL 台羅混打、免打聲調、漢羅輸出與整句輸入。Windows、macOS、Linux 可安裝；Android 可手動部署。">
   <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,電腦台語輸入法,Rime 台語輸入法,白話字輸入法,台羅輸入法,POJ 輸入法,TL 輸入法,漢羅輸入,漢羅混寫,台語打字,台語鍵盤,教羅,教會羅馬字,Pe̍h-ōe-jī,Peh-oe-ji,Tâi-gí,Tai-gi,Tâi-bûn,Hàn-lô,Tâi-lô,Lô-má-jī,phah-jī,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,拍台文,Phah Tai-bun">
   <meta name="author" content="Soan Seng">
   <meta name="robots" content="index,follow,max-image-preview:large">
@@ -16,7 +16,7 @@
   <meta property="og:locale" content="zh_TW">
   <meta property="og:site_name" content="拍台文 Phah Tai-bun">
   <meta property="og:title" content="拍台文｜台語輸入法·白話字輸入法（電腦 Rime）">
-  <meta property="og:description" content="會講台語，就能開始用台語輸入。POJ、TL 都能打，聲調可省略，整句輸入一次送出。">
+  <meta property="og:description" content="會講台語，就能開始用台語輸入。POJ 白話字（Pe̍h-ōe-jī）、TL 台羅都能打，聲調可省略，整句輸入一次送出。">
   <meta property="og:url" content="https://taigi.anatomind.com/">
   <meta property="og:image" content="https://taigi.anatomind.com/icon.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -360,7 +360,7 @@
             <ul class="kb-legend">
               <li><span class="swatch-tone"></span>調鍵</li>
               <li><span class="swatch-alias"></span>聲母簡寫</li>
-              <li><span class="swatch-hyphen"></span>音節連字符</li>
+              <li><span class="swatch-hyphen"></span>音節連字號</li>
             </ul>
             <p class="telex-mnemonic"><strong>記法</strong> <kbd>q</kbd> 像 9、<kbd>y</kbd> 像 3、<kbd>v</kbd> 對應 2／8、<kbd>d</kbd> 對應 5、<kbd>w</kbd> 對應 7。</p>
           </figure>
@@ -429,27 +429,43 @@
           <article>
             <time datetime="2026-09-23">2026-09-23</time>
             <h3>0.8.0：整句輸入，選字更順</h3>
-            <p>打完整句羅馬字，按空白鍵或 <kbd>Enter</kbd> 就能送出；中途也能按 <kbd>Tab</kbd> 挑字。全羅輸出會依詞分開，詞內保留連字號。詞頻改用 iCorpus 統計，讓同音不同詞按實際用法排序。</p>
+            <ul>
+              <li>打完整句羅馬字，按空白鍵或 <kbd>Enter</kbd> 即可送出。</li>
+              <li>輸入途中按 <kbd>Tab</kbd>，可逐字挑字。</li>
+              <li>全羅按詞分隔；iCorpus 詞頻讓同音詞排序更貼近實際用法。</li>
+            </ul>
           </article>
           <article>
             <time datetime="2026-09-22">2026-09-22</time>
-            <h3>0.7.0：連續輸入更愛整詞，下載可驗證</h3>
-            <p>字典內約 2.8 萬個多音節詞的權重重校：連續輸入時，字典裡的整詞（如「食飯」）不再被拆成單字組句。修正大寫音節（Tsuí、Ing-ko 類）的 POJ 候選轉換錯誤。字典構建完全確定化——同樣的資料重建兩次，結果逐位元組相同。每個 Release 附 <code>SHA256SUMS</code>，發佈時自動匿名下載驗證，安裝包可自行核對雜湊。</p>
+            <h3>0.7.0：整詞優先，下載可驗證</h3>
+            <ul>
+              <li>調整多音節詞權重，讓整詞優先。</li>
+              <li>修正部分大寫音節的 POJ 轉換。</li>
+              <li>安裝包新增 <code>SHA256SUMS</code>，可驗證下載檔案。</li>
+            </ul>
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
-            <h3>0.6.2：Android 說明入 zip；macOS 改指令安裝</h3>
-            <p><code>PhahTaiBun-source.zip</code> 包含 <code>docs/android.md</code>。macOS <strong>不再提供</strong> <code>PhahTaiBun.pkg</code>（無法在本專案驗證 Gatekeeper／notarize），請先裝鼠鬚管後執行 <code>curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash</code>，或複製 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 到 <code>~/Library/Rime/</code>。Windows 仍用 <code>PhahTaiBunSetup.exe</code> 或 PowerShell <code>irm … | iex</code>。</p>
+            <h3>0.6.2：Android 說明、macOS 安裝更新</h3>
+            <ul>
+              <li>Android 部署說明納入來源包。</li>
+              <li>macOS 改用指令安裝，Windows 安裝方式不變。</li>
+            </ul>
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
-            <h3>0.6.1：既有安裝升級不會弄壞方案列表</h3>
-            <p>修復從舊版升級到 0.6 時，Linux／macOS／Windows 安裝器會把既有的 <code>default.custom.yaml</code>（尤其是 rime-ice 風格的 <code>__patch:</code> 列表）寫壞的問題：方案選單可能消失，或 YAML 解析失敗。重跑一次安裝即可自動修好；拍台文(Telex) 與主方案行為不變。</p>
+            <h3>0.6.1：升級保留既有方案</h3>
+            <ul>
+              <li>修正升級時可能影響既有輸入法清單的問題，重新安裝即可套用。</li>
+            </ul>
           </article>
           <article>
             <time datetime="2026-09-21">2026-09-21</time>
-            <h3>0.6.0：拍台文(Telex) 進階調鍵方案</h3>
-            <p>給熟台羅、想連續輸入的人：方案選單多了「拍台文(Telex)」，聲調用字母鍵（<code>v</code>=2/8、<code>y</code>=3、<code>d</code>=5、<code>w</code>=7、<code>q</code>=9），<code>z</code>→<code>ts</code>、<code>zh</code>→<code>tsh</code>，<code>f</code> 當音節連字符，<code>taidfgiv</code> 就能打出臺語。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式，只換輸入鍵位；主方案行為完全不變。歷史、鍵位圖與「可以用也可以不用」見首頁 <a href="#telex">Telex</a> 一節。</p>
+            <h3>0.6.0：新增 Telex 調鍵方案</h3>
+            <ul>
+              <li>新增可選 Telex 方案，用字母鍵輸入聲調。</li>
+              <li>主方案的詞典與輸出方式不變。</li>
+            </ul>
           </article>
         </div>
       </div>
@@ -510,21 +526,21 @@ cd rime-phah-taibun
               <li>在方案清單選「拍台文(台)」就能打字。漢羅↔全羅、TL↔POJ 在 App 的<strong>開關面板</strong>切換（不是桌面的 <kbd>F4</kbd>），台文↔英文用中英鍵。</li>
               <li>手機鍵盤沒有桌面快捷鍵，功能改在長按：以詞定字 <code>[</code>／<code>]</code> ＝長按 <code>u</code>／<code>i</code>，萬用查字 <code>?</code> ＝長按 <code>/</code>，注音反查 <code>~</code> ＝長按 <code>b</code>，符號選單 ＝長按 <code>z</code>；候選直接用點的。</li>
             </ol>
-            <p><a href="android.md">完整 Android 步驟、路徑、按鍵對照與限制</a></p>
+            <p><a href="guide.html#/android">完整 Android 步驟、路徑、按鍵對照與限制</a></p>
           </div>
         </div>
         <div class="ai-install-card" id="update-install">
           <div>
             <p class="eyebrow">更新拍台文</p>
             <h3>重跑最新版安裝方式，就能保留個人詞庫並更新正式檔案。</h3>
-            <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 用最新 <code>PhahTaiBun-Trime.zip</code> 覆蓋後重新部署，見 <a href="android.md">Android 部署</a>。</p>
-            <p><strong>下載可驗證</strong>：每個 Release 附 <code>SHA256SUMS</code>，涵蓋所有安裝資產，發佈時已由 CI 自動核對；想自行核對雜湊，見<a href="packaged-installers.md">安裝包說明</a>。</p>
+            <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 用最新 <code>PhahTaiBun-Trime.zip</code> 覆蓋後重新部署，見 <a href="guide.html#/android">Android 部署</a>。</p>
+            <p><strong>下載可驗證</strong>：每個 Release 附 <code>SHA256SUMS</code>，涵蓋所有安裝資產，發佈時已由 CI 自動核對；想自行核對雜湊，見<a href="guide.html#/packaged-installers">安裝包說明</a>。</p>
           </div>
           <a class="btn btn-secondary" href="guide.html#/user-guide?id=更新拍台文">查看完整更新方法</a>
         </div>
         <div class="center-actions">
           <a class="btn btn-primary" href="https://github.com/soanseng/rime-phah-taibun/releases">前往 GitHub Releases</a>
-          <a class="btn btn-secondary" href="packaged-installers.md">安裝包說明</a>
+          <a class="btn btn-secondary" href="guide.html#/packaged-installers">安裝包說明</a>
         </div>
         <div class="ai-install-card" id="ai-install">
           <div>
@@ -583,7 +599,7 @@ cd rime-phah-taibun
           </details>
           <details>
             <summary>這是手機輸入法嗎？</summary>
-            <p>官方安裝包只有 Windows（<code>PhahTaiBunSetup.exe</code>）。macOS 用指令安裝（<code>curl …/install_macos.sh | bash</code>），Linux 用 <code>./install.sh</code>。Android 沒有 APK：要先自己裝同文 Trime（<a href="https://f-droid.org/packages/com.osfans.trime">F-Droid</a> 或<a href="https://github.com/osfans/trime/releases">它的 Releases</a>）或小企鵝輸入法 5 + RIME 外掛，再從本專案 Releases 挑一個包——<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）或 <code>PhahTaiBun-Trime-liur.zip</code>（再加嘸蝦米）——放進它的 Rime 使用者資料夾並重新部署；手機鍵盤的快捷鍵也不等於桌面。步驟見 <a href="android.md">Android 部署</a>。</p>
+            <p>官方安裝包只有 Windows（<code>PhahTaiBunSetup.exe</code>）。macOS 用指令安裝（<code>curl …/install_macos.sh | bash</code>），Linux 用 <code>./install.sh</code>。Android 沒有 APK：要先自己裝同文 Trime（<a href="https://f-droid.org/packages/com.osfans.trime">F-Droid</a> 或<a href="https://github.com/osfans/trime/releases">它的 Releases</a>）或小企鵝輸入法 5 + RIME 外掛，再從本專案 Releases 挑一個包——<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）或 <code>PhahTaiBun-Trime-liur.zip</code>（再加嘸蝦米）——放進它的 Rime 使用者資料夾並重新部署；手機快捷鍵和桌面不同。完整步驟見 <a href="guide.html#/android">Android 部署</a>。</p>
           </details>
           <details>
             <summary>會覆蓋我原本的 Rime 設定嗎？</summary>
@@ -603,7 +619,7 @@ cd rime-phah-taibun
       <p>拍台文 Phah Tai-bun · Rime 台語輸入法方案</p>
       <nav aria-label="頁尾連結">
         <a href="guide.html">使用說明</a>
-        <a href="quickstart-card.md">快速上手</a>
+        <a href="guide.html#/quickstart-card">快速上手</a>
         <a href="sitemap.xml">Sitemap</a>
         <a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
       </nav>

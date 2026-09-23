@@ -33,14 +33,15 @@ Android 11+ 多數檔案總管進不去 `Android/data`，請用電腦 USB／MTP�
 ```
 rime/
 ├── phah_taibun.schema.yaml   phah_taibun_telex.schema.yaml
-├── phah_taibun.dict.yaml     hanlo_rules.yaml  hoabun_map.txt
-├── lighttone_rules.json      moe700.yaml
+├── phah_taibun.dict.yaml     phah_taibun.wordlist
+├── hanlo_rules.yaml          hoabun_map.txt
+├── lighttone_rules.json     moe700.yaml
 ├── bopomofo.schema.yaml      bopomofo_tw.schema.yaml  zhuyin.yaml
 ├── terra_pinyin.dict.yaml
 ├── default.custom.yaml       rime.lua           INSTALL-Trime.md
 ├── trime.custom.yaml         THIRD-PARTY-NOTICES.txt   LICENSE-PhahTaiBun.txt
 ├── licenses/  （LGPL-3.0.txt、GPL-3.0.txt）
-└── lua/       （拍台文 19 個模組；嘸蝦米版另含 liu_* 與 lunar_calendar/）
+└── lua/       （拍台文 20 個模組；嘸蝦米版另含 liu_* 與 lunar_calendar/）
 ```
 
 （嘸蝦米版在此之上另有 `liur.schema.yaml`、`liur.custom.yaml`、詞表與 `opencc/`、`LIUR-PROVENANCE.txt`。）

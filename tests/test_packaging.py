@@ -345,7 +345,7 @@ def test_android_community_install_is_documented_without_apk():
     assert "沒有官方 APK" in android or "沒有 APK" in android
     assert "android.md" in sidebar
     assert 'data-tab="android"' in homepage
-    assert "android.md" in homepage
+    assert 'href="guide.html#/android"' in homepage
     assert "android.md" in guide
     assert "docs/android.md" in readme
     assert "panel-android" in homepage
