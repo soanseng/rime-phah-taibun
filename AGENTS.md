@@ -197,6 +197,14 @@ uv run python scripts/build_all.py     # 一鍵管線（語料→字典→規則
 # macOS:  scripts/install_macos.sh（需 Squirrel）
 ```
 
+## 文件網站本機預覽與部署
+
+- 文件網站來源在 `docs/`；改首頁或 Docsify 使用說明前，先本機預覽並確認首頁與 `guide.html` 可用：
+  `python3 -m http.server 8000 --directory docs`，開啟 `http://localhost:8000/` 與 `http://localhost:8000/guide.html`。
+- 確認使用者能從首頁看懂：安裝步驟、快捷鍵與完整操作請前往「使用說明」；Docsify 連結須能正確載入對應章節。
+- 本機確認後，提交並 push 到 `main`；Cloudflare 的 Git 部署設定會執行 `npx wrangler deploy`，`wrangler.jsonc` 將 `docs/` 發佈為靜態資產。
+- push 後到正式站 `https://taigi.anatomind.com/` 驗證首頁與 `https://taigi.anatomind.com/guide.html` 的 Docsify 渲染及導航。不可只以 push 成功當作部署成功。
+
 ## Rime Lua 模組載入機制
 
 兩種載入方式**都要支援**：
