@@ -1,6 +1,6 @@
 ---
 name: phah_taibun
-version: "0.8.0"
+version: "0.9.0"
 sort: by_weight
 use_preset_vocabulary: false
 ...

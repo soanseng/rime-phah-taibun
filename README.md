@@ -45,6 +45,7 @@ Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the
 
 Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
 Since 0.8.0, continuous typing composes whole sentences in one commit (Enter or Space), with per-word editing via Tab; every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)), dictionary weights are identity-keyed to corpus frequencies, and builds are byte-for-byte reproducible.
+Since 0.9.0, a 手動漢羅 (manual han-lo mix) switch lets you keep whole sentences in hanzi and mark individual words as romanization with `Tab` + `\`; mid-sentence Tab selection in all-roman mode no longer breaks the sentence, and the toneless boost now works on recommendation-marked candidates.
 
 
 You can type without tone numbers, and POJ/TL spellings can be mixed:
