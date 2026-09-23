@@ -26,6 +26,8 @@ switches:
     states: [ 漢羅, 全羅 ]
   - name: poj_mode
     states: [ TL, POJ ]
+  - name: hanlo_manual
+    states: [ 自動漢羅, 手動漢羅 ]
 
 ascii_composer:
   switch_key:

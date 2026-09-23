@@ -25,7 +25,8 @@ void print_state(RimeApi* api, RimeSessionId session, const char* label) {
   }
 
   std::cout << "STATE\t" << label << '\t' << sanitize(context.composition.preedit) << '\t'
-            << context.menu.num_candidates << '\n';
+            << context.menu.num_candidates << '\t'
+            << sanitize(context.commit_text_preview) << '\n';
   for (int i = 0; i < context.menu.num_candidates; ++i) {
     const auto& candidate = context.menu.candidates[i];
     std::cout << "CAND\t" << label << '\t' << i << '\t' << sanitize(candidate.text) << '\t'
@@ -51,6 +52,27 @@ bool select_candidate_by_text(RimeApi* api, RimeSessionId session, const char* w
   }
   api->free_context(&context);
   return false;
+}
+
+// Move the menu highlight onto the first candidate whose text equals
+// `wanted` by pressing Down, without committing (for keys that act on the
+// highlighted candidate, e.g. the 手動漢羅 backslash mark).
+bool highlight_candidate_by_text(RimeApi* api, RimeSessionId session, const char* wanted) {
+  RIME_STRUCT(RimeContext, context);
+  if (!api->get_context(session, &context)) return false;
+  int idx = -1;
+  for (int i = 0; i < context.menu.num_candidates; ++i) {
+    if (std::string(context.menu.candidates[i].text) == wanted) {
+      idx = i;
+      break;
+    }
+  }
+  api->free_context(&context);
+  if (idx < 0) return false;
+  for (int i = 0; i < idx; ++i) {
+    api->process_key(session, 0xFF54, 0);  // Down
+  }
+  return true;
 }
 
 }  // namespace
@@ -292,6 +314,145 @@ int main(int argc, char* argv[]) {
   api->set_option(session, "full_romanization", false);
   api->clear_composition(session);
 
+  // 全羅 mode: Tab selection must retain a chosen word in the composition.
+  // Shift+s exercises the uppercase interception so capitalization does not
+  // depend on scenario order within this shared session.
+  api->set_option(session, "full_romanization", true);
+  api->process_key(session, 0x73, 0x1);  // Shift+s → capitalize_next
+  api->simulate_key_sequence(session, "i7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);  // Tab: enter selection mode
+  if (!select_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot select 是按怎 in full-roman mode\n";
+    return 1;
+  }
+  print_state(api, session, "liantua_full_roman_midsel");
+  RIME_STRUCT(RimeCommit, full_roman_mid_commit);
+  if (api->get_commit(session, &full_roman_mid_commit)) {
+    std::cout << "COMMIT\tliantua_full_roman_mid\t"
+              << sanitize(full_roman_mid_commit.text) << '\n';
+    api->free_commit(&full_roman_mid_commit);
+  } else {
+    std::cout << "COMMIT\tliantua_full_roman_mid\t\n";
+  }
+  api->simulate_key_sequence(session, "the3-tsiu2-liau2-au7");
+  print_state(api, session, "liantua_full_roman_resumed");
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, full_roman_resumed_commit);
+  if (api->get_commit(session, &full_roman_resumed_commit)) {
+    std::cout << "COMMIT\tliantua_full_roman_resumed\t"
+              << sanitize(full_roman_resumed_commit.text) << '\n';
+    api->free_commit(&full_roman_resumed_commit);
+  } else {
+    std::cout << "COMMIT\tliantua_full_roman_resumed\t\n";
+  }
+  api->clear_composition(session);
+  api->set_option(session, "full_romanization", false);
+
+  // 手動漢羅 (B): Tab selection + backslash marks the highlighted span as
+  // romanization; unselected words stay hanzi. Roman segments follow poj_mode.
+  api->set_option(session, "hanlo_manual", true);
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);  // Tab: enter selection mode
+  if (!highlight_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot highlight 是按怎 for manual mix\n";
+    return 1;
+  }
+  api->process_key(session, 0x5C, 0);  // backslash: mark span as romanization
+  print_state(api, session, "mixmark_mid");
+  RIME_STRUCT(RimeCommit, mixmark_mid_commit);
+  if (api->get_commit(session, &mixmark_mid_commit)) {
+    std::cout << "COMMIT\tmixmark_mid\t" << sanitize(mixmark_mid_commit.text) << '\n';
+    api->free_commit(&mixmark_mid_commit);
+  } else {
+    std::cout << "COMMIT\tmixmark_mid\t\n";
+  }
+  api->simulate_key_sequence(session, "");
+  print_state(api, session, "mixmark_resumed");
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, mixmark_final_commit);
+  if (api->get_commit(session, &mixmark_final_commit)) {
+    std::cout << "COMMIT\tmixmark_final\t" << sanitize(mixmark_final_commit.text) << '\n';
+    api->free_commit(&mixmark_final_commit);
+  } else {
+    std::cout << "COMMIT\tmixmark_final\t\n";
+  }
+  api->clear_composition(session);
+
+  // Same journey in POJ: the marked segment must come out as POJ romanization.
+  api->set_option(session, "poj_mode", true);
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);
+  if (!highlight_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot highlight 是按怎 for manual mix POJ\n";
+    return 1;
+  }
+  api->process_key(session, 0x5C, 0);
+  api->simulate_key_sequence(session, "");
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, mixmark_poj_commit);
+  if (api->get_commit(session, &mixmark_poj_commit)) {
+    std::cout << "COMMIT\tmixmark_poj\t" << sanitize(mixmark_poj_commit.text) << '\n';
+    api->free_commit(&mixmark_poj_commit);
+  } else {
+    std::cout << "COMMIT\tmixmark_poj\t\n";
+  }
+  api->set_option(session, "poj_mode", false);
+
+  // 手動漢羅: two segments marked/picked in order — mark 是按怎 as roman,
+  // Tab-pick 人 as hanzi — then Space assembles mix + hanzi remainder 退.
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5-the3");
+  api->process_key(session, 0xFF09, 0);
+  if (!highlight_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot highlight 是按怎 for two-mark mix\n";
+    return 1;
+  }
+  api->process_key(session, 0x5C, 0);  // mark 是按怎 as roman
+  api->process_key(session, 0xFF09, 0);  // Tab again for the next word
+  if (!select_candidate_by_text(api, session, "\xe4\xba\xba")) {  // 人 as hanzi
+    std::cerr << "cannot select 人 for two-mark mix\n";
+    return 1;
+  }
+  print_state(api, session, "mixmark_two_mid");
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, mixmark_two_commit);
+  if (api->get_commit(session, &mixmark_two_commit)) {
+    std::cout << "COMMIT\tmixmark_two\t" << sanitize(mixmark_two_commit.text) << '\n';
+    api->free_commit(&mixmark_two_commit);
+  } else {
+    std::cout << "COMMIT\tmixmark_two\t\n";
+  }
+  api->clear_composition(session);
+
+  // 手動漢羅 lifecycle: marking, then Escape cancels the composition; a
+  // fresh marking journey must not inherit the cancelled mix state (a leak
+  // would double the roman prefix).
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);
+  if (!highlight_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot highlight 是按怎 for escape lifecycle\n";
+    return 1;
+  }
+  api->process_key(session, 0x5C, 0);  // mark 是按怎 as roman
+  api->process_key(session, 0xFF1B, 0);  // Escape cancels the composition
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);
+  if (!highlight_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e")) {
+    std::cerr << "cannot highlight 是按怎 after escape\n";
+    return 1;
+  }
+  api->process_key(session, 0x5C, 0);
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, mixmark_afteresc_commit);
+  if (api->get_commit(session, &mixmark_afteresc_commit)) {
+    std::cout << "COMMIT\tmixmark_afteresc\t" << sanitize(mixmark_afteresc_commit.text) << '\n';
+    api->free_commit(&mixmark_afteresc_commit);
+  } else {
+    std::cout << "COMMIT\tmixmark_afteresc\t\n";
+  }
+  api->clear_composition(session);
+  api->set_option(session, "hanlo_manual", false);
+  api->clear_composition(session);
   api->destroy_session(session);
   api->finalize();
   dlclose(lua);

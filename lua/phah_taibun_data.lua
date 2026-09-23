@@ -538,6 +538,23 @@ function M.capitalize_first(text)
   return text
 end
 
+-- 手動漢羅 assembly: append one confirmed segment to the mixed output.
+-- `hanzi_bytes` tracks the segment's length in the composition's commit
+-- text (hanzi form) so the final Space can strip the confirmed prefix;
+-- `text` is what actually gets output (hanzi, or romanization when the
+-- segment was marked with backslash). Hanzi+hanzi join without a space;
+-- any roman segment joins with a space (LKK 漢羅 convention).
+function M.mix_append(state, hanzi_bytes, text, is_roman)
+  if state.mix_output then
+    local sep = (state.mix_last_han and not is_roman) and "" or " "
+    state.mix_output = state.mix_output .. sep .. text
+  else
+    state.mix_output = text
+  end
+  state.mix_last_han = not is_roman
+  state.mix_bytes = (state.mix_bytes or 0) + hanzi_bytes
+end
+
 -- Count UTF-8 characters (not bytes)
 function M.utf8_len(s)
   if not s or s == "" then return 0 end
@@ -720,6 +737,15 @@ end
 -- Returns: committed text (for homophone tracking)
 function M.commit_with_roman(engine, context, cand, state)
   local roman = M.extract_roman(cand, context, engine)
+  if not roman and context then
+    -- Sentence-composed candidates carry no comment romanization; the
+    -- reading is the segmented preedit (same fallback as phah_taibun_commit).
+    local preedit = context:get_script_text()
+    if preedit ~= "" then
+      roman = M.format_sentence_romanization(
+        cand.text, preedit, context:get_option("poj_mode"))
+    end
+  end
   if not roman then return nil end
   if state.capitalize_next then
     roman = M.capitalize_first(roman)

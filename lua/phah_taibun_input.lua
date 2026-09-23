@@ -39,6 +39,7 @@ function M.init(env)
     selection_mode = false,
     capitalize_next = true,
     last_text = nil,
+    roman_buffer = nil,
   }
 end
 
@@ -46,9 +47,13 @@ function M.func(key, env)
   local context = env.engine.context
   local state = env.state
 
-  -- Reset selection mode if composition was cleared externally
-  if state.selection_mode and not context:is_composing() then
+  -- Reset selection mode, the 全羅 romanization buffer, and the 手動漢羅
+  -- mix state if composition was cleared externally
+  if not context:is_composing() then
     state.selection_mode = false
+    state.roman_buffer = nil
+    state.mix_output, state.mix_bytes, state.mix_last_han = nil, 0, nil
+    state.mark_roman = nil
   end
 
   -- Ignore key releases
@@ -99,13 +104,71 @@ function M.func(key, env)
   end
 
   local kc = key.keycode
+  local manual_mix = context:get_option("hanlo_manual")
 
   -- Helper: commit candidate and track homophone
   local function commit_candidate(cand)
     local full_roman = context:get_option("full_romanization")
-    if full_roman and data_mod then
-      data_mod.commit_with_roman(env.engine, context, cand, state)
-      context:clear()
+    local input_len = #(context.input or "")
+    -- 全羅 mode: direct romanization commit only when the candidate covers
+    -- the whole input from its start. Mid-sentence selection (more input
+    -- precedes or follows) must confirm the hanzi into the composition so
+    -- the rest keeps composing (連打), same as 漢羅 mode.
+    if full_roman and data_mod and input_len > 0
+       and cand.start == 0 and cand._end and cand._end >= input_len then
+      if data_mod.commit_with_roman(env.engine, context, cand, state) then
+        context:clear()
+      else
+        -- No romanization extractable: keep the composition instead of
+        -- silently dropping the input.
+        context:confirm_current_selection()
+      end
+    elseif full_roman and data_mod then
+      -- 連打 (全羅): remember the picked word's romanization, then confirm
+      -- so the remaining input keeps composing. The buffer is prepended at
+      -- the final Space (phah_taibun_commit) or committed here when this
+      -- selection completes the whole input.
+      local picked = data_mod.extract_roman(cand, context, env.engine)
+      if picked then
+        state.roman_buffer = state.roman_buffer
+          and (state.roman_buffer .. " " .. picked) or picked
+      end
+      if picked and cand._end and cand._end >= input_len then
+        local roman = state.roman_buffer
+        state.roman_buffer = nil
+        if state.capitalize_next then
+          roman = data_mod.capitalize_first(roman)
+        end
+        env.engine:commit_text(roman)
+        state.capitalize_next = false
+        context:clear()
+      else
+        context:confirm_current_selection()
+      end
+    elseif manual_mix and data_mod then
+      -- 手動漢羅: asdf-confirmed words keep hanzi; a backslash-marked word
+      -- contributes its romanization (follows poj_mode via extract_roman).
+      -- Segments assemble left to right; Space outputs mix + hanzi rest.
+      local marked = state.mark_roman
+      state.mark_roman = nil
+      if marked then
+        data_mod.mix_append(state, #cand.text, marked, true)
+      else
+        data_mod.mix_append(state, #cand.text, cand.text, false)
+      end
+      if cand._end and cand._end >= input_len then
+        -- selection completes the sentence: commit the assembled mix now
+        local text = state.mix_output
+        state.mix_output, state.mix_bytes, state.mix_last_han = nil, 0, nil
+        if state.capitalize_next then
+          text = data_mod.capitalize_first(text)
+        end
+        env.engine:commit_text(text)
+        state.capitalize_next = false
+        context:clear()
+      else
+        context:confirm_current_selection()
+      end
     else
       context:confirm_current_selection()
     end
@@ -158,6 +221,19 @@ function M.func(key, env)
     state.selection_mode = false
     update_prompt(context, false)
     return 2  -- kNoop
+  end
+
+  -- 手動漢羅: mark the highlighted candidate's span as romanization
+  if key:repr() == "backslash" and manual_mix and data_mod then
+    local cand = context:get_selected_candidate()
+    local roman = cand and data_mod.extract_roman(cand, context, env.engine)
+    if roman then
+      state.mark_roman = roman
+      commit_candidate(cand)
+      update_prompt(context, false)
+      return 1  -- kAccepted
+    end
+    return 1  -- kAccepted: no romanization for this candidate; ignore
   end
 
   -- Brackets [ ] and backslash \: exit selection mode, pass to downstream

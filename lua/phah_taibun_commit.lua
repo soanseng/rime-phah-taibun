@@ -270,15 +270,26 @@ function M.func(key, env)
     local cand = context:get_selected_candidate()
     if cand then
       if full_roman then
-        -- 全羅 mode: output the Han-Lo display text (cand.text)
-        -- In 全羅 mode, filter sets cand.text to Han-Lo display text
-        env.engine:commit_text(cand.text)
+        -- 全羅 mode: output the Han-Lo display text (cand.text), keeping
+        -- any mid-sentence Tab selections buffered as romanization.
+        local text = cand.text
+        if state.roman_buffer and state.roman_buffer ~= "" then
+          text = state.roman_buffer .. " " .. text
+          state.roman_buffer = nil
+        end
+        env.engine:commit_text(text)
         context:clear()
         return 1  -- kAccepted
       else
-        -- 漢羅 mode: output full romanization
+        -- 漢羅 mode: output full romanization; in 手動漢羅 keep the marked
+        -- segments in front and clear the mix state with the composition.
         local roman = extract_roman(cand, env)
         if roman then
+          if state.mix_output and data_mod then
+            data_mod.mix_append(state, #cand.text, roman, true)
+            roman = state.mix_output
+            state.mix_output, state.mix_bytes, state.mix_last_han = nil, 0, nil
+          end
           env.engine:commit_text(roman)
           context:clear()
           return 1  -- kAccepted
@@ -305,6 +316,38 @@ function M.func(key, env)
     end
     env.engine:commit_text(roman)
     state.capitalize_next = false
+    context:clear()
+    return 1  -- kAccepted
+  end
+
+  -- ============================================================
+  -- 手動漢羅: segments marked with Tab+backslash assemble as romanization,
+  -- everything else commits as hanzi. Applies to Space, select keys, and
+  -- punctuation endings once any marking happened this composition.
+  -- ============================================================
+  if state.mix_output
+     and context:get_option("hanlo_manual")
+     and not context:get_option("full_romanization")
+     and (kc == 0x20 or env.select_map[kc] or PUNCT_MAP[kc]) then
+    local full_text = context:get_commit_text() or ""
+    local remainder = full_text:sub((state.mix_bytes or 0) + 1)
+    if remainder ~= "" then
+      data_mod.mix_append(state, #remainder, remainder, false)
+    end
+    local text = state.mix_output
+    state.mix_output, state.mix_bytes, state.mix_last_han = nil, 0, nil
+    if state.capitalize_next then
+      text = capitalize_first(text)
+    end
+    env.engine:commit_text(text)
+    state.capitalize_next = false
+    local punct = PUNCT_MAP[kc]
+    if punct then
+      env.engine:commit_text(punct)
+      if SENTENCE_ENDERS[punct] then
+        state.capitalize_next = true
+      end
+    end
     context:clear()
     return 1  -- kAccepted
   end
@@ -382,6 +425,33 @@ function M.func(key, env)
         local poj = context:get_option("poj_mode")
         roman = data_mod.format_sentence_romanization(cand.text, preedit, poj)
       end
+    end
+    -- 連打 (全羅): earlier mid-sentence Tab selections were confirmed into
+    -- the composition with their romanization buffered. Prepend the buffer
+    -- and re-segment the remainder so word boundaries survive: strip the
+    -- confirmed hanzi prefix from the script text (which keeps syllable
+    -- spacing; context.input arrives with delimiters consumed).
+    if state.roman_buffer and state.roman_buffer ~= "" then
+      local tail_roman = roman
+      if cand and cand.text ~= "" and data_mod
+         and data_mod.format_sentence_romanization then
+        local full_text = context:get_commit_text() or ""
+        if #full_text > #cand.text
+           and full_text:sub(-#cand.text) == cand.text then
+          local prefix_text = full_text:sub(1, #full_text - #cand.text)
+          local script = context:get_script_text() or ""
+          if script:sub(1, #prefix_text) == prefix_text then
+            local tail = script:sub(#prefix_text + 1)
+            if tail ~= "" then
+              tail_roman = data_mod.format_sentence_romanization(
+                cand.text, tail, context:get_option("poj_mode")) or tail_roman
+            end
+          end
+        end
+      end
+      roman = tail_roman
+        and (state.roman_buffer .. " " .. tail_roman) or state.roman_buffer
+      state.roman_buffer = nil
     end
     if roman then
       commit_roman(roman)

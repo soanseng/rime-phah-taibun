@@ -27,6 +27,8 @@
 | INV-11 | 漢羅規則詞（如 ê） | 依 hanlo_rules 輸出羅馬字 | tests/test_lua_filter_behavior.py（hanlo replacement 系列） | ✅ |
 | INV-12 | origin 模式各觸發 | 原形輸出行為（跳過特殊模式、單次大寫等） | tests/test_lua_filter_behavior.py（origin 系列） | ✅ |
 | INV-13 | 輸出模式切換（TL/POJ、漢羅/全羅） | 跨 session 記憶（switcher/save_options） | tests/test_schema_config.py | ✅ |
+| INV-21 | 全羅模式整句連打，句中 Tab→asdf 選字後續打→空白 | 不中途送出；已選詞保留在組句，最後整句羅馬字一次上屏（詞界保留） | tests/test_real_rime.py::test_full_roman_tab_selection_keeps_composition | ✅ |
+| INV-22 | 手動漢羅整句，Tab 反白詞按 \\ 標記→Space | 標記詞輸出羅馬字（隨 TL/POJ 開關），其餘詞漢字；Escape 取消後不殘留 | tests/test_real_rime.py（manual_mix 系列） | ✅ |
 
 ## 資料管線
 

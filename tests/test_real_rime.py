@@ -374,3 +374,53 @@ def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):
     assert commit.startswith("Sī-án-tsuánn lâng"), commit
     words = commit.split(" ")
     assert "thè-tsiú" in words and "liáu-āu" in words, commit
+
+
+def test_full_roman_tab_selection_keeps_composition(real_rime_states):
+    """全羅模式句中 Tab 選字不得送出: confirm 進組句, Space 才整句上屏.
+
+    Regression for v0.8.0: selection mode in 全羅 mode force-committed the
+    picked word's romanization and cleared the remaining input.
+    """
+    mid = real_rime_states["liantua_full_roman_midsel"]
+    # Selecting 是按怎 must not emit a commit.
+    assert mid.get("commit", "") == "", mid
+    resumed = real_rime_states["liantua_full_roman_resumed"]
+    # The chosen hanzi stays visible in the preedit while the rest composes.
+    assert "是按怎" in resumed["preedit"], resumed["preedit"]
+    commit = _nfc(real_rime_states["liantua_full_roman_resumed"]["commit"])
+    assert commit == "Sī-án-tsuánn lâng thè-tsiú liáu-āu", commit
+
+
+def test_manual_mix_marked_word_roman_rest_hanzi(real_rime_states):
+    """手動漢羅: Tab 反白候選按 \\ 標記該詞為羅馬字, 其餘詞維持漢字.
+
+    Marking mid-sentence must not commit; Space assembles the mixed text
+    with a space between roman and hanzi segments.
+    """
+    mid = real_rime_states["mixmark_mid"]
+    assert mid.get("commit", "") == "", mid
+    resumed = real_rime_states["mixmark_resumed"]
+    assert "是按怎" in resumed["preedit"], resumed["preedit"]
+    commit = _nfc(real_rime_states["mixmark_final"]["commit"])
+    assert commit == "sī-án-tsuánn 人", commit
+
+
+def test_manual_mix_marked_word_follows_poj_switch(real_rime_states):
+    """手動漢羅標記的羅馬字段落需跟隨 TL/POJ 開關."""
+    commit = _nfc(real_rime_states["mixmark_poj"]["commit"])
+    assert commit == "sī-án-chóaⁿ 人", commit
+
+
+def test_manual_mix_accumulates_marks_in_order(real_rime_states):
+    """手動漢羅: 多段標記依序組裝, 漢字緊鄰不加空格."""
+    mid = real_rime_states["mixmark_two_mid"]
+    assert mid.get("commit", "") == "", mid
+    commit = _nfc(real_rime_states["mixmark_two"]["commit"])
+    assert commit == "sī-án-tsuánn 人替", commit
+
+
+def test_manual_mix_escape_does_not_leak_into_next_composition(real_rime_states):
+    """手動漢羅: Escape 取消後 mix 狀態不得殘留——重新標記不得疊出雙前綴."""
+    commit = _nfc(real_rime_states["mixmark_afteresc"]["commit"])
+    assert commit == "sī-án-tsuánn 人", commit
