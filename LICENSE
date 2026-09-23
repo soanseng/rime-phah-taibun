@@ -33,6 +33,8 @@ SOFTWARE.
 | hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
 | icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
 | ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |
+| （Android 一鍵包內附）terra_pinyin.dict.yaml | rime/rime-terra-pinyin | LGPL-3.0 |
+| （Android 一鍵包內附）bopomofo*.schema.yaml、zhuyin.yaml | rime/rime-bopomofo | LGPL-3.0 |
 
 Lua 模組架構參考 rime-liur (ryanwuson/rime-liur)，
 原作者聲明「本專案基於開源授權發佈，歡迎使用和改進」。

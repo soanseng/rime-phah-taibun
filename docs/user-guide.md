@@ -17,7 +17,7 @@
 - **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
 - **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
 - **Linux**：fcitx5-rime 或 ibus-rime
-- **Android（社群手動，無安裝包）**：同文 Trime，或 fcitx5-android + RIME 外掛。步驟見[Android 部署](android.md)
+- **Android（社群維護）**：同文 Trime，或 fcitx5-android + RIME 外掛；用 Releases 的 `PhahTaiBun-Trime.zip` 一鍵包。步驟見[Android 部署](android.md)
 
 ### 一般使用者：Windows 安裝包／macOS 指令
 
@@ -90,7 +90,7 @@ git pull --ff-only
 ./install.sh
 ```
 
-- **Android**：覆蓋正式的 `phah_taibun*` 方案檔與 `lua/phah_taibun_*.lua` 後，在同文／Rime 外掛裡重新部署。不要覆蓋自訂詞庫。見[Android 部署](android.md#更新)。
+- **Android**：用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署（或只覆蓋正式的 `phah_taibun*` 方案檔與 `lua/phah_taibun_*.lua`）。不要覆蓋自訂詞庫。見[Android 部署](android.md#更新)。
 
 更新會保留 `phah_taibun.custom.dict.yaml`、`phah_taibun.phrase.dict.yaml` 等自訂詞庫、其他 Rime 輸入方案與設定；正式的拍台文 schema、主字典、規則檔和 Lua 模組會更新，安裝器完成後會自動重新部署 Rime。
 

@@ -1,0 +1,30 @@
+# trime.custom.yaml — 拍台文（Android / 同文 Trime 3.3.x）
+#
+# 由 scripts/build_trime_package.py 打包進 PhahTaiBun-Trime.zip。
+# Trime 以 librime 的設定機制載入 trime.yaml，本檔的 patch 會覆蓋 App 內建主題。
+#
+# 預設「不生效」：下面是空 patch。拍台文的候選註解（拼音＋◆／★）比一般方案長，
+# 但版面好不好看見仁見智，也牽涉機型與字型，安裝包不替你決定；想調再照範例取消註解，
+# 然後在 App 裡重新部署。
+#
+# 下列鍵名皆取自 Trime v3.3.12 內建 trime.yaml 的 style 段。
+#
+# ── 選項 A（低風險）：只放大註解字級，維持右側註解 ───────────────────
+#   註解仍在候選右側，列高不變；22sp 候選字 + 12sp 註解放得進預設 28dp 一列。
+#
+# patch:
+#   style/comment_text_size: 12        # 內建 10
+#
+# ── 選項 B（需實機確認）：註解改為上方整列，窄螢幕不會擠掉註解 ────────
+#   top 模式時 comment_height 是「註解列」高度，candidate_view_height 必須同時
+#   容納 22sp 候選字與註解列。48 只是保守起點，不是保證——實際行高由 Trime 版面
+#   與字型決定，請上機看候選列有沒有被裁切再微調；內建的 28／12 是 right 模式
+#   的數值，拿去搭 top 模式幾乎一定不足。
+#
+# patch:
+#   style/comment_position: top
+#   style/comment_text_size: 12
+#   style/comment_height: 16
+#   style/candidate_view_height: 48
+#   style/candidate_padding: 8
+patch: {}

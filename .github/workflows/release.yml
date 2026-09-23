@@ -59,6 +59,49 @@ jobs:
           if-no-files-found: error
 
 
+  package-android:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Install real Rime runtime and reverse-lookup data
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            librime-bin librime-plugin-lua \
+            rime-data-bopomofo rime-data-terra-pinyin
+
+      - name: Fetch the boshiamy (rime-liur-arch) checkout, pinned for reproducibility
+        run: |
+          git clone https://github.com/soanseng/rime-liur-arch.git "$HOME/projects/rime-liur-arch"
+          git -C "$HOME/projects/rime-liur-arch" checkout 0468cf3aeff1f07a7ee7febe39691cb9c44fa58f
+
+      - name: Build and verify the Trime overlay zips
+        run: |
+          uv sync --locked
+          uv run ruff check scripts tests
+          RIME_SMOKE_REQUIRED=1 uv run pytest tests/test_android_package.py
+          uv run python scripts/build_trime_package.py
+          uv run python scripts/build_trime_package.py --with-liur
+          cd dist && sha256sum PhahTaiBun-Trime.zip > PhahTaiBun-Trime.zip.sha256 && sha256sum PhahTaiBun-Trime-liur.zip > PhahTaiBun-Trime-liur.zip.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhahTaiBun-Trime
+          path: |
+            dist/PhahTaiBun-Trime.zip
+            dist/PhahTaiBun-Trime.zip.sha256
+            dist/PhahTaiBun-Trime-liur.zip
+            dist/PhahTaiBun-Trime-liur.zip.sha256
+          if-no-files-found: error
+
+
   package-windows:
     needs: verify
     runs-on: windows-latest
@@ -81,7 +124,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: [package-source, package-windows]
+    needs: [package-source, package-android, package-windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,8 +141,10 @@ jobs:
           files: |
             release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe
             release-assets/PhahTaiBun-source/PhahTaiBun-source.zip
-            release-assets/PhahTaiBun-source/PhahTaiBun-source.zip.sha256
-
+            release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime.zip
+            release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime.zip.sha256
+            release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime-liur.zip
+            release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime-liur.zip.sha256
 
       - name: Generate SHA256SUMS for all release assets (PLAN 9-3J)
         run: |
@@ -107,8 +152,10 @@ jobs:
           mkdir -p release-assets/flat
           cp release-assets/PhahTaiBun-Windows-setup/PhahTaiBunSetup.exe release-assets/flat/
           cp release-assets/PhahTaiBun-source/PhahTaiBun-source.zip release-assets/flat/
+          cp release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime.zip release-assets/flat/
+          cp release-assets/PhahTaiBun-Trime/PhahTaiBun-Trime-liur.zip release-assets/flat/
           cd release-assets/flat
-          sha256sum PhahTaiBunSetup.exe PhahTaiBun-source.zip > SHA256SUMS
+          sha256sum PhahTaiBunSetup.exe PhahTaiBun-source.zip PhahTaiBun-Trime.zip PhahTaiBun-Trime-liur.zip > SHA256SUMS
 
 
       - name: Attach SHA256SUMS to the release
@@ -127,7 +174,7 @@ jobs:
           set -euo pipefail
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
           mkdir dl && cd dl
-          for f in PhahTaiBunSetup.exe PhahTaiBun-source.zip SHA256SUMS; do
+          for f in PhahTaiBunSetup.exe PhahTaiBun-source.zip PhahTaiBun-Trime.zip PhahTaiBun-Trime-liur.zip SHA256SUMS; do
             curl -fL --retry 5 --retry-delay 3 -O "${base}/${f}"
           done
           sha256sum -c SHA256SUMS

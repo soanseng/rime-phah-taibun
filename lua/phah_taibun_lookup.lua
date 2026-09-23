@@ -1,7 +1,10 @@
 -- phah_taibun_lookup.lua
--- 查台語讀音 Ctrl+'
--- 移植自 rime-liur (ryanwuson/rime-liur) 查碼模組
--- 選字後顯示 TL + POJ 讀音對照
+-- 被動 filter：候選註解若已含 TL 讀音，補上 POJ 對照（[TL:… POJ:…]）
+-- 移植自 rime-liur (ryanwuson/rime-liur) 查碼模組的呈現方式；不綁任何鍵。
+--
+-- 與讀音相關的兩條流程（都不是本模組）：
+--   `~` 華語注音反查：輸入注音查 terra_pinyin 的華語讀音 → 漢字候選（候選再由本 filter 附台語讀音）
+--   `'` 同音選字：上屏後按一次，取回該字詞的台語讀音重新組音（一次性，實作在 phah_taibun_commit.lua）
 
 local M = {}
 

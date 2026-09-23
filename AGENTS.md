@@ -14,7 +14,7 @@
 4. 多種輸出模式切換（漢羅、全羅 × TL/POJ；Telex 調鍵平行方案）
 5. 華語反查台語讀音（注音反查）
 
-**平台**：Linux（fcitx5-rime / ibus-rime 原生）、Windows（小狼毫 Weasel + 安裝包）、macOS（鼠鬚管 Squirrel + curl 腳本）、Android（Trime / fcitx5-android 手動部署）。
+**平台**：Linux（fcitx5-rime / ibus-rime 原生）、Windows（小狼毫 Weasel + 安裝包）、macOS（鼠鬚管 Squirrel + curl 腳本）、Android（Trime / fcitx5-android；雙包並行：`PhahTaiBun-Trime.zip`＝拍台文＋注音＋反查依賴，`PhahTaiBun-Trime-liur.zip`＝再加嘸蝦米，附 `LIUR-PROVENANCE.txt` 標示來源）。
 
 ## 技術棧
 
@@ -91,14 +91,16 @@ rime-phah-taibun/
 │   ├── tl_poj_convert.py          # TL↔POJ 轉換器
 │   ├── validate_dict.py           # 字典品質檢查
 │   ├── download_resources.sh      # 18+ 外部資源下載
+│   ├── build_trime_package.py     # ★ Trime 一鍵包：拍台文＋注音＋反查依賴（--with-liur 本機自用）
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
 ├── docs/                          # GitHub Pages 網站 + 使用文件
-├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）
+├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）
 ├── install.sh / install_windows.ps1
-└── tests/                         # pytest（23 個測試檔＋conftest/rime_smoke.cpp）
+└── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
+    ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout 則 skip）
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
     └── rime_smoke.cpp             # C++ smoke
@@ -152,7 +154,7 @@ KipInput 注意：2.8% 含 `/` 多音變體、0.8% 含 `(替)` 替代音、1.1% 
 - Python: 3.10+（**uv** 管理虛擬環境與依賴）
 - Linter/Formatter: **ruff**（設定在 pyproject.toml）
 - 測試: **pytest**（`uv run pytest`）；librime 整合測試需系統 librime（否則 skip）
-- 系統依賴：華語反查需 `terra_pinyin` 字典與 `bopomofo_sw` 方案（Arch: `rime-terra-pinyin` + `rime-bopomofo`；Debian: `librime-data-*`；CI 於 release.yml 安裝）
+- 系統依賴：華語反查需 `terra_pinyin.dict.yaml` 與 `bopomofo_tw` 方案（`bopomofo.schema` 的字典就是 terra_pinyin，上游無獨立 bopomofo dict）（Arch: `rime-terra-pinyin` + `rime-bopomofo`；Debian: `rime-data-*`；CI 於 release.yml 安裝）
 
 ## TDD 開發流程（強制）
 

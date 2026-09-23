@@ -460,7 +460,7 @@
         <div class="section-heading narrow">
           <p class="eyebrow">下載與安裝</p>
           <h2>先裝 Rime 核心，再加入拍台文方案。</h2>
-          <p>拍台文不是另一個輸入法引擎，而是 Rime 的台語方案。Windows 使用小狼毫，macOS 使用鼠鬚管，Linux 使用 fcitx5-rime 或 ibus-rime。Android 沒有安裝包，可手動部署到同文或 fcitx5-android。</p>
+          <p>拍台文不是另一個輸入法引擎，而是 Rime 的台語方案。Windows 使用小狼毫，macOS 使用鼠鬚管，Linux 使用 fcitx5-rime 或 ibus-rime。Android 要先自己裝一個 Rime 前端（同文 Trime：F-Droid 或<a href="https://github.com/osfans/trime/releases">它自己的 Releases</a>），再把 <code>PhahTaiBun-Trime.zip</code> 一鍵包解壓進該前端的 Rime 使用者資料夾後重新部署。</p>
         </div>
         <div class="install-tabs" data-tabs>
           <div class="tab-list" role="tablist" aria-label="選擇作業系統">
@@ -495,20 +495,29 @@ cd rime-phah-taibun
 ./install.sh</code></pre>
           </div>
           <div class="tab-panel" id="panel-android" role="tabpanel" hidden>
-            <h3>Android：同文 Trime 或 fcitx5-android（手動，無 APK）</h3>
+            <h3>Android：先裝同文 Trime，再放進拍台文（無 APK）</h3>
             <ol>
-              <li>先裝 <a href="https://github.com/osfans/trime">同文 Trime</a>，或小企鵝輸入法 5 + <a href="https://github.com/fcitx5-android/fcitx5-android">RIME 外掛</a>。兩個前端都有 librime-lua，方案檔不用改。</li>
-              <li>從 Releases 下載 <code>PhahTaiBun-source.zip</code>（內附 <code>docs/android.md</code>），把 <code>schema/</code>、<code>lua/</code>、<code>rime.lua</code> 複製進該前端的 Rime 使用者資料夾，並把 <code>phah_taibun</code> / <code>phah_taibun_telex</code> 寫進 <code>default.custom.yaml</code>。</li>
-              <li>重新部署後，系統輸入法選同文或小企鵝，再在 Rime 方案清單選「拍台文(台)」。螢幕鍵盤請點候選，不要期待桌面的 <kbd>F4</kbd>。</li>
+              <li><strong>先裝輸入法 App</strong>：拍台文不含 APK，要用現成的 Rime 前端，而同文 Trime 不是手機內建，得自己裝：
+                <ul>
+                  <li>F-Droid：<a href="https://f-droid.org/packages/com.osfans.trime">com.osfans.trime</a>（最省事，之後能自動更新）</li>
+                  <li>或到<a href="https://github.com/osfans/trime/releases">同文自己的 GitHub Releases</a> 下載 APK 手動安裝</li>
+                </ul>
+                裝完到系統設定 → 語言與輸入 → 啟用同文並切過去。替代方案：小企鵝輸入法 5 + RIME 外掛（<a href="https://fcitx5-android.github.io/faq/">說明</a>）。
+              </li>
+              <li>從<a href="https://github.com/soanseng/rime-phah-taibun/releases">本專案 Releases</a> 下載一鍵包，<strong>兩種自己選</strong>：<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）或 <code>PhahTaiBun-Trime-liur.zip</code>（再加嘸蝦米，約 20 MB）。解壓進同文的 Rime 使用者資料夾 <code>Android/data/com.osfans.trime/files/rime</code>；Android 11+ 的檔案總管進不去那個目錄，請用電腦 USB／MTP 或同文內建檔案管理。<code>default.custom.yaml</code> 已用 <code>@next</code> 追加好方案，不必自己改。
+              </li>
+              <li>同文的選單 → <strong>重新部署</strong>。第一次要編譯約 5 MB 字典，會跑幾分鐘，不要把 App 滑掉。</li>
+              <li>在方案清單選「拍台文(台)」就能打字。漢羅↔全羅、TL↔POJ 在 App 的<strong>開關面板</strong>切換（不是桌面的 <kbd>F4</kbd>），台文↔英文用中英鍵。</li>
+              <li>手機鍵盤沒有桌面快捷鍵，功能改在長按：以詞定字 <code>[</code>／<code>]</code> ＝長按 <code>u</code>／<code>i</code>，萬用查字 <code>?</code> ＝長按 <code>/</code>，注音反查 <code>~</code> ＝長按 <code>b</code>，符號選單 ＝長按 <code>z</code>；候選直接用點的。</li>
             </ol>
-            <p><a href="android.md">完整 Android 步驟、路徑與限制</a></p>
+            <p><a href="android.md">完整 Android 步驟、路徑、按鍵對照與限制</a></p>
           </div>
         </div>
         <div class="ai-install-card" id="update-install">
           <div>
             <p class="eyebrow">更新拍台文</p>
             <h3>重跑最新版安裝方式，就能保留個人詞庫並更新正式檔案。</h3>
-            <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 覆蓋正式方案檔後重新部署，見 <a href="android.md">Android 部署</a>。</p>
+            <p>Windows 從 Releases 下載最新版 <code>PhahTaiBunSetup.exe</code> 覆蓋安裝，或重跑 PowerShell 指令。macOS 重跑 <code>curl .../scripts/install_macos.sh | bash</code> 或 clone 裡 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Linux 在既有 clone 執行 <code>git pull --ff-only &amp;&amp; ./install.sh</code>。Android 用最新 <code>PhahTaiBun-Trime.zip</code> 覆蓋後重新部署，見 <a href="android.md">Android 部署</a>。</p>
             <p><strong>下載可驗證</strong>：每個 Release 附 <code>SHA256SUMS</code>，涵蓋所有安裝資產，發佈時已由 CI 自動核對；想自行核對雜湊，見<a href="packaged-installers.md">安裝包說明</a>。</p>
           </div>
           <a class="btn btn-secondary" href="guide.html#/user-guide?id=更新拍台文">查看完整更新方法</a>
@@ -574,7 +583,7 @@ cd rime-phah-taibun
           </details>
           <details>
             <summary>這是手機輸入法嗎？</summary>
-            <p>官方安裝包只有 Windows（<code>PhahTaiBunSetup.exe</code>）。macOS 用指令安裝（<code>curl …/install_macos.sh | bash</code>），Linux 用 <code>./install.sh</code>。同一套 Rime 方案可以手動裝進 Android 的同文（Trime）或 fcitx5-android 的 Rime 外掛，沒有 APK，鍵盤快捷鍵也不等於桌面。步驟見 <a href="android.md">Android 部署</a>。</p>
+            <p>官方安裝包只有 Windows（<code>PhahTaiBunSetup.exe</code>）。macOS 用指令安裝（<code>curl …/install_macos.sh | bash</code>），Linux 用 <code>./install.sh</code>。Android 沒有 APK：要先自己裝同文 Trime（<a href="https://f-droid.org/packages/com.osfans.trime">F-Droid</a> 或<a href="https://github.com/osfans/trime/releases">它的 Releases</a>）或小企鵝輸入法 5 + RIME 外掛，再從本專案 Releases 挑一個包——<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）或 <code>PhahTaiBun-Trime-liur.zip</code>（再加嘸蝦米）——放進它的 Rime 使用者資料夾並重新部署；手機鍵盤的快捷鍵也不等於桌面。步驟見 <a href="android.md">Android 部署</a>。</p>
           </details>
           <details>
             <summary>會覆蓋我原本的 Rime 設定嗎？</summary>

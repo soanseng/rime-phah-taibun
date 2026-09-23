@@ -31,9 +31,9 @@ Download the latest release for your platform:
 | Windows | Download `PhahTaiBunSetup.exe` and run the installer, or `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` | Weasel |
 | macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
-| Android | Community/manual: copy the schema into Trime or fcitx5-android. See [Android 部署](docs/android.md) | Trime, or Fcitx5 for Android + RIME plugin |
+| Android | Download a bundle from Releases — `PhahTaiBun-Trime.zip` (phah_taibun + bopomofo) or `PhahTaiBun-Trime-liur.zip` (adds boshiamy) — and extract it into the Rime user folder of Trime or fcitx5-android, then redeploy. See [Android 部署](docs/android.md) | Trime, or Fcitx5 for Android + RIME plugin |
 
-After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active. Android has no installer; follow the Android guide after installing Trime or the fcitx5-android RIME plugin.
+After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active. Android has no installer; after installing Trime or the fcitx5-android RIME plugin, extract a release bundle (`PhahTaiBun-Trime.zip`, or `PhahTaiBun-Trime-liur.zip` for boshiamy) into the Rime user folder and redeploy.
 
 The Windows PowerShell command is interactive: it asks whether to install 拍台文, 嘸蝦米 (`rime-liur`), or both; timestamps a backup of `default.custom.yaml` before touching it; and asks which existing schemas — including 注音 `bopomofo` — to keep. Unattended runs can set `PHAH_TAIBUN_SCHEMAS` (`phah` / `liur` / `both`) plus `PHAH_TAIBUN_PROJECT_ROOT` instead of answering prompts. The installer writes a clean, commented `default.custom.yaml` at the end (your own settings are preserved, and `__patch:`-style files are left untouched).
 
@@ -41,7 +41,7 @@ The Windows PowerShell command is interactive: it asks whether to install 拍台
 
 ### Updating
 
-Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the `curl .../install_macos.sh | bash` command, or `git pull --ff-only && ./install.sh` in a clone. Linux: `git pull --ff-only && ./install.sh`. Android: replace the official schema/Lua files and redeploy; see [Android 部署](docs/android.md). Updates preserve custom dictionaries and other Rime schemas.
+Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the `curl .../install_macos.sh | bash` command, or `git pull --ff-only && ./install.sh` in a clone. Linux: `git pull --ff-only && ./install.sh`. Android: extract the latest `PhahTaiBun-Trime.zip` over the Rime user folder (or replace the official schema/Lua files) and redeploy; see [Android 部署](docs/android.md). Updates preserve custom dictionaries and other Rime schemas.
 
 Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
 Since 0.7.0, every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)); dictionary weights favor whole words in continuous typing, and builds are byte-for-byte reproducible.
@@ -83,7 +83,7 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 | Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
 | macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
-| Android | 手動複製方案到同文或 fcitx5-android，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
+| Android | 下載 Releases 的一鍵包——`PhahTaiBun-Trime.zip`（拍台文＋注音）或 `PhahTaiBun-Trime-liur.zip`（再加嘸蝦米）——解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
 Windows 安裝包仍使用 Rime 作為輸入法核心。macOS 不提供 `.pkg`（無法驗證 Gatekeeper／notarize），請用上方指令，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。安裝後先把系統輸入法切到小狼毫／鼠鬚管，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「拍台文(台)」。
 
@@ -363,7 +363,7 @@ vvjit  → 2026年3月15 拜六
 - **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
 - **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
 - **Linux**：fcitx5-rime 或 ibus-rime
-- **Android（社群手動）**：同文 Trime 或 fcitx5-android + RIME 外掛，見[Android 部署](docs/android.md)
+- **Android**：同文 Trime 或 fcitx5-android + RIME 外掛；用 Releases 的 `PhahTaiBun-Trime.zip` 一鍵包，見[Android 部署](docs/android.md)
 
 ### 一般使用者：Windows 安裝包／macOS 指令
 
@@ -426,7 +426,7 @@ git pull --ff-only
 ./install.sh
 ```
 
-- **Android**：覆蓋正式方案檔與 `lua/phah_taibun_*.lua` 後重新部署，見[Android 部署](docs/android.md)。
+- **Android**：用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署（或只覆蓋正式方案檔與 `lua/phah_taibun_*.lua`），見[Android 部署](docs/android.md)。
 
 更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的拍台文 schema、主字典、規則檔和 Lua 模組，最後自動重新部署 Rime。若你直接修改過正式的 `phah_taibun` 檔案，請先備份；長期自訂建議使用 Rime custom patch 或自訂詞庫。
 
