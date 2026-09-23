@@ -199,6 +199,28 @@ def test_installers_upgrade_existing_default_custom_with_save_options():
         assert "switcher/save_options" in installer
 
 
+def test_shell_installers_match_windows_feature_set():
+    """Linux/macOS installers mirror the Windows feature set: menu, backup, normalizer, liur."""
+    for name in ("scripts/install_linux.sh", "scripts/install_macos.sh"):
+        s = read(name)
+
+        assert "installer_ask_what_to_install" in s, name
+        assert "PHAH_TAIBUN_SCHEMAS" in s, name
+        assert "請選擇要安裝的輸入方案" in s, name
+        assert "installer_backup_default_custom" in s, name
+        assert "default.custom.yaml.backup-" in s, name
+        assert "installer_normalize_default_custom" in s, name
+        assert "installer_install_liur" in s, name
+        assert "installer_fetch_if_changed" in s, name
+        assert "[已安裝]" in s, name
+        assert "liu_w2c_sorter" in s, name
+        assert "維持原格式" in s, name
+        assert "installer_keep_which_prompt" in s, name
+        assert "installer_bopomofo_prompt" in s, name
+        assert 'NEED_REGISTER=false' in s, name
+
+
+
 def test_installers_ship_and_register_the_telex_schema():
     """拍台文(Telex) must be shipped and registered like the main schema.
 
