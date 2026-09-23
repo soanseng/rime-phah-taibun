@@ -80,22 +80,36 @@ def build_attestation(entries) -> dict[str, dict[str, str]]:
 def repair(entries, attestation):
     """Token-level digit fix preserving all whitespace (`--` boundaries).
 
-    Deduplicates against existing (word, toned key) pairs: a repaired bare
-    entry may already exist in toned form, and validate_dict fails the
-    build on duplicates.
+    Deduplicates against existing (word, toned key) pairs keeping the
+    HIGHEST weight (a repaired bare entry may already exist in toned
+    form, and validate_dict fails the build on duplicates).
     """
     out, repaired, drop_log = [], 0, []
-    seen: set[tuple[str, str]] = set()
+    best: dict[tuple[str, str], int] = {}
+    rows: dict[tuple[str, str], str] = {}
+
+    def emit(word: str, code: str, weight: str) -> bool:
+        key = (word, code)
+        try:
+            w = int(weight)
+        except (ValueError, IndexError):
+            w = 0
+        if key in best:
+            if w > best[key]:
+                rows[key] = f"{word}\t{code}\t{weight}"
+                best[key] = w
+            return False
+        best[key] = w
+        rows[key] = f"{word}\t{code}\t{weight}"
+        return True
+
     for parts in entries:
         code = parts[1]
         syls = code.split()
         bare = [s for s in syls if not TONE_RE.search(s)]
+        weight = parts[2] if len(parts) > 2 else "0"
         if not bare:
-            key = (parts[0], code)
-            if key in seen:
-                continue
-            seen.add(key)
-            out.append("\t".join(parts))
+            emit(parts[0], code, weight)
             continue
         m = re.search(r"--([^-\t]+)$", parts[0])
         key = m.group(1) if m and len(m.group(1)) == 1 else None
@@ -103,13 +117,10 @@ def repair(entries, attestation):
         if not fix:
             drop_log.append((parts[0], code))
             continue
-        parts[1] = re.sub(rf"(?<!\S){re.escape(bare[0])}(?!\S)", fix, code)
-        key = (parts[0], parts[1])
-        if key in seen:
-            continue
-        seen.add(key)
-        repaired += 1
-        out.append("\t".join(parts))
+        code = re.sub(rf"(?<!\S){re.escape(bare[0])}(?!\S)", fix, code)
+        if emit(parts[0], code, weight):
+            repaired += 1
+    out = [rows[k] for k in rows]
     return out, repaired, drop_log
 
 

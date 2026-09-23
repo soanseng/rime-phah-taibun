@@ -62,6 +62,17 @@ def test_repaired_key_dedupes_against_existing_toned_twin():
     assert out == ["免--得\tbian2  tit4\t2738", "唯--啊\thann5  ah4\t100"]
 
 
+def test_dedupe_keeps_max_weight_independent_of_order():
+    """同鍵重複保留最大權重, 與輸入順序無關."""
+    hi = ["免--得", "bian2  tit4", "2738"]
+    lo = ["免--得", "bian2  tit", "1461"]
+    att = build_attestation([hi])
+    for order in ([lo, hi], [hi, lo]):
+        out, _repaired, dropped = repair(order, att)
+        assert out == ["免--得\tbian2  tit4\t2738"], (order, out)
+        assert not dropped
+
+
 def test_unevidenced_bare_syllable_dropped_not_guessed():
     entries = [
         ["起--哩", "khi2 lih", "100"],
