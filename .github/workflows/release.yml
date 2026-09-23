@@ -74,7 +74,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            librime-bin librime-plugin-lua \
+            librime-bin librime-plugin-lua rime-prelude \
             rime-data-bopomofo rime-data-terra-pinyin
 
       - name: Fetch the boshiamy (rime-liur-arch) checkout, pinned for reproducibility
