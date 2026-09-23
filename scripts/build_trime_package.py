@@ -47,6 +47,7 @@ PHAH_SCHEMA_FILES = [
     "hoabun_map.txt",
     "lighttone_rules.json",
     "moe700.yaml",
+    "phah_taibun.wordlist",
 ]
 
 REVERSE_LOOKUP_FILES = [
@@ -151,11 +152,7 @@ def _merge_rime_lua(phah_lua: str, liur_lua: str) -> str:
     if RIME_LUA_MARKER in merged:
         return merged + "\n"
     block = liur_lua.strip("\n")
-    return (
-        f"{merged}\n\n"
-        "-- liu (rime-liur) registrations appended - same strategy as install_windows.ps1\n\n"
-        f"{block}\n"
-    )
+    return f"{merged}\n\n-- liu (rime-liur) registrations appended - same strategy as install_windows.ps1\n\n{block}\n"
 
 
 def _git_value(liur_dir: Path, *args: str) -> str:
@@ -198,9 +195,7 @@ def _write_third_party_notices(dest: Path, *, rime_data_dir: Path, common_licens
     for target, source in LICENSE_TEXTS.items():
         source_path = common_licenses_dir / source
         if not source_path.is_file():
-            raise SystemExit(
-                f"錯誤, 找不到 {source_path}: LGPL-3.0 需要附上授權全文 (用 --common-licenses-dir 指定)"
-            )
+            raise SystemExit(f"錯誤, 找不到 {source_path}: LGPL-3.0 需要附上授權全文 (用 --common-licenses-dir 指定)")
         _copy_file(source_path, license_dir / target)
 
     _copy_file(REPO_ROOT / "LICENSE", dest / PROJECT_LICENSE)

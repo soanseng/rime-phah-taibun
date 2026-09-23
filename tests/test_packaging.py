@@ -36,13 +36,14 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert "Copy-OrDownload" in installer
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
 
+
 def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files():
     """One-liner installs the newest GitHub release; liur reruns skip unchanged files."""
     installer = read("install_windows.ps1")
 
     assert "releases/latest" in installer
     assert "tag_name" in installer
-    assert '$RELEASE_VERSION = "0.7.0"' in installer
+    assert '$RELEASE_VERSION = "0.8.0"' in installer
     assert "$liurSizes" in installer
     assert ".Length -eq $liurSizes[$file]" in installer
     assert "[已安裝]" in installer
@@ -56,8 +57,8 @@ def test_windows_installer_appends_schema_without_utf16_rewrite():
     assert "Set-Content" not in installer
     assert "schema_list/@next" in installer
     assert "不會因此取代" in installer or "保留既有方案" in installer
-    assert '$needRegister = $true' in installer
-    assert 'schema_list/@next:`n        schema: phah_taibun' in installer
+    assert "$needRegister = $true" in installer
+    assert "schema_list/@next:`n        schema: phah_taibun" in installer
     assert "default.custom.yaml.bak" in installer
 
 
@@ -71,7 +72,7 @@ def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
     assert "SW_SHOW" not in iss
     assert "-WindowStyle Hidden" in iss
     assert "DOWNLOADED_PAYLOAD" in installer
-    assert 'if (-not $DOWNLOADED_PAYLOAD)' in installer
+    assert "if (-not $DOWNLOADED_PAYLOAD)" in installer
     assert "右鍵工作列小狼毫圖示" in installer
     windows_panel = homepage.split('id="panel-windows"', 1)[1].split('id="panel-macos"', 1)[0]
     assert "install_windows.ps1" in windows_panel
@@ -108,10 +109,9 @@ def test_windows_installer_parses_as_iex_payload():
         "try { [void][scriptblock]::Create($src); 'PARSE-OK' }"
         "catch { 'PARSE-FAIL: ' + $_.Exception.Message }"
     )
-    out = subprocess.run(
-        [pwsh, "-NoProfile", "-Command", code], capture_output=True, text=True, cwd="."
-    )
+    out = subprocess.run([pwsh, "-NoProfile", "-Command", code], capture_output=True, text=True, cwd=".")
     assert "PARSE-OK" in out.stdout, out.stdout + out.stderr
+
 
 def test_release_payload_excludes_unused_standalone_reverse_dictionary():
     assert not Path("schema/phah_taibun_reverse.dict.yaml").exists()
@@ -145,8 +145,8 @@ def test_installers_fail_loudly_when_rime_deployment_fails():
     windows = read("install_windows.ps1")
 
     assert 'rime_deployer --build "$RIME_DIR" 2>/dev/null || true' not in linux
-    assert 'fcitx5-remote -r 2>/dev/null || true' not in linux
-    assert 'ibus restart 2>/dev/null || true' not in linux
+    assert "fcitx5-remote -r 2>/dev/null || true" not in linux
+    assert "ibus restart 2>/dev/null || true" not in linux
     assert "部署失敗" in linux
     assert "if ! open -a Squirrel" in macos
     assert "部署失敗" in macos
@@ -217,8 +217,7 @@ def test_shell_installers_match_windows_feature_set():
         assert "維持原格式" in s, name
         assert "installer_keep_which_prompt" in s, name
         assert "installer_bopomofo_prompt" in s, name
-        assert 'NEED_REGISTER=false' in s, name
-
+        assert "NEED_REGISTER=false" in s, name
 
 
 def test_installers_ship_and_register_the_telex_schema():
@@ -241,7 +240,7 @@ def test_installers_ship_and_register_the_telex_schema():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.7.0"
+    version = "0.8.0"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
@@ -249,21 +248,14 @@ def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
     assert f'version: "{version}"' in read("scripts/convert_chhoetaigi.py")
     assert f'RELEASE_VERSION="{version}"' in read("scripts/install_macos.sh")
     assert f'$RELEASE_VERSION = "{version}"' in read("install_windows.ps1")
-    assert f'VERSION="${{PHAH_TAIBUN_VERSION:-{version}}}"' in read(
-        "packaging/macos/build-pkg.sh"
-    )
-    assert f'#define MyAppVersion "{version}"' in read(
-        "packaging/windows/phah-taibun.iss"
-    )
-
+    assert f'VERSION="${{PHAH_TAIBUN_VERSION:-{version}}}"' in read("packaging/macos/build-pkg.sh")
+    assert f'#define MyAppVersion "{version}"' in read("packaging/windows/phah-taibun.iss")
 
 
 def test_release_packages_wait_for_complete_verification_gate():
     workflow = yaml.safe_load(read(".github/workflows/release.yml"))
     jobs = workflow["jobs"]
-    verify_commands = "\n".join(
-        step.get("run", "") for step in jobs["verify"]["steps"]
-    )
+    verify_commands = "\n".join(step.get("run", "") for step in jobs["verify"]["steps"])
 
     assert "uv run pytest" in verify_commands
     assert "RIME_SMOKE_REQUIRED=1" in verify_commands
@@ -319,6 +311,7 @@ def test_macos_public_install_is_cli_not_pkg():
     faq = homepage.split("這是手機輸入法嗎", 1)[1].split("</details>", 1)[0]
     assert "官方安裝包是電腦版" not in faq
     assert "指令" in faq
+
 
 def test_public_docs_explain_supported_update_paths_and_preservation():
     readme = read("README.md")

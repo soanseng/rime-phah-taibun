@@ -25,6 +25,15 @@ def _strip_tones(text: str) -> str:
     return re.sub(r"[1-9]", "", text)
 
 
+def _normalize_key(rime_key: str) -> str:
+    """Canonical lookup form: tone-stripped, hyphens as spaces.
+
+    Corpus tokens are tone-stripped with hyphens; dict codes carry tone
+    numbers. Both funnel through this so lookups meet.
+    """
+    return re.sub(r"\s+", " ", _strip_tones(rime_key).replace("-", " ")).strip()
+
+
 def build_reverse_index(dict_lines: list[str]) -> dict[str, list[dict]]:
     """Build rime_key → [{text, weight}] mapping from dict.yaml data lines.
 
@@ -51,11 +60,14 @@ def build_reverse_index(dict_lines: list[str]) -> dict[str, list[dict]]:
             weight = int(weight_str)
         except ValueError:
             continue
-        index.setdefault(rime_key, []).append({"text": text, "weight": weight})
+        norm = _normalize_key(rime_key)
+        if not norm:
+            continue
+        index.setdefault(norm, []).append({"text": text, "weight": weight, "rime_key": rime_key})
 
     # Sort each list by weight descending
-    for key in index:
-        index[key].sort(key=lambda d: d["weight"], reverse=True)
+    for norm in index:
+        index[norm].sort(key=lambda d: d["weight"], reverse=True)
 
     return index
 
@@ -105,10 +117,15 @@ def generate_phrase_entries(
             continue
         if w1 not in reverse_index or w2 not in reverse_index:
             continue
-        text1 = reverse_index[w1][0]["text"]
-        text2 = reverse_index[w2][0]["text"]
-        hanlo = text1 + text2
-        rime_key = f"{w1} {w2}"
+        best1 = reverse_index[w1][0]
+        best2 = reverse_index[w2][0]
+        hanlo = best1["text"] + best2["text"]
+        # Prefer the toned dict codes so the new entry keeps 詞身份 and
+        # diacritic-able comments; fall back to stripped tokens for
+        # hand-built indexes (tests) that carry no toned form.
+        key1 = best1.get("rime_key") or w1
+        key2 = best2.get("rime_key") or w2
+        rime_key = f"{key1} {key2}"
         if (hanlo, rime_key) in existing_keys:
             continue
         weight = int(base_weight * (1.0 + log10(1 + count) * 0.3))

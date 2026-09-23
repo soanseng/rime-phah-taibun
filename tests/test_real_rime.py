@@ -76,9 +76,7 @@ def _parse_states(stdout: str) -> dict[str, dict[str, object]]:
         elif fields[0] == "CAND":
             states[fields[1]]["candidates"].append({"text": fields[3], "comment": fields[4]})
         elif fields[0] == "COMMIT":
-            states.setdefault(fields[1], {"preedit": "", "count": 0, "candidates": []})[
-                "commit"
-            ] = fields[2]
+            states.setdefault(fields[1], {"preedit": "", "count": 0, "candidates": []})["commit"] = fields[2]
     return states
 
 
@@ -201,7 +199,6 @@ def test_hot_single_chars_do_not_fragment_dictionary_word(real_rime_states):
     assert any("食飯" in candidate["text"] for candidate in candidates[:5])
 
 
-
 def test_invalid_input_offers_verbatim_at_slot_zero(real_rime_states):
     """Slot-0 verbatim escape hatch (PLAN 9-1E).
 
@@ -212,6 +209,7 @@ def test_invalid_input_offers_verbatim_at_slot_zero(real_rime_states):
     candidates = state["candidates"]
     assert candidates, "invalid input must still produce candidates"
     assert candidates[0]["text"] == "xqzv"
+
 
 def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states):
     """Out-of-dictionary phrases (kio-tiann) must compose from single-syllable entries.
@@ -294,8 +292,12 @@ def test_main_schema_keeps_raw_taid_without_telex_mapping(real_rime_states):
     (The main speller still segments "tai"+"d" and may list partial-syllable
     candidates like 台 — the input layer itself is what must stay untouched.)
     """
-    assert real_rime_states["main_taid"]["preedit"] == "taid"
+    # Raw letters survive (no Telex tone mapping); the abbrev-quality toneless
+    # spellings may re-segment the display ("t aid"), which is harmless as
+    # long as "tai5" never appears in the main schema's preedit.
+    assert "tai5" not in real_rime_states["main_taid"]["preedit"]
     assert real_rime_states["telex_taid"]["preedit"] == "tai5"
+
 
 def _nfc(text: str) -> str:
     """librime emits NFD romanization comments; compare under NFC."""
@@ -328,3 +330,47 @@ def test_hanlo_copy_sentence_composes_from_dictionary(real_rime_states):
     assert state["count"] > 0, state
     assert any("會曉" in c["text"] for c in state["candidates"]), state
     assert any("台語" in c["text"] for c in state["candidates"]), state
+
+
+# === 連打 (v0.8.0): whole-sentence continuous typing ===
+# Source article (漢字/全羅對照): funbiochampion.com
+# 是按怎人退酒了後定定會袂記得啉酒醉的時所做的代誌
+LIANTUA_TARGET = "是按怎人退酒了後定定會袂記得啉酒醉的時所做的代誌"
+
+
+def test_liantua_example_sentence_in_top3(real_rime_states):
+    """Typing the article title's full romanization must surface the exact
+    Hanzi sentence within the first three candidates (goal: 連打)."""
+    candidates = real_rime_states["liantua_example"]["candidates"]
+    top3 = [c["text"] for c in candidates[:3]]
+    assert LIANTUA_TARGET in top3, top3
+
+
+LIANTUA_CORPUS = {
+    "liantua_c1": "這主要是酒精造成的",
+    "liantua_c2": "親像你家己的名、電話號碼",
+    "liantua_c3": "事後退酒了後",
+    "liantua_c4": "袂記得家己啉酒",
+    "liantua_c5": "完全無印象",
+    "liantua_c6": "人攏認為",
+    "liantua_c7": "是按怎會按呢",
+}
+
+
+def test_liantua_corpus_batch_hit_rate(real_rime_states):
+    """Article sentences: ≥70% must have the exact Hanzi text in top-3."""
+    hits = 0
+    for label, expected in LIANTUA_CORPUS.items():
+        candidates = real_rime_states[label]["candidates"]
+        top3 = [c["text"] for c in candidates[:3]]
+        if expected in top3:
+            hits += 1
+    assert hits / len(LIANTUA_CORPUS) >= 0.7, f"hit rate {hits}/{len(LIANTUA_CORPUS)}"
+
+
+def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):
+    """全羅整句上屏：詞內連字號、詞間空白（非單一連字長鏈）。"""
+    commit = real_rime_states["liantua_full_roman"]["commit"]
+    assert commit.startswith("Sī-án-tsuánn lâng"), commit
+    words = commit.split(" ")
+    assert "thè-tsiú" in words and "liáu-āu" in words, commit

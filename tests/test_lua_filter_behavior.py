@@ -81,7 +81,60 @@ def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
     assert run_lua(script).strip() == "ê\t [ê]"
 
 
-def test_hanlo_rules_preserve_multi_character_hanzi_candidate_when_syllable_is_lo():
+def test_toneless_single_token_full_coverage_candidate_ranked_first():
+    """單 token 無調輸入 lim: 讀音完全覆蓋輸入的候選 (林) 必須排在
+    只覆蓋部分的碎片組合 (你姆 li+m) 前面——abbrev 無調拼式的補償。"""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local items = {
+          Candidate("table", 0, 2, "你姆", " [li2 m2]"),
+          Candidate("table", 0, 1, "林", " [lím]"),
+          Candidate("table", 0, 1, "臨", " [lim5]"),
+          Candidate("table", 0, 1, "姆", " [m̄]"),
+        }
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        local filter = require("phah_taibun_toneless")
+        items[1].preedit = "li m"
+        items[2].preedit = "lim"
+        items[3].preedit = "lim"
+        items[4].preedit = "m"
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        local env = { engine = { context = { input = "lim" } } }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    out = run_lua(script).split()
+    assert out[0] == "林"
+    assert out[1] == "臨"
+    assert "你姆" in out[2:]
+
     script = textwrap.dedent(
         r"""
         package.path = "lua/?.lua;" .. package.path
@@ -243,18 +296,14 @@ def _origin_script(
 
 def test_origin_appends_romanization_candidate_last_for_tl_input():
     out = run_lua(
-        _origin_script(
-            input_text="tsng-kio5", poj=False, ascii_mode=False, cap=False, enabled=True
-        )
+        _origin_script(input_text="tsng-kio5", poj=False, ascii_mode=False, cap=False, enabled=True)
     ).splitlines()
     assert out == ["X\t [e5]", "<tsng-kio5|poj=false>\t\u3014\u7f85\u99ac\u5b57\u539f\u6587\u3015"]
 
 
 def test_origin_defers_capitalization_until_commit():
     out = run_lua(
-        _origin_script(
-            input_text="goa2-kio5", poj=True, ascii_mode=False, cap=True, enabled=True
-        )
+        _origin_script(input_text="goa2-kio5", poj=True, ascii_mode=False, cap=True, enabled=True)
     ).splitlines()
     assert out == ["X\t [e5]", "<goa2-kio5|poj=true>\t\u3014羅馬字原文\u3015"]
 
@@ -285,18 +334,14 @@ def test_origin_skips_special_modes_and_non_romanization():
         ("hello", True),
     ]:
         out = run_lua(
-            _origin_script(
-                input_text=text, poj=False, ascii_mode=ascii_mode, cap=False, enabled=True
-            )
+            _origin_script(input_text=text, poj=False, ascii_mode=ascii_mode, cap=False, enabled=True)
         ).splitlines()
         assert out == ["X\t [e5]"], f"should not append for {text!r} (ascii={ascii_mode})"
 
 
 def test_origin_can_be_disabled_via_config():
     out = run_lua(
-        _origin_script(
-            input_text="tsng-kio5", poj=False, ascii_mode=False, cap=False, enabled=False
-        )
+        _origin_script(input_text="tsng-kio5", poj=False, ascii_mode=False, cap=False, enabled=False)
     ).splitlines()
     assert out == ["X\t [e5]"]
 
@@ -318,6 +363,7 @@ def test_full_romanization_return_commits_typed_romanization_directly():
           clear = function()
             cleared = true
           end,
+          get_script_text = function() return "tsng-kio5" end,
         }
         local env = {
           engine = {

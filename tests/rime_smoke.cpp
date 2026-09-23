@@ -34,6 +34,25 @@ void print_state(RimeApi* api, RimeSessionId session, const char* label) {
   api->free_context(&context);
 }
 
+// Press the select key for the first menu candidate whose text equals
+// `wanted` (alternative_select_keys = "asdfghjkl;"). Returns false when the
+// candidate is absent, so scenarios fail loudly instead of picking the wrong
+// word when toneless ordering shifts.
+bool select_candidate_by_text(RimeApi* api, RimeSessionId session, const char* wanted) {
+  RIME_STRUCT(RimeContext, context);
+  if (!api->get_context(session, &context)) return false;
+  static const char kSelectKeys[] = "asdfghjkl;";
+  for (int i = 0; i < context.menu.num_candidates; ++i) {
+    if (std::string(context.menu.candidates[i].text) == wanted && i < 10) {
+      api->free_context(&context);
+      api->simulate_key_sequence(session, std::string(1, kSelectKeys[i]).c_str());
+      return true;
+    }
+  }
+  api->free_context(&context);
+  return false;
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -126,11 +145,11 @@ int main(int argc, char* argv[]) {
   // pick the word (= tone) per syllable via Tab selection mode, then commit.
   api->simulate_key_sequence(session, "kio");
   api->process_key(session, 0xFF09, 0);  // Tab: enter selection mode
-  api->simulate_key_sequence(session, "d");  // index 2: 橋
+  select_candidate_by_text(api, session, "\xe6\xa9\x8b");  // 橋
   api->simulate_key_sequence(session, "tiann");
   print_state(api, session, "word_by_word_mid");
   api->process_key(session, 0xFF09, 0);
-  api->simulate_key_sequence(session, "d");  // index 2: 鼎
+  select_candidate_by_text(api, session, "\xe9\xbc\x8e");  // 鼎
   api->simulate_key_sequence(session, " ");  // confirm and commit
   RIME_STRUCT(RimeCommit, commit);
   if (api->get_commit(session, &commit)) {
@@ -202,6 +221,75 @@ int main(int argc, char* argv[]) {
 
   api->simulate_key_sequence(session, "e7-hiau2-kong2-tai5-gi2");
   print_state(api, session, "hanlo_sentence");
+  api->clear_composition(session);
+
+  // === 連打 (continuous whole-sentence typing, v0.8.0) ===
+  // Article: funbiochampion.com 是按怎人退酒了後定定會袂記得啉酒醉的時所做的代誌
+  api->simulate_key_sequence(session,
+      "si7-an2-tsuann2-lang5-the3-tsiu2-liau2-au7-tiann7-tiann7-e7-be7-ki3-"
+      "tsit8-lim1-tsiu2-tsui3-e5-si5-soo2-tso3-e5-tai7-tsi3");
+  print_state(api, session, "liantua_example");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tse1-tsu2-iau3-si7-tsiu2-tsing1-tso7-sing5-e5");
+  print_state(api, session, "liantua_c1");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tshin1-tshiunn7-li2-ka1-ti1-e5-mia5-tian7-ue7-ho7-be2");
+  print_state(api, session, "liantua_c2");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "su7-au7-the3-tsiu2-liau2-au7");
+  print_state(api, session, "liantua_c3");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "be7-ki3-tsit8-ka1-ti1-lim1-tsiu2");
+  print_state(api, session, "liantua_c4");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "uan5-tsuan5-bo5-in3-siong7");
+  print_state(api, session, "liantua_c5");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "lang5-lang2-jim7-ui5");
+  print_state(api, session, "liantua_c6");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-e7-an2-ne1");
+  print_state(api, session, "liantua_c7");
+  api->clear_composition(session);
+
+  // Mid-way selection: pick a word mid-composition, keep typing, commit.
+  // Selects candidate index 1 (是按怎) for the first segment, then the rest
+  // must compose without discarding the confirmed segment.
+  api->simulate_key_sequence(session, "si7-an2-tsuann2-lang5");
+  api->process_key(session, 0xFF09, 0);  // Tab: enter selection mode
+  select_candidate_by_text(api, session, "\xe6\x98\xaf\xe6\x8c\x89\xe6\x80\x8e");  // 是按怎
+  api->simulate_key_sequence(session, "the3-tsiu2");
+  print_state(api, session, "liantua_midsel");
+  api->simulate_key_sequence(session, " ");
+  RIME_STRUCT(RimeCommit, liantua_commit);
+  if (api->get_commit(session, &liantua_commit)) {
+    std::cout << "COMMIT\tliantua_midsel\t" << sanitize(liantua_commit.text) << '\n';
+    api->free_commit(&liantua_commit);
+  } else {
+    std::cout << "COMMIT\tliantua_midsel\t\n";
+  }
+  api->clear_composition(session);
+
+  // 全羅 mode: whole-sentence commit with dictionary word boundaries.
+  api->set_option(session, "full_romanization", true);
+  api->simulate_key_sequence(session,
+      "si7-an2-tsuann2-lang5-the3-tsiu2-liau2-au7");
+  api->simulate_key_sequence(session, " ");  // confirm sentence candidate
+  RIME_STRUCT(RimeCommit, full_roman_commit);
+  if (api->get_commit(session, &full_roman_commit)) {
+    std::cout << "COMMIT\tliantua_full_roman\t" << sanitize(full_roman_commit.text) << '\n';
+    api->free_commit(&full_roman_commit);
+  } else {
+    std::cout << "COMMIT\tliantua_full_roman\t\n";
+  }
+  api->set_option(session, "full_romanization", false);
   api->clear_composition(session);
 
   api->destroy_session(session);

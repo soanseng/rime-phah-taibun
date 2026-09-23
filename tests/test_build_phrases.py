@@ -35,9 +35,9 @@ class TestBuildReverseIndex:
         ]
         idx = build_reverse_index(lines)
         assert "gua" in idx
-        assert idx["gua"] == [{"text": "我", "weight": 900}]
-        assert idx["beh"] == [{"text": "袂", "weight": 800}]
-        assert idx["hiau"] == [{"text": "曉", "weight": 700}]
+        assert idx["gua"] == [{"text": "我", "weight": 900, "rime_key": "gua"}]
+        assert idx["beh"] == [{"text": "袂", "weight": 800, "rime_key": "beh"}]
+        assert idx["hiau"] == [{"text": "曉", "weight": 700, "rime_key": "hiau"}]
 
     def test_ambiguous_keys(self):
         lines = [
@@ -158,6 +158,24 @@ class TestGeneratePhraseEntries:
         entries = generate_phrase_entries(bigrams, idx, set(), min_count=5)
         assert len(entries) == 1
         assert entries[0]["hanlo"] == "生花"
+
+    def test_toned_dict_keys_match_stripped_bigrams(self):
+        """Real dict codes carry tone numbers and sentence tokens keep
+        hyphens; the index must normalize both or every lookup misses and
+        zero phrases are generated (2026-09-23: new_phrases.txt was empty)."""
+        from collections import Counter
+
+        lines = [
+            "我\tgua2\t900",
+            "袂記得\tbe7-ki3-tsit8\t800",
+            "的\te5\t700",
+        ]
+        idx = build_reverse_index(lines)
+        assert "gua" in idx and "be ki tsit" in idx and "e" in idx
+        bigrams = Counter({("gua", "e"): 10})
+        entries = generate_phrase_entries(bigrams, idx, set(), min_count=5)
+        assert entries[0]["hanlo"] == "我的"
+        assert entries[0]["rime_key"] == "gua2 e5"
 
 
 class TestBuildPhrasesFromFiles:

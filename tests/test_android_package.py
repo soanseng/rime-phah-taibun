@@ -32,6 +32,7 @@ REQUIRED_PHAH = [
     "hoabun_map.txt",
     "lighttone_rules.json",
     "moe700.yaml",
+    "phah_taibun.wordlist",
 ]
 
 # `~` 注音反查閉包: phah_taibun.dependencies 有 bopomofo_tw,
@@ -107,7 +108,7 @@ def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None
     for name in [*REQUIRED_PHAH, *REQUIRED_REVERSE, INSTALL_NAME, "rime.lua", "default.custom.yaml"]:
         assert name in names, f"缺少 {name}"
 
-    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 19
+    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 20
     assert not list((tree / "lua").glob("liu_*.lua"))
 
     rime_lua = (tree / "rime.lua").read_text(encoding="utf-8")
@@ -294,12 +295,11 @@ def test_cli_with_liur_naming_does_not_clobber_the_light_bundle() -> None:
     import build_trime_package as btp
 
     default = Path("/repo/dist/PhahTaiBun-Trime.zip")
-    assert btp._resolve_output(default, with_liur=True, is_default=True) == Path(
-        "/repo/dist/PhahTaiBun-Trime-liur.zip"
-    )
+    assert btp._resolve_output(default, with_liur=True, is_default=True) == Path("/repo/dist/PhahTaiBun-Trime-liur.zip")
     assert btp._resolve_output(default, with_liur=False, is_default=True) == default
     explicit = Path("/tmp/my.zip")
     assert btp._resolve_output(explicit, with_liur=True, is_default=False) == explicit
+
 
 @pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
 def test_liur_bundle_records_provenance(tmp_path: Path) -> None:

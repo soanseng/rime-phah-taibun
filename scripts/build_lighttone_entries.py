@@ -8,8 +8,11 @@ dictionary entries to append to phah_taibun.dict.yaml.
 import argparse
 import json
 import math
+import re
 import unicodedata
 from pathlib import Path
+
+_CJK = re.compile(r"[\u3400-\u9fff]")
 
 
 def kip_to_rime_key(kip: str) -> str:
@@ -89,7 +92,9 @@ def _rime_key_to_kip(rime_key: str) -> str:
     return result
 
 
-def load_dict(dict_path: Path) -> tuple[dict[str, set[str]], set[tuple[str, str]], dict[str, int]]:
+def load_dict(
+    dict_path: Path,
+) -> tuple[dict[str, set[str]], set[tuple[str, str]], dict[str, int], dict[tuple[str, str], int]]:
     """Load existing dictionary into lookup tables.
 
     Parses phah_taibun.dict.yaml, skipping the YAML header (lines until ``...``).
@@ -102,10 +107,12 @@ def load_dict(dict_path: Path) -> tuple[dict[str, set[str]], set[tuple[str, str]
         - kip_to_hanlo: maps kip_input (with hyphens, no ``--``) to set of hanlo strings
         - existing_rimekeys: set of (hanlo, rime_key) tuples for dedup
         - kip_to_weight: maps kip_input (no ``--``) to max weight for capping
+        - hanlo_weight: maps (kip_input, hanlo) to max weight for prefix ranking
     """
     kip_to_hanlo: dict[str, set[str]] = {}
     existing_rimekeys: set[tuple[str, str]] = set()
     kip_to_weight: dict[str, int] = {}
+    hanlo_weight: dict[tuple[str, str], int] = {}
 
     in_header = True
     with open(dict_path, encoding="utf-8") as f:
@@ -140,8 +147,13 @@ def load_dict(dict_path: Path) -> tuple[dict[str, set[str]], set[tuple[str, str]
                     kip_to_weight[kip_lower] = max(kip_to_weight[kip_lower], weight)
                 else:
                     kip_to_weight[kip_lower] = weight
+                pair = (kip_lower, hanlo)
+                if pair in hanlo_weight:
+                    hanlo_weight[pair] = max(hanlo_weight[pair], weight)
+                else:
+                    hanlo_weight[pair] = weight
 
-    return kip_to_hanlo, existing_rimekeys, kip_to_weight
+    return kip_to_hanlo, existing_rimekeys, kip_to_weight, hanlo_weight
 
 
 def load_lighttone_rules(rules_path: Path) -> dict[str, str]:
@@ -332,10 +344,30 @@ def _lookup_segment_hanzi(
     return None
 
 
+def _top_weight_prefixes(
+    prefix_kip: str,
+    candidates: set[str],
+    hanlo_weight: dict[tuple[str, str], int] | None,
+) -> set[str]:
+    """Keep only candidates tied at the highest base weight.
+
+    Without weight evidence the candidate set is returned unchanged.
+    """
+    if not hanlo_weight or not candidates:
+        return candidates
+    weighted = {hz: hanlo_weight.get((prefix_kip, hz)) for hz in candidates}
+    known = {hz: w for hz, w in weighted.items() if w is not None}
+    if not known:
+        return candidates
+    best = max(known.values())
+    return {hz for hz, w in known.items() if w == best}
+
+
 def reverse_lookup_hanzi(
     kip_input: str,
     kip_to_hanlo: dict[str, set[str]],
     suffix_hanzi: dict[str, str],
+    hanlo_weight: dict[tuple[str, str], int] | None = None,
 ) -> list[str]:
     """Reverse-lookup hanzi for a light-tone kip_input.
 
@@ -346,6 +378,10 @@ def reverse_lookup_hanzi(
         kip_input: Light-tone kip_input (e.g., "tng2--lai5" or "a--b--c")
         kip_to_hanlo: Dict mapping non-light-tone kip to hanlo set
         suffix_hanzi: Dict mapping suffix kip to hanzi
+        hanlo_weight: Optional (kip, hanlo) → base-weight map. When given,
+            syllable assembly keeps only the highest base-weight prefix so
+            rare same-reading characters (佐 tso3) cannot tie the common
+            one (做 tso3) at the K-invariant floor and hijack composition.
 
     Returns:
         List of hanlo strings with ``--`` inserted (e.g., ["轉--來"])
@@ -374,7 +410,11 @@ def reverse_lookup_hanzi(
             return results
 
         # Strategy 2: Syllable assembly
-        prefix_hanzi_set = kip_to_hanlo.get(prefix_kip, set())
+        prefix_hanzi_set = _top_weight_prefixes(
+            prefix_kip,
+            {hz for hz in kip_to_hanlo.get(prefix_kip, set()) if _CJK.search(hz)},
+            hanlo_weight,
+        )
         suffix_hz = _lookup_segment_hanzi(suffix_kip, kip_to_hanlo, suffix_hanzi)
 
         if prefix_hanzi_set and suffix_hz is not None:
@@ -397,6 +437,7 @@ def reverse_lookup_hanzi(
         if hz is None:
             return results  # Can't resolve all segments
         suffix_parts.append(hz)
+    prefix_hanzi_set = _top_weight_prefixes(prefix_kip, prefix_hanzi_set, hanlo_weight)
 
     for prefix_hz in sorted(prefix_hanzi_set):
         assembled = prefix_hz + "--" + "--".join(suffix_parts)
@@ -423,7 +464,7 @@ def build_lighttone_entries(
     Returns:
         List of dicts with keys: hanlo, rime_key, weight
     """
-    kip_to_hanlo, existing_rimekeys, kip_to_weight = load_dict(dict_path)
+    kip_to_hanlo, existing_rimekeys, kip_to_weight, hanlo_weight = load_dict(dict_path)
     suffix_hanzi = load_lighttone_rules(rules_path)
     lighttone_words = collect_lighttone_words(freq_paths)
 
@@ -431,7 +472,7 @@ def build_lighttone_entries(
     seen: set[tuple[str, str]] = set()
 
     for kip_input, count in sorted(lighttone_words.items(), key=lambda x: -x[1]):
-        hanlo_candidates = reverse_lookup_hanzi(kip_input, kip_to_hanlo, suffix_hanzi)
+        hanlo_candidates = reverse_lookup_hanzi(kip_input, kip_to_hanlo, suffix_hanzi, hanlo_weight)
 
         if not hanlo_candidates:
             continue

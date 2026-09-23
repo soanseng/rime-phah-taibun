@@ -619,6 +619,7 @@ SCHEMA_FILES=(
     "lighttone_rules.json"
     "moe700.yaml"
     "hoabun_map.txt"
+    "phah_taibun.wordlist"
 )
 
 for file in "${SCHEMA_FILES[@]}"; do

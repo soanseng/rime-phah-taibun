@@ -145,7 +145,6 @@ class TestVerifyKnownKeys:
         errors = verify_known_keys(d, tmp_path / "nope.yaml")
         assert errors and "fixture" in errors[0].lower()
 
-
     def test_committed_dictionary_meets_fixture(self):
         root = Path(__file__).parents[1]
         errors = verify_known_keys(
@@ -153,8 +152,6 @@ class TestVerifyKnownKeys:
             root / "tests" / "fixtures" / "known_keys.yaml",
         )
         assert errors == []
-
-
 
     def test_cli_known_keys_flag_fails_below_threshold(self, tmp_path):
         d = tmp_path / "d.dict.yaml"

@@ -68,6 +68,7 @@ def validate_dict_format(dict_path: Path) -> list[str]:
 
     return errors
 
+
 def verify_poj_integrity(entries: list[dict]) -> list[str]:
     """Fatal TL-to-POJ conversion integrity gate (PLAN section 9-2F).
 
@@ -93,22 +94,16 @@ def verify_poj_integrity(entries: list[dict]) -> list[str]:
             continue
         sibling = tl_by_kip.get(entry["kip_input"])
         if sibling is None:
-            errors.append(
-                f"moe_poj row without moe_tl sibling: {entry.get('hanlo')} ({entry.get('kip_input')})"
-            )
+            errors.append(f"moe_poj row without moe_tl sibling: {entry.get('hanlo')} ({entry.get('kip_input')})")
             continue
         expected = _poj_identity(tl_to_poj(sibling["hanlo"]))
         if _poj_identity(entry["hanlo"]) != expected:
-            errors.append(
-                f"stale POJ for {entry['kip_input']}: {entry['hanlo']!r} != tl_to_poj({sibling['hanlo']!r})"
-            )
+            errors.append(f"stale POJ for {entry['kip_input']}: {entry['hanlo']!r} != tl_to_poj({sibling['hanlo']!r})")
 
     poj_kips = {entry["kip_input"] for entry in entries if entry.get("source") == "moe_poj"}
     for entry in entries:
         if entry.get("source") == "moe_tl" and entry["kip_input"] not in poj_kips:
-            errors.append(
-                f"moe_tl row without moe_poj sibling: {entry.get('hanlo')} ({entry.get('kip_input')})"
-            )
+            errors.append(f"moe_tl row without moe_poj sibling: {entry.get('hanlo')} ({entry.get('kip_input')})")
     return errors
 
 

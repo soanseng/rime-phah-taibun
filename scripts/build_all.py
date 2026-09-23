@@ -101,6 +101,26 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: iCorpus not found at {icorpus_file}")
 
+    # Step 1b: Extract per-identity (han, TL) counts from iCorpus parallel files
+    icorpus_han = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改漢字.txt"
+    identity_freq = data / "identity_freq.tsv"
+    if icorpus_han.exists() and icorpus_file.exists():
+        steps_ok &= run_step(
+            "Extract iCorpus per-identity frequencies",
+            [
+                python,
+                "scripts/extract_identity_freq.py",
+                "--han",
+                str(icorpus_han),
+                "--tl",
+                str(icorpus_file),
+                "--output",
+                str(identity_freq),
+            ],
+        )
+    else:
+        print(f"SKIP: iCorpus parallel hanzi file not found at {icorpus_han}")
+
     # Step 2: Extract Ungian frequencies + sentences
     ungian_dir = data / "Ungian_2009_KIPsupin"
     ungian_freq = data / "ungian_freq.tsv"
@@ -198,6 +218,8 @@ def main(argv: list[str] | None = None) -> None:
         if freq_files:
             convert_cmd.append("--corpus-freq")
             convert_cmd.extend(str(f) for f in freq_files)
+        if identity_freq.exists():
+            convert_cmd.extend(["--identity-freq", str(identity_freq)])
         if kipsutian_csv and kipsutian_csv.exists():
             convert_cmd.extend(["--kipsutian-csv", str(kipsutian_csv)])
         steps_ok &= run_step(
@@ -230,6 +252,35 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  Supplement report: {supplement_report}")
     else:
         print(f"SKIP: Dictionary supplement not found at {supplement_dir}")
+
+    # Step 3c: Append curated reading variants (word, variant key) that
+    # upstream sources only record under the canonical reading. Weights are
+    # copied from the canonical entry so ordering stays source-driven.
+    dict_yaml = out / "phah_taibun.dict.yaml"
+    if dict_yaml.exists():
+        reading_variants = [
+            # 教典 records 袂記得 as bē-kì--tit (tit); common writing also
+            # uses tsit (e.g. funbiochampion 漢羅文章 "bē-kì-tsit").
+            ("袂記得", "be7 ki3 tit4", "be7 ki3 tsit8"),
+        ]
+        appended = 0
+        with open(dict_yaml, encoding="utf-8") as f:
+            rows = {}
+            for line in f:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 3:
+                    rows[(parts[0], parts[1])] = int(parts[2])
+        with open(dict_yaml, "a", encoding="utf-8") as f:
+            for word, canon_key, variant_key in reading_variants:
+                if (word, variant_key) in rows:
+                    continue
+                weight = rows.get((word, canon_key))
+                if weight is None:
+                    print(f"  WARNING: variant source missing: {word} {canon_key}")
+                    continue
+                f.write(f"{word}\t{variant_key}\t{weight}\n")
+                appended += 1
+        print(f"  Appended {appended} reading-variant entries")
 
     # Step 4: Parse LKK rules
     lkk_csv = data / "lkk_yongji.csv"
@@ -267,7 +318,6 @@ def main(argv: list[str] | None = None) -> None:
         )
     else:
         print("SKIP: 700iongji.csv not found (run download_resources.sh)")
-
 
     # Step 5: Build Mandarin→Taiwanese mapping (hoabun_map.txt)
     if chhoetaigi_dir.exists():
@@ -377,11 +427,6 @@ def main(argv: list[str] | None = None) -> None:
             + [str(f) for f in all_freq_files]
             + ["--output", str(lighttone_output)],
         )
-        # Append new light-tone entries to dict.yaml
-        if lighttone_output.exists() and lighttone_output.stat().st_size > 0:
-            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(lighttone_output, encoding="utf-8") as in_f:
-                out_f.write(in_f.read())
-            print(f"  Appended light-tone entries from {lighttone_output}")
 
     # Step 10: Build bigram phrases from all corpora
     sentence_files = [
@@ -411,8 +456,22 @@ def main(argv: list[str] | None = None) -> None:
             with open(dict_yaml, "a", encoding="utf-8") as out_f, open(phrase_output, encoding="utf-8") as in_f:
                 out_f.write(in_f.read())
             print(f"  Appended phrases from {phrase_output}")
+        # Append new light-tone entries to dict.yaml
+        if lighttone_output.exists() and lighttone_output.stat().st_size > 0:
+            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(lighttone_output, encoding="utf-8") as in_f:
+                out_f.write(in_f.read())
+            print(f"  Appended light-tone entries from {lighttone_output}")
 
-    # Step 11: Re-validate dictionary (with new phrases)
+    # Step 11b: Enforce long-word-first weight invariant (PLAN section 9-1A)
+    if dict_yaml.exists():
+        try:
+            from scripts.build_frequency import enforce_dict_file_invariant
+        except ModuleNotFoundError:
+            from build_frequency import enforce_dict_file_invariant
+        raised = enforce_dict_file_invariant(dict_yaml)
+        print(f"  Long-word invariant raised {raised} entries")
+
+    # Step 11: Re-validate dictionary (final artifact, after all rewrites)
     if dict_yaml.exists():
         steps_ok &= run_step(
             "Re-validate dictionary (with new phrases)",
@@ -425,15 +484,19 @@ def main(argv: list[str] | None = None) -> None:
             ],
         )
 
-    # Step 11b: Enforce long-word-first weight invariant (PLAN section 9-1A)
+    # Step 11b: Generate wordlist for whole-sentence romanization boundaries
     if dict_yaml.exists():
-        try:
-            from scripts.build_frequency import enforce_dict_file_invariant
-        except ModuleNotFoundError:
-            from build_frequency import enforce_dict_file_invariant
-        raised = enforce_dict_file_invariant(dict_yaml)
-        print(f"  Long-word invariant raised {raised} entries")
-
+        steps_ok &= run_step(
+            "Generate wordlist for sentence word boundaries",
+            [
+                python,
+                "scripts/build_wordlist.py",
+                "--dict",
+                str(dict_yaml),
+                "--output",
+                str(out / "phah_taibun.wordlist"),
+            ],
+        )
     # Step 11c: Snapshot the dictionary key set for release diffing (PLAN 9-2H)
     if dict_yaml.exists():
         try:

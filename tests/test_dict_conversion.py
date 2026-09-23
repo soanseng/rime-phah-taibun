@@ -224,6 +224,19 @@ class TestWriteRimeDict:
         parts = data_lines[0].split("\t")
         assert parts == ["我", "gua", "1000"]
 
+    def test_sanitize_code_whitespace_but_keep_lighttone_marker(self, tmp_path):
+        # The double space encodes a light-tone `--` syllable boundary and
+        # must survive; tabs, 3+ space runs, and edge whitespace are noise.
+        entries = [
+            {"hanlo": "記得", "rime_key": " ki3  tit4\t", "weight": 3347},
+            {"hanlo": "轉來", "rime_key": "tng2   lai5", "weight": 10},
+        ]
+        outfile = tmp_path / "test.dict.yaml"
+        write_rime_dict(entries, outfile)
+        content = outfile.read_text()
+        assert "記得\tki3  tit4\t3347" in content
+        assert "轉來\ttng2  lai5\t10" in content
+
 
 class TestConvertPipeline:
     """End-to-end conversion: CSV files → dict.yaml."""
@@ -305,6 +318,20 @@ class TestParseGenericCsv:
         assert entries[0]["kip_input"] == "tsiah8-png7"
         assert entries[0]["rime_key"] == "tsiah8 png7"
         assert entries[0]["source"] == "kamjitian"
+
+    def test_self_declared_variant_headword_demoted(self):
+        """Rows whose description says 本辭典使用「X」來表示 are variant
+        spellings the upstream dictionary itself declines to use; they must
+        rank below the canonical headword (事志 vs 代誌, tai7-tsi3)."""
+        csv_data = (
+            "KipInput,HanLoTaibunKip,HoaBun,KaisoehHanLoKip\n"
+            'tai7-tsi3,事志,事情,"【名】事情。本辭典使用「代誌」來表示。"\n'
+            "tai7-tsi3,代誌,事情,【名】事情。\n"
+        )
+        entries = parse_generic_csv(io.StringIO(csv_data), "moe")
+        by_hanlo = {e["hanlo"]: e for e in entries}
+        assert by_hanlo["事志"]["source"] == "moe_variant"
+        assert by_hanlo["代誌"]["source"] == "moe"
 
     def test_prefers_kip_over_poj(self):
         """When both KipInput and PojInput exist, use KipInput."""

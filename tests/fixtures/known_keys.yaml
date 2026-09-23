@@ -1,8 +1,17 @@
 # Known-keys smoke gate (PLAN 9-2G)
 # Each line: <rime key>: <minimum rows>. A row hits a key on exact match
-# or first-syllable prefix. Thresholds calibrated at ~70% of the v0.6.2+
-# dictionary (2026-09); catches large-scale regressions such as converter
-# breakage or a dropped source database.
+# or first-syllable prefix. Thresholds calibrated at ~70% of the dictionary
+# at the time of recalibration; catches large-scale regressions such as
+# converter breakage or a dropped source database.
+#
+# 2026-09 v0.8.0 recalibration: identity-keyed dedup, top-weight lighttone
+# prefix assembly, and non-CJK assembly filtering intentionally reduced
+# per-key rows (si7 356→152). Lost identities are: duplicate rows,
+# romanization-text assemblies ("?--了", "sī--了"), and rare-prefix
+# lighttone assemblies (鼓--了 — the character 鼓/si7 stays selectable
+# as a single-syllable candidate; only its lighttone compound form is
+# pruned). This is an accepted trade: same-reading ties no longer hijack
+# sentence composition (佐--的 vs 做--的).
 #
 # Recalibrate after intentional dictionary changes:
 #   uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml \
@@ -18,7 +27,7 @@ sui2: 70
 kha1: 380
 tsit8: 400
 e7: 260
-si7: 240
+si7: 106
 a2: 18
 i1: 100
 u7: 440

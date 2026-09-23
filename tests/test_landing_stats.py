@@ -76,9 +76,7 @@ def test_landing_multi_reading_stat_and_examples_match_dictionary():
     for hanzi, shown in chips:
         for syllable in shown.split("·"):
             numbered = poj_diacritics_to_tone_numbers(syllable.strip())
-            assert numbered in readings.get(hanzi, set()), (
-                f"{hanzi} {syllable} (→{numbered}) not a dictionary reading"
-            )
+            assert numbered in readings.get(hanzi, set()), f"{hanzi} {syllable} (→{numbered}) not a dictionary reading"
 
 
 def test_research_page_holds_moved_details():

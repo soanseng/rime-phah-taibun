@@ -141,7 +141,7 @@
           <dl class="hero-facts">
             <div><dt>拼音</dt><dd>POJ / TL 雙系統</dd></div>
             <div><dt>輸出</dt><dd>漢羅、全羅、TL、POJ</dd></div>
-            <div><dt>詞庫</dt><dd>218,151 詞條</dd></div>
+            <div><dt>詞庫</dt><dd>206,346 詞條</dd></div>
           </dl>
         </div>
         <div class="hero-media">
@@ -215,29 +215,29 @@
             <p>以下數字全部從出貨的 <code>phah_taibun.dict.yaml</code> 直接計算，由 <code>tests/test_landing_stats.py</code> 釘住——頁面寫的，就是字典裡的。</p>
           </div>
           <div class="stat-grid">
-            <div class="stat-card"><span class="stat-number">218,151</span><span class="stat-label">詞條（主字典）</span></div>
+            <div class="stat-card"><span class="stat-number">206,346</span><span class="stat-label">詞條（主字典）</span></div>
             <div class="stat-card"><span class="stat-number">9</span><span class="stat-label">本開源辭典</span></div>
             <div class="stat-card"><span class="stat-number">7</span><span class="stat-label">個語料庫詞頻</span></div>
-            <div class="stat-card"><span class="stat-number">5,426</span><span class="stat-label">個一字多音字</span></div>
+            <div class="stat-card"><span class="stat-number">5,423</span><span class="stat-label">個一字多音字</span></div>
           </div>
           <figure id="chart-wordlength" class="wl-chart">
             <figcaption>詞長分布——超過一半的詞是兩個音節，連打就整詞出現</figcaption>
-            <div class="wl-row" data-syllables="1" data-count="26414">
+            <div class="wl-row" data-syllables="1" data-count="24054">
               <span class="wl-label">1 音節</span>
               <span class="wl-track"><span class="wl-fill" style="--w:12.1%"></span></span>
               <span class="wl-value">26,414</span>
             </div>
-            <div class="wl-row" data-syllables="2" data-count="122966">
+            <div class="wl-row" data-syllables="2" data-count="119377">
               <span class="wl-label">2 音節</span>
               <span class="wl-track"><span class="wl-fill" style="--w:56.4%"></span></span>
               <span class="wl-value">122,966</span>
             </div>
-            <div class="wl-row" data-syllables="3" data-count="54510">
+            <div class="wl-row" data-syllables="3" data-count="48807">
               <span class="wl-label">3 音節</span>
               <span class="wl-track"><span class="wl-fill" style="--w:25.0%"></span></span>
               <span class="wl-value">54,510</span>
             </div>
-            <div class="wl-row" data-syllables="4+" data-count="14261">
+            <div class="wl-row" data-syllables="4+" data-count="14108">
               <span class="wl-label">4+ 音節</span>
               <span class="wl-track"><span class="wl-fill" style="--w:6.5%"></span></span>
               <span class="wl-value">14,261</span>
@@ -251,7 +251,7 @@
               <li class="multi-example" lang="nan-Latn-tailo">翼 — si̍t·i̍k</li>
               <li class="multi-example" lang="nan-Latn-tailo">喙 — tshuì·huī</li>
             </ul>
-            <p class="funnel">ChhoeTaigi 9 本辭典 353K 筆原始字詞 → 清洗、去重、驗證 → <strong>218,151</strong> 個詞條；排序再加權 7 個語料庫詞頻、21 個外部資源。<a class="text-link" href="guide.html#/research">看資料怎麼來、統計怎麼算</a></p>
+            <p class="funnel">ChhoeTaigi 9 本辭典 353K 筆原始字詞 → 清洗、去重、驗證 → <strong>206,346</strong> 個詞條；排序再加權 7 個語料庫詞頻、21 個外部資源。<a class="text-link" href="guide.html#/research">看資料怎麼來、統計怎麼算</a></p>
           </div>
         </div>
       </div>
@@ -395,7 +395,7 @@
           <article class="compare-card">
             <p class="compare-label">搜尋：最好用的台語輸入法</p>
             <h3>拍台文強在低門檻和資料厚度</h3>
-            <p>打字時可以省聲調、POJ/TL 混打、看拼音註解、切換漢羅/全羅、用 <code>?</code> 任意位置查字；背後用 218,151 個詞條和多語料庫詞頻把常用詞往前排。對創作者、老師、學生和社群小編來說，重點是少查字、少切換、少整理格式。</p>
+            <p>打字時可以省聲調、POJ/TL 混打、看拼音註解、切換漢羅/全羅、用 <code>?</code> 任意位置查字；背後用 206,346 個詞條和多語料庫詞頻把常用詞往前排。對創作者、老師、學生和社群小編來說，重點是少查字、少切換、少整理格式。</p>
           </article>
         </div>
         <div class="source-note" aria-label="資料來源摘要">
@@ -427,6 +427,11 @@
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
+            <time datetime="2026-09-23">2026-09-23</time>
+            <h3>0.8.0：連打——整句羅馬字一次上屏</h3>
+            <p>整句照唸打完（音節用 <code>-</code> 連）再按一次空白，整句漢字直接上屏；<code>Enter</code> 也是整句上屏（<code>Ctrl+Enter</code> 才送原始羅馬字）。打到一半按 <code>Tab</code> 可逐詞換字，選過的詞不會被重組蓋掉。字典權重改用「詞身份語料頻率」——iCorpus 平行語料的 5.8 萬個（漢字,讀音）計數讓同音異詞（人/膿、代誌/事志）按真實用法排序，整句組字大幅變準。全羅模式的整句輸出依詞典分詞加詞界空白（詞內連字號）。聲調省略改用弱拼式邊，連打時帶調路徑優先、不會被無調碎片劫持。</p>
+          </article>
+          <article>
             <time datetime="2026-09-22">2026-09-22</time>
             <h3>0.7.0：連續輸入更愛整詞，下載可驗證</h3>
             <p>字典內約 2.8 萬個多音節詞的權重重校：連續輸入時，字典裡的整詞（如「食飯」）不再被拆成單字組句。修正大寫音節（Tsuí、Ing-ko 類）的 POJ 候選轉換錯誤。字典構建完全確定化——同樣的資料重建兩次，結果逐位元組相同。每個 Release 附 <code>SHA256SUMS</code>，發佈時自動匿名下載驗證，安裝包可自行核對雜湊。</p>
@@ -445,11 +450,6 @@
             <time datetime="2026-09-21">2026-09-21</time>
             <h3>0.6.0：拍台文(Telex) 進階調鍵方案</h3>
             <p>給熟台羅、想連續輸入的人：方案選單多了「拍台文(Telex)」，聲調用字母鍵（<code>v</code>=2/8、<code>y</code>=3、<code>d</code>=5、<code>w</code>=7、<code>q</code>=9），<code>z</code>→<code>ts</code>、<code>zh</code>→<code>tsh</code>，<code>f</code> 當音節連字符，<code>taidfgiv</code> 就能打出臺語。它與「拍台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式，只換輸入鍵位；主方案行為完全不變。歷史、鍵位圖與「可以用也可以不用」見首頁 <a href="#telex">Telex</a> 一節。</p>
-          </article>
-          <article>
-            <time datetime="2026-08-23">2026-08-23</time>
-            <h3>0.5.0：字典查無的詞組可逐音節選字</h3>
-            <p>字典沒收的詞（人名、地名、新詞）現在有明確流程：整串輸入或用 <code>-</code> 斷音節，候選自動逐音節組合，按 <code>Tab</code> 一個字一個字選（選字即選調），短句也一樣。行為以真實 librime 引擎測試釘住，輸入法不會自動把打過的內容存成新詞。</p>
           </article>
         </div>
       </div>

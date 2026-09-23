@@ -4,7 +4,7 @@
 schema:
   schema_id: phah_taibun
   name: "拍台文(台)"
-  version: "0.7.0"
+  version: "0.8.0"
   author:
     - "拍台文開發團隊"
   dependencies:
@@ -64,6 +64,7 @@ engine:
     - lua_translator@*phah_taibun_speedup
   filters:
     - lua_filter@*phah_taibun_lighttone
+    - lua_filter@*phah_taibun_toneless
     - lua_filter@*phah_taibun_filter
     - lua_filter@*phah_taibun_lookup
     - lua_filter@*phah_taibun_recommend
@@ -80,7 +81,7 @@ speller:
   delimiter: " '-"
   algebra:
     # === 聲調完全可省略 ===
-    - derive/[1-9]$//
+    - abbrev/^([a-z]+)[1-9]$/$1/
     # 第1聲在字典中已標為 "to1"（非 "to"），由 build pipeline 處理
 
     # === POJ → TL 對應 ===
@@ -191,8 +192,8 @@ phah_taibun_reverse_lookup:
 editor:
   bindings:
     space: confirm
-    Return: commit_raw_input
-    Control+Return: commit_script_text
+    Return: commit_composition
+    Control+Return: commit_raw_input
     BackSpace: revert
     Control+BackSpace: back_syllable
     Escape: cancel

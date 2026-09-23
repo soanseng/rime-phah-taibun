@@ -24,8 +24,6 @@ def _replace_pair(text: str, source: str, target: str) -> str:
     return text.replace(source.capitalize(), target.capitalize())
 
 
-
-
 def _sub_pair(text: str, source: str, target: str) -> str:
     """Word-boundary regex replace that preserves the matched initial case.
 
@@ -40,9 +38,6 @@ def _sub_pair(text: str, source: str, target: str) -> str:
         return target.capitalize() if matched[0].isupper() else target
 
     return pattern.sub(_repl, text)
-
-
-
 
 
 def tl_to_poj(tl_text: str) -> str:

@@ -43,7 +43,7 @@ $INTERACTIVE = ($ProjectRoot -eq "")
 
 # 發行資產版本（後備值）：命令列安裝會先查 GitHub 最新 release，
 # 查詢失敗或被網路擋下時才使用此固定版本。
-$RELEASE_VERSION = "0.7.0"
+$RELEASE_VERSION = "0.8.0"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
 $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"

@@ -21,8 +21,10 @@ SOURCE_WEIGHTS = {
     "taijit": 200,  # L5: 台日大辭典
     "pehoe": 200,  # L5: 台灣白話基礎語句
     "sitbut": 200,  # L5: 台灣實物名彙
+    "moe_variant": 550,  # ChhoeTaigi rows self-declined as variants (本辭典使用「X」來表示)
 }
 DEFAULT_WEIGHT = 100
+CORPUS_BOOST_COEFF = 0.3
 
 
 def assign_source_weight(source: str) -> int:
@@ -91,35 +93,84 @@ def load_corpus_frequencies(freq_path: Path) -> dict[str, int]:
     return result
 
 
+def load_identity_frequencies(freq_path: Path) -> dict[tuple[str, str], int]:
+    """Load per-identity corpus counts from TSV.
+
+    Args:
+        freq_path: TSV with hanlo\\tkip_input\\tcount rows
+
+    Returns:
+        Dict mapping (hanlo, kip_input) → count; malformed rows skipped
+    """
+    if not freq_path.exists():
+        return {}
+    result: dict[tuple[str, str], int] = {}
+    with open(freq_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) < 3:
+                continue
+            try:
+                result[(parts[0], parts[1])] = int(parts[2])
+            except ValueError:
+                continue
+    return result
+
+
 def compute_weights(
     entries: list[dict],
     corpus_freq: dict[str, int] | None = None,
+    identity_freq: dict[tuple[str, str], int] | None = None,
 ) -> list[dict]:
     """Compute final frequency weights for dictionary entries.
 
     Combines source authority, word length modifier, cross-source overlap bonus,
-    and optional corpus frequency boost.
+    and corpus frequency boost.
 
     Args:
         entries: List of dicts with hanlo, rime_key, source fields
         corpus_freq: Optional dict mapping kip_input to corpus occurrence counts
+            (TL-only: conflates same-code homophones)
+        identity_freq: Optional dict mapping (hanlo, kip_input) to corpus
+            occurrence counts from aligned parallel corpora. When any entry of
+            a code has identity data, per-entry identity counts are the only
+            corpus evidence used for that code, so same-code homophones
+            (人/膿) rank by their own observed usage.
 
     Returns:
         Deduplicated list with computed 'weight' field (int)
     """
     if corpus_freq is None:
         corpus_freq = {}
+    identity_freq = identity_freq or {}
+    # Codes covered by identity evidence: TL-only counts would attribute
+    # homophone mass to unseen words, so they stop applying per code.
+    # Identity kips are hyphenated; canonicalize to the space-separated
+    # rime-key form before comparing.
+    codes_with_identity: set[str] = set()
+    for _han, kip in identity_freq:
+        codes_with_identity.add(" ".join(kip.replace("-", " ").split()))
 
-    # Count how many sources each (hanlo, rime_key) pair appears in
-    key_sources: dict[tuple[str, str], set[str]] = {}
-    for entry in entries:
-        key = (entry["hanlo"], entry["rime_key"])
-        key_sources.setdefault(key, set()).add(entry["source"])
+    def dedup_key(entry: dict) -> tuple[str, str, bool]:
+        # Whitespace runs are typography, not identity — but the double
+        # space a light-tone `--` marker produces IS part of the reading
+        # (kì--tit vs kì-tit), so the marker keeps its own identity row.
+        canonical = " ".join(entry["rime_key"].split())
+        lighttone = "--" in entry.get("kip_input", "")
+        return (entry["hanlo"], canonical, lighttone)
 
-    # Group entries by key, keep best source
-    best_entries: dict[tuple[str, str], dict] = {}
+    # Count how many sources each word identity appears in
+    key_sources: dict[tuple[str, str, bool], set[str]] = {}
     for entry in entries:
-        key = (entry["hanlo"], entry["rime_key"])
+        key_sources.setdefault(dedup_key(entry), set()).add(entry["source"])
+
+    # Group entries by identity, keep best source
+    best_entries: dict[tuple[str, str, bool], dict] = {}
+    for entry in entries:
+        key = dedup_key(entry)
         source_weight = assign_source_weight(entry["source"])
         existing = best_entries.get(key)
         if existing is None or source_weight > assign_source_weight(existing["source"]):
@@ -128,15 +179,24 @@ def compute_weights(
     # Compute final weights
     result = []
     for key, entry in best_entries.items():
+        # Non-light-tone entries emit a single-spaced key; light-tone
+        # entries keep their marker-derived double space.
+        if "--" not in entry.get("kip_input", ""):
+            entry["rime_key"] = " ".join(entry["rime_key"].split())
         base = assign_source_weight(entry["source"])
         length_mod = word_length_modifier(entry["hanlo"])
         overlap_bonus = 1.1 ** (len(key_sources[key]) - 1)
 
-        # Corpus frequency boost: log-scale boost if word appears in corpus
+        # Corpus frequency boost: log-scale boost from observed usage.
         corpus_boost = 1.0
         kip = entry.get("kip_input", "")
-        if kip and kip in corpus_freq:
-            corpus_boost = 1.0 + math.log10(1 + corpus_freq[kip]) * 0.2
+        identity_count = identity_freq.get((entry["hanlo"], kip), 0)
+        if identity_count > 0:
+            corpus_boost = 1.0 + math.log10(1 + identity_count) * CORPUS_BOOST_COEFF
+        elif kip and " ".join(entry["rime_key"].split()) in codes_with_identity:
+            corpus_boost = 1.0  # identity data exists for this code; word unseen
+        elif kip and kip in corpus_freq:
+            corpus_boost = 1.0 + math.log10(1 + corpus_freq[kip]) * CORPUS_BOOST_COEFF
 
         entry["weight"] = int(base * length_mod * overlap_bonus * corpus_boost)
         result.append(entry)
@@ -148,27 +208,7 @@ def compute_weights(
 _SYLLABLE_SPLIT_RE = re.compile(r"[ \-]+")
 
 
-
 def enforce_long_word_invariant(entries: list[dict], k: float = 1.2) -> tuple[list[dict], int]:
-    """Enforce the long-word-first weight invariant (PLAN section 9-1A).
-
-    For every multi-syllable entry W, raise weight(W) to at least
-    ceil(k * sum(weights of the strongest single-syllable entries with
-    the same readings)). This guarantees the Rime sentence composer can
-    never prefer fragmenting a dictionary word into single characters.
-
-    Single-syllable entries are never modified; multi-syllable entries
-    whose syllables have no standalone competitors are left unchanged.
-    Idempotent: a second run raises nothing.
-
-    Args:
-        entries: Output of compute_weights (each dict has rime_key and weight).
-            Dicts are modified in place and the same list is returned.
-        k: Safety margin over the fragmented sum (default 1.2).
-
-    Returns:
-        (entries, number of entries whose weight was raised)
-    """
     syllable_best: dict[str, int] = {}
     for entry in entries:
         tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
@@ -177,18 +217,35 @@ def enforce_long_word_invariant(entries: list[dict], k: float = 1.2) -> tuple[li
             if weight > syllable_best.get(tokens[0], 0):
                 syllable_best[tokens[0]] = weight
 
-    raised = 0
+    original_weight = {id(entry): entry["weight"] for entry in entries}
+
+    # Group multi-syllable entries by code; the invariant is enforced per
+    # group with a common offset: when the group's lightest member sits
+    # below ceil(k * fragmented_sum), every member gains the same offset.
+    # Relative gaps (and genuine ties) survive, and no member can end up
+    # below the threshold. 長詞不敗 (AGENTS.md 設計原則 7).
+    by_code: dict[str, list[dict]] = {}
     for entry in entries:
         tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
         if len(tokens) < 2:
-            continue
+            continue  # singles feed the thresholds; never re-ranked here
+        by_code.setdefault(entry["rime_key"], []).append(entry)
+
+    raised = 0
+    for code_entries in by_code.values():
+        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(code_entries[0]["rime_key"]) if t]
         fragmented_sum = sum(syllable_best.get(token, 0) for token in tokens)
         if fragmented_sum <= 0:
             continue
         threshold = math.ceil(k * fragmented_sum)
-        if entry["weight"] < threshold:
-            entry["weight"] = threshold
-            raised += 1
+        group_min = min(e["weight"] for e in code_entries)
+        if group_min >= threshold:
+            continue
+        offset = threshold - group_min
+        for entry in code_entries:
+            entry["weight"] += offset
+            if entry["weight"] > original_weight[id(entry)]:
+                raised += 1
 
     return entries, raised
 
@@ -223,9 +280,7 @@ def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
         parts = lines[i].split("\t")
         if len(parts) < 3 or not parts[2].strip().isdigit():
             continue
-        entries.append(
-            {"hanlo": parts[0], "rime_key": parts[1], "weight": int(parts[2])}
-        )
+        entries.append({"hanlo": parts[0], "rime_key": parts[1], "weight": int(parts[2])})
         row_index.append(i)
 
     _, raised = enforce_long_word_invariant(entries, k=k)
@@ -240,7 +295,6 @@ def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
 
 
 _VERSION_RE = re.compile(r'^version:\s*"?([^"\n]+)"?\s*$')
-
 
 
 def write_word_keys(dict_path: Path, output_dir: Path) -> Path:

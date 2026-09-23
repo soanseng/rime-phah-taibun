@@ -86,7 +86,6 @@ def test_shortcut_docs_only_advertise_switches_enabled_by_the_schema():
     assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[2]
 
 
-
 def test_documented_lua_module_count_matches_release_payload():
     """The public module count must track every Lua file shipped by installers."""
     module_count = len(list(Path("lua").glob("phah_taibun_*.lua")))
@@ -94,14 +93,8 @@ def test_documented_lua_module_count_matches_release_payload():
     guide = Path("docs/user-guide.md").read_text(encoding="utf-8")
 
     assert f"lua-{module_count}%20modules" in readme
-    assert any(
-        "Lua 擴充模組" in line and f"{module_count} 個" in line
-        for line in readme.splitlines()
-    )
-    assert any(
-        "Lua 模組" in line and f"{module_count} 個" in line
-        for line in guide.splitlines()
-    )
+    assert any("Lua 擴充模組" in line and f"{module_count} 個" in line for line in readme.splitlines())
+    assert any("Lua 模組" in line and f"{module_count} 個" in line for line in guide.splitlines())
 
 
 def test_docs_describe_unbundled_optional_assets_as_not_enabled():
@@ -116,10 +109,7 @@ def test_docs_describe_unbundled_optional_assets_as_not_enabled():
     assert "| **英文混打** | 內建" not in docs
     assert "直接打英文單字" not in docs
     assert "正式安裝包沒有綁定 rime-ice" in guide
-    assert any(
-        "未內建" in line and "Ctrl+Space" in line
-        for line in readme.splitlines()
-    )
+    assert any("未內建" in line and "Ctrl+Space" in line for line in readme.splitlines())
 
 
 def test_output_mode_choices_persist_across_sessions_and_restarts():
@@ -138,11 +128,7 @@ def test_output_mode_choices_persist_across_sessions_and_restarts():
         assert "reset" not in switches[option]
 
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
-    saved = {
-        value
-        for key, value in custom["patch"].items()
-        if key.startswith("switcher/save_options/")
-    }
+    saved = {value for key, value in custom["patch"].items() if key.startswith("switcher/save_options/")}
     assert saved == {"poj_mode", "full_romanization"}
 
 
@@ -174,11 +160,7 @@ def test_telex_schema_is_registered_alongside_the_main_schema():
     """Fresh installs get both schemas from default.custom.yaml and rime.lua."""
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
     patch = custom["patch"]
-    schemas = [
-        entry["schema"]
-        for key, entry in patch.items()
-        if key.startswith("schema_list/")
-    ]
+    schemas = [entry["schema"] for key, entry in patch.items() if key.startswith("schema_list/")]
 
     assert "phah_taibun" in schemas
     assert "phah_taibun_telex" in schemas

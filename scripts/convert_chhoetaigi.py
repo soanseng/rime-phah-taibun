@@ -86,6 +86,16 @@ def clean_hanlo_text(text: str) -> str:
     return re.sub(r"[\t\r\n]+", "", text).strip()
 
 
+def has_word_content(text: str) -> bool:
+    """Return whether hanlo text carries at least one letter or CJK ideograph.
+
+    Source corpora leak punctuation/placeholder-only rows ("?", "○", "-",
+    private-use codepoints). They match real readings and pollute sentence
+    composition, so they are dropped at import.
+    """
+    return any(unicodedata.category(ch).startswith("L") for ch in text)
+
+
 def normalize_implicit_tone(kip_input: str) -> str:
     """Add explicit tone numbers to syllables that have no tone number.
 
@@ -266,6 +276,13 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
         hoabun = row.get("HoaBun", "").strip()
         if not kip_raw or not hanlo:
             continue
+        # Upstream prose 本辭典使用「X」來表示 marks variant headwords the
+        # dictionary itself declines to use (e.g. 事志 vs canonical 代誌).
+        # Demote them below the canonical form via a lower-weight source.
+        entry_source = source_name
+        description = row.get("KaisoehHanLoKip", "") or row.get("KaisoehHanLoPoj", "")
+        if "本辭典使用" in description:
+            entry_source = "moe_variant"
         for kip in clean_kip_input(kip_raw):
             if is_poj_input:
                 kip = poj_to_tl(kip)
@@ -275,7 +292,7 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
                     "kip_input": kip,
                     "rime_key": normalize_implicit_tone(kip).replace("-", " "),
                     "hoabun": hoabun,
-                    "source": source_name,
+                    "source": entry_source,
                 }
             )
     return entries
@@ -383,13 +400,18 @@ def write_rime_dict(entries: list[dict], output_path: Path) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("---\n")
         f.write("name: phah_taibun\n")
-        f.write('version: "0.7.0"\n')
+        f.write('version: "0.8.0"\n')
         f.write("sort: by_weight\n")
         f.write("use_preset_vocabulary: false\n")
         f.write("...\n")
         for entry in entries:
             weight = entry.get("weight", 0)
-            f.write(f"{entry['hanlo']}\t{entry['rime_key']}\t{weight}\n")
+            # Tabs and 3+ space runs are source noise; a single double
+            # space encodes the light-tone marker and must survive.
+            rime_key = entry["rime_key"].replace("\t", " ").strip()
+            while "   " in rime_key:
+                rime_key = rime_key.replace("   ", "  ")
+            f.write(f"{entry['hanlo']}\t{rime_key}\t{weight}\n")
 
 
 def convert_chhoetaigi(
@@ -397,6 +419,7 @@ def convert_chhoetaigi(
     taihoa_paths: list[Path],
     output_path: Path,
     corpus_freq: dict[str, int] | None = None,
+    identity_freq: dict[tuple[str, str], int] | None = None,
     generic_paths: list[tuple[Path, str]] | None = None,
     kipsutian_paths: list[Path] | None = None,
 ) -> None:
@@ -409,6 +432,8 @@ def convert_chhoetaigi(
         taihoa_paths: Paths to 台華線頂 CSV files
         output_path: Path to write output dict.yaml
         corpus_freq: Optional merged corpus frequency dict (kip_input → count)
+        identity_freq: Optional per-identity counts ((hanlo, kip_input) → count)
+            from aligned parallel corpora; ranks same-code homophones
         generic_paths: Optional list of (path, source_name) tuples for additional CSVs
         kipsutian_paths: Optional KipSutian kautian.csv files to include in the main dictionary
     """
@@ -436,12 +461,17 @@ def convert_chhoetaigi(
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_kipsutian_main_csv(f))
 
+    before_count = len(all_entries)
+    all_entries = [e for e in all_entries if has_word_content(e["hanlo"])]
+    if len(all_entries) != before_count:
+        print(f"Filtered {before_count - len(all_entries)} no-content entries")
+
     poj_errors = verify_poj_integrity(all_entries)
     if poj_errors:
         for error in poj_errors[:10]:
             print(f"  POJ INTEGRITY: {error}")
         raise SystemExit(f"TL→POJ integrity gate failed: {len(poj_errors)} errors")
-    weighted = compute_weights(all_entries, corpus_freq=corpus_freq)
+    weighted = compute_weights(all_entries, corpus_freq=corpus_freq, identity_freq=identity_freq)
     weighted, raised = enforce_long_word_invariant(weighted)
     print(f"Long-word invariant raised {raised} entries")
     write_rime_dict(weighted, output_path)
@@ -450,9 +480,9 @@ def convert_chhoetaigi(
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for ChhoeTaigi dictionary conversion."""
     try:
-        from scripts.build_frequency import load_corpus_frequencies
+        from scripts.build_frequency import load_corpus_frequencies, load_identity_frequencies
     except ModuleNotFoundError:
-        from build_frequency import load_corpus_frequencies
+        from build_frequency import load_corpus_frequencies, load_identity_frequencies
 
     parser = argparse.ArgumentParser(description="Convert ChhoeTaigi CSV to Rime dict.yaml")
     parser.add_argument("--input", type=Path, required=True, help="Path to ChhoeTaigiDatabase directory")
@@ -463,6 +493,13 @@ def main(argv: list[str] | None = None) -> None:
         nargs="*",
         default=[],
         help="Paths to corpus frequency TSV files (word\\tcount)",
+    )
+    parser.add_argument(
+        "--identity-freq",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="Paths to identity frequency TSV files (hanlo\\tkip\\tcount)",
     )
     parser.add_argument(
         "--kipsutian-csv",
@@ -506,6 +543,14 @@ def main(argv: list[str] | None = None) -> None:
             for word, count in freqs.items():
                 corpus_freq[word] = corpus_freq.get(word, 0) + count
 
+    identity_freq: dict[tuple[str, str], int] | None = None
+    if args.identity_freq:
+        identity_freq = {}
+        for freq_path in args.identity_freq:
+            freqs = load_identity_frequencies(freq_path)
+            for identity, count in freqs.items():
+                identity_freq[identity] = identity_freq.get(identity, 0) + count
+
     args.output.mkdir(parents=True, exist_ok=True)
     output_path = args.output / "phah_taibun.dict.yaml"
     convert_chhoetaigi(
@@ -513,6 +558,7 @@ def main(argv: list[str] | None = None) -> None:
         taihoa_paths,
         output_path,
         corpus_freq=corpus_freq,
+        identity_freq=identity_freq,
         generic_paths=generic_paths,
         kipsutian_paths=args.kipsutian_csv,
     )

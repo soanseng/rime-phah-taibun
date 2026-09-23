@@ -46,7 +46,7 @@ local function utf8_len(s)
 end
 
 local function extract_roman(cand, env)
-  if data_mod then return data_mod.extract_roman(cand, env.engine.context) end
+  if data_mod then return data_mod.extract_roman(cand, env.engine.context, env.engine) end
   return nil
 end
 
@@ -333,10 +333,16 @@ function M.func(key, env)
 
   -- In romanization modes, Return commits the sound the user typed instead of
   -- forcing a dictionary candidate. This keeps hyphen and light-tone input usable.
+  -- The composition preedit keeps syllable spacing (context.input can arrive
+  -- concatenated without separators), and the result is segmented into words.
   if full_roman and key:repr() == "Return"
      and input ~= "" and not input:match("^~") and not input:find("?", 1, true)
      and not input:match("^;") then
-    local roman = format_input_romanization(input, env)
+    local preedit = context:get_script_text()
+    if preedit == "" then
+      preedit = input
+    end
+    local roman = format_input_romanization(preedit, env)
     if roman then
       if state.capitalize_next then
         roman = capitalize_first(roman)
@@ -366,6 +372,17 @@ function M.func(key, env)
   if kc == 0x20 then
     local cand = context:get_selected_candidate()
     local roman = extract_roman(cand, env)
+    if not roman and cand then
+      -- Sentence-composed candidates carry no comment romanization; the
+      -- reading is the segmented preedit, and word boundaries come from
+      -- reverse lookup on the candidate's Hanzi text.
+      local preedit = context:get_script_text()
+      if preedit ~= "" and data_mod
+         and data_mod.format_sentence_romanization then
+        local poj = context:get_option("poj_mode")
+        roman = data_mod.format_sentence_romanization(cand.text, preedit, poj)
+      end
+    end
     if roman then
       commit_roman(roman)
       context:clear()

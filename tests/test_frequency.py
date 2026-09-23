@@ -85,6 +85,18 @@ class TestComputeWeights:
         result = compute_weights(entries)
         assert result[0]["hoabun"] == "我"
 
+    def test_whitespace_key_variants_dedup_to_one_entry(self):
+        """Whitespace variants of one code are one identity: grouping in
+        compute_weights must normalize rime_key so downstream dict rows
+        (which write normalized keys) can never carry both variants."""
+        entries = [
+            {"hanlo": "閃著", "rime_key": "siam2  tioh8", "source": "moe"},
+            {"hanlo": "閃著", "rime_key": "siam2 tioh8", "source": "itaigi"},
+        ]
+        result = compute_weights(entries)
+        assert len(result) == 1
+        assert result[0]["rime_key"] == "siam2 tioh8"
+
 
 class TestLoadCorpusFrequencies:
     """Load corpus frequency TSV into a lookup dict."""
@@ -158,7 +170,6 @@ class TestEnforceLongWordInvariant:
         assert word["weight"] == 960
         assert raised == 0
 
-
     def test_single_syllable_entries_untouched(self):
         entries = [
             {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
@@ -199,7 +210,7 @@ class TestEnforceDictFileInvariant:
         path.write_text(
             "---\n"
             "name: test\n"
-            "version: \"0.1\"\n"
+            'version: "0.1"\n'
             "...\n"
             "食\ttsiah8\t640\n"
             "飯\tpng7\t640\n"
@@ -276,7 +287,7 @@ class TestWriteWordKeys:
         dict_path.write_text(
             "---\n"
             "name: test\n"
-            "version: \"0.6.2\"\n"
+            'version: "0.6.2"\n'
             "...\n"
             "飯\tpng7\t100\n"
             "食\ttsiah8\t200\n"

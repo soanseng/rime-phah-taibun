@@ -155,7 +155,7 @@ class TestLoadDict:
     def test_basic_load(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\nname: test\n...\n轉來\ttng2 lai5\t947\n出來\ttshut lai5\t1320\n")
-        kip_to_hanlo, existing, _kip_to_weight = load_dict(dict_file)
+        kip_to_hanlo, existing, _kip_to_weight, _hw = load_dict(dict_file)
         assert "tng2-lai5" in kip_to_hanlo
         assert "轉來" in kip_to_hanlo["tng2-lai5"]
         assert ("轉來", "tng2 lai5") in existing
@@ -163,33 +163,33 @@ class TestLoadDict:
     def test_skips_yaml_header(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\nname: test\nversion: 0.1\nsort: by_weight\n...\n食\ttsiah8\t800\n")
-        kip_to_hanlo, _existing, _ = load_dict(dict_file)
+        kip_to_hanlo, _existing, _, _hw = load_dict(dict_file)
         assert "tsiah8" in kip_to_hanlo
 
     def test_existing_lighttone_entries_tracked(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\n...\n轉--來\ttng2  lai5\t500\n")
-        _, existing, _ = load_dict(dict_file)
+        _, existing, _, _hw = load_dict(dict_file)
         assert ("轉--來", "tng2  lai5") in existing
 
     def test_lighttone_entries_not_in_kip_lookup(self, tmp_path):
         """Light-tone entries (with --) should not be indexed in kip_to_hanlo."""
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\n...\n轉--來\ttng2  lai5\t500\n")
-        kip_to_hanlo, _, _ = load_dict(dict_file)
+        kip_to_hanlo, _, _, _hw = load_dict(dict_file)
         assert "tng2--lai5" not in kip_to_hanlo
 
     def test_weight_tracking(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\n...\n轉來\ttng2 lai5\t947\n轉來\ttng2 lai5\t500\n")
-        _, _, kip_to_weight = load_dict(dict_file)
+        _, _, kip_to_weight, _hw = load_dict(dict_file)
         # Should track max weight
         assert kip_to_weight["tng2-lai5"] == 947
 
     def test_case_normalization(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\n...\nTest\tTng2 Lai5\t500\n")
-        kip_to_hanlo, _, _ = load_dict(dict_file)
+        kip_to_hanlo, _, _, _hw = load_dict(dict_file)
         assert "tng2-lai5" in kip_to_hanlo
 
 
@@ -284,6 +284,26 @@ class TestReverseLookupHanzi:
         suffix_hanzi = {"lih": "哩"}
         result = reverse_lookup_hanzi("khi3--lih", kip_to_hanlo, suffix_hanzi)
         assert "去--哩" in result
+
+    def test_romanization_prefix_assembly_skipped(self):
+        # "chò" is a valid han-lo entry but has no hanzi; assembling it
+        # with a suffix produced romanization-first candidates like
+        # "chò--的" that hijack sentence composition over 做--的.
+        kip_to_hanlo = {"tso3": {"chò", "做"}}
+        suffix_hanzi = {"e5": "的"}
+        result = reverse_lookup_hanzi("tso3--e5", kip_to_hanlo, suffix_hanzi)
+        assert "做--的" in result
+        assert "chò--的" not in result
+
+    def test_assembly_keeps_only_top_weight_prefix(self):
+        # 佐--的 and 做--的 tie at the K-invariant floor (4184) when both
+        # are emitted, and sorted() breaks the tie toward 佐--的, hijacking
+        # sentence composition. Emit only the highest base-weight prefix.
+        kip_to_hanlo = {"tso3": {"做", "佐"}}
+        suffix_hanzi = {"e5": "的"}
+        hanlo_weight = {("tso3", "做"): 1539, ("tso3", "佐"): 880}
+        result = reverse_lookup_hanzi("tso3--e5", kip_to_hanlo, suffix_hanzi, hanlo_weight)
+        assert result == ["做--的"]
 
     def test_no_match(self):
         result = reverse_lookup_hanzi("xxx--yyy", {}, {})
@@ -479,11 +499,7 @@ class TestBuildDeterminism:
 
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text(
-            "---\n...\n"
-            "轉\ttng2\t947\n"
-            "傳\ttng2\t800\n"
-            "團\ttng2\t700\n"
-            "屯\ttng2\t600\n",
+            "---\n...\n轉\ttng2\t947\n傳\ttng2\t800\n團\ttng2\t700\n屯\ttng2\t600\n",
             encoding="utf-8",
         )
         rules_file = tmp_path / "rules.json"
