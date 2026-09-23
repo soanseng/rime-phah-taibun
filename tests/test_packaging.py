@@ -49,6 +49,16 @@ def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files()
     assert "[已安裝]" in installer
 
 
+def test_windows_release_download_uses_published_manifest_and_has_timeouts():
+    """The current release publishes SHA256SUMS, not a per-source sidecar."""
+    installer = read("install_windows.ps1")
+
+    assert '$RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"' in installer
+    assert "-TimeoutSec 180" in installer
+    assert "-TimeoutSec 30" in installer
+    assert r"PhahTaiBun-source\.zip" in installer
+
+
 def test_windows_installer_appends_schema_without_utf16_rewrite():
     """Existing Rime schema_list must stay; PS 5.1 Add-Content would UTF-16-corrupt it."""
     installer = read("install_windows.ps1")
@@ -171,9 +181,9 @@ def test_remote_installer_assets_are_versioned_and_sha256_verified():
     assert "sha256sum" in linux
     assert "shasum -a 256" in macos
     assert "Get-FileHash" in windows
-    assert "SOURCE_ARCHIVE_SHA256_URL" in macos
-    assert "PhahTaiBun-source.zip.sha256" in windows
-    assert "PhahTaiBun-source.zip.sha256" in workflow
+    assert "SHA256SUMS" in windows
+    assert "PhahTaiBun-source.zip" in workflow
+    assert "SHA256SUMS" in workflow
     resources = read("scripts/download_resources.sh")
     assert "git clone --depth 1" not in resources
     assert 'git -C "$dest" fetch -q --depth 1 origin "$revision"' in resources

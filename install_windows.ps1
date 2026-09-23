@@ -46,7 +46,7 @@ $INTERACTIVE = ($ProjectRoot -eq "")
 $RELEASE_VERSION = "0.8.0"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
-$SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
+$RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"
 
 # 嘸蝦米（rime-liur）來源：公開 fork，含 librime 1.16+/Lua 5.4+ 相容修正。
 $LIUR_REPO = "soanseng/rime-liur-arch"
@@ -286,16 +286,24 @@ function Get-VerifiedReleasePayload {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("PhahTaiBun-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
     $archive = Join-Path $tempRoot "PhahTaiBun-source.zip"
-    $checksum = Join-Path $tempRoot "PhahTaiBun-source.zip.sha256"
+    $checksum = Join-Path $tempRoot "SHA256SUMS"
     $sourceRoot = Join-Path $tempRoot "source"
 
     try {
-        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_URL -OutFile $archive | Out-Null
-        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_SHA256_URL -OutFile $checksum | Out-Null
-        $expected = ((Get-Content $checksum | Select-Object -First 1) -split '\s+')[0].ToUpperInvariant()
+        Write-Host "  下載來源封存檔（逾時上限 180 秒）..."
+        Invoke-WebRequest -Uri $SOURCE_ARCHIVE_URL -OutFile $archive -TimeoutSec 180 | Out-Null
+        Write-Host "  下載 SHA256SUMS（逾時上限 30 秒）..."
+        Invoke-WebRequest -Uri $RELEASE_CHECKSUMS_URL -OutFile $checksum -TimeoutSec 30 | Out-Null
+        $expected = ""
+        foreach ($line in Get-Content $checksum) {
+            if ($line -match '^\s*([0-9A-Fa-f]{64})\s+\*?PhahTaiBun-source\.zip\s*$') {
+                $expected = $Matches[1].ToUpperInvariant()
+                break
+            }
+        }
         $actual = (Get-FileHash -Path $archive -Algorithm SHA256).Hash.ToUpperInvariant()
-        if ($expected -notmatch '^[0-9A-F]{64}$' -or $actual -ne $expected) {
-            throw "PhahTaiBun-source.zip SHA-256 驗證失敗。"
+        if (-not $expected -or $actual -ne $expected) {
+            throw "PhahTaiBun-source.zip SHA-256 驗證失敗（SHA256SUMS 無對應項目或雜湊不符）。"
         }
         Expand-Archive -Path $archive -DestinationPath $sourceRoot -Force
         return @{ Root = $sourceRoot; Temp = $tempRoot }
@@ -304,6 +312,7 @@ function Get-VerifiedReleasePayload {
         throw
     }
 }
+
 
 # 打包安裝器傳入內建 payload；命令列安裝下載固定版本並驗證封存檔。
 $USE_LOCAL_PAYLOAD = $true
@@ -328,7 +337,7 @@ if ($ProjectRoot -ne "") {
     } catch { }
     $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
     $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
-    $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
+    $RELEASE_CHECKSUMS_URL = "$RELEASE_BASE/SHA256SUMS"
     Write-Host "正在下載並驗證拍台文 v$RELEASE_VERSION 完整安裝資產..."
     $payload = Get-VerifiedReleasePayload
     $ProjectRoot = $payload.Root
