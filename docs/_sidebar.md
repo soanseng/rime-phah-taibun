@@ -3,3 +3,4 @@
 - [完整使用說明](user-guide.md)
 - [Windows 安裝包](packaged-installers.md)
 - [Android 部署](android.md)
+- [研究與資料來源](research.md)

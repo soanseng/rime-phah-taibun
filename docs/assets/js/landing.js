@@ -1,3 +1,5 @@
+document.documentElement.classList.add('js');
+
 $(function () {
   const $header = $('[data-elevate]');
   const $navToggle = $('.nav-toggle');
@@ -57,4 +59,20 @@ $(function () {
       $button.text('請手動複製');
     }
   });
+
+  const barRows = document.querySelectorAll('.wl-row');
+  if ('IntersectionObserver' in window && barRows.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('inview');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    barRows.forEach((row) => io.observe(row));
+  }
 });

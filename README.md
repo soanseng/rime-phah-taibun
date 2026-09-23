@@ -6,7 +6,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Dict Entries](https://img.shields.io/badge/dict-220K%20entries-green?style=flat-square)](#)
+[![Dict Entries](https://img.shields.io/badge/dict-218K%20entries-green?style=flat-square)](#)
 [![Lua Modules](https://img.shields.io/badge/lua-19%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://soanseng.github.io/rime-phah-taibun/)
@@ -147,7 +147,7 @@ Telex 源自越南文在電傳打字機上用字母標調的做法；拍台文�
 - **個人化學習**：記住你選過的字詞，常用的自動排前面；不會自動把輸入歷史存成新詞（使用者字典只學你選過的）。選錯想忘記時，多數前端可在反白該候選時按 `Shift+Delete` 移除
 - **推薦用字標記**：候選區顯示 ◆（推薦漢字）和 ★（推薦羅馬字），依 LKK 規範及教育部700字標示
 - **輕聲自動辨識**：自動產生輕聲候選（如「轉--來」「食--飽」），29K+ 輕聲詞條 + 即時輕聲建議
-- **220K 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
+- **218,151 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
 - **人工詞庫增補**：build pipeline 可納入建中的教育部臺灣台語輸入法詞庫增補檔，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞
 
 ## 使用範例
@@ -562,7 +562,7 @@ cd rime-phah-taibun
 schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
   phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
   phah_taibun_telex.schema.yaml  進階 Telex 調鍵方案（共用主字典）
-  phah_taibun.dict.yaml           主字典（220K 條目）
+  phah_taibun.dict.yaml           主字典（218,151 條目）
   hanlo_rules.yaml                LKK 漢羅分類規則
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
@@ -674,7 +674,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **拼音系統** | TL + POJ 雙系統 | TL + POJ | TL（自動轉換 POJ） |
 | **聲調** | 完全可省略 | 需輸入 | 需輸入 |
 | **漢羅混寫輸出** | 自動（LKK 規範） | 有 | 無（只有純漢字或純羅馬字） |
-| **字典規模** | 220K 條目 | 未公開 | ~24K 條目 |
+| **字典規模** | 218,151 條目 | 未公開 | ~24K 條目 |
 | **語料庫詞頻** | 7 語料庫加權 | 無 | 基本頻率 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **萬用查字** | ?（二段式） | 無 | 無 |
