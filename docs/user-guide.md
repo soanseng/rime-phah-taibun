@@ -64,7 +64,9 @@ irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_win
 - **保留既有輸入法**：列出目前的方案清單，讓你挑要保留哪些（Enter＝全部保留）；若清單裡沒有注音 `bopomofo`，會問要不要一併留下。
 - **只追加不取代**：既有方案清單與自訂詞庫不會被蓋掉。嘸蝦米檔案即時從 [soanseng/rime-liur-arch](https://github.com/soanseng/rime-liur-arch) 下載（第三方方案，授權依原 repo）。
 
-要非互動執行（自動化）可加參數：`-Schemas phah`、`-Schemas liur`、`-Schemas both`。雙擊安裝的 `PhahTaiBunSetup.exe` 是以 `-Schemas phah` 非互動執行。
+要非互動執行（自動化）可設環境變數：`PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）與 `PHAH_TAIBUN_PROJECT_ROOT`。雙擊安裝的 `PhahTaiBunSetup.exe` 以 `PHAH_TAIBUN_SCHEMAS=phah` 非互動執行。
+
+腳本刻意**不存 BOM、也不放頂層 `param()`**：BOM 會被 GitHub raw 與 `irm` 帶進 `iex`，黏在第一個 token 上造成解析失敗（`At line:6 char:28 ... $ProjectRoot = "",`）。若你自行修改腳本，請保持無 BOM。
 
 #### Linux
 

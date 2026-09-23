@@ -35,7 +35,9 @@ Download the latest release for your platform:
 
 After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `拍台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active. Android has no installer; follow the Android guide after installing Trime or the fcitx5-android RIME plugin.
 
-The Windows PowerShell command is interactive: it asks whether to install 拍台文, 嘸蝦米 (`rime-liur`), or both; timestamps a backup of `default.custom.yaml` before touching it; and asks which existing schemas — including 注音 `bopomofo` — to keep. Unattended runs can pass `-Schemas phah`, `-Schemas liur`, or `-Schemas both`.
+The Windows PowerShell command is interactive: it asks whether to install 拍台文, 嘸蝦米 (`rime-liur`), or both; timestamps a backup of `default.custom.yaml` before touching it; and asks which existing schemas — including 注音 `bopomofo` — to keep. Unattended runs can set `PHAH_TAIBUN_SCHEMAS` (`phah` / `liur` / `both`) plus `PHAH_TAIBUN_PROJECT_ROOT` instead of answering prompts. The installer writes a clean, commented `default.custom.yaml` at the end (your own settings are preserved, and `__patch:`-style files are left untouched).
+
+`install_windows.ps1` is deliberately stored **without a BOM and without a top-level `param()` block**: a BOM survives GitHub raw and `irm`, and `iex` then glues it onto the first token, which breaks parsing (`At line:6 char:28 ... $ProjectRoot = "",`). The packaged `PhahTaiBunSetup.exe` therefore reads the script as UTF-8 and evaluates it the same way as the one-liner, passing its arguments through environment variables.
 
 ### Updating
 
@@ -395,7 +397,9 @@ irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_win
 - **保留既有輸入法**：列出目前的方案清單，讓你挑要保留哪些（Enter＝全部保留）；若清單裡沒有注音 `bopomofo`，會問要不要一併留下。
 - **只追加不取代**：既有方案清單與自訂詞庫不會被蓋掉。嘸蝦米檔案即時從 [soanseng/rime-liur-arch](https://github.com/soanseng/rime-liur-arch) 下載（第三方方案，授權依原 repo）。
 
-要非互動執行（自動化）可加參數：`-Schemas phah`、`-Schemas liur`、`-Schemas both`。雙擊安裝的 `PhahTaiBunSetup.exe` 是以 `-Schemas phah` 非互動執行。
+要非互動執行（自動化）可設環境變數：`PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）與 `PHAH_TAIBUN_PROJECT_ROOT`（指向含 `schema/`、`lua/` 的目錄）。雙擊安裝的 `PhahTaiBunSetup.exe` 以 `PHAH_TAIBUN_SCHEMAS=phah` 非互動執行。
+
+腳本刻意**不存 BOM、也不放頂層 `param()`**：BOM 會被 GitHub raw 與 `irm` 一路帶進 `iex`，黏在第一個 token 上造成解析失敗（`At line:6 char:28 ... $ProjectRoot = "",`）。打包安裝器因此改用「以 UTF-8 讀檔後 iex」的方式執行，與單行安裝同一條路徑，參數改用環境變數傳遞。
 
 #### Linux
 

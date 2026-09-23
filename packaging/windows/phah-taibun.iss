@@ -48,8 +48,15 @@ var
   Params: String;
 begin
   PowerShellPath := ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe');
-  Params := '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + ExpandConstant('{app}\install_windows.ps1') +
-    '" -ProjectRoot "' + ExpandConstant('{app}') + '" -Schemas phah';
+  { install_windows.ps1 不含 BOM，PowerShell 5.1 以 -File 讀取會用 ANSI 解碼；
+    改以 ReadAllText(UTF8) 讀進來再 iex，與單行安裝 (irm | iex) 走同一條解析路徑。
+    參數用環境變數傳（iex 沒有參數綁定）；路徑由 $env:LOCALAPPDATA 組合，
+    避免把可能含引號的使用者名稱塞進命令字串。 }
+  Params := '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "' +
+    '$app = Join-Path $env:LOCALAPPDATA ''Phah Tai-bun''; ' +
+    '$env:PHAH_TAIBUN_PROJECT_ROOT = $app; ' +
+    '$env:PHAH_TAIBUN_SCHEMAS = ''phah''; ' +
+    'iex ([System.IO.File]::ReadAllText((Join-Path $app ''install_windows.ps1''), [System.Text.Encoding]::UTF8))"';
 
   if not Exec(PowerShellPath, Params, ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin

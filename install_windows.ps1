@@ -1,11 +1,22 @@
-﻿# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
+# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
 # 參考 ryanwuson/rime-liur 安裝腳本架構
 # https://github.com/soanseng/rime-phah-taibun
-
-param(
-    [string]$ProjectRoot = "",
-    [string]$Schemas = ""
-)
+#
+# 本檔刻意「不帶 BOM」：GitHub raw 的內容會連 BOM 一起交給 iex，而 iex 會把 BOM
+# 黏進第一個 token（註解與 param 都會解析失敗，PS 5.1/7 皆然）。因此：
+#   1. 單行安裝用 `irm <url> | iex`（本檔無 BOM，可正常解析）
+#   2. 打包安裝器改用 -Command + ReadAllText(UTF8) 後 iex（見 phah-taibun.iss）
+#   3. 沒有頂層 param()：參數走環境變數或 $args（iex 下沒有參數綁定）
+$ProjectRoot = ""
+$Schemas = ""
+if ($env:PHAH_TAIBUN_PROJECT_ROOT) { $ProjectRoot = "$env:PHAH_TAIBUN_PROJECT_ROOT" }
+if ($env:PHAH_TAIBUN_SCHEMAS) { $Schemas = "$env:PHAH_TAIBUN_SCHEMAS" }
+for ($i = 0; $i -lt $args.Count; $i++) {
+    switch ("$($args[$i])") {
+        "-ProjectRoot" { if ($i + 1 -lt $args.Count) { $ProjectRoot = "$($args[$i + 1])"; $i++ } }
+        "-Schemas" { if ($i + 1 -lt $args.Count) { $Schemas = "$($args[$i + 1])"; $i++ } }
+    }
+}
 
 $ErrorActionPreference = "Stop"
 

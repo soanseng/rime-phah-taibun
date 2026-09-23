@@ -1,5 +1,8 @@
+import shutil
+import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -20,7 +23,7 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert "install_windows.ps1" in iss
     assert "powershell.exe" in iss
     assert "-ExecutionPolicy Bypass" in iss
-    assert "-ProjectRoot" in iss
+    assert "PHAH_TAIBUN_PROJECT_ROOT" in iss
     assert "PrivilegesRequired=lowest" in iss
     assert "DefaultDirName={localappdata}\\Phah Tai-bun" in iss
     assert "Exec(" in iss
@@ -28,7 +31,7 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert "ResultCode <> 0" in iss
     assert "RaiseException" in iss
     assert "postinstall" not in iss
-    assert "param(" in installer
+    assert "$env:PHAH_TAIBUN_PROJECT_ROOT" in installer
     assert "$ProjectRoot" in installer
     assert "Copy-OrDownload" in installer
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
@@ -65,9 +68,39 @@ def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
     assert "| iex" in windows_panel
 
 
-def test_windows_powershell_installer_has_utf8_bom():
+def test_windows_installer_is_bom_free_and_iex_safe():
+    """A BOM breaks `irm ... | iex`: iex glues the BOM onto the first token, so a
+    top-level param()/comment fails to parse (reproduced verbatim on a Windows report:
+    "At line:6 char:28 ... $ProjectRoot = \"\","). Keep the script BOM-free and free of
+    a top-level param(); parameters travel via env vars or $args instead."""
     raw = Path("install_windows.ps1").read_bytes()
-    assert raw.startswith(b"\xef\xbb\xbf"), "Windows PowerShell 5.1 -File needs UTF-8 BOM"
+    text = raw.decode("utf-8")
+
+    assert not raw.startswith(b"\xef\xbb\xbf"), "a BOM would break `irm ... | iex`"
+    assert not any(line.startswith("param(") for line in text.splitlines())
+    assert "$env:PHAH_TAIBUN_PROJECT_ROOT" in text
+    assert "$env:PHAH_TAIBUN_SCHEMAS" in text
+    # packaged installer must read the BOM-less file as UTF-8 and iex it, not -File it
+    iss = read("packaging/windows/phah-taibun.iss")
+    assert "iex ([System.IO.File]::ReadAllText(" in iss
+    assert "PHAH_TAIBUN_PROJECT_ROOT" in iss
+
+
+def test_windows_installer_parses_as_iex_payload():
+    """Drive the real `irm | iex` parse path: ReadAllText(UTF8) then create a scriptblock."""
+    pwsh = shutil.which("pwsh")
+    if pwsh is None:
+        pytest.skip("pwsh not available to verify the iex parse path")
+
+    code = (
+        "$src = [System.IO.File]::ReadAllText('install_windows.ps1', [System.Text.Encoding]::UTF8);"
+        "try { [void][scriptblock]::Create($src); 'PARSE-OK' }"
+        "catch { 'PARSE-FAIL: ' + $_.Exception.Message }"
+    )
+    out = subprocess.run(
+        [pwsh, "-NoProfile", "-Command", code], capture_output=True, text=True, cwd="."
+    )
+    assert "PARSE-OK" in out.stdout, out.stdout + out.stderr
 
 def test_release_payload_excludes_unused_standalone_reverse_dictionary():
     assert not Path("schema/phah_taibun_reverse.dict.yaml").exists()
@@ -302,8 +335,8 @@ def test_windows_installer_offers_boshiamy_as_optional_schema_choice():
 
     assert "soanseng/rime-liur-arch" in installer
     assert "嘸蝦米" in installer
-    assert "$Schemas" in installer
-    assert "-Schemas" in iss
+    assert "$env:PHAH_TAIBUN_SCHEMAS" in installer
+    assert "-Schemas" in installer
     assert "configs\\liur.schema.yaml" in installer
     assert "liur.chinese-only.schema.yaml" in installer
     assert "easy_en" in installer
