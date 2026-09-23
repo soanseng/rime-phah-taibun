@@ -35,7 +35,7 @@ Android 沒有安裝包。同一套 Rime 方案可手動放進同文（Trime）�
 Windows 安裝器使用 Inno Setup：
 
 ```powershell
-$env:PHAH_TAIBUN_VERSION = "0.6.2"
+$env:PHAH_TAIBUN_VERSION = "0.7.0"
 iscc packaging/windows/phah-taibun.iss
 ```
 
