@@ -369,8 +369,8 @@ def test_liantua_corpus_batch_hit_rate(real_rime_states):
 
 
 def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):
-    """全羅整句上屏：詞內連字號、詞間空白（非單一連字長鏈）。"""
-    commit = real_rime_states["liantua_full_roman"]["commit"]
+    """全羅整句上屏: 詞內連字號與詞間空白, not one long hyphen chain."""
+    commit = _nfc(real_rime_states["liantua_full_roman"]["commit"])
     assert commit.startswith("Sī-án-tsuánn lâng"), commit
     words = commit.split(" ")
     assert "thè-tsiú" in words and "liáu-āu" in words, commit
