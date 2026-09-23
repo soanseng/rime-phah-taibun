@@ -398,6 +398,7 @@ irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_win
 - **先備份**：動任何設定前，把 `default.custom.yaml` 複製成 `default.custom.yaml.backup-<時間戳>`。
 - **保留既有輸入法**：列出目前的方案清單，讓你挑要保留哪些（Enter＝全部保留）；若清單裡沒有注音 `bopomofo`，會問要不要一併留下。
 - **只追加不取代**：既有方案清單與自訂詞庫不會被蓋掉。嘸蝦米檔案即時從 [soanseng/rime-liur-arch](https://github.com/soanseng/rime-liur-arch) 下載（第三方方案，授權依原 repo）。
+- **跟最新版、不重抓**：拍台文資產自動抓 GitHub 最新 release（查詢失敗才退回腳本內建版本號）；嘸蝦米檔案已存在且大小與遠端相同會直接跳過，重跑不必重新下載幾十 MB。
 
 要非互動執行（自動化）可設環境變數：`PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）與 `PHAH_TAIBUN_PROJECT_ROOT`（指向含 `schema/`、`lua/` 的目錄）。雙擊安裝的 `PhahTaiBunSetup.exe` 以 `PHAH_TAIBUN_SCHEMAS=phah` 非互動執行。
 

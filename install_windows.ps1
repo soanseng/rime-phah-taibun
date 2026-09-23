@@ -41,7 +41,8 @@ trap {
 # 打包安裝器（PhahTaiBunSetup.exe）以 -ProjectRoot 非互動執行，不顯示任何提示。
 $INTERACTIVE = ($ProjectRoot -eq "")
 
-# 發行資產固定版本；命令列安裝只下載該版本的完整封存檔。
+# 發行資產版本（後備值）：命令列安裝會先查 GitHub 最新 release，
+# 查詢失敗或被網路擋下時才使用此固定版本。
 $RELEASE_VERSION = "0.7.0"
 $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
 $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
@@ -320,6 +321,14 @@ if ($ProjectRoot -ne "") {
         exit 1
     }
 } else {
+    # 單行安裝：自動跟隨 GitHub 最新 release（查詢失敗就退回上方固定版本）。
+    try {
+        $latestRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/soanseng/rime-phah-taibun/releases/latest" -Method Get -TimeoutSec 10
+        if ($latestRelease.tag_name -match '^v(\d+\.\d+\.\d+)$') { $RELEASE_VERSION = $Matches[1] }
+    } catch { }
+    $RELEASE_BASE = "https://github.com/soanseng/rime-phah-taibun/releases/download/v$RELEASE_VERSION"
+    $SOURCE_ARCHIVE_URL = "$RELEASE_BASE/PhahTaiBun-source.zip"
+    $SOURCE_ARCHIVE_SHA256_URL = "$RELEASE_BASE/PhahTaiBun-source.zip.sha256"
     Write-Host "正在下載並驗證拍台文 v$RELEASE_VERSION 完整安裝資產..."
     $payload = Get-VerifiedReleasePayload
     $ProjectRoot = $payload.Root
@@ -635,6 +644,11 @@ if ($needRegister) {
         } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
             Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      schema_list/@next:`n        schema: phah_taibun"
         } else {
+            # 檔案可能是空的或只有註解：沒有 patch: 錨點就先補上，
+            # 否則 @next 追加會落在結構外，產生無法解析的 YAML。
+            if ($content -notmatch '(?m)^patch:\s*$') {
+                Add-RimeText -Path $defaultCustom -Text "patch:"
+            }
             Add-RimeText -Path $defaultCustom -Text "  schema_list/@next:`n    schema: phah_taibun"
         }
         Write-Host "  已將 phah_taibun 追加到 default.custom.yaml（保留既有方案，不會因此取代）" -ForegroundColor Green
@@ -854,7 +868,8 @@ if ($INSTALL_LIUR) {
         $liurConfigs = @()
         $liurFonts = @()
         $liurFontsWin = @()
-
+        # 遠端檔案大小：本地已存在且大小相同就跳過，重灌不再全部重抓。
+        $liurSizes = @{}
         foreach ($item in $liurTree.tree) {
             if ($item.type -ne "blob") { continue }
             $path = $item.path
@@ -864,6 +879,7 @@ if ($INSTALL_LIUR) {
             }
             if ($excluded) { continue }
 
+            $liurSizes[$path] = [long]$item.size
             if ($path -match "^lua/lunar_calendar/") { $liurLunar += $path }
             elseif ($path -match "^lua/") { $liurLua += $path }
             elseif ($path -match "^opencc/") { $liurOpencc += $path }
@@ -886,6 +902,9 @@ if ($INSTALL_LIUR) {
             $liurCurrent++
             if ($LIUR_CUSTOM_FILES -contains $file -and (Test-Path "$RIME_DIR\$file")) {
                 Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$file [保留]"
+            } elseif ((Test-Path "$RIME_DIR\$file") -and $liurSizes.ContainsKey($file) -and
+                    (Get-Item "$RIME_DIR\$file").Length -eq $liurSizes[$file]) {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$file [已安裝]"
             } else {
                 Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $file
                 Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\$file" | Out-Null
@@ -895,22 +914,37 @@ if ($INSTALL_LIUR) {
         foreach ($file in $liurLua) {
             $liurCurrent++
             $filename = Split-Path $file -Leaf
-            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
-            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\$filename" | Out-Null
+            if ((Test-Path "$RIME_DIR\lua\$filename") -and $liurSizes.ContainsKey($file) -and
+                    (Get-Item "$RIME_DIR\lua\$filename").Length -eq $liurSizes[$file]) {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$filename [已安裝]"
+            } else {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+                Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\$filename" | Out-Null
+            }
         }
 
         foreach ($file in $liurLunar) {
             $liurCurrent++
             $filename = Split-Path $file -Leaf
-            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
-            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\lunar_calendar\$filename" | Out-Null
+            if ((Test-Path "$RIME_DIR\lua\lunar_calendar\$filename") -and $liurSizes.ContainsKey($file) -and
+                    (Get-Item "$RIME_DIR\lua\lunar_calendar\$filename").Length -eq $liurSizes[$file]) {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$filename [已安裝]"
+            } else {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+                Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\lua\lunar_calendar\$filename" | Out-Null
+            }
         }
 
         foreach ($file in $liurOpencc) {
             $liurCurrent++
             $filename = Split-Path $file -Leaf
-            Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
-            Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\opencc\$filename" | Out-Null
+            if ((Test-Path "$RIME_DIR\opencc\$filename") -and $liurSizes.ContainsKey($file) -and
+                    (Get-Item "$RIME_DIR\opencc\$filename").Length -eq $liurSizes[$file]) {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName "$filename [已安裝]"
+            } else {
+                Show-Progress -Current $liurCurrent -Total $liurFileCount -FileName $filename
+                Invoke-WebRequest -Uri "$LIUR_RAW/$file" -OutFile "$RIME_DIR\opencc\$filename" | Out-Null
+            }
         }
 
         foreach ($file in $liurConfigs) {

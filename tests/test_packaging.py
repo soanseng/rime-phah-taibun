@@ -36,6 +36,17 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     assert "Copy-OrDownload" in installer
     assert 'Copy-OrDownload -SourcePath "schema/default.custom.yaml" -DestinationPath $defaultCustom' in installer
 
+def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files():
+    """One-liner installs the newest GitHub release; liur reruns skip unchanged files."""
+    installer = read("install_windows.ps1")
+
+    assert "releases/latest" in installer
+    assert "tag_name" in installer
+    assert '$RELEASE_VERSION = "0.7.0"' in installer
+    assert "$liurSizes" in installer
+    assert ".Length -eq $liurSizes[$file]" in installer
+    assert "[已安裝]" in installer
+
 
 def test_windows_installer_appends_schema_without_utf16_rewrite():
     """Existing Rime schema_list must stay; PS 5.1 Add-Content would UTF-16-corrupt it."""
