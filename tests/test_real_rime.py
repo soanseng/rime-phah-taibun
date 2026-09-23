@@ -296,3 +296,35 @@ def test_main_schema_keeps_raw_taid_without_telex_mapping(real_rime_states):
     """
     assert real_rime_states["main_taid"]["preedit"] == "taid"
     assert real_rime_states["telex_taid"]["preedit"] == "tai5"
+
+def _nfc(text: str) -> str:
+    """librime emits NFD romanization comments; compare under NFC."""
+    return unicodedata.normalize("NFC", text)
+
+
+def test_hanlo_copy_poj_word_types_with_both_annotations(real_rime_states):
+    """白話字 must be typeable as peh8-ue7-ji7 with TL and POJ annotations."""
+    state = real_rime_states["hanlo_poj"]
+    assert state["count"] > 0, state
+    poj = [c for c in state["candidates"] if c["text"] == "白話字"]
+    assert poj, state
+    comments = [_nfc(c["comment"]) for c in poj]
+    assert any("TL:pe̍h-uē-jī" in comment for comment in comments), comments
+    assert any("POJ:pe̍h-ōe-jī" in comment for comment in comments), comments
+
+
+def test_hanlo_copy_taigi_word_types_with_tl_annotation(real_rime_states):
+    """台語 must be typeable as tai5-gi2 with TL annotation tâi-gí."""
+    state = real_rime_states["hanlo_taigi"]
+    assert state["count"] > 0, state
+    taigi = [c for c in state["candidates"] if c["text"] in ("台語", "臺語")]
+    assert taigi, state
+    assert any("tâi-gí" in _nfc(c["comment"]) for c in taigi), taigi
+
+
+def test_hanlo_copy_sentence_composes_from_dictionary(real_rime_states):
+    """會曉講台語 composes end-to-end: every segment comes from the dict."""
+    state = real_rime_states["hanlo_sentence"]
+    assert state["count"] > 0, state
+    assert any("會曉" in c["text"] for c in state["candidates"]), state
+    assert any("台語" in c["text"] for c in state["candidates"]), state

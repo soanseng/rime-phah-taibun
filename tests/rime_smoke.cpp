@@ -189,6 +189,21 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "main_taid");
   api->clear_composition(session);
 
+  // Han-lo copy shown on the landing page (docs/index.html) must be
+  // typeable with the IME itself; tests/test_landing_hanlo.py pins the
+  // visible text to these engine states.
+  api->simulate_key_sequence(session, "peh8-ue7-ji7");
+  print_state(api, session, "hanlo_poj");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tai5-gi2");
+  print_state(api, session, "hanlo_taigi");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "e7-hiau2-kong2-tai5-gi2");
+  print_state(api, session, "hanlo_sentence");
+  api->clear_composition(session);
+
   api->destroy_session(session);
   api->finalize();
   dlclose(lua);
