@@ -18,15 +18,11 @@ local DIACRITIC_BASE = {
   [0x1E3F] = "m",
 }
 
--- "[lim5]" / "[lím]" → "lim"。回傳 nil 的情況：
---   * 非 [純羅馬字] 註解格式
+-- "[lim5]" / "[lím]" / "[TL:tshia POJ:chhia]" → "lim" / "tshia"。回傳 nil 的情況：
+--   * 非 [純羅馬字] 或 [TL:… POJ:…] 註解格式
 --   * 讀音含空白或連字號（多音節；碎片組合 [lí-ḿ] 不算完整覆蓋）
 --   * 含漢字等非拉丁內容
-local function plain_form(comment)
-  if not comment then return nil end
-  local roman = comment:match("^%s*%[([^%]]+)%]%s*$")
-  if not roman then return nil end
-  if roman:find("[%s%-]") then return nil end
+local function strip_tone_digits(roman)
   local out = {}
   for _, code in utf8.codes(roman) do
     if code < 128 then
@@ -48,6 +44,34 @@ local function plain_form(comment)
   return table.concat(out)
 end
 
+local function plain_form(comment)
+  if not comment then return nil end
+  -- 候選註解常帶 ◆/★ 推薦標記前綴（" ◆ [lim5]"），取第一個括號內容
+  local roman = comment:match("%[([^%]]+)%]")
+  if not roman then return nil end
+  if roman:find("[%s%-]") then return nil end
+  return strip_tone_digits(roman)
+end
+
+-- 雙格式註解 "[TL:tshia1 POJ:chhia1]"（可能有 ◆/★ 前綴）→ 無調形集合
+-- {tshia, chhia}；POJ 輸入的 span 對得上 POJ 拼式時同樣視為完整覆蓋。
+local function plain_forms(comment)
+  if not comment then return {} end
+  local tl, poj = comment:match("%[TL:(%S+)%s+POJ:(%S+)%]")
+  if not tl then
+    local single = plain_form(comment)
+    return single and { single } or {}
+  end
+  local forms = {}
+  local tl_plain = strip_tone_digits(tl)
+  local poj_plain = strip_tone_digits(poj)
+  if tl_plain then forms[#forms + 1] = tl_plain end
+  if poj_plain and poj_plain ~= tl_plain then
+    forms[#forms + 1] = poj_plain
+  end
+  return forms
+end
+
 function M.func(input, env)
   -- 每個候選用自身 preedit（覆蓋的原始輸入片段）判斷：單一 token、
   -- 純小寫字母＝無調輸入意圖；讀音（註解）單音節完全覆蓋該片段者
@@ -55,8 +79,16 @@ function M.func(input, env)
   local full, rest = {}, {}
   for cand in input:iter() do
     local span = cand.preedit
-    if type(span) == "string" and span:match("^[a-z]+$")
-       and plain_form(cand.comment) == span then
+    local covered = false
+    if type(span) == "string" and span:match("^[a-z]+$") then
+      for _, form in ipairs(plain_forms(cand.comment)) do
+        if form == span then
+          covered = true
+          break
+        end
+      end
+    end
+    if covered then
       table.insert(full, cand)
     else
       table.insert(rest, cand)

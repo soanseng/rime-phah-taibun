@@ -424,3 +424,28 @@ def test_manual_mix_escape_does_not_leak_into_next_composition(real_rime_states)
     """手動漢羅: Escape 取消後 mix 狀態不得殘留——重新標記不得疊出雙前綴."""
     commit = _nfc(real_rime_states["mixmark_afteresc"]["commit"])
     assert commit == "sī-án-tsuánn 人", commit
+
+
+def test_tone1_digitless_and_poj_input_visibility(real_rime_states):
+    """1 聲字(車 tshia1): TL 無調與 POJ 帶調輸入都要找得到車.
+
+    tshia: 車在候選前 10(單層 abbrev 無調邊 + toneless filter 升權).
+    chhia1: POJ 帶調邊(derive)直接命中.
+    """
+    for label in ("tone1_tshia", "tone1_chhia1"):
+        state = real_rime_states[label]
+        texts = [c["text"] for c in state["candidates"]]
+        assert "車" in texts[:10], (label, texts)
+
+
+@pytest.mark.xfail(
+    reason="已知限制(實測): POJ 無調輸入 chhia 被引擎切成 chhi a 雙段, "
+    "車 不在候選前 10; 帶調 chhia1 正常. "
+    "成因推測(未單獨驗證)是單段 abbrev 邊信度懲罰輸給兩段 derive 邊的分段選擇; "
+    "修復涉及分段信度語意, 另行處理."
+)
+def test_poj_digitless_tone1_fragments_today(real_rime_states):
+    poj = real_rime_states["tone1_chhia"]
+    texts = [c["text"] for c in poj["candidates"]]
+    assert poj["preedit"] == "chhia", poj
+    assert "車" in texts[:10], texts

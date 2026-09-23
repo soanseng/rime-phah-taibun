@@ -453,6 +453,20 @@ int main(int argc, char* argv[]) {
   api->clear_composition(session);
   api->set_option(session, "hanlo_manual", false);
   api->clear_composition(session);
+
+  // Tone-1 digitless input (車 tshia1): both TL and POJ spellings must
+  // surface the character without requiring the tone digit, and the POJ
+  // form must not fragment into syllable pieces.
+  api->simulate_key_sequence(session, "tshia");
+  print_state(api, session, "tone1_tshia");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "chhia");
+  print_state(api, session, "tone1_chhia");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "chhia1");
+  print_state(api, session, "tone1_chhia1");
+  api->clear_composition(session);
   api->destroy_session(session);
   api->finalize();
   dlclose(lua);

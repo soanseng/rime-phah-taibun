@@ -149,7 +149,6 @@ def test_toneless_single_token_full_coverage_candidate_ranked_first():
             return roman
           end,
         }
-
         function Candidate(type, start, end_pos, text, comment)
           return {
             type = type,
@@ -192,6 +191,52 @@ def test_toneless_single_token_full_coverage_candidate_ranked_first():
     )
 
     assert run_lua(script).strip() == "水觳仔\t [tsuí-khok-á]"
+
+
+def test_toneless_dual_format_comment_covers_poj_input():
+    """雙格式註解 [TL:tshia1 POJ:chhia1] 的 1 聲字, POJ 無調輸入 (chhia)
+    同樣要視為完整覆蓋而排前——TL 與 POJ 拼式任一對上即覆蓋."""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type, start = start, _end = end_pos,
+            text = text, comment = comment, quality = 0,
+          }
+        end
+        local items = {
+          Candidate("table", 0, 2, "刺仔", " ◆ [TL:tshì-á POJ:chhì-á]"),
+          Candidate("table", 0, 1, "車", " ◆ [TL:tshia1 POJ:chhia1]"),
+        }
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        local filter = require("phah_taibun_toneless")
+        items[1].preedit = "chhi a"
+        items[2].preedit = "chhia"
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        local env = { engine = { context = { input = "chhia" } } }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    out = run_lua(script).split()
+    assert out[0] == "車", out
+    assert out[1] == "刺仔", out
 
 
 def test_formats_direct_tl_input_with_hyphen_and_light_tone_marker():
