@@ -31,7 +31,7 @@ class TestValidateDictFormat:
     def test_committed_dictionary_codes_all_toned(self):
         dictfile = Path(__file__).parents[1] / "schema" / "phah_taibun.dict.yaml"
         errors = validate_dict_format(dictfile)
-        assert not [error for error in errors if "digitless" in error.lower()]
+        assert errors == [], errors[:5]
 
     def test_missing_header(self, tmp_path):
         dictfile = tmp_path / "test.dict.yaml"

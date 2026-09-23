@@ -48,6 +48,20 @@ def test_double_space_boundary_preserved():
     assert out[0] == "去--啊\tkhi3  ah4\t1768"
 
 
+def test_repaired_key_dedupes_against_existing_toned_twin():
+    """補調後撞上既有帶調同鍵的條目要 dedupe, 不得產生重複(validate_dict fatal)."""
+    entries = [
+        ["免--得", "bian2  tit4", "2738"],
+        ["免--得", "bian2  tit", "1461"],
+        ["唯--啊", "hann5  ah4", "100"],
+    ]
+    att = build_attestation(entries)
+    out, repaired, dropped = repair(entries, att)
+    assert repaired == 0  # the bare twin collapses into the existing toned key
+    assert dropped == []
+    assert out == ["免--得\tbian2  tit4\t2738", "唯--啊\thann5  ah4\t100"]
+
+
 def test_unevidenced_bare_syllable_dropped_not_guessed():
     entries = [
         ["起--哩", "khi2 lih", "100"],

@@ -78,13 +78,23 @@ def build_attestation(entries) -> dict[str, dict[str, str]]:
 
 
 def repair(entries, attestation):
-    """Token-level digit fix preserving all whitespace (`--` boundaries)."""
+    """Token-level digit fix preserving all whitespace (`--` boundaries).
+
+    Deduplicates against existing (word, toned key) pairs: a repaired bare
+    entry may already exist in toned form, and validate_dict fails the
+    build on duplicates.
+    """
     out, repaired, drop_log = [], 0, []
+    seen: set[tuple[str, str]] = set()
     for parts in entries:
         code = parts[1]
         syls = code.split()
         bare = [s for s in syls if not TONE_RE.search(s)]
         if not bare:
+            key = (parts[0], code)
+            if key in seen:
+                continue
+            seen.add(key)
             out.append("\t".join(parts))
             continue
         m = re.search(r"--([^-\t]+)$", parts[0])
@@ -94,6 +104,10 @@ def repair(entries, attestation):
             drop_log.append((parts[0], code))
             continue
         parts[1] = re.sub(rf"(?<!\S){re.escape(bare[0])}(?!\S)", fix, code)
+        key = (parts[0], parts[1])
+        if key in seen:
+            continue
+        seen.add(key)
         repaired += 1
         out.append("\t".join(parts))
     return out, repaired, drop_log
