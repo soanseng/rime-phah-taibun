@@ -43,7 +43,7 @@ def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files()
 
     assert "releases/latest" in installer
     assert "tag_name" in installer
-    assert '$RELEASE_VERSION = "0.9.0"' in installer
+    assert '$RELEASE_VERSION = "0.9.1"' in installer
     assert "$liurSizes" in installer
     assert ".Length -eq $liurSizes[$file]" in installer
     assert "[已安裝]" in installer
@@ -254,7 +254,7 @@ def test_installers_ship_and_register_the_telex_schema():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.9.0"
+    version = "0.9.1"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
@@ -269,6 +269,7 @@ def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
 def test_release_packages_wait_for_complete_verification_gate():
     workflow = yaml.safe_load(read(".github/workflows/release.yml"))
     jobs = workflow["jobs"]
+    source_archive = "\n".join(step.get("run", "") for step in jobs["package-source"]["steps"])
     verify_commands = "\n".join(step.get("run", "") for step in jobs["verify"]["steps"])
 
     assert "uv run pytest" in verify_commands
@@ -279,7 +280,7 @@ def test_release_packages_wait_for_complete_verification_gate():
     assert "rime-prelude" in verify_commands
     for package_job in ("package-source", "package-windows"):
         assert jobs[package_job]["needs"] == "verify"
-    assert "package-macos" not in jobs
+    assert "opencc" in source_archive, "the source release must bundle runtime Emoji OpenCC data"
 
 
 def test_packaging_docs_warn_about_rime_engine_dependency():

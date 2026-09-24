@@ -43,7 +43,7 @@ $INTERACTIVE = ($ProjectRoot -eq "")
 
 # 發行資產版本（後備值）：命令列安裝會先查 GitHub 最新 release，
 # 查詢失敗或被網路擋下時才使用此固定版本。
-$RELEASE_VERSION = "0.9.0"
+$RELEASE_VERSION = "0.9.1"
 $GITHUB_REPO = "soanseng/rime-phah-taibun"
 # 命令列安裝逐檔從固定 release tag 下載（raw.githubusercontent.com），不下載整份
 # 來源封存檔：release 資產經 objects.githubusercontent.com 轉址，部分網路對它

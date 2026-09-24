@@ -46,6 +46,7 @@ Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the
 Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
 Since 0.8.0, continuous typing composes whole sentences in one commit (Enter or Space), with per-word editing via Tab; every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)), dictionary weights are identity-keyed to corpus frequencies, and builds are byte-for-byte reproducible.
 Since 0.9.0, a 手動漢羅 (manual han-lo mix) switch lets you keep whole sentences in hanzi and mark individual words as romanization with `Tab` + `\`; mid-sentence Tab selection in all-roman mode no longer breaks the sentence, and the toneless boost now works on recommendation-marked candidates.
+Since 0.9.1, Han and Han-lo output use fullwidth punctuation; the `` `e `` browser provides Unicode emoji by category, including skin tones, with 🇹🇼 available from Taiwan vocabulary.
 
 
 You can type without tone numbers, and POJ/TL spellings can be mixed:
@@ -522,7 +523,7 @@ Font="Iansui 12"
 ```bash
 ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
 ```
-應該要有 20 個 `phah_taibun_*.lua` 檔案。
+應該要有 21 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
@@ -585,13 +586,14 @@ lua/                           Lua 擴充模組（21 個）
   phah_taibun_wildcard.lua        萬用字元 ?
   phah_taibun_symbols.lua         符號選單
   phah_taibun_help.lua            按鍵說明
+  phah_taibun_emoji_menu.lua     Emoji 分類瀏覽（`e）
   phah_taibun_date.lua            台語日期
-  phah_taibun_phrase.lua          造詞模式
   phah_taibun_origin.lua          字典外羅馬字原文候選
   phah_taibun_synonym.lua         文白讀切換（尚未啟用）
   phah_taibun_speedup.lua         簡拼對照
   phah_taibun_reverse_format.lua  反查讀音調符格式化
   phah_taibun_telex.lua           拍台文(Telex) 調鍵正規化
+opencc/                        Emoji 詞語候選資料（rime-emoji）
 rime.lua                       Lua 模組註冊（舊版 librime 相容）
 scripts/                       Python 資料處理腳本
 tests/                         pytest 測試
@@ -686,7 +688,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **萬用查字** | ?（二段式） | 無 | 無 |
 | **以詞定字** | [ 首字 ] 尾字 | 無 | 無 |
 | **同音選字** | ' 鍵 | 無 | 無 |
-| **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：候選附加 emoji，方案選單 🈚／🈶 切換，預設開 | 無 | 有 |
+| **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：詞語附加候選＋分類瀏覽（含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
 | **自訂擴充** | Lua 模組 | 無 | 無 |
 

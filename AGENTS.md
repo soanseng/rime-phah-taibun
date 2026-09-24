@@ -48,7 +48,7 @@ rime-phah-taibun/
 │   ├── moe700.yaml                   # 教育部 700 推薦用字
 │   └── default.custom.yaml           # 預設配置（含 switcher/save_options）
 │
-├── lua/                          # 20 個 Lua 模組（一功能一檔）
+├── lua/                          # 21 個 Lua 模組（一功能一檔）
 │   ├── phah_taibun_filter.lua        # 核心：拼音註解 + 輸出模式 + 漢羅轉換
 │   ├── phah_taibun_input.lua         # 輸入前處理 processor
 │   ├── phah_taibun_commit.lua        # 送出 processor
@@ -64,12 +64,16 @@ rime-phah-taibun/
 │   ├── phah_taibun_lookup.lua        # 查讀音 Ctrl+'
 │   ├── phah_taibun_reverse_format.lua# 反查格式
 │   ├── phah_taibun_symbols.lua       # 符號選單 `
+│   ├── phah_taibun_emoji_menu.lua    # Emoji 分類瀏覽（`e；Unicode 官方清單）
 │   ├── phah_taibun_help.lua          # 按鍵說明 ,,
 │   ├── phah_taibun_date.lua          # 台語日期 ,,
 │   ├── phah_taibun_speedup.lua       # 簡拼提示 ,,
 │   ├── phah_taibun_toneless.lua     # 無調整詞優先（0.8.0）
 │   └── phah_taibun_telex.lua         # Telex 解析
 │
+├── opencc/                       # Emoji 詞語候選資料（rime-emoji，含 LGPL-3.0 授權）
+│   ├── emoji.json / emoji_word.txt / emoji_category.txt
+│   └── rime-emoji-LICENSE.txt
 ├── scripts/                      # Python 資料處理（開發用，不隨輸入法部署）
 │   ├── build_all.py               # ★ 一鍵管線：語料詞頻 → 字典 → 規則 → 驗證
 │   ├── convert_chhoetaigi.py      # ChhoeTaigi CSV → dict.yaml

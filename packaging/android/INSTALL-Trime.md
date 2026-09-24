@@ -41,7 +41,7 @@ rime/
 ├── default.custom.yaml       rime.lua           INSTALL-Trime.md
 ├── trime.custom.yaml         THIRD-PARTY-NOTICES.txt   LICENSE-PhahTaiBun.txt
 ├── licenses/  （LGPL-3.0.txt、GPL-3.0.txt）
-└── lua/       （拍台文 20 個模組；嘸蝦米版另含 liu_* 與 lunar_calendar/）
+└── lua/       （拍台文 21 個模組；嘸蝦米版另含 liu_* 與 lunar_calendar/）
 ```
 
 （嘸蝦米版在此之上另有 `liur.schema.yaml`、`liur.custom.yaml`、詞表與 `opencc/`、`LIUR-PROVENANCE.txt`。）

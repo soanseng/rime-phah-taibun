@@ -139,6 +139,7 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "emoji_group1");
   api->clear_composition(session);
   // Browse into the People & Body list and verify a skin-tone glyph beyond
+  // its first page survives the real librime candidate path.
   api->simulate_key_sequence(session, "`e2");
   for (int page = 0; page < 16; ++page) {
     api->process_key(session, 0xFF56, 0);  // Page_Down

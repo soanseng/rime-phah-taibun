@@ -45,7 +45,7 @@ jobs:
         run: |
           mkdir -p packaging/source/build
           git archive --format=zip --output=packaging/source/build/PhahTaiBun-source.zip HEAD \
-            schema lua icons rime.lua install.sh install_windows.ps1 \
+            schema lua icons opencc rime.lua install.sh install_windows.ps1 \
             scripts/install_linux.sh scripts/install_macos.sh docs/android.md
           cd packaging/source/build
           sha256sum PhahTaiBun-source.zip > PhahTaiBun-source.zip.sha256
