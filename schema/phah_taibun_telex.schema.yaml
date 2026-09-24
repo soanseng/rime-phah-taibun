@@ -13,7 +13,7 @@ schema:
     - bopomofo_tw
   description: |
     台語輸入法方案（進階）— Telex 調鍵連續輸入
-    v=2/8、y=3、d=5、w=7、q=9；z→ts、zh→tsh；f=音節連字符
+    v=2/8、x=1/4、y=3、d=5、w=7、q=9；z→ts、zh→tsh；f=音節連字符
     與「拍台文(台)」共用詞典、詞頻與使用者詞庫
 
 switches:

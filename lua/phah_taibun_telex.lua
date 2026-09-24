@@ -4,6 +4,7 @@
 -- dictionary, user dict, filters, and romanization output stay unchanged.
 --
 --   v = tone 2 / 8 (checked -p/-t/-k/-h)
+--   x = tone 1 / 4 (checked -p/-t/-k/-h)
 --   y = tone 3
 --   d = tone 5
 --   w = tone 7
@@ -93,6 +94,7 @@ local INITIALS = {
 
 local TONE_LETTER = {
   v = true,
+  x = true,
   y = true,
   d = true,
   w = true,
@@ -106,6 +108,8 @@ end
 local function tone_digit(letter, checked)
   if letter == "v" then
     return checked and "8" or "2"
+  elseif letter == "x" then
+    return checked and "4" or "1"
   elseif letter == "y" then
     return "3"
   elseif letter == "d" then
@@ -216,6 +220,7 @@ end
 -- Only 1:1 rewrites: tone letters and f. z/zh pass through to the prism.
 local INTERCEPT_KEY = {
   [0x76] = true, -- v
+  [0x78] = true, -- x
   [0x79] = true, -- y
   [0x64] = true, -- d
   [0x77] = true, -- w

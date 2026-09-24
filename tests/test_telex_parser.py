@@ -36,6 +36,14 @@ CASES = [
     ("vvh", "vvh"),
     ("", ""),
     ("ftai", "ftai"),
+    ("taix", "tai1"),
+    ("ahx", "ah4"),
+    ("tsiahx", "tsiah4"),
+    ("x", "x"),
+    ("xa", "xa"),
+    ("axi", "a1i"),
+    ("ax-", "a1-"),
+    ("tai5x", "tai5x"),
 ]
 
 

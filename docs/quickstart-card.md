@@ -65,7 +65,7 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | 斜 | `zhiahv` | 斜 [tshia̍h] |
 | 食飯 | `ziahv pngw` | 食飯 |
 
-數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按。歷史與鍵位理由見[完整使用說明](user-guide.md#進階拍台文telex-調鍵輸入)。
+數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按（`x` 可顯式標示）。歷史與鍵位理由見[完整使用說明](user-guide.md#進階拍台文telex-調鍵輸入)。
 
 ---
 

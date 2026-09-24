@@ -472,7 +472,8 @@ int main(int argc, char* argv[]) {
   }
 
 
-  // 拍台文(Telex): tone letters (d=5, w=7, y=3, v=2/8, q=9), z→ts, zh→tsh,
+
+  // 拍台文(Telex): tone letters (d=5, w=7, y=3, v=2/8, x=1/4, q=9), z→ts, zh→tsh,
   // f = syllable hyphen. The Lua processor normalizes input to numeric TL
   // keys before the speller, so dictionary/user-dict stay canonical.
   if (!api->select_schema(session, "phah_taibun_telex")) {
