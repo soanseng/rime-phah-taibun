@@ -759,8 +759,14 @@ build 後對成品字典執行固定查詢集（如 `chi2`、`tsiah8`、`tai5`�
 - **append 路徑權重公式統一：延後**。稽核結論（2026-09）：11b 全域不變量以所有Scheme 的權重為輸入、非局部重排（R3）；supplement／lighttone／phrases 公式各 encode 不同政策而非漂移。安全小步驟（依序）：(a) 四處常數集中同一模組；(b) 決定 R1 帶寬政策（supplement 920 是否應高於 moe 單字 800）；(c) R5 修法——11b 之後重套 nonLT−100 cap 或輕聲權重改於 phrases append 後計算；(d) 新增 cross-scheme 排序 fixture 後才考慮統一。
 - **B2（ChhoeTaigi CSV 雙解析）：不做**。hoabun_map 只重讀 4/9 CSV 且有自有 priority／POJ-fallback 語意，統一需耦合兩模組，僅換一次性 ~2-3 秒。
 
-#### 待決（NC 授權缺口——需專案所有者裁示）
+#### 決策（NC 授權——2026-09-24 專案所有者裁示）
 
-現況（2026-09 稽核證實）：台日大辭典（CC BY-NC-SA 3.0）與甘字典（CC BY-NC-SA）條目**存在於所有發佈物**（Linux/Windows/macOS/Android zip/源碼 zip），轉換器零授權過濾，且 **LICENSE 的 dict 條目未揭露此二源**（實際內容與授權聲明不符）。provenance 在 `write_rime_dict` 即銷毀，事後無法從成品辨識 NC 列——**任何過濾只能發生在轉換時**。
+稽核證實：**四本** NC 辭典（台日大辭典、Maryknoll 台英、Embree 台英、甘字典，皆 CC BY-NC-SA 3.0 TW——ChhoeTaigiDatabase 官方 README:137-203,269-275）與一本 ND 辭典（教育部 KipSutian/Kauiokpoo，CC BY-ND 3.0 TW）條目存在於所有發佈物，轉換器零授權過濾；原 LICENSE 的 dict 條目未揭露 NC 來源（實際內容與授權聲明不符）。
 
-建議最小正確機制（未實作，待裁示）：`NC_SOURCES = {taijit, kamjitian}` 常數表＋`convert_chhoetaigi.py` 自動發現時預設排除、`--include-nc` 顯式開啟（fail-safe）；`build_hoabun_map.py` 加 guard（現況已 NC-free）；LICENSE 補揭露或改聲明排除；轉換器輸出 per-source 行數 manifest 供 CI 證明。影響：重建後 NC 獨有條目消失（含甘字典 1913 正字法區塊）、`test_dict_conversion.py` 需同步改。
+**裁示：保留全部來源於一般（非商業）發佈**；LICENSE 已補齊九本辭典＋增補詞庫的完整 per-source 揭露與非商用注意事項。商業發佈限制維持：任何商業形式發佈前必須以排除 NC 方式重建（provenance 在 `write_rime_dict` 即銷毀，過濾只能發生在轉換時）。
+
+商業版排除機制設計（屆時實作）：`NC_SOURCES = {taijit, maryknoll, embree, kamjitian}` 常數表＋`convert_chhoetaigi.py` 自動發現時預設排除、`--include-nc` 顯式開啟（fail-safe）；`build_hoabun_map.py` 加 guard（現況已 NC-free——其 map 只收 itaigi/taihoa/moe/maryknoll，需同步排除 maryknoll）；轉換器輸出 per-source 行數 manifest 供 CI 證明。影響：NC 獨有條目消失（含甘字典 1913 正字法區塊）、`test_dict_conversion.py` 需同步改。
+
+#### 維護記錄（2026-09-24）
+
+- `data/` legacy 目錄已補 `.source-revision` 標記（值＝download_resources.sh pinned revision；ChhoeTaigiDatabase 9 CSV 內容已對上游 pinned revision 逐一 sha256 驗證），`download_resources.sh` 現可全程冪等完跑。

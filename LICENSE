@@ -29,8 +29,8 @@ SOFTWARE.
 
 | 檔案 | 上游資料 | 授權 |
 |------|----------|------|
-| phah_taibun.dict.yaml | iTaigi (CC0) + 台華線頂 (CC BY-SA 4.0) + iCorpus 詞頻 (CC BY 4.0) | CC BY-SA 4.0 + CC BY 4.0 |
-| phah_taibun.wordlist | 由主字典抽取漢字詞與讀音，含 iCorpus 來源詞 | CC BY-SA 4.0 + CC BY 4.0 |
+| phah_taibun.dict.yaml | iTaigi 華台對照典（CC0）；台華線頂對照典、台灣白話基礎語句、台灣植物名彙（CC BY-SA 4.0）；教育部台語辭典 KipSutian/Kauiokpoo（CC BY-ND 3.0 TW）；台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、甘字典（CC BY-NC-SA 3.0 TW，**非商用**）；教育部臺灣台語輸入法詞庫增補（luke871016，待確認） | 混合；含 NC 成分 |
+| phah_taibun.wordlist | 由主字典抽取漢字詞與讀音（來源同上） | 混合；含 NC 成分 |
 | hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
 | icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
 | ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |
@@ -38,6 +38,13 @@ SOFTWARE.
 | （Android 一鍵包內附）bopomofo*.schema.yaml、zhuyin.yaml | rime/rime-bopomofo | LGPL-3.0 |
 | opencc/emoji.json、emoji_word.txt、emoji_category.txt（Emoji 候選） | rime/rime-emoji | LGPL-3.0 |
 | lua/phah_taibun_emoji_menu.lua（Emoji 分類選單，由 emoji-test.txt 產生） | Unicode.org emoji-test 15.1 | Unicode License |
+
+> **非商用注意事項**：主字典與 wordlist 含四個 CC BY-NC-SA 3.0 TW 來源
+> （台日大辭典、Maryknoll、Embree、甘字典）的詞條，依上游授權**不得用於商業用途**。
+> 免費、開源散佈（GitHub releases、社群分享）符合專案目前的使用方式；
+> 任何商業形式發佈（付費版本、商業授權、商業產品內嵌）前，必須先以
+> 排除 NC 來源的方式重建字典（機制設計見 PLAN.md §9-6）。
+
 
 Lua 模組架構參考 rime-liur (ryanwuson/rime-liur)，
 原作者聲明「本專案基於開源授權發佈，歡迎使用和改進」。
