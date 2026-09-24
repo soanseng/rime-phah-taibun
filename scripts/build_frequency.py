@@ -250,13 +250,60 @@ def enforce_long_word_invariant(entries: list[dict], k: float = 1.2) -> tuple[li
     return entries, raised
 
 
+# Light-tone cap constants: mirror scripts/build_lighttone_entries.py's
+# corpus-builder cap (margin 100, floor 300). PLAN 9-6 centralization will
+# absorb them into a shared module.
+_LT_CAP_MARGIN = 100
+_LT_CAP_FLOOR = 300
+
+
+def enforce_lighttone_cap(entries: list[dict]) -> int:
+    """Cap light-tone rows below their plain parent (same text, same code).
+
+    A double-space rime_key marks a light-tone variant (kì--tit). Core
+    dictionary '--' rows reach the assembled dict with no cap at all, and
+    the raise pass above can lift a LT row over parent-100; this pass is
+    the single authority for "a parent outranks its light-tone variant".
+
+    Parent lookup is per-identity — (hanlo, collapsed key): two texts may
+    share a collapsed code, and each LT row is capped by its own text's
+    parent, never by a code-max across texts. Rows without a same-text
+    parent stay unchanged (corpus LT words whose plain form is absent).
+
+    Returns:
+        Number of rows whose weight changed.
+    """
+    parents: dict[tuple[str, str], int] = {}
+    for entry in entries:
+        if "  " in entry["rime_key"]:
+            continue
+        identity = (entry["hanlo"], " ".join(entry["rime_key"].split()))
+        weight = entry["weight"]
+        if weight > parents.get(identity, 0):
+            parents[identity] = weight
+
+    capped = 0
+    for entry in entries:
+        if "  " not in entry["rime_key"]:
+            continue
+        parent = parents.get((entry["hanlo"], " ".join(entry["rime_key"].split())))
+        if parent is None:
+            continue
+        new_weight = max(_LT_CAP_FLOOR, min(entry["weight"], parent - _LT_CAP_MARGIN))
+        if new_weight != entry["weight"]:
+            entry["weight"] = new_weight
+            capped += 1
+    return capped
+
+
 def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
     """Enforce the long-word invariant on an assembled Rime dict.yaml.
 
     Reads the dict file, applies enforce_long_word_invariant to its data
-    rows, and rewrites only the weights that changed. Use as the final
-    pass after all append steps (phrases, light tone) so the whole
-    assembled dictionary satisfies the invariant.
+    rows, then enforce_lighttone_cap so every light-tone row ranks below
+    its parent even after the raise pass. Rewrites the file only when a
+    weight changed. Use as the final pass after all append steps (phrases,
+    light tone) so the whole assembled dictionary satisfies both rules.
 
     Args:
         dict_path: Path to a dict.yaml with a --- header block.
@@ -284,8 +331,9 @@ def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
         row_index.append(i)
 
     _, raised = enforce_long_word_invariant(entries, k=k)
+    capped = enforce_lighttone_cap(entries)
 
-    if raised:
+    if raised or capped:
         for entry, line_no in zip(entries, row_index, strict=True):
             parts = lines[line_no].split("\t")
             parts[2] = str(entry["weight"])

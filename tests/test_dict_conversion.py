@@ -1,6 +1,7 @@
 """Tests for ChhoeTaigi CSV to Rime dictionary conversion."""
 
 import io
+import unicodedata
 
 import pytest
 
@@ -377,6 +378,21 @@ class TestParseGenericCsv:
         entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert entries[0]["hanlo"] == "蓋ú好"
         assert entries[0]["rime_key"] == "kai3 tu2 ho2"
+
+    def test_nfd_hanlo_row_dedupes_with_nfc_duplicate(self):
+        """An NFD-encoded upstream HanLoTaibunKip must not split one identity
+        into two byte-different rows: dedup_entries and the validate pair gate
+        compare exact bytes, so clean_hanlo_text must canonicalize to NFC
+        before the row is keyed."""
+        nfc_hanlo = "ts\u0113"
+        nfd_hanlo = "tse\u0304"
+        assert nfc_hanlo != nfd_hanlo
+        assert unicodedata.normalize("NFC", nfd_hanlo) == nfc_hanlo
+        csv_data = f"KipInput,HanLoTaibunKip,HoaBun\ntsai3,{nfc_hanlo},知影\ntsai3,{nfd_hanlo},知影\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        deduped = dedup_entries(entries)
+        assert len(deduped) == 1
+        assert deduped[0]["hanlo"] == nfc_hanlo
 
 
 class TestParseKipsutianMainCsv:

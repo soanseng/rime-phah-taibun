@@ -54,6 +54,11 @@ local function extract_roman(cand, env)
   return nil
 end
 
+local function extract_raw_code(cand)
+  if data_mod then return data_mod.extract_raw_code(cand) end
+  return nil
+end
+
 local function format_input_romanization(input, env)
   if data_mod and data_mod.format_input_romanization then
     return data_mod.format_input_romanization(input, env.engine.context:get_option("poj_mode"))
@@ -102,6 +107,7 @@ function M.init(env)
   -- Shared state for cross-processor communication
   env.state = data_mod.get_shared_state()
   env.state.last_text = nil
+  env.state.last_code = nil
   env.state.capitalize_next = true
 end
 
@@ -116,9 +122,11 @@ function M.func(key, env)
     if key:release() then return 2 end
 
     if key:repr() == "apostrophe" and state.last_text then
-      local tl_code = nil
-      -- Try ReverseLookup first
-      if env.rev then
+      -- Prefer the reading the user actually selected (stored at commit
+      -- time); re-deriving via reverse lookup may return another sound.
+      local tl_code = state.last_code
+      -- ReverseLookup only when the commit carried no numbered code
+      if not tl_code and env.rev then
         local code = env.rev:lookup(state.last_text)
         if code and code ~= "" then
           tl_code = code:match("^(%S+)")
@@ -131,6 +139,7 @@ function M.func(key, env)
       if tl_code then
         context:push_input(tl_code)
         state.last_text = nil  -- one-shot
+        state.last_code = nil
         return 1  -- kAccepted
       end
     end
@@ -164,6 +173,7 @@ function M.func(key, env)
     -- Clear last_text on non-modifier keys (not ', not Shift/Ctrl/etc.)
     if key:repr() ~= "apostrophe" and not key:repr():match("^[A-Z]") then
       state.last_text = nil
+      state.last_code = nil
     end
     return 2  -- kNoop
   end
@@ -383,8 +393,10 @@ function M.func(key, env)
       -- Only track single characters (useful for homophone)
       if cand and utf8_len(cand.text) == 1 then
         state.last_text = cand.text
+        state.last_code = extract_raw_code(cand)
       else
         state.last_text = nil
+        state.last_code = nil
       end
     end
   end

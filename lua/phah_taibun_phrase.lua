@@ -41,8 +41,10 @@ function M.func(input, seg, env)
     for entry in env.mem:iter_dict() do
       local code = entry.custom_code or phrase_input
       -- Only show single-syllable entries for character-by-character composition
-      if not code:find(" ") and not seen[entry.text] then
-        seen[entry.text] = true
+      -- Identity is the (char, reading) pair: one char may carry several readings.
+      local k = entry.text .. "\t" .. code
+      if not code:find(" ") and not seen[k] then
+        seen[k] = true
         local cand = Candidate("phrase", seg.start, seg._end,
           entry.text, " [" .. code .. "]")
         yield(cand)

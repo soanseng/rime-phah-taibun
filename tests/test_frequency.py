@@ -243,6 +243,73 @@ class TestEnforceDictFileInvariant:
         assert raised == 0
         assert dict_path.read_text(encoding="utf-8").splitlines()[5] == "食飯\ttsiah8 png7\t960"
 
+    def test_lighttone_row_capped_below_raised_parent(self, tmp_path):
+        """A light-tone row (double-space key) must end at most parent-100.
+
+        Core-dict '--' rows reach the assembled dict with no cap at all
+        (the builder-side cap only covers corpus light-tone entries), and
+        the raise pass can lift a LT row above its parent — the shipped
+        inversion 轉來 tng2 lai5=3386 vs tng2␣␣lai5=7108. The cap runs
+        after the raise pass so the raise cannot re-invert the pair.
+        """
+        dict_path = tmp_path / "test.dict.yaml"
+        dict_path.write_text(
+            "---\n"
+            "name: test\n"
+            "...\n"
+            "轉\ttng2\t500\n"
+            "來\tlai5\t600\n"
+            "轉來\ttng2 lai5\t1200\n"
+            "轉來\ttng2  lai5\t7108\n"
+            "死\tsi2\t100\n"
+            "去\tkhi3\t100\n"
+            "死去\tsi2  khi3\t800\n",  # no plain parent row in this dict
+            encoding="utf-8",
+        )
+        raised = enforce_dict_file_invariant(dict_path)
+        lines = dict_path.read_text(encoding="utf-8").splitlines()
+        assert lines[5] == "轉來\ttng2 lai5\t1320"  # ceil(1.2 * (500 + 600))
+        assert lines[6] == "轉來\ttng2  lai5\t1220"  # min(7108, 1320 - 100)
+        assert lines[9] == "死去\tsi2  khi3\t800"  # parentless LT row: unchanged
+        assert raised == 1
+
+    def test_lighttone_cap_is_per_identity(self, tmp_path):
+        """Two texts sharing one collapsed code are capped independently.
+
+        Each light-tone row is capped by its own text's parent weight,
+        never by a code-max across texts.
+        """
+        dict_path = tmp_path / "test.dict.yaml"
+        dict_path.write_text(
+            "---\n"
+            "name: test\n"
+            "...\n"
+            "轉\ttng2\t500\n"
+            "來\tlai5\t600\n"
+            "轉來\ttng2 lai5\t2000\n"
+            "傳來\ttng2 lai5\t1400\n"
+            "轉來\ttng2  lai5\t5000\n"
+            "傳來\ttng2  lai5\t5000\n",
+            encoding="utf-8",
+        )
+        raised = enforce_dict_file_invariant(dict_path)
+        lines = dict_path.read_text(encoding="utf-8").splitlines()
+        assert lines[7] == "轉來\ttng2  lai5\t1900"  # own-text parent 2000 - 100
+        assert lines[8] == "傳來\ttng2  lai5\t1300"  # own-text parent 1400 - 100
+        assert raised == 0
+
+    def test_lighttone_only_change_rewrites_file(self, tmp_path):
+        """A cap-only pass (nothing raised) must still rewrite the dict."""
+        dict_path = tmp_path / "test.dict.yaml"
+        dict_path.write_text(
+            "---\nname: test\n...\n食\ttsiah8\t160\n飯\tpng7\t160\n食飯\ttsiah8 png7\t960\n食飯\ttsiah8  png7\t9999\n",
+            encoding="utf-8",
+        )
+        raised = enforce_dict_file_invariant(dict_path)
+        lines = dict_path.read_text(encoding="utf-8").splitlines()
+        assert raised == 0
+        assert lines[6] == "食飯\ttsiah8  png7\t860"  # 960 - 100
+
     def test_compliant_file_not_rewritten(self, tmp_path, monkeypatch):
         """A no-op pass must not rewrite the artifact.
 
@@ -291,23 +358,35 @@ class TestCommittedDictInvariant:
         enforce_dict_file_invariant(copied)
 
         singles: dict[str, int] = {}
-        words: list[tuple[str, int]] = []
+        parents: dict[tuple[str, str], int] = {}
+        words: list[tuple[str, str, int]] = []
         for line in copied.read_text(encoding="utf-8").splitlines():
             parts = line.split("\t")
             if len(parts) < 3 or not parts[2].strip().isdigit():
                 continue
+            weight = int(parts[2])
             tokens = self._split_tokens(parts[1])
             if len(tokens) == 1:
-                token = tokens[0]
-                singles[token] = max(singles.get(token, 0), int(parts[2]))
+                singles[tokens[0]] = max(singles.get(tokens[0], 0), weight)
             elif len(tokens) >= 2:
-                words.append((parts[1], int(parts[2])))
+                words.append((parts[0], parts[1], weight))
+                if "  " not in parts[1]:
+                    identity = (parts[0], " ".join(parts[1].split()))
+                    parents[identity] = max(parents.get(identity, 0), weight)
 
         random.seed(42)
         sample = random.sample(words, min(1000, len(words)))
-        for rime_key, weight in sample:
+        for hanlo, rime_key, weight in sample:
             total = sum(singles.get(token, 0) for token in self._split_tokens(rime_key))
-            if total > 0:
+            if "  " in rime_key:
+                # Light-tone rows are governed by the parent cap, not the
+                # fragment threshold: the raise pass may have parked the
+                # parent exactly at threshold, and parent-100 then dips
+                # below it by design (parent outranks its LT variant).
+                parent = parents.get((hanlo, " ".join(rime_key.split())))
+                if parent is not None:
+                    assert weight <= parent - 100, f"light-tone cap violated: {rime_key}"
+            elif total > 0:
                 assert weight >= math.ceil(1.2 * total), f"invariant violated: {rime_key}"
 
 

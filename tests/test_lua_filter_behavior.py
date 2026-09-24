@@ -676,3 +676,132 @@ def test_word_identity_never_collides_across_hanzi():
         """
     )
     assert run_lua(script).strip() == "OK"
+
+
+def test_phrase_dedup_keeps_multiple_readings_of_same_char():
+    """造詞查音 ;si: 同一個字的多個讀音必須全部列出。
+
+    造詞去重的 identity 是 (字, 音) 對——seen 以 entry.text 當鍵會把
+    同字第二讀音丟掉, 違反字典型態 (熟 siak8/sik8 兩讀都要出現)。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+
+        function Memory(engine, schema)
+          local entries = {
+            { text = "熟", custom_code = "siak8" },
+            { text = "熟", custom_code = "sik8" },
+          }
+          local i = 0
+          return {
+            dict_lookup = function() return true end,
+            iter_dict = function()
+              return function()
+                i = i + 1
+                return entries[i]
+              end
+            end,
+          }
+        end
+
+        function Candidate(type, start, end_pos, text, comment)
+          return { type=type, start=start, _end=end_pos, text=text,
+                   comment=comment, quality=0 }
+        end
+        local yielded = {}
+        function yield(c) table.insert(yielded, c) end
+
+        local phrase = require("phah_taibun_phrase")
+        local env = { engine = { schema = {} } }
+        phrase.init(env)
+        phrase.func(";si", { start = 0, _end = 3 }, env)
+        for _, c in ipairs(yielded) do
+          print(c.text .. "\t" .. (c.comment or ""))
+        end
+        """
+    )
+    out = run_lua(script).splitlines()
+    assert out == ["熟\t [siak8]", "熟\t [sik8]"]
+
+
+def _homophone_script(comment: str, rev_code: str) -> str:
+    """Harness: commit single char 重 via space, then press '.
+
+    The candidate comment carries the reading the user selected; env.rev
+    simulates the reverse dictionary returning its first code first.
+    Harness shape mirrors test_full_romanization_return_commits_….
+    """
+    return textwrap.dedent(
+        rf"""
+        package.path = "lua/?.lua;" .. package.path
+
+        local composing = true
+        local pushed = ""
+        local selected = {{
+          type = "table", start = 0, _end = 5,
+          text = "重", comment = "{comment}", quality = 0,
+        }}
+        local context = {{
+          input = "tang7",
+          is_composing = function() return composing end,
+          has_menu = function() return composing end,
+          get_option = function() return false end,
+          get_selected_candidate = function() return selected end,
+          clear = function() end,
+          push_input = function(_, s) pushed = s end,
+        }}
+        local env = {{
+          engine = {{
+            context = context,
+            schema = {{ config = {{
+              get_int = function() return 10 end,
+              get_string = function() return "asdfghjkl;" end,
+            }} }},
+            commit_text = function() end,
+          }},
+        }}
+
+        local commit = require("phah_taibun_commit")
+        commit.init(env)
+        -- init() resets env.rev (no ReverseLookup global here); inject after.
+        env.rev = {{ lookup = function(_, text)
+          if text == "重" then return "{rev_code}" end
+          return nil
+        end }}
+
+        local space = {{
+          keycode = 0x20,
+          release = function() return false end,
+          repr = function() return "space" end,
+        }}
+        commit.func(space, env)
+
+        composing = false
+        local apostrophe = {{
+          keycode = 0x27,
+          release = function() return false end,
+          repr = function() return "apostrophe" end,
+        }}
+        local result = commit.func(apostrophe, env)
+
+        print(result)
+        print(pushed)
+        """
+    )
+
+
+def test_homophone_uses_reading_of_committed_candidate():
+    """V4: 單字確認後按 ', 同音選字必須重進「使用者選的那個音」。
+
+    候選註解裡的編號調代碼 [tang7] 才是使用者實際選的讀音;
+    反查詞典只會給第一個代碼 (ting5), 音不對。
+    """
+    out = run_lua(_homophone_script("[tang7]", "ting5 tang7")).splitlines()
+    assert out == ["1", "tang7"]
+
+
+def test_homophone_falls_back_to_reverse_lookup_without_code():
+    """候選註解沒有編號調代碼 (last_code = nil) 時, ' 仍走反查路徑。"""
+    out = run_lua(_homophone_script("", "ting5 tang7")).splitlines()
+    assert out == ["1", "ting5"]

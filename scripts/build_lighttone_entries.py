@@ -144,7 +144,7 @@ def load_dict(
         Tuple of:
         - kip_to_hanlo: maps kip_input (with hyphens, no ``--``) to set of hanlo strings
         - existing_rimekeys: set of (hanlo, rime_key) tuples for dedup
-        - kip_to_weight: maps kip_input (no ``--``) to max weight for capping
+        - kip_to_weight: maps kip_input (no ``--``) to its max dict weight
         - hanlo_weight: maps (kip_input, hanlo) to max weight for prefix ranking
     """
     kip_to_hanlo: dict[str, set[str]] = {}
@@ -180,7 +180,7 @@ def load_dict(
             # Only index non-light-tone entries for whole-word lookup
             if "--" not in kip_lower:
                 kip_to_hanlo.setdefault(kip_lower, set()).add(hanlo)
-                # Track max weight per kip for capping
+                # Track max weight per kip
                 if kip_lower in kip_to_weight:
                     kip_to_weight[kip_lower] = max(kip_to_weight[kip_lower], weight)
                 else:
@@ -330,28 +330,22 @@ def insert_lighttone_marker(hanlo: str, prefix_syllable_count: int) -> str:
     return hanlo[:pos] + "--" + hanlo[pos:]
 
 
-def compute_lighttone_weight(count: int, non_lighttone_weight: int | None) -> int:
+def compute_lighttone_weight(count: int) -> int:
     """Compute weight for a light-tone entry.
 
-    Uses log-scale formula capped within bounds, and further capped below
-    the non-light-tone variant's weight.
+    Log-scale formula clamped to [300, 1500]. Emits the raw corpus weight
+    without any parent knowledge: capping below the plain variant is owned
+    solely by build_frequency.enforce_lighttone_cap, run over the assembled
+    dictionary as the final build step (build_all Step 9/11b).
 
     Args:
         count: Corpus frequency count
-        non_lighttone_weight: Weight of the non-light-tone variant (or None)
 
     Returns:
         Computed weight (int)
     """
     raw = int(300 + math.log10(1 + count) * 150)
-    weight = min(1500, max(300, raw))
-
-    if non_lighttone_weight is not None:
-        weight = min(weight, non_lighttone_weight - 100)
-        # Ensure minimum of 300 even after capping
-        weight = max(300, weight)
-
-    return weight
+    return min(1500, max(300, raw))
 
 
 def _lookup_segment_hanzi(
@@ -499,7 +493,7 @@ def build_lighttone_entries(
     Returns:
         List of dicts with keys: hanlo, rime_key, weight
     """
-    kip_to_hanlo, existing_rimekeys, kip_to_weight, hanlo_weight = load_dict(dict_path)
+    kip_to_hanlo, existing_rimekeys, _kip_to_weight, hanlo_weight = load_dict(dict_path)
     suffix_hanzi = load_lighttone_rules(rules_path)
     lighttone_words = collect_lighttone_words(freq_paths)
     attestation = build_attestation(_load_repair_entries(dict_path))
@@ -516,11 +510,7 @@ def build_lighttone_entries(
 
         raw_key = kip_to_rime_key(kip_input)
 
-        # Find non-light-tone variant weight for capping
-        non_lt_kip = kip_input.replace("--", "-")
-        non_lt_weight = kip_to_weight.get(non_lt_kip)
-
-        weight = compute_lighttone_weight(count, non_lt_weight)
+        weight = compute_lighttone_weight(count)
 
         for hanlo in sorted(hanlo_candidates):
             # Corpus light-tone particles carry no diacritic: append the

@@ -81,7 +81,15 @@ def is_valid_kip_input(kip_input: str) -> bool:
 
 
 def clean_hanlo_text(text: str) -> str:
-    """Remove source-only editorial labels and TSV-breaking whitespace."""
+    """Canonicalize to NFC, then remove editorial labels and TSV-breaking
+    whitespace.
+
+    Upstream sources sometimes encode hanlo/TL text as NFD; without
+    canonicalization one identity can split into two byte-different rows
+    that both dedup_entries and validate_dict's duplicate-pair check miss
+    (romanization components are NFC-normalized separately).
+    """
+    text = unicodedata.normalize("NFC", text)
     text = EDITORIAL_MARKER_RE.sub("", text)
     return re.sub(r"[\t\r\n]+", "", text).strip()
 

@@ -162,36 +162,36 @@ class TestComputeLighttoneWeight:
 
     def test_minimum_bound(self):
         # Very low count should still be at least 300
-        assert compute_lighttone_weight(0, None) >= 300
+        assert compute_lighttone_weight(0) >= 300
 
     def test_maximum_bound(self):
         # Very high count should be capped at 1500
-        assert compute_lighttone_weight(10**9, None) <= 1500
+        assert compute_lighttone_weight(10**9) <= 1500
 
     def test_within_range(self):
-        weight = compute_lighttone_weight(100, None)
+        weight = compute_lighttone_weight(100)
         assert 300 <= weight <= 1500
 
-    def test_capping_below_non_lighttone(self):
-        # Non-light-tone weight is 500 => capped at 400
-        weight = compute_lighttone_weight(10000, 500)
-        assert weight == 400
+    def test_weight_from_count_only(self):
+        """Builder emits the raw formula: Step 9 owns the parent cap.
 
-    def test_capping_does_not_go_below_300(self):
-        # Non-light-tone weight is 350 => cap would be 250, but min is 300
-        weight = compute_lighttone_weight(10000, 350)
-        assert weight == 300
+        A 10000-count word lands at 300 + 150 * log10(10001) ~ 900 with no
+        parent knowledge at all; enforce_lighttone_cap (build_frequency,
+        Step 9 of build_all) is the single authority for ranking a
+        light-tone row below its plain variant.
+        """
+        assert compute_lighttone_weight(10000) == 900
+        assert compute_lighttone_weight(0) == 300
 
-    def test_no_cap_when_none(self):
-        # No non-light-tone variant
-        weight = compute_lighttone_weight(100, None)
+    def test_exact_formula(self):
+        weight = compute_lighttone_weight(100)
         expected = int(300 + 150 * 2.004321)  # log10(101) ~ 2.004
         assert abs(weight - expected) <= 2  # Allow rounding
 
     def test_monotonically_increasing(self):
-        w1 = compute_lighttone_weight(10, None)
-        w2 = compute_lighttone_weight(100, None)
-        w3 = compute_lighttone_weight(1000, None)
+        w1 = compute_lighttone_weight(10)
+        w2 = compute_lighttone_weight(100)
+        w3 = compute_lighttone_weight(1000)
         assert w1 <= w2 <= w3
 
 
@@ -494,7 +494,14 @@ class TestEndToEnd:
         assert lines[0] == "轉--來\ttng2  lai5\t500"
         assert lines[1] == "出--來\ttshut4  lai5\t400"
 
-    def test_weight_capped_below_non_lighttone(self, tmp_path):
+    def test_weight_uncapped_at_builder_step9_caps(self, tmp_path):
+        """Builder emits the formula weight even with a plain parent present.
+
+        The 轉來 tng2 lai5=500 parent must NOT cap 轉--來 here: the builder
+        emits uncapped corpus weights and Step 9
+        (build_frequency.enforce_lighttone_cap) applies the parent-100 cap
+        to the assembled dictionary as the single authority.
+        """
         dict_file = tmp_path / "test.dict.yaml"
         dict_file.write_text("---\n...\n轉來\ttng2 lai5\t500\n")
         rules_file = tmp_path / "rules.json"
@@ -503,9 +510,8 @@ class TestEndToEnd:
         freq_file.write_text("tng2--lai5\t10000\n")
 
         entries = build_lighttone_entries(dict_file, rules_file, [freq_file])
-        for e in entries:
-            if e["hanlo"] == "轉--來":
-                assert e["weight"] <= 500 - 100
+        weights = [e["weight"] for e in entries if e["hanlo"] == "轉--來"]
+        assert weights == [900]  # 300 + 150 * log10(10001), clamp, no parent cap
 
     def test_cli_main(self, tmp_path):
         dict_file = tmp_path / "test.dict.yaml"

@@ -729,6 +729,20 @@ function M.extract_roman(cand, context)
   return result
 end
 
+-- Raw numbered code from a candidate comment, for speller feed-back
+-- (push_input). Unlike extract_roman this never returns diacritics:
+-- [tang7] -> "tang7"; [TL:tang7 POJ:...] -> "tang7"; comments already
+-- rewritten to formatted form carry no input code and yield nil.
+function M.extract_raw_code(cand)
+  if not cand then return nil end
+  local content = (cand.comment or ""):match("%[(.-)%]")
+  if not content or content == "" then return nil end
+  local tl = content:match("^TL:(%S+)")
+  if tl then return tl end
+  if content:match("^[a-z0-9%-']+$") then return content end
+  return nil
+end
+
 -- Commit candidate as romanization with auto-capitalization
 -- engine: Rime engine object
 -- context: Rime context object
@@ -762,6 +776,7 @@ local _shared_state = {
   selection_mode = false,
   capitalize_next = true,
   last_text = nil,
+  last_code = nil,
 }
 
 function M.get_shared_state()

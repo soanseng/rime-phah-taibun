@@ -39,6 +39,7 @@ function M.init(env)
     selection_mode = false,
     capitalize_next = true,
     last_text = nil,
+    last_code = nil,
     roman_buffer = nil,
   }
 end
@@ -175,8 +176,10 @@ function M.func(key, env)
     -- Track for homophone
     if data_mod and data_mod.utf8_len(cand.text) == 1 then
       state.last_text = cand.text
+      state.last_code = data_mod.extract_raw_code(cand)
     else
       state.last_text = nil
+      state.last_code = nil
     end
     state.selection_mode = false
   end

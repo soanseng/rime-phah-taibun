@@ -82,7 +82,11 @@ class FakeRunner:
         if script == "build_phrases.py" and freq:
             Path(freq).write_text("食飯\ttsiah8 png7\t900\n", encoding="utf-8")
         if script == "build_lighttone_entries.py" and freq:
-            Path(freq).write_text("阿\ta2\t300\n", encoding="utf-8")
+            # 食飯 tsiah8␣␣png7 duplicates a core row's identity under the
+            # double-space light-tone key at an absurd weight: the final
+            # in-process invariant pass must cap it below the plain parent
+            # (repro of the shipped inversion tng2␣␣lai5=7108 > tng2 lai5=3386).
+            Path(freq).write_text("阿\ta2\t300\n食飯\ttsiah8  png7\t9999\n", encoding="utf-8")
         if script == "parse_lkk_rules.py" and freq:
             Path(freq).write_text("rules: {}\n", encoding="utf-8")
         if script == "parse_lighttone.py" and freq:
@@ -248,3 +252,26 @@ class TestFailLoud:
 
         assert exc.value.code == 1
         assert "BUILD FAILED" in capsys.readouterr().out
+
+
+class TestLighttoneCap:
+    """Step 9 (enforce_dict_file_invariant) must cap light-tone rows below parent.
+
+    The fake light-tone TSV ships 食飯 tsiah8␣␣png7=9999, duplicating the
+    core row 食飯 tsiah8 png7=1536 (re-appended at 900 by the phrase
+    builder). The final in-process pass is the single cap authority, so
+    the assembled dict must ship the LT row at most parent-100; without
+    it the row stays 9999 — the shipped 轉來 tng2␣␣lai5=7108 > 3386
+    inversion.
+    """
+
+    def test_appended_double_space_row_capped_below_parent(self, run_build, tmp_path):
+        data = make_data_dir(tmp_path)
+        out = tmp_path / "schema"
+        run_build(data, out)
+
+        lines = (out / "phah_taibun.dict.yaml").read_text(encoding="utf-8").splitlines()
+        parents = [int(ln.split("\t")[2]) for ln in lines if ln.split("\t")[:2] == ["食飯", "tsiah8 png7"]]
+        lt = [ln for ln in lines if ln.split("\t")[:2] == ["食飯", "tsiah8  png7"]]
+        assert max(parents) == 1536, "core parent row must survive the pipeline"
+        assert lt == ["食飯\ttsiah8  png7\t1436"], "LT row must sit at parent-100 after Step 9"
