@@ -510,8 +510,26 @@ def _find_900leku_sentences() -> Path:
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    _require_or_skip("sentence roundtrip needs data/900leku_sentences.txt (gitignored)")
+    # Plain skip (not _require_or_skip): this corpus is gitignored optional
+    # data, not part of the engine runtime. RIME_SMOKE_REQUIRED guards the
+    # runtime itself; CI legitimately lacks data/900leku_sentences.txt.
+    pytest.skip("sentence roundtrip needs data/900leku_sentences.txt (gitignored)")
     raise AssertionError("unreachable")
+
+
+def test_missing_gitignored_corpus_skips_even_when_required(monkeypatch, tmp_path):
+    """RIME_SMOKE_REQUIRED 只看守引擎 runtime; gitignored 語料缺席仍應 skip.
+
+    CI (release verify) 設 RIME_SMOKE_REQUIRED=1 但沒有 data/——900例句語料
+    是選配資料, 缺席是 skip 不是 fail; 引擎 runtime 缺席才 fail.
+    """
+    import tests.test_real_rime as tr
+
+    monkeypatch.setattr(tr, "ROOT", tmp_path)
+    monkeypatch.setattr(tr.subprocess, "run", lambda *a, **k: subprocess.CompletedProcess([], 1))
+    monkeypatch.setenv("RIME_SMOKE_REQUIRED", "1")
+    with pytest.raises(pytest.skip.Exception):
+        tr._find_900leku_sentences()
 
 
 _TL_SYLLABLE_RE = re.compile(r"(?:[a-z]*[aeiou][a-z]*|[a-z]*(?:ng|m)[gh]?)[1-8]?")
@@ -647,11 +665,15 @@ def test_manual_mix_marked_word_follows_poj_switch(real_rime_states):
 
 
 def test_manual_mix_accumulates_marks_in_order(real_rime_states):
-    """手動漢羅: 多段標記依序組裝, 漢字緊鄰不加空格."""
+    """手動漢羅: 多段標記依序組裝, 漢字緊鄰不加空格.
+
+    the3 的第一候選是 退(◆ LKK 推薦, bounded nudge 越過未推薦的 替)——
+    語源文章亦作「人退酒」, 與推薦排序一致; 本測試釘組裝行為, 不釘選字.
+    """
     mid = real_rime_states["mixmark_two_mid"]
     assert mid.get("commit", "") == "", mid
     commit = _nfc(real_rime_states["mixmark_two"]["commit"])
-    assert commit == "sī-án-tsuánn 人替", commit
+    assert commit == "sī-án-tsuánn 人退", commit
 
 
 def test_manual_mix_escape_does_not_leak_into_next_composition(real_rime_states):

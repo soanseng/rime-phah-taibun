@@ -1506,3 +1506,226 @@ def test_recommend_badges_cannot_flood_candidate_window():
     assert lines[0] == "甲", f"leader must hold slot 1: {lines[:3]}"
     assert sum(1 for t in top5 if not t.startswith("變")) >= 4, f"top-5 must stay mostly unbadged: {top5}"
     assert "變12" not in lines[:10], f"deep variant must stay out of the window: {lines[:10]}"
+
+
+def test_recommend_badge_cannot_displace_sentence_candidate():
+    """sentence 錨定: 徽章詞不得越過整句組字候選 (type="sentence")。
+
+    v0.9.2 CI 引擎實測: 整句輸入時 LKK ◆ 短詞(是按怎)被 nudge 3 格推到
+    組字候選之上——全羅空白上屏因此只出第一詞、句子語料 top-1 命中率
+    0.8→0.3。組字候選是引擎斷詞的結果, 任何徽章位移都不得蓋過它;
+    錨定之下徽章仍可在 sentence 之後的區間內前進(半格帶)。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "是按怎" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text)
+            return false
+          end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        -- Incoming: 整句(sentence, pos1) 是按怎◆LKK(pos2) 人退(pos3) 詞組(pos4)
+        -- 是按怎 nudge 3 -> raw slot -1; sentence anchor clamps it behind the
+        -- sentence (slot 1.5) but still ahead of its old neighbors.
+        local items = {
+          Candidate("sentence", 0, 9, "是按怎人退酒了後", " [si7-an2-tsuann2]"),
+          Candidate("phrase", 0, 3, "是按怎", " [si7-an2-tsuann2]"),
+          Candidate("table", 3, 5, "人退", " [lang5-the3]"),
+          Candidate("table", 5, 9, "酒了後", " [tsiu2-liau2-au7]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.type .. ":" .. cand.text)
+        end
+        """
+    )
+    lines = run_lua(script).splitlines()
+    assert lines[0] == "sentence:是按怎人退酒了後", f"sentence must hold top: {lines}"
+    assert lines[1] == "phrase:是按怎", f"badged word follows sentence: {lines}"
+    assert lines[2:] == ["table:人退", "table:酒了後"], f"rest keeps order: {lines}"
+
+
+def test_recommend_lighttone_variant_is_not_the_sentence_anchor():
+    """-- 變體(type=sentence 的輕聲衍生形)不得作為 sentence 錨。
+
+    telex zhiah8 引擎實測: 輕聲變體 飼--啊 複製母詞(組字候選)的
+    type 與 preedit, 又被 ◆ nudge 到頂——錨定若以它為準, 帶徽章的詞
+    就能越過「真正的組字候選」。錨必須是沒有 -- 的組字句。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "飼--啊" or text == "詞B" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text)
+            return false
+          end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        -- Incoming: 變體飼--啊(◆, pos1) 真組字句(pos2) 詞A(pos3) 詞B◆(pos4)
+        -- 錨=真組字句(order 2): 詞B nudge 後 clamp 到 2.5, 越過詞A 但
+        -- 不越過組字句; 變體本身是 sentence 型不位移, 留在原位。
+        local items = {
+          Candidate("sentence", 0, 9, "飼--啊", " [tshi7--ah8]"),
+          Candidate("sentence", 0, 9, "飼啊", " [tshi7 ah8]"),
+          Candidate("table", 0, 3, "詞A", " [a]"),
+          Candidate("table", 0, 3, "詞B", " [b]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+    lines = run_lua(script).splitlines()
+    assert lines == ["飼--啊", "飼啊", "詞B", "詞A"], lines
+
+
+def test_recommend_lighttone_variant_gets_no_badge_no_nudge():
+    """-- 變體不做徽章位移: 排序由 lighttone 貼母詞, 徽章只屬於詞身份。
+
+    telex zhiah8 的選單母詞(飼鴨)是 table 型, 沒有 sentence 錨可依——
+    變體一旦可被 ◆ nudge 就會帶著組字 preedit 搶到頂(zhi ah8 分裂)。
+    變體是衍生顯示形, 不得與母詞競爭排序(與 W3 沉底設計同向)。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "飼--啊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text)
+            return false
+          end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        local items = {
+          Candidate("table", 0, 3, "詞A", " [a]"),
+          Candidate("table", 0, 9, "飼--啊", " [tshi7--ah8]"),
+          Candidate("table", 0, 5, "詞B", " [b]"),
+          Candidate("table", 0, 5, "詞C", " [c]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print((cand.comment or "") .. "|" .. cand.text)
+        end
+        """
+    )
+    lines = run_lua(script).splitlines()
+    # Order unchanged AND the variant carries no injected badge prefix.
+    texts = [row.split("|")[1] for row in lines]
+    assert texts == ["詞A", "飼--啊", "詞B", "詞C"], lines
+    variant_line = next(row for row in lines if row.endswith("飼--啊"))
+    assert "◆" not in variant_line.split("|")[0], variant_line

@@ -349,55 +349,69 @@ local function generate_variants(cand)
 end
 
 function M.func(input, env)
-  -- 兩段式定位重排（collect 再 re-yield）：輕聲變體必須緊跟在母詞後面。
-  --   * 母詞（無 -- 文字）照原順序 yield，其變體（動態產生 + 串流裡
-  --     既有的詞典 -- 詞條，靠收合文字/位置配對）緊跟其後；配對到的
-  --     串流變體若與已產生的變體同文則去重。
-  --   * 配對不到母詞的 -- 詞條附加到最後——不再壓過其他候選
-  --     （俾--人 搶在 予人 前面的生產症狀）。
-  --   * 沒有變體的母詞原樣通過；空輸入零輸出。
-  local incoming = {}
-  for cand in input:iter() do
-    incoming[#incoming + 1] = cand
-  end
+  -- 串流式定位（v0.9.2 修復）：蓄積整個迭代器再重 yield 會逼 translator
+  -- 完全展開，librime 實測 (telex zhiah8) 連組字 preedit 都被翻成
+  -- 'zhi ah8' 兩段顯示。改為 lazy：
+  --   * 母詞進流即 yield，動態變體立刻跟在後面；
+  --   * 串流裡的詞典 -- 詞條：母詞已見過 → 依 seen 去重後 yield；
+  --     還沒見過 → 暫存（PATIENCE 上限內等母詞，超過或流結束就 flush）。
+  --     詞典序裡變體可能在母詞前（俾--人 7843 > 予人 4107），暫存保證
+  --     變體不搶在母詞前面（W3 目標），且不需要抽乾迭代器。
+  local PATIENCE = 16
+  local seen_slots = {}
+  local held = {}
+  local held_wait = 0
+  local emitted = {}  -- 本輪已 yield 過的變體文字（跨 slot 去重）
 
-  local slots = {}
-  local slot_by_key = {}
-  for _, cand in ipairs(incoming) do
-    if not is_variant_text(cand.text) then
-      local slot = { cand = cand, variants = generate_variants(cand), seen = {} }
-      for _, v in ipairs(slot.variants) do
-        slot.seen[v.text] = true
-      end
-      slots[#slots + 1] = slot
-      slot_by_key[parent_key(cand)] = slot
-    end
-  end
-
-  local orphans = {}
-  for _, cand in ipairs(incoming) do
-    if is_variant_text(cand.text) then
-      local slot = slot_by_key[parent_key(cand)]
-      if slot then
-        if not slot.seen[cand.text] then
-          slot.seen[cand.text] = true
-          slot.variants[#slot.variants + 1] = cand
-        end
-      else
-        orphans[#orphans + 1] = cand
-      end
-    end
-  end
-
-  for _, slot in ipairs(slots) do
-    yield(slot.cand)
-    for _, v in ipairs(slot.variants) do
-      yield(v)
-    end
-  end
-  for _, cand in ipairs(orphans) do
+  local function try_yield_variant(cand)
+    if emitted[cand.text] then return end
+    emitted[cand.text] = true
     yield(cand)
   end
+
+  local function flush_held()
+    for _, cand in ipairs(held) do
+      local slot = seen_slots[parent_key(cand)]
+      if slot then
+        if not slot[cand.text] then
+          slot[cand.text] = true
+          try_yield_variant(cand)
+        end
+      else
+        try_yield_variant(cand)
+      end
+    end
+    held = {}
+    held_wait = 0
+  end
+
+  for cand in input:iter() do
+    local text = cand.text
+    if is_variant_text(text) then
+      local slot = seen_slots[parent_key(cand)]
+      if slot then
+        if not slot[text] then
+          slot[text] = true
+          try_yield_variant(cand)
+        end
+      else
+        held[#held + 1] = cand
+      end
+    else
+      yield(cand)
+      local slot = {}
+      for _, v in ipairs(generate_variants(cand)) do
+        slot[v.text] = true
+        try_yield_variant(v)
+      end
+      seen_slots[parent_key(cand)] = slot
+      held_wait = held_wait + 1
+      if #held > 0 and held_wait >= PATIENCE then
+        flush_held()
+      end
+    end
+  end
+  flush_held()
 end
 
 return M
