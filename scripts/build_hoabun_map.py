@@ -277,6 +277,13 @@ def main(argv: list[str] | None = None) -> None:
         required=True,
         help="Output path for hoabun_map.txt",
     )
+    parser.add_argument(
+        "--extra-tsv",
+        type=Path,
+        action="append",
+        default=[],
+        help="Extra source TSV (華語/漢字/code, tab-separated), e.g. STTI or placename entries",
+    )
     args = parser.parse_args(argv)
 
     data_dir = args.input / "ChhoeTaigiDatabase"
@@ -287,7 +294,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Error: No ChhoeTaigi CSV files found in {data_dir}", file=sys.stderr)
         sys.exit(1)
 
-    count = build_hoabun_map(data_dir, args.output)
+    count = build_hoabun_map(data_dir, args.output, extra_tsvs=args.extra_tsv)
     print(f"Written {count} entries to {args.output}")
 
 

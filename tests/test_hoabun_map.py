@@ -59,3 +59,22 @@ def test_extra_tsv_does_not_override_core_dictionary(tmp_path):
     mappings = extract_hoabun_mappings(data_dir, extra_tsvs=[extra])
 
     assert mappings["同學"][0] == "tong5 hak8"
+
+
+def test_cli_wires_extra_tsv(tmp_path):
+    from scripts.build_hoabun_map import main
+
+    data_dir = tmp_path / "ChhoeTaigiDatabase"
+    data_dir.mkdir()
+    csv_path = data_dir / "ChhoeTaigi_KauiokpooTaigiSutian.csv"
+    csv_path.write_text(
+        "KipInput,HanLoTaibunKip,HoaBun\ntong5 hak8,同學,同學\n",
+        encoding="utf-8",
+    )
+    extra = tmp_path / "stti_entries.tsv"
+    extra.write_text("員林\t員林\tuan5 lim5\n", encoding="utf-8")
+    out = tmp_path / "hoabun_map.txt"
+
+    main(["--input", str(data_dir), "--output", str(out), "--extra-tsv", str(extra)])
+
+    assert "員林\tuan5 lim5\n" in out.read_text(encoding="utf-8")
