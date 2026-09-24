@@ -506,6 +506,24 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "telex_tngyflaid");
   api->clear_composition(session);
 
+  // x tone key: open syllable -> tone 1, checked coda -> tone 4.
+  api->simulate_key_sequence(session, "ix");
+  print_state(api, session, "telex_ix");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "ahx");
+  print_state(api, session, "telex_ahx");
+  api->clear_composition(session);
+
+  // -h coda 4/8 convergence: x -> 4 (借) vs v -> 8 (石).
+  api->simulate_key_sequence(session, "tsiohx");
+  print_state(api, session, "telex_tsiohx");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tsiohv");
+  print_state(api, session, "telex_tsiohv");
+  api->clear_composition(session);
+
   // Digitless POJ in the Telex schema is a documented limitation (the
   // toneless boost filter is main-schema only); toned POJ works.
   api->simulate_key_sequence(session, "chhia1");

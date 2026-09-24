@@ -688,8 +688,10 @@ def test_liantua_toneless_hyphenless_floor(real_rime_states):
         top3 = [c["text"] for c in state["candidates"][:3]]
         if expected in top3:
             hits += 1
+    # 地板釘「事後退酒了後」本身（docstring 承諾的那句），非任一句。
+    c3_top3 = [c["text"] for c in real_rime_states["liantua_tl_c3"]["candidates"][:3]]
+    assert "事後退酒了後" in c3_top3, c3_top3
     assert hits >= 1, f"toneless+hyphenless hit rate {hits}/7 below floor"
-
 
 def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):
     """全羅整句上屏: 詞內連字號與詞間空白, not one long hyphen chain."""
@@ -828,6 +830,20 @@ def test_checked_tone_poj_toned_input_visibility(real_rime_states):
         state = real_rime_states[label]
         texts = [c["text"] for c in state["candidates"]]
         assert target in texts[:10], (label, texts)
+
+
+def test_telex_x_tone_key_resolves_through_processor(real_rime_states):
+    """x 調鍵走完整 processor 路徑（攔截→normalize→數字調查找）：
+    舒聲 x→1（ix→i1 伊）、促聲尾 x→4（ahx→ah4 鴨）、
+    -h 尾 4/8 收斂對比：tsiohx→借(4) vs tsiohv→石(8)。"""
+    ix = [c["text"] for c in real_rime_states["telex_ix"]["candidates"][:5]]
+    assert "伊" in ix, ix
+    ahx = [c["text"] for c in real_rime_states["telex_ahx"]["candidates"][:5]]
+    assert "鴨" in ahx, ahx
+    tsiohx = [c["text"] for c in real_rime_states["telex_tsiohx"]["candidates"][:5]]
+    assert "借" in tsiohx, tsiohx
+    tsiohv = [c["text"] for c in real_rime_states["telex_tsiohv"]["candidates"][:5]]
+    assert "石" in tsiohv, tsiohv
 
 
 def test_poj_multisyllable_second_syllable_ts(real_rime_states):
