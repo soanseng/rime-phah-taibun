@@ -140,7 +140,7 @@ download_verified \
   "LKK 數字用法 CSV（gid=1982799732）"
 # 同時保留原始 HTML（若專案根目錄有的話）
 PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-LKK_HTML="$(ls "$PROJ_DIR"/LKK*.html 2>/dev/null | head -1)"
+LKK_HTML="$(ls "$PROJ_DIR"/LKK*.html 2>/dev/null | head -1 || true)"
 if [ -n "$LKK_HTML" ] && [ ! -f "$DATA_DIR/lkk_yongji.html" ]; then
   cp "$LKK_HTML" "$DATA_DIR/lkk_yongji.html"
   echo "  [copy] 原始 HTML → data/lkk_yongji.html"
