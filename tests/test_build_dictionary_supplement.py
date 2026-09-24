@@ -5,6 +5,7 @@ from pathlib import Path
 from scripts.build_dictionary_supplement import (
     SupplementEntry,
     build_supplement_from_dir,
+    main,
     parse_supplement_rows,
     source_weight,
 )
@@ -115,6 +116,67 @@ def test_source_weight_by_file_category():
     assert source_weight("行政區_20260112.csv") == 740
     assert source_weight("台_臺_20260112.csv") == 650
     assert source_weight("內政部菜市仔名_20260112.csv") == 620
+
+
+def test_source_weight_written_supplement_tier():
+    assert source_weight("written_supplement.tsv") == 700
+
+
+def test_extra_file_rows_merge_with_tier_weight_and_dedup(tmp_path: Path):
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "一府五院_20260112.csv").write_text(
+        "漢字,臺灣台語羅馬字\n司法院,Su-huat-īnn\n",
+        encoding="utf-8",
+    )
+    extra = tmp_path / "written_supplement.tsv"
+    extra.write_text(
+        "閣再\tkoh1 tsai3\n司法院\tsu1 huat4 inn7\n閣再\tkoh1 tsai3\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "entries.tsv"
+    report = tmp_path / "report.tsv"
+
+    count = build_supplement_from_dir(
+        source_dir=source_dir,
+        output_path=output,
+        report_path=report,
+        extra_files=[extra],
+    )
+
+    assert count == 2
+    assert output.read_text(encoding="utf-8") == "司法院\tsu1 huat4 inn7\t760\n閣再\tkoh1 tsai3\t700\n"
+    assert report.read_text(encoding="utf-8").count("duplicate") == 2
+
+
+def test_main_accepts_multiple_extra_files_with_default_weight(tmp_path: Path, capsys):
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    extra1 = tmp_path / "written_supplement.tsv"
+    extra1.write_text("閣再\tkoh1 tsai3\n", encoding="utf-8")
+    extra2 = tmp_path / "other_extra.tsv"
+    extra2.write_text("閣再\tkoh1 tsai3\n毋過\tm7 koh1\n", encoding="utf-8")
+    output = tmp_path / "entries.tsv"
+    report = tmp_path / "report.tsv"
+
+    main(
+        [
+            "--input",
+            str(source_dir),
+            "--output",
+            str(output),
+            "--report",
+            str(report),
+            "--extra-file",
+            str(extra1),
+            "--extra-file",
+            str(extra2),
+        ]
+    )
+
+    assert output.read_text(encoding="utf-8") == "閣再\tkoh1 tsai3\t700\n毋過\tm7 koh1\t600\n"
+    assert "duplicate" in report.read_text(encoding="utf-8")
+    assert "Generated 2 supplement entries" in capsys.readouterr().err
 
 
 def test_build_supplement_from_dir_writes_entries_and_report(tmp_path: Path):

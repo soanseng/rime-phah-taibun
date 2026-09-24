@@ -6,6 +6,7 @@ import argparse
 import csv
 import re
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -47,6 +48,8 @@ def source_weight(source_name: str) -> int:
     if source_name.startswith("行政區"):
         return 740
     if source_name.startswith("LKK用字"):
+        return 700
+    if source_name.startswith("written_supplement"):
         return 700
     if source_name.startswith("台_臺"):
         return 650
@@ -135,16 +138,41 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(csvfile))
 
 
-def build_supplement_from_dir(source_dir: Path, output_path: Path, report_path: Path) -> int:
+def read_extra_file_rows(path: Path) -> list[dict[str, str]]:
+    """Read headerless tab-separated (text, code) rows from an extra file.
+
+    The code column already holds the space-delimited Rime key; it is fed
+    through the same romanization pipeline as CSV rows for validation and
+    normalization.
+    """
+    rows: list[dict[str, str]] = []
+    with path.open("r", encoding="utf-8") as extra_file:
+        for line in extra_file:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            parts = stripped.split("\t")
+            rows.append(
+                {
+                    TEXT_COLUMN: parts[0].strip(),
+                    ROMAN_COLUMN: parts[1].strip() if len(parts) > 1 else "",
+                }
+            )
+    return rows
+
+
+def build_supplement_from_dir(
+    source_dir: Path,
+    output_path: Path,
+    report_path: Path,
+    extra_files: Sequence[Path] = (),
+) -> int:
     """Build supplement TSV output and skipped-row report from a source directory."""
     all_report: list[dict[str, str]] = []
     ordered_keys: list[tuple[str, str]] = []
     entry_by_key: dict[tuple[str, str], SupplementEntry] = {}
 
-    for csv_path in sorted(source_dir.glob("*.csv")):
-        rows = read_csv_rows(csv_path)
-        entries, report = parse_supplement_rows(rows, source_name=csv_path.name)
-        all_report.extend(report)
+    def merge_entries(entries: list[SupplementEntry]) -> None:
         for entry in entries:
             dedupe_key = (entry.text, entry.rime_key)
             existing = entry_by_key.get(dedupe_key)
@@ -162,6 +190,18 @@ def build_supplement_from_dir(source_dir: Path, output_path: Path, report_path: 
                 continue
             ordered_keys.append(dedupe_key)
             entry_by_key[dedupe_key] = entry
+
+    for csv_path in sorted(source_dir.glob("*.csv")):
+        rows = read_csv_rows(csv_path)
+        entries, report = parse_supplement_rows(rows, source_name=csv_path.name)
+        all_report.extend(report)
+        merge_entries(entries)
+
+    for extra_path in extra_files:
+        rows = read_extra_file_rows(extra_path)
+        entries, report = parse_supplement_rows(rows, source_name=extra_path.name)
+        all_report.extend(report)
+        merge_entries(entries)
 
     all_entries = [entry_by_key[dedupe_key] for dedupe_key in ordered_keys]
 
@@ -189,13 +229,32 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--input", type=Path, required=True, help="Directory containing supplement CSV files")
     parser.add_argument("--output", type=Path, required=True, help="Output TSV path for dictionary entries")
     parser.add_argument("--report", type=Path, required=True, help="Output TSV path for skipped-row report")
+    parser.add_argument(
+        "--extra-file",
+        type=Path,
+        action="append",
+        default=[],
+        help="Extra headerless TSV (text<TAB>code); repeatable, merged with the same dedup",
+    )
     args = parser.parse_args(argv)
 
     if not args.input.exists():
         print(f"SKIP: supplement source not found at {args.input}", file=sys.stderr)
         return
 
-    count = build_supplement_from_dir(source_dir=args.input, output_path=args.output, report_path=args.report)
+    extra_files = []
+    for extra_path in args.extra_file:
+        if extra_path.exists():
+            extra_files.append(extra_path)
+        else:
+            print(f"SKIP: extra file not found at {extra_path}", file=sys.stderr)
+
+    count = build_supplement_from_dir(
+        source_dir=args.input,
+        output_path=args.output,
+        report_path=args.report,
+        extra_files=extra_files,
+    )
     print(f"Generated {count} supplement entries -> {args.output}", file=sys.stderr)
 
 

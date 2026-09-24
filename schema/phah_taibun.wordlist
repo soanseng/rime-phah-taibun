@@ -636,7 +636,7 @@
 一禮拜	tsit8 le2 pai3
 一禮拜的	tsit8 le2 pai3 e5
 一秒	it4 bio2|tsit8 bio2
-一種	tsit8 tsing2
+一種	tsit8 tsing2|tsit8 tsiong2
 一空	tsit8 khang3
 一空一隙	tsit8 khang1 tsit8 khiah4
 一空掠兩尾	tsit8 khang1 liah8 nng7 bue2
@@ -2833,7 +2833,7 @@
 不是穡	m7 si7 sit4
 不是馬	m7 si7 be2
 不是龜	m7 si7 ku1
-不時	put4 si5
+不時	put1 si5|put4 si5
 不景氣	put4 king2 khi3
 不更	m7 koh4
 不曾	m7 bat4
@@ -2847,7 +2847,7 @@
 不歡喜	m7 huann1 hi2
 不歡而散	put4 huan1 li5 san3
 不止	m7 tsi2|put4 tsi2
-不止仔	put4 tsi2 a2
+不止仔	put1 tsi2 a2|put4 tsi2 a2
 不止仔好	put4 tsi2 a2 ho2
 不止是	put4 tsi2 si7
 不正	put4 tsing3
@@ -15315,7 +15315,7 @@
 刺江牡	tshi3 kang1 boo2
 刺波	tshi3 pho1
 刺海馬	tshiah4 hai2 be2
-刺激	tshi3 kik4
+刺激	tshi3 khik1|tshi3 kik4
 刺激性	tshi3 kik4 sing3
 刺烏鴉嘴	tshiah4 oo1 ah4 tshui3
 刺無	tshi3 bo5
@@ -19225,6 +19225,7 @@
 受難	siu7 lan7
 受難者家屬	siu7 lan7 tsia2 ka1 siok8
 受騙	siu7 phian3
+受體	siu7 the2
 叛亂	puan7 luan7
 叛兵	puan7 ping1
 叛出	puan7 tshut4
@@ -29203,7 +29204,7 @@
 失明	sit4 bing5
 失時	sit4 si5
 失智	sit4 ti3
-失智症	sit4 ti3 tsing3
+失智症	sit1 ti3 tsing3|sit4 ti3 tsing3
 失月	sit4 gueh8
 失望	sit4 bang7|sit4 bong7
 失本	sit4 pun2
@@ -46980,6 +46981,7 @@
 揣袂著	tshue7 be7 tioh8
 揣袂著工人	tshue7 be7 tioh8 kang1 lang5
 揣豪	tshue7 ho5
+揣路	tshue7 loo7
 揣轉來	tshue7 tng2 lai5
 揣迷	tshue7 be5
 揣量	tshui2 liong7
@@ -52305,7 +52307,7 @@
 智覺	ti3 kak4
 智覺著	ti3 kak4 tioh8
 智謀	ti3 boo5
-智識	ti3 sik4
+智識	ti3 sik1|ti3 sik4
 智識人	ti3 sik4 jin5|ti3 sik4 lang5
 智障	ti3 tsiong3
 智齒	ti3 khi2
@@ -55892,6 +55894,7 @@
 核武	hik8 bu2|hut8 bu2
 核爆	hut8 pok8
 核發	hik8 huat4|hut8 huat4
+核磁共振	hik8 tsu5 kiong7 tsin2
 核示	hik8 si7
 核算	hut8 suan3
 核能	hik8 ling5|hut8 ling5
@@ -59427,7 +59430,7 @@
 毋車	bu5 tshia1
 毋通	m7 thang1
 毋通問真恐怖	m7 thang1 mng7 tsin1 khiong2 poo3
-毋過	m7 koh4
+毋過	m7 koh1|m7 koh4
 毋過今年	m7 koh4 kin1 ni5
 毋過伊	m7 ko3 i1|m7 koh4 i1
 毋過佇	m7 ko3 ti7|m7 koh4 ti7
@@ -69287,7 +69290,7 @@
 物豪	mih8 ho5
 物資	but8 tsu1
 物賣	mih8 bue7
-物質	but8 tsit4
+物質	but8 tsit1|but8 tsit4
 物起	mih8 khi2
 物輕意重	but8 khin1 i3 tiong7
 物迷	mih8 be5
@@ -73004,6 +73007,7 @@
 癮網路	gian3 bang7 loo7
 癮羓羓	gian3 pa1 pa1
 癮脾	gian3 pi5
+癮薰	gian3 hun1
 癮薰的	gian3 hun1 e5
 癮講	gian3 kong2
 癮賭	gian3 kiau2
@@ -73107,7 +73111,7 @@
 發射	huat4 sia7
 發射台	huat4 sia7 tai5
 發射器	huat4 sia7 khi3
-發展	huat4 tian2
+發展	huat1 tian2|huat4 tian2
 發展到	huat4 tian2 kau3
 發展局	huat4 tian2 kiok8
 發展潛力	huat4 tian2 tsiam5 lik8
@@ -73237,7 +73241,7 @@
 發車	huat4 tshia1
 發輦	huat4 lian2
 發送	huat4 sang3
-發達	huat4 tat8
+發達	huat1 tat8|huat4 tat8
 發遣	huat4 khian2
 發還	huat4 hing5
 發酒瘋	huat4 tsiu2 hong1
@@ -78279,6 +78283,7 @@
 神經的	sin5 king1 e5
 神經科	sin5 king1 kho1
 神經系統	sin5 king1 he7 thong2
+神經細胞	sin5 king1 se3 pau1
 神經網路	sin5 king1 bang7 loo7
 神經線相袚	sin5 king1 suann3 sio1 phuah8
 神經線絞無絚	sin5 king1 suann3 ka2 bo5 an5
@@ -82971,7 +82976,7 @@
 紲落一喙	sua3 loh8 tsit8 tshui3
 紲落來	sua3 loh8 lai5
 紲落來的	sua3 loh8 lai5 e5
-紲落去	sua3 loh8 khi3|sua3 loh8 khu3|sua3 lue3 khi3
+紲落去	sua3 loh8 khi3|sua3 loh8 khu3|sua3 lok8 khi3|sua3 lue3 khi3
 紲落就是	sua3 loh8 tioh8 si7
 紲話	sua3 ue7
 紲連	sua3 lian5
@@ -95134,6 +95139,7 @@
 裼食	theh4 tsiah8
 製作	tse3 tsok4
 製作人	tse3 tsok4 jin5
+製做	tse3 tso3
 製冰	tse3 ping1
 製品	tse3 phin2
 製圖	tse3 too5
@@ -95856,7 +95862,7 @@
 觀台	kuan1 tai5
 觀塘	kuan1 tng5
 觀天臺	kuan1 thian1 tai5
-觀察	kuan1 tshat4
+觀察	kuan1 tshat1|kuan1 tshat4
 觀察員	kuan1 tshat4 uan5
 觀察家	kuan1 tshat4 ka1
 觀山玩水	kuan1 san1 guan2 sui2
@@ -96346,7 +96352,7 @@
 記恨	ki3 hin7|ki3 hun7
 記恨在心	ki3 hun7 tsai7 sim1
 記慈	ki3 tsu5
-記憶	ki3 ik4
+記憶	ki3 ik1|ki3 ik4
 記憶力	ki3 ik4 lik8
 記憶體	ki3 ik4 the2
 記我	ki3 gua2
@@ -101507,6 +101513,7 @@
 踃筋	siau1 kin1|siau1 kun1
 踃繏痛	siau1 sng3 thiann3
 踅來	seh8 lai5
+踅來踅去	seh8 lai5 seh8 khi3
 踅到	seh8 kau3
 踅口令	seh8 khau2 ling7
 踅圓箍仔	seh8 inn5 khoo1 a2
@@ -105240,7 +105247,7 @@
 遮濟	tsiah4 tse7
 遮火	tsah8 he2
 遮爾	tsiah4 ni7
-遮爾仔	tsiah4 ni7 a2
+遮爾仔	tsiah1 ni7 a2|tsiah4 ni7 a2
 遮爾濟的	tsiah4 ni2 tse7 e5
 遮的	tsia1 e5|tsua1 e5
 遮的學生	tsia1 e5 hak8 sing1
@@ -109748,7 +109755,7 @@
 閣予	koh4 hoo7
 閣來	koh4 lai5
 閣兼	koh4 kiam1
-閣再	koh4 tsai3
+閣再	koh1 tsai3|koh4 tsai3
 閣再講	koh4 tsai3 kong2|kok4 tsai3 kong2
 閣出世	koh4 tshut4 si3
 閣別	kok4 piat8
@@ -115035,6 +115042,7 @@
 食著羹	tsiah8 tioh8 kenn1|tsiah8 tioh8 kinn1
 食蒜仔吐蕗蕎	tsiah8 suan3 a2 thoo3 loo7 gio7
 食薰	tsiah8 hun1
+食薰人	tsiah8 hun1 lang5
 食藥	tsiah8 ioh8
 食藥仔	tsiah8 ioh8 a2
 食虧	tsiah8 khui1

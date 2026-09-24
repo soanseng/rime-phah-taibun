@@ -729,18 +729,128 @@ function M.extract_roman(cand, context)
   return result
 end
 
+-- ============================================================
+-- Formatted (diacritic) romanization → numbered TL, used to recover
+-- input codes from comments the display filter already rewrote
+-- (" [tang7]" -> " [tāng]").
+-- ============================================================
+local TONE_MARK_NUMBERS = {
+  ["\204\129"] = "2",  -- U+0301 combining acute
+  ["\204\128"] = "3",  -- U+0300 combining grave
+  ["\204\130"] = "5",  -- U+0302 combining circumflex
+  ["\204\132"] = "7",  -- U+0304 combining macron
+  ["\204\141"] = "8",  -- U+030D combining vertical line above
+  ["\204\134"] = "9",  -- U+0306 combining breve
+}
+local POJ_HORN = "\205\152"      -- U+0358 (o͘)
+local POJ_NASAL = "\226\129\191" -- U+207F (ⁿ)
+
+-- Precomposed (NFC) vowels with tone marks → { base, tone }. The
+-- display pipeline emits decomposed base + combining mark, but text
+-- from other sources may arrive NFC; normalize both byte forms so the
+-- recovered reading never splits on it.
+local PRECOMPOSED_MARKS = {
+  ["\195\161"] = { "a", "2" }, -- á
+  ["\195\160"] = { "a", "3" }, -- à
+  ["\195\162"] = { "a", "5" }, -- â
+  ["\196\129"] = { "a", "7" }, -- ā
+  ["\196\131"] = { "a", "9" }, -- ă
+  ["\195\169"] = { "e", "2" }, -- é
+  ["\195\168"] = { "e", "3" }, -- è
+  ["\195\170"] = { "e", "5" }, -- ê
+  ["\196\147"] = { "e", "7" }, -- ē
+  ["\196\149"] = { "e", "9" }, -- ĕ
+  ["\195\173"] = { "i", "2" }, -- í
+  ["\195\172"] = { "i", "3" }, -- ì
+  ["\195\174"] = { "i", "5" }, -- î
+  ["\196\171"] = { "i", "7" }, -- ī
+  ["\196\173"] = { "i", "9" }, -- ĭ
+  ["\195\179"] = { "o", "2" }, -- ó
+  ["\195\178"] = { "o", "3" }, -- ò
+  ["\195\180"] = { "o", "5" }, -- ô
+  ["\197\141"] = { "o", "7" }, -- ō
+  ["\197\143"] = { "o", "9" }, -- ŏ
+  ["\195\186"] = { "u", "2" }, -- ú
+  ["\195\185"] = { "u", "3" }, -- ù
+  ["\195\187"] = { "u", "5" }, -- û
+  ["\197\171"] = { "u", "7" }, -- ū
+  ["\197\173"] = { "u", "9" }, -- ŭ
+}
+
+-- One display syllable → one numbered TL syllable. The tone comes from
+-- the trailing digit if present, else from whichever tone mark the
+-- syllable carries (mark placement is irrelevant for recovery);
+-- unmarked syllables end in p/t/k/h (tone 4) or are tone 1. POJ
+-- letterforms map back to TL. Returns nil for non-romanization content.
+local function display_syllable_to_numbered(syl)
+  local tone = syl:match("([1-9])$")
+  if tone then
+    syl = syl:sub(1, -2)
+  end
+  -- NFC precomposed vowels → base letter + tone
+  for chars, info in pairs(PRECOMPOSED_MARKS) do
+    if syl:find(chars, 1, true) then
+      if not tone then
+        tone = info[2]
+      end
+      syl = syl:gsub(chars, info[1])
+    end
+  end
+  -- POJ o͘ (horn after an optional tone mark) is TL "oo"; ⁿ is "nn".
+  syl = syl:gsub(POJ_HORN, "o")
+  syl = syl:gsub(POJ_NASAL, "nn")
+  if not tone then
+    for mark, num in pairs(TONE_MARK_NUMBERS) do
+      if syl:find(mark, 1, true) then
+        tone = num
+        break
+      end
+    end
+  end
+  syl = syl:gsub("\204[\128-\143]", "") -- combining diacritics U+0300–U+030F
+  syl = syl:lower()
+  -- POJ → TL letterforms (order matters: chh before ch)
+  syl = syl:gsub("chh", "tsh")
+  syl = syl:gsub("ch", "ts")
+  syl = syl:gsub("eng", "ing")
+  syl = syl:gsub("ek", "ik")
+  syl = syl:gsub("oa", "ua")
+  syl = syl:gsub("oe", "ue")
+  if not syl:match("^[a-z]+$") then return nil end
+  if tone then return syl .. tone end
+  if syl:match("[ptkh]$") then return syl .. "4" end
+  return syl .. "1"
+end
+
+local function numbered_from_display(text)
+  local out = {}
+  for syl in text:gmatch("[^%s%-]+") do
+    local numbered = display_syllable_to_numbered(syl)
+    if not numbered then return nil end
+    table.insert(out, numbered)
+  end
+  if #out == 0 then return nil end
+  return table.concat(out, "-")
+end
+
 -- Raw numbered code from a candidate comment, for speller feed-back
--- (push_input). Unlike extract_roman this never returns diacritics:
--- [tang7] -> "tang7"; [TL:tang7 POJ:...] -> "tang7"; comments already
--- rewritten to formatted form carry no input code and yield nil.
+-- (push_input) and learning. Unlike extract_roman this never returns
+-- diacritics: [tang7] -> "tang7"; [TL:tang7 POJ:...] -> "tang7";
+-- comments rewritten to formatted form are recovered back to numbered
+-- TL (" [tāng]" -> "tang7", POJ display included) so downstream code
+-- sees one canonical reading; comments with no recoverable reading
+-- (sentence compositions, symbols, help text) yield nil.
 function M.extract_raw_code(cand)
   if not cand then return nil end
   local content = (cand.comment or ""):match("%[(.-)%]")
   if not content or content == "" then return nil end
   local tl = content:match("^TL:(%S+)")
-  if tl then return tl end
+  if tl then
+    if tl:match("^[a-z0-9%-']+$") then return tl end
+    return numbered_from_display(tl)
+  end
   if content:match("^[a-z0-9%-']+$") then return content end
-  return nil
+  return numbered_from_display(content)
 end
 
 -- Commit candidate as romanization with auto-capitalization

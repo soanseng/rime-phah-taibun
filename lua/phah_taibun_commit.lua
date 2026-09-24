@@ -15,6 +15,21 @@ if ok and mod then
   data_mod = mod
 end
 
+-- Learning observer (phah_taibun_learn): records user selections so the
+-- learn filter can boost frequent words. Optional: without the module
+-- committing works exactly as before.
+local learn_mod = nil
+local lok, lmod = pcall(require, "phah_taibun_learn")
+if lok and lmod then
+  learn_mod = lmod
+end
+
+local function observe(cand)
+  if learn_mod and learn_mod.observe then
+    learn_mod.observe(cand)
+  end
+end
+
 -- ============================================================
 -- Half-width punctuation for 全羅 mode
 -- ============================================================
@@ -305,6 +320,7 @@ function M.func(key, env)
           state.roman_buffer = nil
         end
         env.engine:commit_text(text)
+        observe(cand) -- 學習此次確認的候選
         context:clear()
         return 1  -- kAccepted
       else
@@ -390,6 +406,9 @@ function M.func(key, env)
       if env.select_map[kc] then
         cand = get_candidate_at(context, env, env.select_map[kc])
       end
+      -- Learn the selection (both modes; origin/readingless candidates
+      -- are skipped inside the observer).
+      observe(cand)
       -- Only track single characters (useful for homophone)
       if cand and utf8_len(cand.text) == 1 then
         state.last_text = cand.text
@@ -535,6 +554,7 @@ function M.func(key, env)
     local cand = context:get_selected_candidate()
     local roman = extract_roman(cand, env)
     if roman then
+      observe(cand) -- 學習此次確認的候選
       commit_roman(roman)
       env.engine:commit_text(punct)
       context:clear()

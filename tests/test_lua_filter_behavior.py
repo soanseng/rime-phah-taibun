@@ -805,3 +805,704 @@ def test_homophone_falls_back_to_reverse_lookup_without_code():
     """候選註解沒有編號調代碼 (last_code = nil) 時, ' 仍走反查路徑。"""
     out = run_lua(_homophone_script("", "ting5 tang7")).splitlines()
     assert out == ["1", "ting5"]
+
+
+def test_recommend_badged_candidate_outranks_same_quality_tie():
+    """◆ 推薦字必須贏過同品質同音的字典字 (伊=衣 同 1064)。
+
+    徽章只改 comment 是顯示用的——librime filter 不會依 .quality 重排,
+    所以推薦字要實際重排到最前 (two-pass reorder)。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "伊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function() return false end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        local items = {
+          Candidate("table", 0, 2, "衣", " [i1]"),
+          Candidate("table", 0, 2, "伊", " [i1]"),
+        }
+        items[1].quality = 1064
+        items[2].quality = 1064
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["伊\t ◆ [i1]", "衣\t [i1]"]
+
+
+def test_recommend_lkk_badge_outranks_moe700_badge_at_equal_quality():
+    """加成依來源分級: LKK (B_LKK) > 教育部700 (B_MOE)。
+
+    同品質下 moe700 字先進串流也照樣輸給 LKK 推薦字——兩者都用 ◆,
+    但 LKK 是第一目標, 加成較高。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "伊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text) return text == "醫" end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        -- Incoming order: moe700 candidate first.
+        local items = {
+          Candidate("table", 0, 1, "醫", " [i1]"),
+          Candidate("table", 0, 1, "伊", " [i1]"),
+        }
+        items[1].quality = 1064
+        items[2].quality = 1064
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["伊\t ◆ [i1]", "醫\t ◆ [i1]"]
+
+
+def test_recommend_badged_candidate_moves_forward_at_most_nudge_slots():
+    """有界位移: 徽章把候選往前挪固定格數(LKK 3、moe700 1)。
+
+    舊加法排序(quality + B)在引擎實測會退化成徽章置頂、淹沒候選區
+    (kio-tiann: 橋 被擠出可見窗); 位移保證任何徽章最多前進 3 格。
+    LKK(3) 在平手時贏過 moe700(1): 同格時依原順序, 但位移差距讓
+    伊◆(LKK) 越過 醫◆(moe700)。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "伊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text)
+            if text == "醫" then return true end
+            return false
+          end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        -- Incoming: 甲(pos1) 醫◆moe(pos2) 衣(pos3) 乙(pos4) 伊◆LKK(pos5) 丙(pos6)
+        -- nudged slots: 甲1 醫1 衣3 乙4 伊2 丙6 -> order: 甲,醫,伊,衣,乙,丙
+        local names = { "甲", "醫", "衣", "乙", "伊", "丙" }
+        local items = {}
+        for i, n in ipairs(names) do
+          items[i] = Candidate("table", 0, 1, n, " [" .. n .. "]")
+        end
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    # 伊 rises 5->3 (LKK nudge 3, tie-lost to 衣's earlier order at slot 3?
+    # slots: 甲=1, 醫=2-1=1(tie with 甲, order 1<2 -> 甲,醫), 伊=5-3=2,
+    # 衣=3, 乙=4, 丙=6 -> final: 甲, 醫, 伊, 衣, 乙, 丙
+    assert run_lua(script).splitlines() == ["甲", "醫", "伊", "衣", "乙", "丙"]
+
+
+def test_recommend_no_badges_is_byte_identical_pass_through():
+    """無推薦字時必須逐位元組照原樣通過: 順序、comment、物件都不變。"""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function() return false, false end,
+          check_moe700 = function() return false end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        local items = {
+          Candidate("table", 0, 2, "衣", " [i1] 估詞"),
+          Candidate("table", 0, 2, "醫", " [i1]"),
+        }
+        items[1].quality = 1064
+        items[2].quality = 1064
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for i, cand in ipairs(yielded) do
+          -- Same object identity, not a re-wrapped copy.
+          print(i .. "\t" .. tostring(cand == items[i]) .. "\t"
+            .. cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == [
+        "1\ttrue\t衣\t [i1] 估詞",
+        "2\ttrue\t醫\t [i1]",
+    ]
+
+
+def test_recommend_badge_reorders_only_the_badged_candidate():
+    """徽章只把該候選提到最前, 其餘無徽章候選維持原入流順序。"""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "伊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function() return false end,
+        }
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        local items = {
+          Candidate("table", 0, 1, "甲", " [ka1]"),
+          Candidate("table", 0, 1, "衣", " [i1]"),
+          Candidate("table", 0, 1, "伊", " [i1]"),
+          Candidate("table", 0, 1, "乙", " [it1]"),
+        }
+        for _, cand in ipairs(items) do
+          cand.quality = 1064
+        end
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == [
+        "伊\t ◆ [i1]",
+        "甲\t [ka1]",
+        "衣\t [i1]",
+        "乙\t [it1]",
+    ]
+
+
+def test_lighttone_generated_variant_comes_immediately_after_parent():
+    """輕聲變體 (予--人) 必須緊跟在母詞 (予人) 後面, 絕不搶在前頭。
+
+    逐段選字流程下母詞先出現、變體緊跟其後, 是輕聲候選的基本排序。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {}
+        rime_api = {
+          get_user_data_dir = function() return "tests/fixtures" end,
+          get_shared_data_dir = function() return "tests/fixtures" end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        local filter = require("phah_taibun_lighttone")
+        filter.init({})
+
+        local items = {
+          Candidate("table", 0, 8, "予人", " [u7 lang5]"),
+          Candidate("table", 8, 14, "囡仔", " [gin2 na2]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, {})
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["予人", "予--人", "囡仔"]
+
+
+def test_lighttone_stream_variant_matched_to_parent_by_collapsed_text():
+    """串流裡既有的 -- 詞條 (詞典輕聲詞) 也要配對到母詞後面。
+
+    詞典自帶的輕聲詞 (予--人) 若照詞典順序排在母詞 (予人) 前面,
+    會搶走本該屬於母詞的位置; 收合文字 (去 --) + 位置相同即配對,
+    yield 母詞後緊跟其變體, 且與動態產生的變體去重不重複出現。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {}
+        rime_api = {
+          get_user_data_dir = function() return "tests/fixtures" end,
+          get_shared_data_dir = function() return "tests/fixtures" end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        local filter = require("phah_taibun_lighttone")
+        filter.init({})
+
+        -- Stream order: dictionary light-tone form first, parent after.
+        local items = {
+          Candidate("table", 0, 8, "予--人", " [u7--lang5]"),
+          Candidate("table", 0, 8, "予人", " [u7 lang5]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, {})
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["予人", "予--人"]
+
+
+def test_lighttone_parentless_variant_is_demoted_to_end():
+    """配對不到母詞的 -- 詞條必須降到最後, 不得壓過其他候選。
+
+    生產症狀: 俾--人 (無俾人母詞在串流中) 排在予人前面。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {}
+        rime_api = {
+          get_user_data_dir = function() return "tests/fixtures" end,
+          get_shared_data_dir = function() return "tests/fixtures" end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+
+        local filter = require("phah_taibun_lighttone")
+        filter.init({})
+
+        local items = {
+          Candidate("table", 0, 8, "俾--人", " [pi7--lang5]"),
+          Candidate("table", 8, 15, "予人", " [u7 lang5]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, {})
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+
+    assert run_lua(script).splitlines() == ["予人", "予--人", "俾--人"]
+
+
+def test_recommend_badge_cannot_cross_beyond_nudge_window():
+    """有界位移的邊界: 徽章候選最多前進 NUDGE 格。
+
+    伊◆LKK 在 pos5(nudge 3 -> slot 2)追不上 slot1 的領先者——加法版
+    「徽章全置頂」在此退化(淹沒候選區的機制); 位移版保證領先者守住。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text == "伊" then return true, false end
+            return false, false
+          end,
+          check_moe700 = function() return false end,
+        }
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = { get_bool = function() return true end } } },
+        }
+        filter.init(env)
+        -- 甲(pos1) 乙(pos2) 丙(pos3) 丁(pos4) 伊◆LKK(pos5): slot2 追不上 slot1
+        local names = { "甲", "乙", "丙", "丁", "伊" }
+        local items = {}
+        for i, n in ipairs(names) do
+          items[i] = Candidate("table", 0, 1, n, " [" .. n .. "]")
+        end
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+    assert run_lua(script).splitlines() == ["甲", "乙", "伊", "丙", "丁"]
+
+
+def test_lighttone_precomposed_rule_suffix_matches_numeric_comment(tmp_path):
+    """Identical lookup key: NFC rule suffix "--lâng" must generate the
+    variant for a numeric candidate " [u7 lang5]" exactly like its ASCII
+    twin "--lang" does (production rules JSON is precomposed UTF-8;
+    hexdump-verified — before the normalizer this suffix never matched).
+    """
+    (tmp_path / "lighttone_rules.json").write_text(
+        '[\n {"tl": "--lâng", "hanzi": "人", "rule": "輕聲"}\n]\n',
+        encoding="utf-8",
+    )
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {}
+        rime_api = {
+          get_user_data_dir = function() return __TMP__ end,
+          get_shared_data_dir = function() return __TMP__ end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return { type = type, start = start, _end = end_pos, text = text, comment = comment, quality = 0 }
+        end
+        local yielded = {}
+        function yield(cand) table.insert(yielded, cand) end
+        local filter = require("phah_taibun_lighttone")
+        filter.init({})
+        local items = { Candidate("table", 0, 8, "予人", " [u7 lang5]") }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        filter.func(input, {})
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "|" .. (cand.comment or ""))
+        end
+        """
+    ).replace("__TMP__", '"' + str(tmp_path).replace("\\", "\\\\") + '"')
+    result = subprocess.run(["lua", "-"], input=script, capture_output=True, text=True, cwd=".")
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 2, f"precomposed rule must generate the variant: {lines}"
+    assert lines[0].startswith("予人|")
+    assert "--" in lines[1] and "人" in lines[1], f"variant text: {lines[1]}"
+
+
+def test_recommend_badges_cannot_flood_candidate_window():
+    """kio-tiann 生產事件回歸: 深層 ★ 變體不得淹沒候選窗。
+
+    引擎實測(2026-09-24): 加法排序讓可見窗 10 席全被 ★ 輕聲變體佔據、
+    橋 被擠出。位移版: 領先者守住第一, 深層變體至多前進 3 格。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        phah_taibun_data = {
+          check_lkk_recommend = function(text)
+            if text:find("^變") then return false, true end
+            return false, false
+          end,
+          check_moe700 = function() return false end,
+        }
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = { get_bool = function() return true end } } },
+        }
+        filter.init(env)
+        -- SYNTHETIC geometry: badges sit behind a plain block. Engine
+        -- pre-filter stream positions were NOT measured (smoke output is
+        -- post-filter); this pins the bounded-displacement contract itself.
+        local plain = { "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸" }
+        local items = {}
+        for i, n in ipairs(plain) do
+          items[i] = Candidate("table", 0, 1, n, " [x" .. i .. "]")
+        end
+        for i = 1, 12 do
+          items[#items + 1] = Candidate("table", 0, 1, "變" .. i, " [v" .. i .. "]")
+        end
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text)
+        end
+        """
+    )
+    lines = run_lua(script).splitlines()
+    top5 = lines[:5]
+    assert lines[0] == "甲", f"leader must hold slot 1: {lines[:3]}"
+    assert sum(1 for t in top5 if not t.startswith("變")) >= 4, f"top-5 must stay mostly unbadged: {top5}"
+    assert "變12" not in lines[:10], f"deep variant must stay out of the window: {lines[:10]}"

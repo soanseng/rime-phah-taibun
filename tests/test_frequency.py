@@ -48,7 +48,7 @@ class TestWordLengthModifier:
         assert word_length_modifier("食早頓") == 1.2
 
     def test_four_plus_chars(self):
-        assert word_length_modifier("七月半鴨仔") == 0.6
+        assert word_length_modifier("七月半鴨仔") == 0.9
 
     def test_mixed_hanlo_single_cjk(self):
         """Han-Lo mixed text: count only CJK characters for length."""
@@ -200,6 +200,78 @@ class TestEnforceLongWordInvariant:
         first, raised1 = enforce_long_word_invariant(entries)
         _, raised2 = enforce_long_word_invariant(first)
         assert raised1 == 1
+        assert raised2 == 0
+
+    def test_long_word_beats_two_word_split(self):
+        """A 4-syllable word must also beat its best 2+2 dict-word split.
+
+        The per-syllable floor alone is not enough: composition can bypass
+        the word with two shorter dictionary words (長期 + 時間), so the
+        floor is max(syllable floor, ceil(k * best two-code split sum)).
+        """
+        entries = [
+            {"hanlo": "長", "rime_key": "tng5", "source": "itaigi", "weight": 400},
+            {"hanlo": "期", "rime_key": "ki5", "source": "itaigi", "weight": 400},
+            {"hanlo": "時", "rime_key": "si5", "source": "itaigi", "weight": 400},
+            {"hanlo": "間", "rime_key": "kan5", "source": "itaigi", "weight": 400},
+            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "itaigi", "weight": 3000},
+            {"hanlo": "時間", "rime_key": "si5-kan5", "source": "itaigi", "weight": 3000},
+            # 3000 > ceil(1.2 * (400*4)) = 1920 syllable floor, but below
+            # ceil(1.2 * (3000 + 3000)) = 7200 two-word-split floor.
+            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "itaigi", "weight": 3000},
+        ]
+        result, raised = enforce_long_word_invariant(entries)
+        by_han = {e["hanlo"]: e["weight"] for e in result}
+        assert by_han["長期時間"] == 7200
+        assert by_han["長期"] == 3000
+        assert by_han["時間"] == 3000
+        assert raised == 1
+
+    def test_split_with_missing_half_ignored(self):
+        """A split counts only when BOTH halves are existing dict codes."""
+        entries = [
+            {"hanlo": "長", "rime_key": "tng5", "source": "itaigi", "weight": 400},
+            {"hanlo": "期", "rime_key": "ki5", "source": "itaigi", "weight": 400},
+            {"hanlo": "時", "rime_key": "si5", "source": "itaigi", "weight": 400},
+            {"hanlo": "間", "rime_key": "kan5", "source": "itaigi", "weight": 400},
+            # Only the left half of the natural 2+2 split exists as a dict
+            # word; 時間 is absent, so no two-code split applies.
+            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "itaigi", "weight": 3000},
+            # 3000 > ceil(1.2 * 1600) = 1920 syllable floor.
+            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "itaigi", "weight": 3000},
+        ]
+        result, raised = enforce_long_word_invariant(entries)
+        by_han = {e["hanlo"]: e["weight"] for e in result}
+        assert by_han["長期時間"] == 3000
+        assert raised == 0
+
+    def test_split_floor_uses_final_component_weights(self):
+        """Raised component words feed later split floors until stable.
+
+        看民眾 must beat 看+民眾; once 看民眾 is raised, 看民眾世 must beat
+        the RAISED 看民眾+世. Split components are strictly shorter codes,
+        so sweeping to a fixpoint terminates and the assembled dictionary
+        satisfies the invariant against its own final weights.
+        """
+        entries = [
+            {"hanlo": "看", "rime_key": "khuann3", "source": "itaigi", "weight": 100},
+            {"hanlo": "民", "rime_key": "bin5", "source": "itaigi", "weight": 100},
+            {"hanlo": "眾", "rime_key": "tsiong3", "source": "itaigi", "weight": 100},
+            {"hanlo": "世", "rime_key": "si7", "source": "itaigi", "weight": 100},
+            {"hanlo": "民眾", "rime_key": "bin5 tsiong3", "source": "itaigi", "weight": 5000},
+            # 1000 < ceil(1.2 * (100 + 5000)) = 6120 one+two split floor.
+            {"hanlo": "看民眾", "rime_key": "khuann3 bin5 tsiong3", "source": "itaigi", "weight": 1000},
+            # Split floor [看民眾][世] = ceil(1.2 * (6120 + 100)) = 7464,
+            # computable only after 看民眾 has been raised.
+            {"hanlo": "看民眾世", "rime_key": "khuann3 bin5 tsiong3 si7", "source": "itaigi", "weight": 2000},
+        ]
+        first, raised1 = enforce_long_word_invariant(entries)
+        by_han = {e["hanlo"]: e["weight"] for e in first}
+        assert by_han["看民眾"] == 6120
+        assert by_han["看民眾世"] == 7464
+        assert by_han["民眾"] == 5000
+        assert raised1 == 2
+        _, raised2 = enforce_long_word_invariant(first)
         assert raised2 == 0
 
 

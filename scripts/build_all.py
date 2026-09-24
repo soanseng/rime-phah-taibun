@@ -87,6 +87,9 @@ def main(argv: list[str] | None = None) -> None:
     supplement_dir = data / "Taigi-Input-method-dictionary-supplement"
     supplement_entries = data / "dictionary_supplement_entries.tsv"
     supplement_report = data / "dictionary_supplement_report.tsv"
+    # Curated 書面語 supplement; repo-root-relative because build_all runs
+    # from the repo root (as do all child script invocations below).
+    written_supplement = Path("scripts/data/written_supplement.tsv")
 
     lighttone_output = data / "lighttone_entries.tsv"
     # True only when Step 3 rebuilt the dictionary THIS run. Every tail
@@ -306,18 +309,21 @@ def main(argv: list[str] | None = None) -> None:
 
     # Step 3b: Build third-party dictionary supplement entries
     if supplement_dir.exists() and dict_rebuilt:
+        supplement_cmd = [
+            python,
+            "scripts/build_dictionary_supplement.py",
+            "--input",
+            str(supplement_dir),
+            "--output",
+            str(supplement_entries),
+            "--report",
+            str(supplement_report),
+        ]
+        if written_supplement.exists():
+            supplement_cmd.extend(["--extra-file", str(written_supplement)])
         steps_ok &= run_step(
             "Build Taigi input method dictionary supplement",
-            [
-                python,
-                "scripts/build_dictionary_supplement.py",
-                "--input",
-                str(supplement_dir),
-                "--output",
-                str(supplement_entries),
-                "--report",
-                str(supplement_report),
-            ],
+            supplement_cmd,
         )
         dict_yaml = out / "phah_taibun.dict.yaml"
         if dict_yaml.exists() and supplement_entries.exists() and supplement_entries.stat().st_size > 0:

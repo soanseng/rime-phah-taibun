@@ -13,12 +13,34 @@ function M.init(env)
   env.enabled = (setting ~= false)
 end
 
+-- 推薦升權：librime filter 不會依 .quality 重排候選，且詞典候選的
+-- quality 實務上全是 nil——任何「加法排序」都會退化成徽章置頂、
+-- 讓大量 ★ 輕聲變體淹沒候選區（kio-tiann 實測：橋 被擠出可見窗）。
+-- 因此改用「有界位移」：維持字典順序為主，徽章只把候選往前挪固定
+-- 格數——LKK 推薦（◆ 漢字 / ★ 羅馬字）挪 3 格、教育部700字（◆）挪
+-- 1 格。同碼平手時 LKK 因此贏過 moe700（伊◆ vs 醫◆），但任何徽章
+-- 都不能越過 3 格以上的差距。
+local NUDGE_LKK = 3
+local NUDGE_MOE = 1
+
 function M.func(input, env)
   local data_mod = phah_taibun_data
 
+  local all = {}
+  local order = 0
+
+  local function collect(cand, new_cand, nudge)
+    order = order + 1
+    all[#all + 1] = {
+      cand = new_cand or cand,
+      slot = order - (nudge or 0),
+      order = order,
+    }
+  end
+
   for cand in input:iter() do
     if not env.enabled or not data_mod then
-      yield(cand)
+      collect(cand, nil)
       goto continue
     end
 
@@ -27,24 +49,31 @@ function M.func(input, env)
 
     -- Skip candidates with no bracket (English, emoji, etc.)
     if not bracket_pos then
-      yield(cand)
+      collect(cand, nil)
       goto continue
     end
 
     local text = cand.text or ""
     if text == "" then
-      yield(cand)
+      collect(cand, nil)
       goto continue
     end
 
     -- Check recommendations
-    local has_han, has_lo = data_mod.check_lkk_recommend(text)
-    if data_mod.check_moe700(text) then
-      has_han = true
-    end
+    local lkk_han, lkk_lo = data_mod.check_lkk_recommend(text)
+    local moe = data_mod.check_moe700(text)
+    local has_han = lkk_han or moe
+    local has_lo = lkk_lo
 
-    if not has_han and not has_lo then
-      yield(cand)
+    -- Nudge tier by recommendation source (bounded displacement)
+    local nudge
+    if lkk_han or lkk_lo then
+      nudge = NUDGE_LKK
+    elseif moe then
+      nudge = NUDGE_MOE
+    end
+    if not nudge then
+      collect(cand, nil)
       goto continue
     end
 
@@ -59,9 +88,23 @@ function M.func(input, env)
     local new_cand = Candidate(cand.type, cand.start, cand._end, cand.text, new_comment)
     new_cand.quality = cand.quality
     new_cand.preedit = cand.preedit
-    yield(new_cand)
+    collect(cand, new_cand, nudge)
 
     ::continue::
+  end
+
+  -- Bounded displacement: slot = original position - nudge, stable by
+  -- (slot, original order). A badge moves a candidate forward at most
+  -- NUDGE_LKK slots — it can never flood the window.
+  table.sort(all, function(a, b)
+    if a.slot ~= b.slot then
+      return a.slot < b.slot
+    end
+    return a.order < b.order
+  end)
+
+  for _, entry in ipairs(all) do
+    yield(entry.cand)
   end
 end
 

@@ -582,6 +582,7 @@ lua/                           Lua 擴充模組（21 個）
   phah_taibun_recommend.lua       推薦用字標記（◆ 漢字 / ★ 羅馬字）
   phah_taibun_select_char.lua     以詞定字（[ 首字、] 尾字）
   phah_taibun_long_word.lua       長詞優先排序
+  phah_taibun_learn.lua           學習排序：常用詞提升（飽和 + 時間衰減）
   phah_taibun_lighttone.lua       輕聲候選產生
   phah_taibun_wildcard.lua        萬用字元 ?
   phah_taibun_symbols.lua         符號選單

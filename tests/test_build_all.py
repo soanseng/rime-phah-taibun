@@ -75,7 +75,10 @@ class FakeRunner:
             # the dictionary lands inside it.
             (Path(freq) / "phah_taibun.dict.yaml").write_text(MINIMAL_DICT, encoding="utf-8")
         if script == "build_dictionary_supplement.py" and freq:
-            Path(freq).write_text("食\ttsiah8\t900\n新詞\tsin1 su5\t700\n", encoding="utf-8")
+            Path(freq).write_text(
+                "食\ttsiah8\t900\n新詞\tsin1 su5\t700\n一種\ttsit8 tsiong2\t700\n食\ttsiah8\t700\n",
+                encoding="utf-8",
+            )
             report = _value_after(cmd, "--report")
             if report:
                 Path(report).write_text("", encoding="utf-8")
@@ -211,6 +214,8 @@ class TestSupplementAppend:
     The supplement is editorial curation for words the core dictionaries
     miss; a (text, code) row already in the freshly built dictionary is a
     fatal validate_dict gate (duplicate entry), so the append must skip it.
+    Rows sourced from written_supplement.tsv (weight 700) follow the same
+    gate: a core duplicate is skipped, a unique word is appended at 700.
     """
 
     def test_supplement_rows_dedup_against_core_dict(self, run_build, tmp_path):
@@ -221,9 +226,25 @@ class TestSupplementAppend:
         lines = (out / "phah_taibun.dict.yaml").read_text(encoding="utf-8").splitlines()
         tsiah = [ln for ln in lines if ln.split("\t")[:2] == ["食", "tsiah8"]]
         new_row = [ln for ln in lines if ln.startswith("新詞\t")]
+        written_unique = [ln for ln in lines if ln.split("\t")[:2] == ["一種", "tsit8 tsiong2"]]
         assert len(tsiah) == 1, "supplement duplicate of a core row must be skipped"
         assert tsiah[0] == "食\ttsiah8\t640", "the freshly built core row wins"
         assert new_row == ["新詞\tsin1 su5\t700"]
+        assert written_unique == ["一種\ttsit8 tsiong2\t700"]
+
+    def test_step_3b_passes_written_supplement_extra_file(self, run_build, tmp_path):
+        """Step 3b must wire scripts/data/written_supplement.tsv when it exists."""
+        data = make_data_dir(tmp_path)
+        written = tmp_path / "scripts" / "data" / "written_supplement.tsv"
+        written.parent.mkdir(parents=True)
+        written.write_text("一種\ttsit8 tsiong2\n", encoding="utf-8")
+        out = tmp_path / "schema"
+        runner = run_build(data, out)
+
+        cmd = runner.commands[runner.index_of("build_dictionary_supplement.py")]
+        extra = _value_after(cmd, "--extra-file")
+        assert extra is not None, "build_all must pass --extra-file for the written supplement"
+        assert Path(extra).name == "written_supplement.tsv"
 
 
 class TestFailLoud:

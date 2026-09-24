@@ -78,6 +78,20 @@ end
 
 -- Strip combining diacritical marks (U+0300-U+036F range)
 -- These are 2-byte sequences: \xCC\x80-\xCC\xBF and \xCD\x80-\xCD\x9F
+-- NFC 預組母音 → 基本字母（UTF-8 位元組對）。涵蓋 TL 會出現的帶調拉丁母音。
+local _PRECOMPOSED_BASE = {
+  ["\195\161"]="a", ["\195\160"]="a", ["\195\162"]="a", ["\195\164"]="a",
+  ["\196\131"]="a", ["\196\129"]="a",
+  ["\195\169"]="e", ["\195\168"]="e", ["\195\170"]="e", ["\195\171"]="e",
+  ["\196\155"]="e", ["\196\147"]="e",
+  ["\195\173"]="i", ["\195\172"]="i", ["\195\174"]="i", ["\196\171"]="i",
+  ["\197\169"]="i",
+  ["\195\179"]="o", ["\195\178"]="o", ["\195\180"]="o", ["\195\182"]="o",
+  ["\197\141"]="o", ["\197\145"]="o",
+  ["\195\186"]="u", ["\195\185"]="u", ["\195\187"]="u", ["\195\188"]="u",
+  ["\197\171"]="u", ["\197\176"]="u",
+}
+
 local function strip_diacritics(text)
   if not text then return text end
   -- Remove combining marks: U+0300-U+036F
@@ -88,6 +102,11 @@ local function strip_diacritics(text)
   result = result:gsub("\205[\128-\159]", "")
   -- Also handle the dotless-i (ı, U+0131) → i
   result = result:gsub("\196\177", "i")
+  -- Precomposed NFC vowels (á, â, ā, ê, ē, î, ō, ô, ū, ...) must reduce to
+  -- their base letter too — rules JSON is UTF-8 NFC (hexdump-verified), so a
+  -- suffix like "--lâng" would otherwise strip to "lâng" and never match a
+  -- numeric-tone candidate ("lang5" → toneless "lang").
+  result = result:gsub("([\193-\197][\128-\191])", _PRECOMPOSED_BASE)
   return result
 end
 
@@ -236,74 +255,148 @@ function M.init(env)
   load_rules()
 end
 
-function M.func(input, env)
-  for cand in input:iter() do
-    local comment = cand.comment or ""
+-- ============================================================
+-- Variant positioning
+-- ============================================================
 
-    -- Extract raw romanization from comment: " [khi3 lai5]"
-    local raw_roman = comment:match("%[(.-)%]")
+-- 去掉候選文字中的輕聲符號，得到母詞形（俾--人 → 俾人）。
+local function collapse_marker(text)
+  if not text then return "" end
+  return (text:gsub("%-%-", ""))
+end
 
-    -- If no romanization, pass through
-    if not raw_roman or raw_roman == "" then
-      yield(cand)
-      goto continue
-    end
+-- 串流裡既有的輕聲形候選（詞典 -- 詞條）。
+local function is_variant_text(text)
+  return type(text) == "string" and text:find("--", 1, true) ~= nil
+end
 
-    -- Split into syllables
-    local syllables = split_syllables(raw_roman)
+-- 母詞配對鍵：收合文字 + 輸入位置（同碼同字才算同一個詞的變體）。
+local function parent_key(cand)
+  return collapse_marker(cand.text) .. "\0" .. tostring(cand.start)
+    .. "\0" .. tostring(cand._end)
+end
 
-    -- Only process multi-syllable candidates
-    if #syllables < 2 then
-      yield(cand)
-      goto continue
-    end
+-- 為單一母詞候選產生輕聲變體。只回傳 list，不 yield——位置由
+-- M.func 的定位邏輯決定（quality 不會讓 librime filter 重排）。
+local function generate_variants(cand)
+  local variants = {}
+  local comment = cand.comment or ""
 
-    -- Always yield the original candidate first
-    yield(cand)
+  -- Extract raw romanization from comment: " [khi3 lai5]"
+  local raw_roman = comment:match("%[(.-)%]")
 
-    -- Try to match tail syllables against lighttone rules (up to 3)
-    local match_count, entries = find_tail_match(syllables, 3)
+  -- If no romanization, pass through
+  if not raw_roman or raw_roman == "" then
+    return variants
+  end
 
-    if match_count and entries then
-      local text = cand.text or ""
+  -- Split into syllables
+  local syllables = split_syllables(raw_roman)
 
-      -- Insert "--" into the romanization
-      local new_roman = insert_lighttone_marker_roman(syllables, match_count)
+  -- Only process multi-syllable candidates
+  if #syllables < 2 then
+    return variants
+  end
 
-      if new_roman then
-        -- Insert "--" into the hanzi text
-        local prefix_count = #syllables - match_count
-        local new_text = insert_lighttone_marker_text(text, prefix_count)
+  -- Try to match tail syllables against lighttone rules (up to 3)
+  local match_count, entries = find_tail_match(syllables, 3)
 
-        if new_text then
-          -- Build new comment with "--" marker in romanization
-          local new_comment = " [" .. new_roman .. "]"
+  if not (match_count and entries) then
+    return variants
+  end
 
-          -- Generate one candidate per hanzi variant from the rules
-          -- (most rules have just one entry)
-          local yielded_texts = {}
-          for _, entry in ipairs(entries) do
-            -- Build hanzi-specific text: prefix hanzi + "--" + rule hanzi
-            local chars = utf8_chars(text)
-            if prefix_count <= #chars and prefix_count > 0 then
-              local prefix_text = table.concat(chars, "", 1, prefix_count)
-              local variant_text = prefix_text .. "--" .. entry.hanzi
-              -- Avoid yielding duplicate texts
-              if not yielded_texts[variant_text] then
-                yielded_texts[variant_text] = true
-                local new_cand = Candidate(cand.type, cand.start, cand._end,
-                                           variant_text, new_comment)
-                new_cand.quality = cand.quality - 0.3
-                new_cand.preedit = cand.preedit
-                yield(new_cand)
-              end
-            end
-          end
-        end
+  local text = cand.text or ""
+
+  -- Insert "--" into the romanization
+  local new_roman = insert_lighttone_marker_roman(syllables, match_count)
+
+  if not new_roman then
+    return variants
+  end
+
+  -- Insert "--" into the hanzi text
+  local prefix_count = #syllables - match_count
+  local new_text = insert_lighttone_marker_text(text, prefix_count)
+
+  if not new_text then
+    return variants
+  end
+
+  -- Build new comment with "--" marker in romanization
+  local new_comment = " [" .. new_roman .. "]"
+
+  -- Generate one candidate per hanzi variant from the rules
+  -- (most rules have just one entry)
+  local yielded_texts = {}
+  for _, entry in ipairs(entries) do
+    -- Build hanzi-specific text: prefix hanzi + "--" + rule hanzi
+    local chars = utf8_chars(text)
+    if prefix_count <= #chars and prefix_count > 0 then
+      local prefix_text = table.concat(chars, "", 1, prefix_count)
+      local variant_text = prefix_text .. "--" .. entry.hanzi
+      -- Avoid yielding duplicate texts
+      if not yielded_texts[variant_text] then
+        yielded_texts[variant_text] = true
+        local new_cand = Candidate(cand.type, cand.start, cand._end,
+                                   variant_text, new_comment)
+        new_cand.quality = cand.quality - 0.3
+        new_cand.preedit = cand.preedit
+        variants[#variants + 1] = new_cand
       end
     end
+  end
+  return variants
+end
 
-    ::continue::
+function M.func(input, env)
+  -- 兩段式定位重排（collect 再 re-yield）：輕聲變體必須緊跟在母詞後面。
+  --   * 母詞（無 -- 文字）照原順序 yield，其變體（動態產生 + 串流裡
+  --     既有的詞典 -- 詞條，靠收合文字/位置配對）緊跟其後；配對到的
+  --     串流變體若與已產生的變體同文則去重。
+  --   * 配對不到母詞的 -- 詞條附加到最後——不再壓過其他候選
+  --     （俾--人 搶在 予人 前面的生產症狀）。
+  --   * 沒有變體的母詞原樣通過；空輸入零輸出。
+  local incoming = {}
+  for cand in input:iter() do
+    incoming[#incoming + 1] = cand
+  end
+
+  local slots = {}
+  local slot_by_key = {}
+  for _, cand in ipairs(incoming) do
+    if not is_variant_text(cand.text) then
+      local slot = { cand = cand, variants = generate_variants(cand), seen = {} }
+      for _, v in ipairs(slot.variants) do
+        slot.seen[v.text] = true
+      end
+      slots[#slots + 1] = slot
+      slot_by_key[parent_key(cand)] = slot
+    end
+  end
+
+  local orphans = {}
+  for _, cand in ipairs(incoming) do
+    if is_variant_text(cand.text) then
+      local slot = slot_by_key[parent_key(cand)]
+      if slot then
+        if not slot.seen[cand.text] then
+          slot.seen[cand.text] = true
+          slot.variants[#slot.variants + 1] = cand
+        end
+      else
+        orphans[#orphans + 1] = cand
+      end
+    end
+  end
+
+  for _, slot in ipairs(slots) do
+    yield(slot.cand)
+    for _, v in ipairs(slot.variants) do
+      yield(v)
+    end
+  end
+  for _, cand in ipairs(orphans) do
+    yield(cand)
   end
 end
 

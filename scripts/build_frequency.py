@@ -55,7 +55,7 @@ def word_length_modifier(hanlo: str) -> float:
         hanlo: Han-Lo mixed text
 
     Returns:
-        Multiplier: 0.8 (1 char), 1.2 (2-3 chars), 0.6 (4+ chars), 1.0 (pure romanization)
+        Multiplier: 0.8 (1 char), 1.2 (2-3 chars), 0.9 (4+ chars), 1.0 (pure romanization)
     """
     length = _count_cjk_chars(hanlo)
     if length == 0:
@@ -64,7 +64,7 @@ def word_length_modifier(hanlo: str) -> float:
         return 0.8
     if length <= 3:
         return 1.2
-    return 0.6
+    return 0.9
 
 
 def load_corpus_frequencies(freq_path: Path) -> dict[str, int]:
@@ -209,45 +209,89 @@ _SYLLABLE_SPLIT_RE = re.compile(r"[ \-]+")
 
 
 def enforce_long_word_invariant(entries: list[dict], k: float = 1.2) -> tuple[list[dict], int]:
-    syllable_best: dict[str, int] = {}
-    for entry in entries:
-        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
-        if len(tokens) == 1:
-            weight = entry["weight"]
-            if weight > syllable_best.get(tokens[0], 0):
-                syllable_best[tokens[0]] = weight
+    """Lift multi-syllable words so composition cannot beat them (長詞不敗).
 
+    Per code group the lightest member is raised to the applicable floor:
+    k * the stronger of (a) the best per-syllable fragmentation sum and
+    (b) the best split into two existing dictionary codes (長期時間 vs
+    長期 + 時間). Split halves may themselves be raised by this pass —
+    components are strictly shorter codes than the code they floor, so
+    sweeping until no group moves reaches the fixpoint where the
+    invariant holds against the dictionary's final weights, and a second
+    call raises nothing.
+
+    Returns:
+        (entries, number of rows whose weight ended above its original)
+    """
     original_weight = {id(entry): entry["weight"] for entry in entries}
+    raised_ids: set[int] = set()
 
-    # Group multi-syllable entries by code; the invariant is enforced per
-    # group with a common offset: when the group's lightest member sits
-    # below ceil(k * fragmented_sum), every member gains the same offset.
-    # Relative gaps (and genuine ties) survive, and no member can end up
-    # below the threshold. 長詞不敗 (AGENTS.md 設計原則 7).
-    by_code: dict[str, list[dict]] = {}
-    for entry in entries:
-        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
-        if len(tokens) < 2:
-            continue  # singles feed the thresholds; never re-ranked here
-        by_code.setdefault(entry["rime_key"], []).append(entry)
+    while True:
+        # Threshold inputs, rebuilt each sweep from current weights: max
+        # weight per single-syllable reading, and max weight per
+        # normalized (single-spaced) code (both split halves must be
+        # existing dictionary codes for the split floor).
+        syllable_best: dict[str, int] = {}
+        code_best: dict[str, int] = {}
+        for entry in entries:
+            tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
+            if not tokens:
+                continue
+            weight = entry["weight"]
+            if len(tokens) == 1 and weight > syllable_best.get(tokens[0], 0):
+                syllable_best[tokens[0]] = weight
+            norm_code = " ".join(tokens)
+            if weight > code_best.get(norm_code, 0):
+                code_best[norm_code] = weight
 
-    raised = 0
-    for code_entries in by_code.values():
-        tokens = [t for t in _SYLLABLE_SPLIT_RE.split(code_entries[0]["rime_key"]) if t]
-        fragmented_sum = sum(syllable_best.get(token, 0) for token in tokens)
-        if fragmented_sum <= 0:
-            continue
-        threshold = math.ceil(k * fragmented_sum)
-        group_min = min(e["weight"] for e in code_entries)
-        if group_min >= threshold:
-            continue
-        offset = threshold - group_min
-        for entry in code_entries:
-            entry["weight"] += offset
-            if entry["weight"] > original_weight[id(entry)]:
-                raised += 1
+        # Group multi-syllable entries by code; the invariant is enforced per
+        # group with a common offset: when the group's lightest member sits
+        # below the applicable floor, every member gains the same offset.
+        # Relative gaps (and genuine ties) survive, and no member can end up
+        # below the threshold.
+        by_code: dict[str, list[dict]] = {}
+        for entry in entries:
+            tokens = [t for t in _SYLLABLE_SPLIT_RE.split(entry["rime_key"]) if t]
+            if len(tokens) < 2:
+                continue  # singles feed the thresholds; never re-ranked here
+            by_code.setdefault(entry["rime_key"], []).append(entry)
 
-    return entries, raised
+        moved = False
+        for code_entries in by_code.values():
+            tokens = [t for t in _SYLLABLE_SPLIT_RE.split(code_entries[0]["rime_key"]) if t]
+            fragmented_sum = sum(syllable_best.get(token, 0) for token in tokens)
+            threshold = math.ceil(k * fragmented_sum) if fragmented_sum > 0 else 0
+
+            # Two-word split floor: the word must also beat its best split
+            # into two existing dictionary codes — composition substitutes
+            # whole words, not only single syllables.
+            best_split_sum: int | None = None
+            for i in range(1, len(tokens)):
+                left = code_best.get(" ".join(tokens[:i]))
+                right = code_best.get(" ".join(tokens[i:]))
+                if left is None or right is None:
+                    continue
+                split_sum = left + right
+                if best_split_sum is None or split_sum > best_split_sum:
+                    best_split_sum = split_sum
+            if best_split_sum is not None:
+                threshold = max(threshold, math.ceil(k * best_split_sum))
+
+            if threshold <= 0:
+                continue
+            group_min = min(e["weight"] for e in code_entries)
+            if group_min >= threshold:
+                continue
+            offset = threshold - group_min
+            for entry in code_entries:
+                entry["weight"] += offset
+                moved = True
+                if entry["weight"] > original_weight[id(entry)]:
+                    raised_ids.add(id(entry))
+        if not moved:
+            break
+
+    return entries, len(raised_ids)
 
 
 # Light-tone cap constants: mirror scripts/build_lighttone_entries.py's
