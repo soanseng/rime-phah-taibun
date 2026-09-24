@@ -587,6 +587,35 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "liantua_c7");
   api->clear_composition(session);
 
+  // === 免調＋無連字號變體（量測：同語料去掉數字調與連字號） ===
+  api->simulate_key_sequence(session, "tsetsuiausitsiutsingtsosinge");
+  print_state(api, session, "liantua_tl_c1");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "tshintshiunnlikatiemiatianuehobe");
+  print_state(api, session, "liantua_tl_c2");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "suauthetsiuliauau");
+  print_state(api, session, "liantua_tl_c3");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "bekitsitkatilimtsiu");
+  print_state(api, session, "liantua_tl_c4");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "uantsuanboinsiong");
+  print_state(api, session, "liantua_tl_c5");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "langlangjimui");
+  print_state(api, session, "liantua_tl_c6");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "siantsuanneanne");
+  print_state(api, session, "liantua_tl_c7");
+  api->clear_composition(session);
+
   // Mid-way selection: pick a word mid-composition, keep typing, commit.
   // Selects candidate index 1 (是按怎) for the first segment, then the rest
   // must compose without discarding the confirmed segment.

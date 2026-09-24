@@ -675,6 +675,22 @@ def test_sentence_roundtrip_word_boundaries(tmp_path_factory):
         )
 
 
+def test_liantua_toneless_hyphenless_floor(real_rime_states):
+    """免調＋無連字號整句是已知限制：2026-09 量測（librime 1.13.1，
+    語料字串機械重建自查）top-3 命中 1/7，對比帶調＋連字號 ≥70%。
+    地板＝短句「事後退酒了後」必須整句命中；低於此代表免調組句退化。
+    完整解法見 PLAN §9-1 K 量測紀錄。"""
+    hits = 0
+    for i in range(1, 8):
+        label = f"liantua_tl_c{i}"
+        expected = LIANTUA_CORPUS[f"liantua_c{i}"]
+        state = real_rime_states[label]
+        top3 = [c["text"] for c in state["candidates"][:3]]
+        if expected in top3:
+            hits += 1
+    assert hits >= 1, f"toneless+hyphenless hit rate {hits}/7 below floor"
+
+
 def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):
     """全羅整句上屏: 詞內連字號與詞間空白, not one long hyphen chain."""
     commit = _nfc(real_rime_states["liantua_full_roman"]["commit"])
