@@ -19,6 +19,8 @@ from scripts.extract_900leku_freq import unicode_tl_to_numeric
 ROOT = Path(__file__).parents[1]
 SENTENCE_CORPUS_TSV = ROOT / "tests" / "fixtures" / "sentence_corpus.tsv"
 SENTENCE_BASELINE_JSON = ROOT / "tests" / "fixtures" / "sentence_baseline.json"
+WRITTEN_CORPUS_TSV = ROOT / "tests" / "fixtures" / "sentence_corpus_written.tsv"
+WRITTEN_BASELINE_JSON = ROOT / "tests" / "fixtures" / "sentence_written_baseline.json"
 SENTENCE_ROUNDTRIP_BASELINE_JSON = ROOT / "tests" / "fixtures" / "sentence_roundtrip_baseline.json"
 
 
@@ -172,6 +174,12 @@ def real_rime_states(tmp_path_factory):
 def real_rime_corpus(tmp_path_factory):
     """Same pipeline, but the binary replays tests/fixtures/sentence_corpus.tsv."""
     return _build_and_run(_find_runtime(), tmp_path_factory, smoke_args=(str(SENTENCE_CORPUS_TSV),))
+
+
+@pytest.fixture(scope="session")
+def real_rime_written(tmp_path_factory):
+    """Same pipeline, but replays the written-track corpus (dopamine article)."""
+    return _build_and_run(_find_runtime(), tmp_path_factory, smoke_args=(str(WRITTEN_CORPUS_TSV),))
 
 
 def test_backtick_opens_symbol_menu(real_rime_states):
@@ -431,6 +439,41 @@ def test_sentence_first_candidate_ratchet(real_rime_corpus):
             json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+
+
+def _read_written_corpus() -> dict[str, dict[str, str]]:
+    rows: dict[str, dict[str, str]] = {}
+    for line in WRITTEN_CORPUS_TSV.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        label, hanzi, keys = line.split("\t")
+        rows[label] = {"hanzi": hanzi, "keys": keys}
+    return rows
+
+
+def test_written_corpus_first_candidate_ratchet(real_rime_written):
+    """書面語軌 ratchet: dopamine/nicotine 文章整句 top-1 只升不降.
+
+    Corpus derivation (2026-09-24): the owner's 漢羅/POJ parallel article;
+    nicotine/Dopamine tokens removed symmetrically from both sides, the
+    digits sentence (10秒鐘 ↔ tsa̍p, asymmetric) excluded, and dopa_p6s2's
+    keys hand-patched (sin5-king1-se3-pau1 → nau2-tiong1) because the 全羅
+    paragraph paraphrases 腦中 as 神經細胞. Baseline measured 0/12 top-3 —
+    the failure classes (missing 書面 vocab, same-code ranking losses,
+    runtime light-tone variants) are the targets of the written-track
+    improvement work; this ratchet guards that they only get better.
+    """
+    rows = _read_written_corpus()
+    results: dict[str, dict[str, object]] = {}
+    for label, row in rows.items():
+        texts = [c["text"] for c in real_rime_written[label]["candidates"]]
+        rank = texts.index(row["hanzi"]) + 1 if row["hanzi"] in texts else 0
+        results[label] = {"rank": rank, "top3": rank in (1, 2, 3)}
+    baseline = json.loads(WRITTEN_BASELINE_JSON.read_text(encoding="utf-8"))
+    assert set(baseline) == set(results), "written corpus rows changed vs baseline"
+    assert _top1_rate(results) >= _top1_rate(baseline), (
+        f"written-corpus top-1 regressed: {_top1_rate(results):.3f} < baseline {_top1_rate(baseline):.3f}"
+    )
 
 
 def _find_900leku_sentences() -> Path:
