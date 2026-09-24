@@ -164,12 +164,15 @@ class TestStage2PlacenameList:
         assert ("大庄", "tua7 tsng1") in pairs
 
     def test_slash_variants_expand_and_partial_tails_dropped(self, tmp_path):
-        """Slash variants split; a single-syllable tail never becomes a word."""
+        """Slash variants split; a single-syllable tail is a final-syllable
+        replacement of the previous reading, not a standalone word."""
         make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
         entries, _ = parse_placename_dir(tmp_path)
         pairs = {(e.han, e.code) for e in entries}
-        assert ("鯉魚潭村", "li2 hi5 tham5 tshun1") in pairs
-        assert not any(code.endswith(" tshuan") or code == "tshuan" for _, code in pairs)
+        assert ("鯉魚潭村", "li2 hi5 tham5 tshuan1") in pairs
+        # 「tshuan」 replaces the final syllable: Lí-hî-thâm-tshuan
+        assert ("鯉魚潭村", "li2 hi5 tham5 tshuan1") in pairs
+        assert ("鯉魚潭村", "tshuan") not in pairs
 
     def test_notes_and_hakka_columns_not_in_codes(self, tmp_path):
         make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())

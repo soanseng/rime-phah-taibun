@@ -125,14 +125,19 @@ def _expand_reading(text: str) -> list[str]:
         alts = _PAREN_ALT_RE.findall(part)
         base = _PAREN_ALT_RE.sub("", part).strip()
         if base:
-            readings.append(base)
+            if index > 0 and len(re.split(r"[-\s]+", base)) < 2 and readings:
+                # Single-syllable slash tail (「tshun/tshuan」): a final-
+                # syllable replacement of the previous reading, not a
+                # standalone word.
+                previous = re.split(r"[-\s]+", readings[-1])
+                if len(previous) > 1:
+                    readings.append(" ".join([*previous[:-1], base]))
+            else:
+                readings.append(base)
         for alt in alts:
             alt = alt.strip()
-            if not alt:
-                continue
-            if index > 0 and len(re.split(r"[-\s]+", alt)) < 2:
-                continue
-            readings.append(alt)
+            if alt:
+                readings.append(alt)
     return readings
 
 
