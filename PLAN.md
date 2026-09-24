@@ -666,6 +666,8 @@ return M
 
 **後續行動**：`phah_taibun_recommend` 目前只做標記（◆/★）不做排序 boost——飽和上限（如 40 次）與時間衰減（如 30 天半衰期，需自記時間戳）**等到 Lua 排序 boost 實作時一併做**，鍵用 `word_identity`。學習行為的行為契約已由既有測試釘住：旗標組合（`tests/test_schema_config.py::test_main_translator_learns_and_composes_without_inventing_user_words`）、逐音節選字學習（`tests/test_real_rime.py::test_word_by_word_selection_commits_chosen_hanzi`）。
 
+**公式方向（2026-09 定案；未來 Lua 排序 boost 直接採用）**：升權採飽和式 `boost = min(1 + α·count, cap)`（α=0.1、cap=5.0，約 count≥40 飽和）；時間衰減 `exp(−age/τ)` 指數，τ 以「30 天半衰」語意換算 ≈43.3 天，實作時固定命名避免與 1/e 時間常數混淆；**飽和先於衰減**（先衰減再封頂會讓高頻舊詞長期釘在 cap）；使用者詞庫容量上限 20k，超量以（count 升冪、last_used 升冪）批次修剪；計數鍵＝`word_identity`（與 9-1D 一致）。
+
 **驗收**：研究結論寫入本節 ✅；行為由上述既有測試釘住 ✅；飽和/衰減實作移至未來排序 boost 工作（不另開測試）。
 
 #### C. 單音節熱字不得劫持組句路徑
@@ -691,6 +693,16 @@ return M
 **實證結論（2026-09，真引擎 1.13.1）**：現有 `echo_translator` 路徑**已經提供**此行為——打無效拼音（如 `xqzv`），第一候選即原文本身，選後送出等於輸入。因此**不新增 Lua filter**（避免與 echo、逐音節三路重複），改以真引擎測試釘住：`tests/test_real_rime.py::test_invalid_input_offers_verbatim_at_slot_zero`。
 
 **驗收**： ✅（既有行為＋釘住測試；若未來 echo 行為變動，測試會先紅。）
+
+#### K. 免調＋無連字號整句組句（量測基準與方向）
+
+**量測（2026-09，librime 1.13.1；變體字串由帶調鍵序機械去除數字與連字號重建）**：同一批 7 句語料，帶調＋連字號 top-3 命中 ≥70%（既有契約）；免調＋無連字號 top-3 命中 **1/7**（僅「事後退酒了後」）。主因：(1) 免調失去詞身份——同拼式異調詞互相覆蓋（家己→割印／家治、攏→人、會→的）；(2) 連續音節串切分錯誤（無印象→無印使用）。
+
+**現行建議**：整句連打以帶調＋連字號（或 Telex 調鍵）為主；免調輸入適合單詞／短詞（既有 toneless 升權已覆蓋）。
+
+**未來方向**（評估後再動工）：音節邊界統計先驗（語料 bigram）、octagram 語言模型評估、或字典層高頻雙音節組合權重強化；任何方案以 `tests/test_real_rime.py::test_liantua_toneless_hyphenless_floor` 為比較基準。
+
+**驗收**：量測紀錄＋地板測試已入 repo ✅；改進方案另立項目再評。
 
 ### 9-2. 資料管線驗證強化
 
