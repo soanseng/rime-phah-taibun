@@ -48,7 +48,7 @@ rime-phah-taibun/
 │   ├── moe700.yaml                   # 教育部 700 推薦用字
 │   └── default.custom.yaml           # 預設配置（含 switcher/save_options）
 │
-├── lua/                          # 21 個 Lua 模組（一功能一檔）
+├── lua/                          # 22 個 Lua 模組（一功能一檔）
 │   ├── phah_taibun_filter.lua        # 核心：拼音註解 + 輸出模式 + 漢羅轉換
 │   ├── phah_taibun_input.lua         # 輸入前處理 processor
 │   ├── phah_taibun_commit.lua        # 送出 processor

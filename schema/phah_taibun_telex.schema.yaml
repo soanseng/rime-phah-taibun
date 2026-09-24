@@ -6,7 +6,7 @@
 schema:
   schema_id: phah_taibun_telex
   name: "拍台文(Telex)"
-  version: "0.9.1"
+  version: "0.9.2"
   author:
     - "拍台文開發團隊"
   dependencies:

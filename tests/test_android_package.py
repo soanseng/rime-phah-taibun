@@ -108,7 +108,7 @@ def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None
     for name in [*REQUIRED_PHAH, *REQUIRED_REVERSE, INSTALL_NAME, "rime.lua", "default.custom.yaml"]:
         assert name in names, f"缺少 {name}"
 
-    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 21
+    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 22
     assert not list((tree / "lua").glob("liu_*.lua"))
 
     rime_lua = (tree / "rime.lua").read_text(encoding="utf-8")

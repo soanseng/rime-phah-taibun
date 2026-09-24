@@ -408,7 +408,7 @@ def write_rime_dict(entries: list[dict], output_path: Path) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("---\n")
         f.write("name: phah_taibun\n")
-        f.write('version: "0.9.1"\n')
+        f.write('version: "0.9.2"\n')
         f.write("sort: by_weight\n")
         f.write("use_preset_vocabulary: false\n")
         f.write("...\n")
