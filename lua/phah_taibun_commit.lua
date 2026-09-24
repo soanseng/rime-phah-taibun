@@ -39,16 +39,34 @@ local PUNCT_MAP = {
   [0x21] = "!",   -- exclamation (instead of ！)
   [0x3f] = "?",   -- question mark (instead of ？)
   [0x3a] = ":",   -- colon (instead of ：)
+  [0x3b] = ";",   -- semicolon (instead of ；)
   [0x22] = '"',   -- double quote (instead of 「」)
+  [0x27] = "'",   -- apostrophe (instead of 『』)
   [0x28] = "(",   -- left paren (instead of （)
   [0x29] = ")",   -- right paren (instead of ）)
   [0x2f] = "/",   -- slash (instead of 、)
   [0x5f] = "_",   -- underscore (instead of ——)
+  [0x5b] = "[",   -- left bracket (instead of 「)
+  [0x5d] = "]",   -- right bracket (instead of 」)
+  [0x7b] = "{",   -- left brace (instead of 『)
+  [0x7d] = "}",   -- right brace (instead of 』)
   [0x3c] = "<",   -- less-than (instead of 《)
   [0x3e] = ">",   -- greater-than (instead of 》)
 }
 
 local SENTENCE_ENDERS = { ["."] = true, ["!"] = true, ["?"] = true }
+
+-- Ctrl+標點＝臨時翻寬：全羅模式改出全角（漢羅模式的臨時半角走 PUNCT_MAP）
+local FULL_PUNCT_MAP = {
+  [0x2c] = "，",
+  [0x2e] = "。",
+  [0x21] = "！",
+  [0x3f] = "？",
+  [0x3a] = "：",
+  [0x3b] = "；",
+  [0x28] = "（",
+  [0x29] = "）",
+}
 
 -- ============================================================
 -- Utilities (forwarding to shared data module)
@@ -159,8 +177,25 @@ function M.func(key, env)
       end
     end
 
-    -- 全羅 mode: output half-width punctuation (instead of full-width)
+    -- 標點寬度：全羅→半角；Ctrl+標點＝臨時翻寬（漢羅→半角、全羅→全角）
     local full_roman = context:get_option("full_romanization")
+    local repr = key:repr()
+    if repr:find("Control+", 1, true) then
+      local out
+      if full_roman then
+        out = FULL_PUNCT_MAP[key.keycode]
+      else
+        out = PUNCT_MAP[key.keycode]
+      end
+      if out then
+        env.engine:commit_text(out)
+        if SENTENCE_ENDERS[out] then
+          state.capitalize_next = true
+        end
+        return 1  -- kAccepted
+      end
+      return 2  -- kNoop: let the punctuator see the bare key
+    end
     if full_roman then
       local punct = PUNCT_MAP[key.keycode]
       if punct then

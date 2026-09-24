@@ -1729,3 +1729,63 @@ def test_recommend_lighttone_variant_gets_no_badge_no_nudge():
     assert texts == ["詞A", "飼--啊", "詞B", "詞C"], lines
     variant_line = next(row for row in lines if row.endswith("飼--啊"))
     assert "◆" not in variant_line.split("|")[0], variant_line
+def test_commit_punct_width_modes():
+    """標點寬度：全羅半角直出；漢羅 Ctrl+標點臨時半角；全羅 Ctrl+標點臨時全角."""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+
+        local scenarios = {
+          { full_roman = true,  ctrl = false, name = "semicolon", code = 0x3b, want = "1;" },
+          { full_roman = true,  ctrl = false, name = "bracketleft", code = 0x5b, want = "1[" },
+          { full_roman = true,  ctrl = false, name = "apostrophe", code = 0x27, want = "1'" },
+          { full_roman = false, ctrl = false, name = "comma", code = 0x2c, want = "2" },
+          { full_roman = false, ctrl = true,  name = "Control+comma", code = 0x2c, want = "1," },
+          { full_roman = false, ctrl = true,  name = "Control+colon", code = 0x3a, want = "1:" },
+          { full_roman = true,  ctrl = true,  name = "Control+period", code = 0x2e, want = "1。" },
+          { full_roman = true,  ctrl = true,  name = "Control+bracketleft", code = 0x5b, want = "2" },
+          { full_roman = false, ctrl = true,  name = "Control+a", code = 0x61, want = "2" },
+        }
+
+        local commit = require("phah_taibun_commit")
+        for _, sc in ipairs(scenarios) do
+          local committed = "__none__"
+          local context = {
+            input = "",
+            is_composing = function() return false end,
+            has_menu = function() return false end,
+            get_option = function(_, name)
+              return sc.full_roman
+            end,
+            clear = function() end,
+          }
+          local env = {
+            engine = {
+              context = context,
+              schema = {
+                config = {
+                  get_int = function() return 10 end,
+                  get_string = function() return "asdfghjkl;" end,
+                },
+              },
+              commit_text = function(_, text) committed = text end,
+            },
+          }
+          local key = {
+            keycode = sc.code,
+            release = function() return false end,
+            repr = function() return sc.name end,
+          }
+          commit.init(env)
+          local result = commit.func(key, env)
+          local got = result .. (committed ~= "__none__" and committed or "")
+          if got ~= sc.want then
+            print(sc.name .. " => " .. got .. " (want " .. sc.want .. ")")
+            os.exit(1)
+          end
+        end
+        print("ALL_OK")
+        """
+    )
+
+    assert run_lua(script).strip() == "ALL_OK"

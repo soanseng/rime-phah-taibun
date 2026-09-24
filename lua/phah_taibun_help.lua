@@ -13,6 +13,7 @@ function M.func(input, seg, env)
     local help_items = {
       { "F4 / Ctrl+`", "開 Rime 方案選單，切換漢羅/全羅與 TL/POJ" },
       { "Ctrl+Space", "切換台文/英文輸入" },
+      { "Ctrl+標點", "標點寬度臨時翻轉（漢羅→半形、全羅→全形）" },
       { "Space", "確認目前候選（整句連打：打完整句再按）" },
       { "Tab / Shift+Tab", "移動音節選取範圍；Tab 進入逐詞選字" },
       { "PageUp / PageDown", "切換候選頁" },
@@ -28,7 +29,7 @@ function M.func(input, seg, env)
       { "\"", "引號交替：“ 開、” 關（全羅輸出 \"）" },
       { "?", "萬用查字（?iah → 選音節 → 選字）" },
       { ";", "造詞模式（;拼音 → 查字典選字）" },
-      { "Telex", "拍台文(Telex)方案：v=2/8 y=3 d=5 w=7 q=9 z=ts zh=tsh f=連字號" },
+      { "Telex", "拍台文(Telex)方案：v=2/8 x=1/4 y=3 d=5 w=7 q=9 z=ts zh=tsh f=連字號" },
       { "Emoji", "打詞附加候選（F4 可關）；`e 分類瀏覽（`e1 笑臉…）" },
       { "vvh", "本說明" },
       { "vvjit", "台語日期時間" },
