@@ -1,0 +1,302 @@
+{
+  "roundtrip_000": {
+    "exact": false
+  },
+  "roundtrip_001": {
+    "exact": false
+  },
+  "roundtrip_002": {
+    "exact": false
+  },
+  "roundtrip_003": {
+    "exact": false
+  },
+  "roundtrip_004": {
+    "exact": false
+  },
+  "roundtrip_005": {
+    "exact": false
+  },
+  "roundtrip_006": {
+    "exact": true
+  },
+  "roundtrip_007": {
+    "exact": false
+  },
+  "roundtrip_008": {
+    "exact": true
+  },
+  "roundtrip_009": {
+    "exact": false
+  },
+  "roundtrip_010": {
+    "exact": false
+  },
+  "roundtrip_011": {
+    "exact": false
+  },
+  "roundtrip_012": {
+    "exact": false
+  },
+  "roundtrip_013": {
+    "exact": false
+  },
+  "roundtrip_014": {
+    "exact": false
+  },
+  "roundtrip_015": {
+    "exact": false
+  },
+  "roundtrip_016": {
+    "exact": false
+  },
+  "roundtrip_017": {
+    "exact": false
+  },
+  "roundtrip_018": {
+    "exact": false
+  },
+  "roundtrip_019": {
+    "exact": false
+  },
+  "roundtrip_020": {
+    "exact": false
+  },
+  "roundtrip_021": {
+    "exact": false
+  },
+  "roundtrip_022": {
+    "exact": false
+  },
+  "roundtrip_023": {
+    "exact": false
+  },
+  "roundtrip_024": {
+    "exact": false
+  },
+  "roundtrip_025": {
+    "exact": false
+  },
+  "roundtrip_026": {
+    "exact": false
+  },
+  "roundtrip_027": {
+    "exact": false
+  },
+  "roundtrip_028": {
+    "exact": false
+  },
+  "roundtrip_029": {
+    "exact": false
+  },
+  "roundtrip_030": {
+    "exact": false
+  },
+  "roundtrip_031": {
+    "exact": false
+  },
+  "roundtrip_032": {
+    "exact": false
+  },
+  "roundtrip_033": {
+    "exact": true
+  },
+  "roundtrip_034": {
+    "exact": false
+  },
+  "roundtrip_035": {
+    "exact": false
+  },
+  "roundtrip_036": {
+    "exact": false
+  },
+  "roundtrip_037": {
+    "exact": false
+  },
+  "roundtrip_038": {
+    "exact": false
+  },
+  "roundtrip_039": {
+    "exact": false
+  },
+  "roundtrip_040": {
+    "exact": false
+  },
+  "roundtrip_041": {
+    "exact": false
+  },
+  "roundtrip_042": {
+    "exact": false
+  },
+  "roundtrip_043": {
+    "exact": false
+  },
+  "roundtrip_044": {
+    "exact": false
+  },
+  "roundtrip_045": {
+    "exact": false
+  },
+  "roundtrip_046": {
+    "exact": false
+  },
+  "roundtrip_047": {
+    "exact": false
+  },
+  "roundtrip_048": {
+    "exact": false
+  },
+  "roundtrip_049": {
+    "exact": false
+  },
+  "roundtrip_050": {
+    "exact": false
+  },
+  "roundtrip_051": {
+    "exact": false
+  },
+  "roundtrip_052": {
+    "exact": false
+  },
+  "roundtrip_053": {
+    "exact": false
+  },
+  "roundtrip_054": {
+    "exact": false
+  },
+  "roundtrip_055": {
+    "exact": false
+  },
+  "roundtrip_056": {
+    "exact": false
+  },
+  "roundtrip_057": {
+    "exact": false
+  },
+  "roundtrip_058": {
+    "exact": false
+  },
+  "roundtrip_059": {
+    "exact": false
+  },
+  "roundtrip_060": {
+    "exact": false
+  },
+  "roundtrip_061": {
+    "exact": false
+  },
+  "roundtrip_062": {
+    "exact": false
+  },
+  "roundtrip_063": {
+    "exact": false
+  },
+  "roundtrip_064": {
+    "exact": false
+  },
+  "roundtrip_065": {
+    "exact": false
+  },
+  "roundtrip_066": {
+    "exact": false
+  },
+  "roundtrip_067": {
+    "exact": false
+  },
+  "roundtrip_068": {
+    "exact": false
+  },
+  "roundtrip_069": {
+    "exact": false
+  },
+  "roundtrip_070": {
+    "exact": false
+  },
+  "roundtrip_071": {
+    "exact": false
+  },
+  "roundtrip_072": {
+    "exact": false
+  },
+  "roundtrip_073": {
+    "exact": false
+  },
+  "roundtrip_074": {
+    "exact": false
+  },
+  "roundtrip_075": {
+    "exact": false
+  },
+  "roundtrip_076": {
+    "exact": false
+  },
+  "roundtrip_077": {
+    "exact": true
+  },
+  "roundtrip_078": {
+    "exact": false
+  },
+  "roundtrip_079": {
+    "exact": false
+  },
+  "roundtrip_080": {
+    "exact": false
+  },
+  "roundtrip_081": {
+    "exact": true
+  },
+  "roundtrip_082": {
+    "exact": false
+  },
+  "roundtrip_083": {
+    "exact": false
+  },
+  "roundtrip_084": {
+    "exact": false
+  },
+  "roundtrip_085": {
+    "exact": false
+  },
+  "roundtrip_086": {
+    "exact": false
+  },
+  "roundtrip_087": {
+    "exact": false
+  },
+  "roundtrip_088": {
+    "exact": false
+  },
+  "roundtrip_089": {
+    "exact": false
+  },
+  "roundtrip_090": {
+    "exact": false
+  },
+  "roundtrip_091": {
+    "exact": false
+  },
+  "roundtrip_092": {
+    "exact": false
+  },
+  "roundtrip_093": {
+    "exact": false
+  },
+  "roundtrip_094": {
+    "exact": false
+  },
+  "roundtrip_095": {
+    "exact": false
+  },
+  "roundtrip_096": {
+    "exact": false
+  },
+  "roundtrip_097": {
+    "exact": false
+  },
+  "roundtrip_098": {
+    "exact": false
+  },
+  "roundtrip_099": {
+    "exact": false
+  }
+}

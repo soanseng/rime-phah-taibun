@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import os
+import random
+import re
 import shutil
 import subprocess
 import unicodedata
@@ -11,7 +14,12 @@ from pathlib import Path
 
 import pytest
 
+from scripts.extract_900leku_freq import unicode_tl_to_numeric
+
 ROOT = Path(__file__).parents[1]
+SENTENCE_CORPUS_TSV = ROOT / "tests" / "fixtures" / "sentence_corpus.tsv"
+SENTENCE_BASELINE_JSON = ROOT / "tests" / "fixtures" / "sentence_baseline.json"
+SENTENCE_ROUNDTRIP_BASELINE_JSON = ROOT / "tests" / "fixtures" / "sentence_roundtrip_baseline.json"
 
 
 @dataclass(frozen=True)
@@ -80,9 +88,16 @@ def _parse_states(stdout: str) -> dict[str, dict[str, object]]:
     return states
 
 
-@pytest.fixture(scope="session")
-def real_rime_states(tmp_path_factory):
-    runtime = _find_runtime()
+def _build_and_run(
+    runtime: RimeRuntime,
+    tmp_path_factory,
+    *,
+    smoke_args: tuple[str, ...] = (),
+) -> dict[str, dict[str, object]]:
+    """Compile the schemas + smoke binary in a fresh tmp user dir, run, parse.
+
+    Extra `smoke_args` are appended after LUA_PLUGIN SHARED_DATA USER_DATA.
+    """
     compiler = shutil.which("g++")
     if compiler is None:
         _require_or_skip("real Rime smoke test needs g++")
@@ -138,7 +153,7 @@ def real_rime_states(tmp_path_factory):
         env=env,
     )
     result = subprocess.run(
-        [str(executable), str(runtime.lua_plugin), str(runtime.shared_data_dir), str(user_data)],
+        [str(executable), str(runtime.lua_plugin), str(runtime.shared_data_dir), str(user_data), *smoke_args],
         check=True,
         capture_output=True,
         text=True,
@@ -146,6 +161,17 @@ def real_rime_states(tmp_path_factory):
         env=env,
     )
     return _parse_states(result.stdout)
+
+
+@pytest.fixture(scope="session")
+def real_rime_states(tmp_path_factory):
+    return _build_and_run(_find_runtime(), tmp_path_factory)
+
+
+@pytest.fixture(scope="session")
+def real_rime_corpus(tmp_path_factory):
+    """Same pipeline, but the binary replays tests/fixtures/sentence_corpus.tsv."""
+    return _build_and_run(_find_runtime(), tmp_path_factory, smoke_args=(str(SENTENCE_CORPUS_TSV),))
 
 
 def test_backtick_opens_symbol_menu(real_rime_states):
@@ -336,38 +362,169 @@ def test_hanlo_copy_sentence_composes_from_dictionary(real_rime_states):
 
 # === 連打 (v0.8.0): whole-sentence continuous typing ===
 # Source article (漢字/全羅對照): funbiochampion.com
-# 是按怎人退酒了後定定會袂記得啉酒醉的時所做的代誌
-LIANTUA_TARGET = "是按怎人退酒了後定定會袂記得啉酒醉的時所做的代誌"
+# Sentences live in tests/fixtures/sentence_corpus.tsv
+# (label<TAB>hanzi<TAB>keys); the title row is liantua_example, the article
+# corpus rows are liantua_c1..liantua_c7.
+LIANTUA_BATCH_LABELS = tuple(f"liantua_c{i}" for i in range(1, 8))
 
 
-def test_liantua_example_sentence_in_top3(real_rime_states):
+def _read_sentence_corpus() -> dict[str, dict[str, str]]:
+    """Parse sentence_corpus.tsv rows as {label: {hanzi, keys}}."""
+    rows: dict[str, dict[str, str]] = {}
+    for line in SENTENCE_CORPUS_TSV.read_text(encoding="utf-8").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        label, hanzi, keys = line.split("\t")
+        rows[label] = {"hanzi": hanzi, "keys": keys}
+    return rows
+
+
+def test_liantua_example_sentence_in_top3(real_rime_corpus):
     """Typing the article title's full romanization must surface the exact
     Hanzi sentence within the first three candidates (goal: 連打)."""
-    candidates = real_rime_states["liantua_example"]["candidates"]
+    expected = _read_sentence_corpus()["liantua_example"]["hanzi"]
+    candidates = real_rime_corpus["liantua_example"]["candidates"]
     top3 = [c["text"] for c in candidates[:3]]
-    assert LIANTUA_TARGET in top3, top3
+    assert expected in top3, top3
 
 
-LIANTUA_CORPUS = {
-    "liantua_c1": "這主要是酒精造成的",
-    "liantua_c2": "親像你家己的名、電話號碼",
-    "liantua_c3": "事後退酒了後",
-    "liantua_c4": "袂記得家己啉酒",
-    "liantua_c5": "完全無印象",
-    "liantua_c6": "人攏認為",
-    "liantua_c7": "是按怎會按呢",
-}
-
-
-def test_liantua_corpus_batch_hit_rate(real_rime_states):
+def test_liantua_corpus_batch_hit_rate(real_rime_corpus):
     """Article sentences: ≥70% must have the exact Hanzi text in top-3."""
+    rows = _read_sentence_corpus()
     hits = 0
-    for label, expected in LIANTUA_CORPUS.items():
-        candidates = real_rime_states[label]["candidates"]
+    for label in LIANTUA_BATCH_LABELS:
+        candidates = real_rime_corpus[label]["candidates"]
         top3 = [c["text"] for c in candidates[:3]]
-        if expected in top3:
+        if rows[label]["hanzi"] in top3:
             hits += 1
-    assert hits / len(LIANTUA_CORPUS) >= 0.7, f"hit rate {hits}/{len(LIANTUA_CORPUS)}"
+    assert hits / len(LIANTUA_BATCH_LABELS) >= 0.7, f"hit rate {hits}/{len(LIANTUA_BATCH_LABELS)}"
+
+
+def _top1_rate(rows: dict[str, dict[str, object]]) -> float:
+    return sum(1 for row in rows.values() if row["rank"] == 1) / len(rows)
+
+
+def test_sentence_first_candidate_ratchet(real_rime_corpus):
+    """Sentence-corpus ratchet: 整句 top-1 命中率不得低於 sentence_baseline.json.
+
+    For every corpus row the rank of the exact Hanzi sentence among the
+    candidates is computed (0 = absent) and the aggregate top-1 rate may only
+    move up. A missing baseline file bootstraps itself from the current run;
+    delete tests/fixtures/sentence_baseline.json to re-baseline.
+    """
+    rows = _read_sentence_corpus()
+    results: dict[str, dict[str, object]] = {}
+    for label, row in rows.items():
+        texts = [c["text"] for c in real_rime_corpus[label]["candidates"]]
+        rank = texts.index(row["hanzi"]) + 1 if row["hanzi"] in texts else 0
+        results[label] = {"rank": rank, "top3": rank in (1, 2, 3)}
+    if SENTENCE_BASELINE_JSON.exists():
+        baseline = json.loads(SENTENCE_BASELINE_JSON.read_text(encoding="utf-8"))
+        missing = set(baseline) - set(results)
+        assert not missing, f"corpus rows disappeared: {sorted(missing)}"
+        base_rate = _top1_rate(baseline)
+        assert _top1_rate(results) >= base_rate, (
+            f"top-1 rate regressed: {_top1_rate(results):.3f} < baseline {base_rate:.3f}"
+        )
+    else:
+        SENTENCE_BASELINE_JSON.write_text(
+            json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+
+def _find_900leku_sentences() -> Path:
+    """data/ is gitignored; prefer this checkout, else the main worktree."""
+    candidates = [ROOT / "data" / "900leku_sentences.txt"]
+    common = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if common.returncode == 0 and common.stdout.strip():
+        candidates.append(Path(common.stdout.strip()).parent / "data" / "900leku_sentences.txt")
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    _require_or_skip("sentence roundtrip needs data/900leku_sentences.txt (gitignored)")
+    raise AssertionError("unreachable")
+
+
+_TL_SYLLABLE_RE = re.compile(r"(?:[a-z]*[aeiou][a-z]*|[a-z]*(?:ng|m)[gh]?)[1-8]?")
+
+
+def _wellformed_tl_sentence(line: str) -> bool:
+    """Every hyphen-separated syllable must be a well-formed TL reading.
+
+    900例句 extraction artifacts (torn tokens like 't1', 'ts1 u3', trailing
+    hyphens) cannot be typed into the engine and are excluded up front; the
+    syllabic nasals (m7, nng7, tsng1, khng3, png7) that the dictionary does
+    accept stay in the pool.
+    """
+    return all(_TL_SYLLABLE_RE.fullmatch(syl) for tok in line.split() for syl in tok.split("-"))
+
+
+def _commit_word_tokens(commit: str) -> list[str]:
+    """NFC + light-tone markers→hyphens + diacritics→tone digits → word tokens."""
+    return unicode_tl_to_numeric(_nfc(commit).replace("--", "-")).split()
+
+
+def test_sentence_roundtrip_word_boundaries(tmp_path_factory):
+    """全羅 roundtrip over 900例句: word-boundary quality, ratcheted.
+
+    Typing each sentence as one continuous hyphen chain (連打 style), the
+    committed romanization must come back word-structured: after
+    normalization (NFC + light-tone markers + diacritics→tone digits) the
+    tokens are compared with the corpus line. Measured reality: the 全羅
+    commit renders the matched dictionary entry's canonical form, so
+    dictionary phrase merges and canonical tone spellings keep per-row exact
+    matches below 100% — hence the aggregate exact rate is baselined in
+    tests/fixtures/sentence_roundtrip_baseline.json and may only move up
+    (same ratchet contract as test_sentence_first_candidate_ratchet). A
+    missing baseline bootstraps from the current run; an empty commit fails
+    outright. Rows: FIXED-SEED sample of 100 from data/900leku_sentences.txt
+    minus '--' (light-tone) rows and malformed-token rows.
+    """
+    corpus_path = _find_900leku_sentences()
+    pool = [
+        line.strip()
+        for line in corpus_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and "--" not in line and _wellformed_tl_sentence(line.strip())
+    ]
+    sample = random.Random(20260924).sample(pool, 100)
+    labels = [f"roundtrip_{i:03d}" for i in range(len(sample))]
+    tsv = tmp_path_factory.mktemp("roundtrip") / "roundtrip_corpus.tsv"
+    tsv.write_text(
+        "".join(f"{label}\t{line}\t{'-'.join(line.split())}\n" for label, line in zip(labels, sample, strict=True)),
+        encoding="utf-8",
+    )
+    states = _build_and_run(_find_runtime(), tmp_path_factory, smoke_args=(str(tsv),))
+    results: dict[str, dict[str, object]] = {}
+    mismatches = []
+    for label, line in zip(labels, sample, strict=True):
+        commit = _nfc(states[label]["commit"])
+        assert commit, f"{label}: engine produced no commit for {line!r}"
+        got = _commit_word_tokens(commit)
+        want = line.split()
+        exact = got == want
+        results[label] = {"exact": exact}
+        if not exact:
+            mismatches.append(f"{label}: input {want!r} -> commit {commit!r} (normalized {got!r})")
+    exact_rate = sum(1 for row in results.values() if row["exact"]) / len(results)
+    if SENTENCE_ROUNDTRIP_BASELINE_JSON.exists():
+        baseline = json.loads(SENTENCE_ROUNDTRIP_BASELINE_JSON.read_text(encoding="utf-8"))
+        base_rate = sum(1 for row in baseline.values() if row["exact"]) / len(baseline)
+        assert exact_rate >= base_rate, (
+            f"roundtrip exact rate regressed: {exact_rate:.2f} < baseline {base_rate:.2f}; sample:\n"
+            + "\n".join(mismatches[:10])
+        )
+    else:
+        SENTENCE_ROUNDTRIP_BASELINE_JSON.write_text(
+            json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
 
 
 def test_liantua_full_romanization_commit_has_word_boundaries(real_rime_states):

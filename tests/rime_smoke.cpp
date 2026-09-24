@@ -1,7 +1,9 @@
 #include <dlfcn.h>
 
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "rime_api.h"
 
@@ -75,11 +77,64 @@ bool highlight_candidate_by_text(RimeApi* api, RimeSessionId session, const char
   return true;
 }
 
+// One sentence-corpus row: label<TAB>hanzi<TAB>keys.
+struct CorpusRow {
+  std::string label;
+  std::string hanzi;
+  std::string keys;
+};
+
+bool read_corpus_tsv(const char* path, std::vector<CorpusRow>* rows) {
+  std::ifstream in(path);
+  if (!in) return false;
+  std::string line;
+  while (std::getline(in, line)) {
+    if (!line.empty() && line.back() == '\r') line.pop_back();
+    if (line.empty() || line[0] == '#') continue;
+    const auto first = line.find('\t');
+    if (first == std::string::npos) return false;
+    const auto second = line.find('\t', first + 1);
+    if (second == std::string::npos) return false;
+    rows->push_back({line.substr(0, first), line.substr(first + 1, second - first - 1),
+                     line.substr(second + 1)});
+  }
+  return !rows->empty();
+}
+
+// Sentence-accuracy harness (optional CORPUS_TSV argument): replay every row
+// through (a) 漢羅 mode, dumping the whole-sentence candidate menu, and
+// (b) 全羅 mode, committing the sentence and printing its word-boundary text.
+int run_corpus(RimeApi* api, RimeSessionId session, const char* path) {
+  std::vector<CorpusRow> rows;
+  if (!read_corpus_tsv(path, &rows)) {
+    std::cerr << "cannot read corpus rows from " << path << '\n';
+    return 2;
+  }
+  for (const CorpusRow& row : rows) {
+    api->simulate_key_sequence(session, row.keys.c_str());
+    print_state(api, session, row.label.c_str());
+    api->clear_composition(session);
+
+    api->set_option(session, "full_romanization", true);
+    api->simulate_key_sequence(session, (row.keys + " ").c_str());
+    RIME_STRUCT(RimeCommit, commit);
+    if (api->get_commit(session, &commit)) {
+      std::cout << "COMMIT\t" << row.label << '\t' << sanitize(commit.text) << '\n';
+      api->free_commit(&commit);
+    } else {
+      std::cout << "COMMIT\t" << row.label << "\t\n";
+    }
+    api->set_option(session, "full_romanization", false);
+    api->clear_composition(session);
+  }
+  return 0;
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    std::cerr << "usage: rime_smoke LUA_PLUGIN SHARED_DATA USER_DATA\n";
+  if (argc != 4 && argc != 5) {
+    std::cerr << "usage: rime_smoke LUA_PLUGIN SHARED_DATA USER_DATA [CORPUS_TSV]\n";
     return 2;
   }
 
@@ -112,6 +167,14 @@ int main(int argc, char* argv[]) {
     std::cerr << "cannot create a phah_taibun session\n";
     api->finalize();
     return 1;
+  }
+
+  if (argc == 5) {
+    const int status = run_corpus(api, session, argv[4]);
+    api->destroy_session(session);
+    api->finalize();
+    dlclose(lua);
+    return status;
   }
 
   api->simulate_key_sequence(session, "`");

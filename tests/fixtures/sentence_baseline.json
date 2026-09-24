@@ -1,0 +1,42 @@
+{
+  "hanlo_sentence": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_c1": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_c2": {
+    "rank": 0,
+    "top3": false
+  },
+  "liantua_c3": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_c4": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_c5": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_c6": {
+    "rank": 0,
+    "top3": false
+  },
+  "liantua_c7": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_example": {
+    "rank": 1,
+    "top3": true
+  },
+  "liantua_prefix": {
+    "rank": 1,
+    "top3": true
+  }
+}
