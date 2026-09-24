@@ -119,6 +119,7 @@ def main(argv: list[str] | None = None) -> None:
     # Step 1b: Extract per-identity (han, TL) counts from iCorpus parallel files
     icorpus_han = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改漢字.txt"
     identity_freq = data / "identity_freq.tsv"
+    identity_bigrams = data / "identity_bigrams.tsv"
     if icorpus_han.exists() and icorpus_file.exists():
         steps_ok &= run_step(
             "Extract iCorpus per-identity frequencies",
@@ -131,6 +132,8 @@ def main(argv: list[str] | None = None) -> None:
                 str(icorpus_file),
                 "--output",
                 str(identity_freq),
+                "--bigram-output",
+                str(identity_bigrams),
             ],
         )
     else:
@@ -480,12 +483,14 @@ def main(argv: list[str] | None = None) -> None:
     dict_yaml = out / "phah_taibun.dict.yaml"
     if sentence_files and dict_rebuilt and dict_yaml.exists():
         phrase_output = data / "new_phrases.txt"
-        steps_ok &= run_step(
-            "Build bigram phrases from all corpora",
+        phrase_cmd = (
             [python, "scripts/build_phrases.py", "--dict", str(dict_yaml), "--sentences"]
             + [str(f) for f in sentence_files]
-            + ["--output", str(phrase_output), "--min-count", "5"],
+            + ["--output", str(phrase_output), "--min-count", "5"]
         )
+        if identity_bigrams.exists():
+            phrase_cmd.extend(["--identity-bigrams", str(identity_bigrams)])
+        steps_ok &= run_step("Build bigram phrases from all corpora", phrase_cmd)
         # Append new phrases to dict.yaml
         if phrase_output.exists() and phrase_output.stat().st_size > 0:
             with open(dict_yaml, "a", encoding="utf-8") as out_f, open(phrase_output, encoding="utf-8") as in_f:

@@ -209,3 +209,128 @@ class TestBuildPhrasesFromFiles:
         content = output.read_text(encoding="utf-8")
         assert "我袂" in content
         assert "gua beh" in content
+
+
+class TestGenerateIdentityPhraseEntries:
+    """Identity-attested phrase mining: (漢字, 讀音) pairs from parallel corpora.
+
+    The toneless reverse-index path guesses hanzi by top weight and has
+    fabricated wrong identities in production (corpus evidence for 一種
+    emitted as 這種 instead). The identity path only emits pairs whose
+    adjacent (hanzi, code) tokens were both observed in aligned text.
+    """
+
+    def test_attested_identity_bigram_emits_entry(self):
+        from collections import Counter
+        from math import log10
+
+        from scripts.build_phrases import generate_identity_phrase_entries
+
+        bigrams = Counter({(("一", "tsit8"), ("種", "tsiong2")): 7})
+        entries = generate_identity_phrase_entries(bigrams, existing_keys=set(), min_count=5)
+        assert entries == [
+            {
+                "hanlo": "一種",
+                "rime_key": "tsit8 tsiong2",
+                "weight": int(500 * (1.0 + 0.3 * log10(8))),
+            }
+        ]
+
+    def test_hyphenated_token_normalized_to_spaces(self):
+        from collections import Counter
+
+        from scripts.build_phrases import generate_identity_phrase_entries
+
+        bigrams = Counter({(("一", "tsit8-e7"), ("好", "ho2")): 5})
+        entries = generate_identity_phrase_entries(bigrams, existing_keys=set(), min_count=5)
+        assert entries and entries[0]["rime_key"] == "tsit8 e7 ho2"
+
+    def test_existing_identity_skipped(self):
+        from collections import Counter
+
+        from scripts.build_phrases import generate_identity_phrase_entries
+
+        bigrams = Counter({(("一", "tsit8"), ("種", "tsiong2")): 7})
+        entries = generate_identity_phrase_entries(bigrams, existing_keys={("一種", "tsit8 tsiong2")}, min_count=5)
+        assert entries == []
+
+    def test_below_min_count_skipped(self):
+        from collections import Counter
+
+        from scripts.build_phrases import generate_identity_phrase_entries
+
+        bigrams = Counter({(("一", "tsit8"), ("種", "tsiong2")): 4})
+        entries = generate_identity_phrase_entries(bigrams, existing_keys=set(), min_count=5)
+        assert entries == []
+
+
+class TestHeuristicIdentityCoexistence:
+    """The toneless heuristic and identity-attested paths must not collide.
+
+    Same (hanlo, rime_key) from both paths would emit duplicate dict rows
+    (a fatal validate_dict gate); the identity-attested entry wins.
+    Ambiguous toneless codes are skipped by the heuristic — it cannot know
+    which identity the corpus observed (the 一種/這種 production bug).
+    """
+
+    def _write_dict(self, tmp_path, rows):
+        d = tmp_path / "dict.yaml"
+        d.write_text(
+            '---\nname: t\nversion: "1"\nsort: by_weight\n...\n' + "".join(f"{t}\t{k}\t{w}\n" for t, k, w in rows),
+            encoding="utf-8",
+        )
+        return d
+
+    def test_identity_entry_beats_heuristic_duplicate(self, tmp_path):
+        from scripts.build_phrases import build_phrases_from_files
+
+        d = self._write_dict(tmp_path, [("一", "tsit8", 900), ("種", "tsiong2", 800)])
+        sent = tmp_path / "s.txt"
+        sent.write_text("tsit8 tsiong2\n" * 7, encoding="utf-8")
+        big = tmp_path / "big.tsv"
+        big.write_text("一\ttsit8\t種\ttsiong2\t7\n", encoding="utf-8")
+        out = tmp_path / "p.txt"
+        n = build_phrases_from_files(
+            dict_path=d,
+            sentence_paths=[sent],
+            output_path=out,
+            min_count=5,
+            identity_bigrams_path=big,
+        )
+        lines = out.read_text(encoding="utf-8").splitlines()
+        keys = [tuple(row.split("\t")[:2]) for row in lines]
+        assert n >= 1
+        assert keys.count(("一種", "tsit8 tsiong2")) == 1, f"duplicate emitted: {lines}"
+
+    def test_unambiguous_heuristic_still_emits(self, tmp_path):
+        from scripts.build_phrases import build_phrases_from_files
+
+        d = self._write_dict(tmp_path, [("我", "gua2", 900), ("曉", "hiau2", 800)])
+        sent = tmp_path / "s.txt"
+        sent.write_text("gua2 hiau2\n" * 6, encoding="utf-8")
+        out = tmp_path / "p.txt"
+        build_phrases_from_files(dict_path=d, sentence_paths=[sent], output_path=out, min_count=5)
+        assert "我曉" in out.read_text(encoding="utf-8")
+
+    def test_junk_toneless_token_rejected(self):
+        """iCorpus carries torn tokens (bare 'c'); an identity entry whose
+        code has a digitless syllable is a fatal validate_dict gate."""
+        from collections import Counter
+
+        from scripts.build_phrases import generate_identity_phrase_entries
+
+        bigrams = Counter({(("三", "sam1 c"), ("新品", "san2 phin2")): 9})
+        assert generate_identity_phrase_entries(bigrams, set(), min_count=5) == []
+
+    def test_tone_nine_identity_accepted(self):
+        """The project's tone inventory is 1-9; tone-9 attestations
+        (e.g. tsiûⁿ-tiāu-style double-acute readings) must survive."""
+        from collections import Counter
+
+        from scripts.build_phrases import _identity_code_ok, generate_identity_phrase_entries
+
+        assert _identity_code_ok("sam1-c") is False
+        assert _identity_code_ok("phinn9") is True
+        bigrams = Counter({(("哼", "hnn9"), ("咧", "leh4")): 6})
+        entries = generate_identity_phrase_entries(bigrams, set(), min_count=5)
+        assert [e["rime_key"] for e in entries] == ["hnn9 leh4"]

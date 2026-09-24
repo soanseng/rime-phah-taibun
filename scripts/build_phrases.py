@@ -133,11 +133,65 @@ def generate_phrase_entries(
     return entries
 
 
+_NUMBERED_SYLLABLE_RE = re.compile(r"[a-z]+[1-9]$")
+
+
+def _identity_code_ok(token: str) -> bool:
+    """Every hyphen/space syllable must be letters + a tone digit.
+
+    Torn corpus tokens (a bare 'c', trailing hyphens) would otherwise reach
+    the dictionary as digitless syllables — a fatal validate_dict gate
+    (2026-09-24 production rebuild).
+    """
+    return all(_NUMBERED_SYLLABLE_RE.match(part) for part in re.split(r"[ -]+", token.strip()))
+
+
+def generate_identity_phrase_entries(
+    bigrams: Counter,
+    existing_keys: set[tuple[str, str]],
+    min_count: int = 5,
+    base_weight: int = 500,
+) -> list[dict]:
+    """Generate dictionary entries from identity-attested adjacent pairs.
+
+    Each bigram key is ((han1, tl1), (han2, tl2)) observed in aligned
+    parallel text, so the emitted entry carries exactly the attested word
+    identity — unlike the toneless reverse-index path, which picks hanzi by
+    weight and can fabricate a different identity (e.g. corpus evidence for
+    一種 emitted as 這種).
+
+    Args:
+        bigrams: Counter of ((han1, tl1), (han2, tl2)) → count.
+        existing_keys: Set of (hanlo, rime_key) already in the dictionary.
+        min_count: Minimum attestation count to qualify.
+        base_weight: Base weight for generated entries.
+
+    Returns:
+        List of dicts with ``hanlo``, ``rime_key``, ``weight`` keys.
+    """
+    entries: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for ((h1, t1), (h2, t2)), count in bigrams.items():
+        if count < min_count:
+            continue
+        if not (_identity_code_ok(t1) and _identity_code_ok(t2)):
+            continue
+        hanlo = h1 + h2
+        rime_key = f"{t1.replace('-', ' ')} {t2.replace('-', ' ')}"
+        if (hanlo, rime_key) in existing_keys or (hanlo, rime_key) in seen:
+            continue
+        seen.add((hanlo, rime_key))
+        weight = int(base_weight * (1.0 + log10(1 + count) * 0.3))
+        entries.append({"hanlo": hanlo, "rime_key": rime_key, "weight": weight})
+    return entries
+
+
 def build_phrases_from_files(
     dict_path: Path,
     sentence_paths: list[Path],
     output_path: Path,
     min_count: int = 5,
+    identity_bigrams_path: Path | None = None,
 ) -> int:
     """End-to-end phrase building from dict and sentence files.
 
@@ -182,9 +236,24 @@ def build_phrases_from_files(
             if line:
                 all_sentences.append(line)
 
-    # Extract bigrams and generate entries
+    # Identity-attested pairs first: parallel-text evidence carries the
+    # exact word identity, and their keys shield the heuristic path from
+    # emitting a duplicate (text, key) row (fatal duplicate-entry gate).
+    identity_entries: list[dict] = []
+    if identity_bigrams_path and Path(identity_bigrams_path).is_file():
+        identity_bigrams: Counter = Counter()
+        for line in Path(identity_bigrams_path).read_text(encoding="utf-8").splitlines():
+            cols = line.split("\t")
+            if len(cols) != 5:
+                continue
+            h1, t1, h2, t2, n = cols
+            identity_bigrams[((h1, t1), (h2, t2))] += int(n)
+        identity_entries = generate_identity_phrase_entries(identity_bigrams, existing_keys, min_count=min_count)
+
+    # Extract bigrams and generate heuristic entries (ambiguous codes skipped)
     bigrams = extract_bigrams(all_sentences)
-    entries = generate_phrase_entries(bigrams, reverse_index, existing_keys, min_count=min_count)
+    existing_keys |= {(e["hanlo"], e["rime_key"]) for e in identity_entries}
+    entries = identity_entries + generate_phrase_entries(bigrams, reverse_index, existing_keys, min_count=min_count)
 
     # Write output
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -202,6 +271,12 @@ def main():
     parser.add_argument("--sentences", type=Path, nargs="+", required=True, help="Sentence file(s)")
     parser.add_argument("--output", type=Path, required=True, help="Output path for generated entries")
     parser.add_argument("--min-count", type=int, default=5, help="Minimum bigram count (default: 5)")
+    parser.add_argument(
+        "--identity-bigrams",
+        type=Path,
+        default=None,
+        help="identity_bigrams.tsv from extract_identity_freq --bigram-output",
+    )
     args = parser.parse_args()
 
     count = build_phrases_from_files(
@@ -209,6 +284,7 @@ def main():
         sentence_paths=args.sentences,
         output_path=args.output,
         min_count=args.min_count,
+        identity_bigrams_path=args.identity_bigrams,
     )
     print(f"Generated {count} phrase entries → {args.output}", file=sys.stderr)
 

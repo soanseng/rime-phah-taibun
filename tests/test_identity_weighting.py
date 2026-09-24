@@ -139,3 +139,81 @@ class TestLoadIdentityFrequencies:
         tsv.write_text("人\tlang5\t800\n膿\tlang5\t3\n記得\tki3-tit4\n", encoding="utf-8")
         loaded = load_identity_frequencies(tsv)
         assert loaded == {("人", "lang5"): 800, ("膿", "lang5"): 3}
+
+
+class TestExtractIdentityBigrams:
+    """Adjacent (漢字, 讀音) identity pairs from line-aligned parallel text."""
+
+    def test_attested_adjacent_pair(self):
+        import io
+
+        from scripts.extract_identity_freq import extract_identity_bigrams
+
+        han = io.StringIO("一 種 新 的\n一 種 人\n")
+        tl = io.StringIO("tsit8 tsiong2 sin1 e5\ntsit8 tsiong2 lang5\n")
+        bigrams = extract_identity_bigrams(han, tl)
+        assert bigrams[(("一", "tsit8"), ("種", "tsiong2"))] == 2
+        assert bigrams[(("種", "tsiong2"), ("新", "sin1"))] == 1
+
+    def test_unaligned_lines_skipped(self):
+        import io
+
+        from scripts.extract_identity_freq import extract_identity_bigrams
+
+        han = io.StringIO("一 種 新 的\n一 種\n")
+        tl = io.StringIO("tsit8 tsiong2 sin1 e5\ntsit8 tsiong2 lang5\n")
+        bigrams = extract_identity_bigrams(han, tl)
+        assert bigrams[(("一", "tsit8"), ("種", "tsiong2"))] == 1
+
+    def test_non_cjk_han_token_skipped(self):
+        import io
+
+        from scripts.extract_identity_freq import extract_identity_bigrams
+
+        han = io.StringIO("GPS 好用\n")
+        tl = io.StringIO("tshuā-lōo hó-iōng\n")
+        bigrams = extract_identity_bigrams(han, tl)
+        assert sum(bigrams.values()) == 0
+
+    def test_filtered_token_between_breaks_adjacency(self):
+        import io
+
+        from scripts.extract_identity_freq import extract_identity_bigrams
+
+        # 靠 GPS 𤆬路: the Latin token is filtered, but 靠/𤆬路 are NOT adjacent words
+        han = io.StringIO("靠 GPS 𤆬路\n")
+        tl = io.StringIO("khoo3 GPS tshua7-loo7\n")
+        bigrams = extract_identity_bigrams(han, tl)
+        assert sum(bigrams.values()) == 0
+
+    def test_bigram_tsv_serialization_roundtrip(self, tmp_path):
+        import subprocess
+        import sys as _sys
+
+        han = tmp_path / "han.txt"
+        tl = tmp_path / "tl.txt"
+        han.write_text("一 種 新 的\n一 種 人\n", encoding="utf-8")
+        tl.write_text("tsit8 tsiong2 sin1 e5\ntsit8 tsiong2 lang5\n", encoding="utf-8")
+        out = tmp_path / "id.tsv"
+        big = tmp_path / "big.tsv"
+        subprocess.run(
+            [
+                _sys.executable,
+                "scripts/extract_identity_freq.py",
+                "--han",
+                str(han),
+                "--tl",
+                str(tl),
+                "--output",
+                str(out),
+                "--bigram-output",
+                str(big),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        rows = [line.split("\t") for line in big.read_text(encoding="utf-8").splitlines()]
+        assert all(len(cols) == 5 for cols in rows)
+        counts = {(c[0], c[1], c[2], c[3]): int(c[4]) for c in rows}
+        assert counts[("一", "tsit8", "種", "tsiong2")] == 2

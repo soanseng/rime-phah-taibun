@@ -770,3 +770,5 @@ build 後對成品字典執行固定查詢集（如 `chi2`、`tsiah8`、`tai5`�
 #### 維護記錄（2026-09-24）
 
 - `data/` legacy 目錄已補 `.source-revision` 標記（值＝download_resources.sh pinned revision；ChhoeTaigiDatabase 9 CSV 內容已對上游 pinned revision 逐一 sha256 驗證），`download_resources.sh` 現可全程冪等完跑。
+
+- **Identity-bigram 挖礦上線＋歧義 guard 實驗（撤回）**：`extract_identity_freq --bigram-output` 從 iCorpus 平行檔萃取相鄰 (漢字, 讀音) 對（192,897 組），`build_phrases --identity-bigrams` 以**實證身份**發射詞組（同鍵時 identity 優先、heuristic 以 existing_keys 聯集去重；撕裂 token 音節過濾；聲調 1-9）。嚴格歧義 guard（無調碼多漢字即跳過）實測**撤回**：抑制 13,532 條 heuristic 詞組後，liantua top-1 8/10→7/10、900例句 roundtrip 5%→3%——heuristic 詞組攜帶的斷詞訊號價值高於其偽造風險（`keh8一`/`le̍h講` 類混字偽詞為已知殘留問題，待更多語料有 identity 證據後再議）。roundtrip 基準 5%→4% 重設：唯一翻轉列 roundtrip_008 是「的工課」（identity 實證 ×10，本輪新詞）整詞命中使 的+工課 合併為單一 commit token——覆蓋改善被 exact-token 指標懲罰，證據見 test_sentence_roundtrip_word_boundaries docstring。
