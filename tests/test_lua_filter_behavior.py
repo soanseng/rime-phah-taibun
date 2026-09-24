@@ -1789,3 +1789,26 @@ def test_commit_punct_width_modes():
     )
 
     assert run_lua(script).strip() == "ALL_OK"
+
+def test_symbols_menu_includes_halfwidth_bracket_pairs():
+    """反引號符號選單：半形括號對可選，既有台文標點不縮水."""
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(_, _, _, text, comment)
+          return { text = text, comment = comment }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand.text)
+        end
+
+        require("phah_taibun_symbols").func("`", { start = 0, _end = 1 }, {})
+        for _, t in ipairs(yielded) do
+          print(t)
+        end
+        """
+    )
+
+    texts = set(run_lua(script).splitlines())
+    assert {"()", "[]", "{}", "<>", "、", "「」", "《》"} <= texts
