@@ -9,16 +9,20 @@ carries docx/odt/pdf of the same table; only the ODT is parsed and only
 Layouts (auto-detected per table from header text):
 - stage-1 station lists: 號次 / 業者代碼 / 國語 / 臺灣台語 (第一優勢腔 /
   建議漢字 / 第二優勢腔 / 說明) / 臺灣客語 (…). 第一優勢腔 is the primary
-  reading; 建議漢字 is a recommended hanji variant sharing it; 第二優勢腔
-  becomes an extra reading of the 國語 hanji after stripping 又唸
-  parentheses.
+  reading (weight 700); 建議漢字 is a recommended hanji variant sharing
+  it; 第二優勢腔 becomes an extra reading at a lower weight (650).
 - stage-2 placename list: 序號 / 地名 / 客語拼音 / 客語備註 / 台語拼音 /
-  台語備註. Only 地名 + 台語拼音 are used.
+  台語備註. Only 地名 + 台語拼音 are used. Parenthesized alternates pair
+  with parenthesized hanji when counts align: 「中庄(大庄)」 +
+  「Tiong-tsng (Tuā-tsng)」 → (中庄, Tiong-tsng) + (大庄, Tuā-tsng).
 
-Cells use ``·`` as the empty placeholder. Codes reuse
+Cells use ``·`` as the empty placeholder. Readings expand slash variants
+and parenthesized alternates; a single-syllable slash tail (partial-
+syllable variant like 「tshun/tshuan」) is dropped instead of becoming a
+bogus one-syllable word. Codes reuse
 build_dictionary_supplement.romanization_to_rime_key. Output lines are
-華語地名<TAB>漢字<TAB>rime key; the 華語 column feeds the hoabun_map
-stage from the same file.
+華語地名<TAB>漢字<TAB>rime key<TAB>weight; the 華語 column feeds the
+hoabun_map stage from the same file.
 """
 
 from __future__ import annotations

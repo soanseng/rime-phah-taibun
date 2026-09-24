@@ -12,9 +12,10 @@ Two layouts:
 - stage-2 placename list: 序號 / 地名 / 客語拼音 / 客語備註 / 台語拼音 / 台語備註
 
 Cells use ``·`` as the empty placeholder; merged section rows (single
-cell) and the header rows are skipped. 第一優勢腔 is the primary
-reading (user-confirmed); 建議漢字 shares it, 第二優勢腔 becomes an
-extra reading after stripping 又唸 parentheses.
+cell) and the header rows are skipped. 第一優勢腔 is the primary reading
+(weight 700, user-confirmed); 第二優勢腔 becomes an extra reading at
+weight 650. Slash variants and parenthesized alternates expand into
+separate readings; single-syllable slash tails are dropped.
 """
 
 import zipfile
