@@ -95,6 +95,8 @@ def real_rime_states(tmp_path_factory):
             shutil.copy2(source, user_data / source.name)
     shutil.copytree(ROOT / "lua", user_data / "lua")
     shutil.copy2(ROOT / "rime.lua", user_data / "rime.lua")
+    if (ROOT / "opencc").is_dir():
+        shutil.copytree(ROOT / "opencc", user_data / "opencc")
 
     build_dir = user_data / "build"
     build_dir.mkdir()
@@ -561,3 +563,151 @@ def test_digitless_hyphenated_dict_word(real_rime_states):
         state = real_rime_states[label]
         texts = [c["text"] for c in state["candidates"]]
         assert target in texts[:10], (label, texts)
+
+
+def test_comma_cascades_word_with_full_width_comma(real_rime_states):
+    """組字中按逗號: 上屏候選詞加全形逗號 (liur 式逐字標點的基準行為)."""
+    state = real_rime_states["hanlo_word_comma"]
+    assert state.get("commit") == "食\uff0c", state
+
+
+def test_period_commits_word_with_full_width_period(real_rime_states):
+    """組字中按句號: 上屏候選詞加全形句號.
+
+    預設 preset 的 paging_with_comma_period 在 has_menu 時把 period 綁成
+    Page_Down, 按鍵會被翻頁吃掉; schema 以同名綁定中和 (rime-liur 作法).
+    """
+    state = real_rime_states["hanlo_word_period"]
+    assert state.get("commit") == "食。", state
+
+
+def test_full_roman_period_commits_romanized_word_with_ascii_period(real_rime_states):
+    """全羅模式組字中按句號: 輸出羅馬字加半形句點 (全羅標點為半形)."""
+    state = real_rime_states["fullroman_word_period"]
+    assert state.get("commit") == "tsia̍h.", state
+
+
+def test_telex_period_commits_word_with_full_width_period(real_rime_states):
+    """Telex 方案同樣支援組字中按句號 -> 詞加全形句號."""
+    state = real_rime_states["telex_word_period"]
+    assert state.get("commit") == "食。", state
+
+
+def test_lparen_cascades_word_with_full_width_paren(real_rime_states):
+    """組字中按 ( : 上屏候選詞加全形左括號 (自動上屏, 不必再按確認鍵)."""
+    state = real_rime_states["hanlo_word_lparen"]
+    assert state.get("commit") == "食\uff08", state
+
+
+def test_slash_cascades_word_with_dunhao(real_rime_states):
+    """組字中按 / : 上屏候選詞加頓號、(自動上屏)."""
+    state = real_rime_states["hanlo_word_slash"]
+    assert state.get("commit") == "食、", state
+
+
+def test_angle_bracket_cascades_word_with_book_title_mark(real_rime_states):
+    """組字中按 < : 上屏候選詞加書名號《 (自動上屏)."""
+    state = real_rime_states["hanlo_word_angle"]
+    assert state.get("commit") == "食《", state
+
+
+def test_underscore_commits_directly_when_not_composing(real_rime_states):
+    """空白時按 _ : 直接上屏破折號——, 無須確認鍵."""
+    state = real_rime_states["hanlo_empty_underscore"]
+    assert state.get("commit") == "——", state
+
+
+def test_quote_key_alternates_full_width_quotes(real_rime_states):
+    """漢羅模式 " 鍵: 第一次按輸出“、第二次按輸出” (交替配對)."""
+    assert real_rime_states["hanlo_quote_first"].get("commit") == "“", real_rime_states["hanlo_quote_first"]
+    assert real_rime_states["hanlo_quote_second"].get("commit") == "”", real_rime_states["hanlo_quote_second"]
+
+
+def test_full_roman_slash_stays_half_width(real_rime_states):
+    """全羅模式 / : 羅馬字加半形斜線 (全羅標點維持半形)."""
+    state = real_rime_states["fullroman_word_slash"]
+    assert state.get("commit") == "tsia̍h/", state
+
+
+def test_mixed_hanlo_word_gets_full_width_period(real_rime_states):
+    """漢羅混用 (拉丁+漢字混合詞, 如 á無) 也得到全形句號.
+
+    標點全形/半形只由 full_romanization 決定; 漢羅模式下即使是純羅馬字
+    候選 (á無 = 拉丁 á + 漢字 無) 仍輸出全形標點.
+    """
+    state = real_rime_states["hanlo_mixed_word_period"]
+    assert state.get("commit") == "á無。", state
+
+
+def test_symbol_menu_lists_category_directory(real_rime_states):
+    """` 開啟符號選單: 第一頁是 50 類分類目錄 (liur 式), 舊有的調號/標點清單保留."""
+    state = real_rime_states["backtick_menu"]
+    joined = " ".join(c["text"] for c in state["candidates"])
+    assert state["count"] > 0
+    # page 1 shows the directory (liur parity): 一般 and 性別 decades visible.
+    assert "[01]一般" in joined and "[25]性別" in joined, joined
+
+
+def test_symbol_category_25_opens_gender_symbols(real_rime_states):
+    """`25 直達「性別」分類: 候選為該分類的符號 (非目錄)."""
+    state = real_rime_states["symbols_cat25"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert "♂" in texts and "♀" in texts, texts
+
+
+def test_symbol_category_01_opens_general_punctuation(real_rime_states):
+    """`01 直達「一般」分類: 含常用全形標點."""
+    state = real_rime_states["symbols_cat01"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert "\uff0c" in texts and "\u3002" in texts, texts
+
+
+def test_emoji_candidates_appended_for_matching_word(real_rime_states):
+    """漢羅模式: 一 (tsit8) 候選後附帶 emoji 變體 1️⃣ (rime-emoji, 預設開)."""
+    on = real_rime_states["emoji_on"]
+    texts = [c["text"] for c in on["candidates"]]
+    assert "一" in texts
+    assert "1️⃣" in texts, texts
+
+
+def test_taiwan_name_offers_taiwan_flag(real_rime_states):
+    """「台灣/臺灣」候選可附加台灣旗幟 🇹🇼."""
+    state = real_rime_states["emoji_taiwan"]
+    texts = [candidate["text"] for candidate in state["candidates"]]
+    assert any(text in ("台灣", "臺灣") for text in texts)
+    assert any("🇹🇼" in text for text in texts), texts
+
+
+def test_emoji_option_off_removes_emoji_candidates(real_rime_states):
+    """關掉 emoji_conversion 後不再出現 emoji 候選."""
+    off = real_rime_states["emoji_off"]
+    texts = [c["text"] for c in off["candidates"]]
+    assert "一" in texts
+    assert "1️⃣" not in texts, texts
+
+
+def test_emoji_menu_lists_unicode_groups(real_rime_states):
+    """`e 開啟 emoji 分類目錄 (Unicode 官方分群)."""
+    state = real_rime_states["emoji_menu"]
+    joined = " ".join(c["text"] for c in state["candidates"])
+    assert state["count"] > 0
+    assert "笑臉與情感" in joined and "食物與飲料" in joined, joined
+    # 完整 fully-qualified 全集 (含膚色/ZWJ 序列): 人與身體必須是大類.
+    import re as _re
+
+    m = _re.search(r"人與身體 \((\d+)\)", joined)
+    assert m and int(m.group(1)) > 2000, joined
+
+
+def test_emoji_group1_browsable_and_selectable(real_rime_states):
+    """`e1 直達「笑臉與情感」: 候選為可選的 emoji."""
+    state = real_rime_states["emoji_group1"]
+    texts = [c["text"] for c in state["candidates"]]
+    assert any(t in texts for t in ("😀", "😄", "😁")), texts
+
+
+def test_skin_tone_emoji_survives_category_paging(real_rime_states):
+    """People & Body category exposes a skin-tone candidate after paging."""
+    state = real_rime_states["emoji_group2_skin_tone"]
+    texts = [candidate["text"] for candidate in state["candidates"]]
+    assert "👍🏻" in texts, texts

@@ -458,6 +458,7 @@ if ($existingSchemas.Count -gt 0) {
 $SCHEMA_FILES = @()
 $LUA_FILES = @()
 $HAS_RIME_LUA = $false
+$OPENCC_FILES = @()
 
 if ($USE_LOCAL_PAYLOAD) {
     Write-Host "正在讀取安裝包內建檔案清單..."
@@ -468,6 +469,9 @@ if ($USE_LOCAL_PAYLOAD) {
     }
     Get-ChildItem (Join-Path $ProjectRoot "lua") -Filter "phah_taibun_*.lua" -File | ForEach-Object {
         $LUA_FILES += "lua/$($_.Name)"
+    }
+    Get-ChildItem (Join-Path $ProjectRoot "opencc") -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $OPENCC_FILES += "opencc/$($_.Name)"
     }
     $HAS_RIME_LUA = Test-Path (Join-Path $ProjectRoot "rime.lua")
 } else {
@@ -494,6 +498,8 @@ if ($USE_LOCAL_PAYLOAD) {
             $SCHEMA_FILES += $path
         } elseif ($path -match "^lua/phah_taibun_.*\.lua$") {
             $LUA_FILES += $path
+        } elseif ($path -match "^opencc/.+") {
+            $OPENCC_FILES += $path
         } elseif ($path -eq "rime.lua") {
             $HAS_RIME_LUA = $true
         }
@@ -503,11 +509,12 @@ if ($USE_LOCAL_PAYLOAD) {
 if (-not $INSTALL_PHAH) {
     $SCHEMA_FILES = @()
     $LUA_FILES = @()
+    $OPENCC_FILES = @()
     $HAS_RIME_LUA = $false
     Write-Host "略過拍台文方案檔案（僅安裝嘸蝦米）" -ForegroundColor Yellow
 }
 
-$TOTAL = $SCHEMA_FILES.Count + $LUA_FILES.Count + $(if ($HAS_RIME_LUA) { 1 } else { 0 })
+$TOTAL = $SCHEMA_FILES.Count + $LUA_FILES.Count + $OPENCC_FILES.Count + $(if ($HAS_RIME_LUA) { 1 } else { 0 })
 Write-Host "找到 $($SCHEMA_FILES.Count) 個方案檔案、$($LUA_FILES.Count) 個 Lua 模組"
 Write-Host ""
 
@@ -518,6 +525,7 @@ Write-Host "[ Step 1: 下載拍台文方案檔案 ]" -ForegroundColor Green
 
 New-Item -ItemType Directory -Force -Path $RIME_DIR | Out-Null
 New-Item -ItemType Directory -Force -Path "$RIME_DIR\lua" | Out-Null
+New-Item -ItemType Directory -Force -Path "$RIME_DIR\opencc" | Out-Null
 
 $current = 0
 
@@ -532,6 +540,14 @@ foreach ($file in $SCHEMA_FILES) {
         Show-Progress -Current $current -Total $TOTAL -FileName $filename
         Copy-OrDownload -SourcePath $file -DestinationPath "$RIME_DIR\$filename"
     }
+}
+
+# 下載 opencc/ 檔案（Emoji 資料）到 Rime opencc 子目錄
+foreach ($file in $OPENCC_FILES) {
+    $current++
+    $filename = Split-Path $file -Leaf
+    Show-Progress -Current $current -Total $TOTAL -FileName "opencc/$filename"
+    Copy-OrDownload -SourcePath $file -DestinationPath "$RIME_DIR\opencc\$filename"
 }
 
 # 下載 lua/ 檔案

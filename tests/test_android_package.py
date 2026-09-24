@@ -108,7 +108,7 @@ def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None
     for name in [*REQUIRED_PHAH, *REQUIRED_REVERSE, INSTALL_NAME, "rime.lua", "default.custom.yaml"]:
         assert name in names, f"缺少 {name}"
 
-    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 20
+    assert len(list((tree / "lua").glob("phah_taibun_*.lua"))) == 21
     assert not list((tree / "lua").glob("liu_*.lua"))
 
     rime_lua = (tree / "rime.lua").read_text(encoding="utf-8")
@@ -161,10 +161,11 @@ def test_liur_closure_is_complete_and_filtered(tmp_path: Path) -> None:
     lunar_tree = {p.name for p in (tree / "lua" / "lunar_calendar").iterdir() if p.is_file()}
     assert lunar_src == lunar_tree
 
-    # opencc 閉包整目錄
+    # opencc 閉包: liur 整目錄 + 拍台文自帶 emoji 資產
     opencc_src = {p.name for p in (LIUR_DIR / "opencc").iterdir() if p.is_file()}
     opencc_tree = {p.name for p in (tree / "opencc").iterdir() if p.is_file()}
-    assert opencc_src == opencc_tree
+    assert opencc_src <= opencc_tree
+    assert {"emoji.json", "emoji_word.txt", "emoji_category.txt"} <= opencc_tree
     assert "liu_w2c.txt" in opencc_tree
 
     for forbidden in FORBIDDEN_NAMES:
@@ -286,7 +287,11 @@ def test_cli_default_bundle_is_the_liur_free_variant(tmp_path: Path) -> None:
     assert "liur.schema.yaml" not in names
     assert "LIUR-PROVENANCE.txt" not in names
     assert not any(name.startswith("lua/liu_") for name in names)
-    assert not any(name.startswith("opencc/") for name in names)
+    # opencc/ 現在是拍台文自帶的 Emoji 資產 (rime-emoji, LGPL-3.0),
+    # 預設包就要有; 嘸蝦米的 liur 變體檔案仍不在.
+    assert "opencc/emoji.json" in names
+    assert "opencc/emoji_word.txt" in names
+    assert "opencc/emoji_category.txt" in names
 
 
 def test_cli_with_liur_naming_does_not_clobber_the_light_bundle() -> None:

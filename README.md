@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dict Entries](https://img.shields.io/badge/dict-218K%20entries-green?style=flat-square)](#)
-[![Lua Modules](https://img.shields.io/badge/lua-20%20modules-orange?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-21%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://taigi.anatomind.com/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
@@ -317,7 +317,8 @@ phah_taibun_recommend:
 
 ### 符號選單
 
-按 `` ` `` (反引號) 開啟符號選單：
+按 `` ` `` (反引號) 開啟符號選單，共 50 類分類，輸入兩位數字直達（如 `` `25 `` 性別、`` `46 `` 星星）；按 `` `e `` 瀏覽 Emoji 分類（`` `e1 `` 笑臉與情感…，Unicode 官方分群）：
+
 
 - 台羅調號：á à â ā a̍
 - POJ 特殊字母：o͘ ⁿ
@@ -491,6 +492,8 @@ Font="Iansui 12"
 | `Shift+字母` | 大寫字母 | 打大寫字母（不會切換到英文模式） |
 | `F4` | 方案選單 | 切換輸出模式（漢羅TL/漢羅POJ/全羅TL/全羅POJ／自動/手動漢羅） |
 | `~` | 注音反查 | 用注音打華語→自動轉台語候選 |
+| `,` `.` | 全形標點直出 | 組字中或空白時：`,`→「，」、`.`→「。」；全羅模式輸出半形。不翻頁（翻頁用 `[` `]`） |
+| `(` `)` `/` `_` `<` `>` `"` | 自動上屏標點 | 漢羅：（ ） 、 —— 《 》；`"` 交替“ ”。全羅模式輸出半形 |
 | `` ` `` | 符號選單 | 台羅調號、方音符號、台文標點 |
 | `?` | 萬用查字 | 二段式：先選音節再選字 |
 | `;` | 造詞模式 | 查字典選字（;拼音） |
@@ -569,7 +572,7 @@ schema/                        Rime 方案檔（安裝到 Rime 使用者目錄�
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
   default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組（20 個）
+lua/                           Lua 擴充模組（21 個）
   phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換 + 調符顯示
   phah_taibun_input.lua           大寫攔截 + Tab 選字模式
   phah_taibun_commit.lua          全羅輸出處理器 + \ 強制羅馬字
@@ -650,7 +653,8 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，開發時用於驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
-| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先、emoji） |
+| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先） |
+| [rime-emoji](https://github.com/rime/rime-emoji) | Emoji 候選資料（opencc 詞庫，LGPL-3.0） |
 
 ## 致謝
 
@@ -682,7 +686,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **萬用查字** | ?（二段式） | 無 | 無 |
 | **以詞定字** | [ 首字 ] 尾字 | 無 | 無 |
 | **同音選字** | ' 鍵 | 無 | 無 |
-| **Emoji** | 未內建；可用 `custom_phrase` 自訂常用符號 | 無 | 有 |
+| **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：候選附加 emoji，方案選單 🈚／🈶 切換，預設開 | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
 | **自訂擴充** | Lua 模組 | 無 | 無 |
 

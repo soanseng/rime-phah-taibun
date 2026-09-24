@@ -118,6 +118,34 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "backtick");
   api->clear_composition(session);
 
+  // Symbol categories (rime-liur port): ` opens a directory, `NN jumps
+  // straight into one of the 50 categories.
+  api->simulate_key_sequence(session, "`");
+  print_state(api, session, "backtick_menu");
+  api->simulate_key_sequence(session, "25");
+  print_state(api, session, "symbols_cat25");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "`01");
+  print_state(api, session, "symbols_cat01");
+  api->clear_composition(session);
+
+  // Emoji browsing: `e opens the Unicode-group directory, `e1 picks a group.
+  api->simulate_key_sequence(session, "`e");
+  print_state(api, session, "emoji_menu");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "`e1");
+  print_state(api, session, "emoji_group1");
+  api->clear_composition(session);
+  // Browse into the People & Body list and verify a skin-tone glyph beyond
+  // its first page survives the real librime candidate path.
+  for (int page = 0; page < 16; ++page) {
+    api->process_key(session, 0xFF56, 0);  // Page_Down
+  }
+  print_state(api, session, "emoji_group2_skin_tone");
+  api->clear_composition(session);
+
   api->simulate_key_sequence(session, "vvh");
   print_state(api, session, "help");
   api->clear_composition(session);
@@ -187,6 +215,189 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "origin_after_commit");
   api->clear_composition(session);
 
+  // Punctuation during composition (rime-liur style, real keycodes).
+  // Comma cascades the top candidate plus full-width ，(works today; the
+  // preset binds comma→Page_Up only when already paging).
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x2c, 0);  // comma
+  {
+    RIME_STRUCT(RimeCommit, punct_commit);
+    if (api->get_commit(session, &punct_commit)) {
+      std::cout << "COMMIT\thanlo_word_comma\t" << sanitize(punct_commit.text) << '\n';
+      api->free_commit(&punct_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_word_comma\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  // Period must cascade the word plus full-width 。(the default preset binds
+  // period→Page_Down whenever a menu is open, swallowing the key).
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x2e, 0);  // period
+  {
+    RIME_STRUCT(RimeCommit, period_commit);
+    if (api->get_commit(session, &period_commit)) {
+      std::cout << "COMMIT\thanlo_word_period\t" << sanitize(period_commit.text) << '\n';
+      api->free_commit(&period_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_word_period\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  // 全羅 mode: period must commit the romanization plus half-width period.
+  // A throwaway Space commit first consumes sentence-position capitalization
+  // so the commit text below is exact regardless of scenario order.
+  api->set_option(session, "full_romanization", true);
+  api->simulate_key_sequence(session, "tsiah8 ");
+  {
+    RIME_STRUCT(RimeCommit, warm_commit);
+    if (api->get_commit(session, &warm_commit)) api->free_commit(&warm_commit);
+  }
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x2e, 0);  // period
+  {
+    RIME_STRUCT(RimeCommit, roman_period_commit);
+    if (api->get_commit(session, &roman_period_commit)) {
+      std::cout << "COMMIT\tfullroman_word_period\t" << sanitize(roman_period_commit.text) << '\n';
+      api->free_commit(&roman_period_commit);
+    } else {
+      std::cout << "COMMIT\tfullroman_word_period\t\n";
+    }
+    api->clear_composition(session);
+  }
+  api->set_option(session, "full_romanization", false);
+
+  // Auto-commit punctuation (liur-style): unambiguous marks commit directly
+  // with the word. 漢羅 → full-width; quotes alternate “ ” per press.
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x28, 0);  // ( → （
+  {
+    RIME_STRUCT(RimeCommit, lparen_commit);
+    if (api->get_commit(session, &lparen_commit)) {
+      std::cout << "COMMIT\thanlo_word_lparen\t" << sanitize(lparen_commit.text) << '\n';
+      api->free_commit(&lparen_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_word_lparen\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x2f, 0);  // / → 、
+  {
+    RIME_STRUCT(RimeCommit, slash_commit);
+    if (api->get_commit(session, &slash_commit)) {
+      std::cout << "COMMIT\thanlo_word_slash\t" << sanitize(slash_commit.text) << '\n';
+      api->free_commit(&slash_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_word_slash\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x3c, 0);  // < → 《
+  {
+    RIME_STRUCT(RimeCommit, angle_commit);
+    if (api->get_commit(session, &angle_commit)) {
+      std::cout << "COMMIT\thanlo_word_angle\t" << sanitize(angle_commit.text) << '\n';
+      api->free_commit(&angle_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_word_angle\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  // Empty composition: direct full-width commit, no confirm keystroke.
+  api->process_key(session, 0x5f, 0);  // _ → ——
+  {
+    RIME_STRUCT(RimeCommit, underscore_commit);
+    if (api->get_commit(session, &underscore_commit)) {
+      std::cout << "COMMIT\thanlo_empty_underscore\t" << sanitize(underscore_commit.text) << '\n';
+      api->free_commit(&underscore_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_empty_underscore\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  // Double quote: first press “, second press ” (alternating, one per press).
+  api->process_key(session, 0x22, 0);
+  {
+    RIME_STRUCT(RimeCommit, quote_open_commit);
+    if (api->get_commit(session, &quote_open_commit)) {
+      std::cout << "COMMIT\thanlo_quote_first\t" << sanitize(quote_open_commit.text) << '\n';
+      api->free_commit(&quote_open_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_quote_first\t\n";
+    }
+    api->clear_composition(session);
+  }
+  api->process_key(session, 0x22, 0);
+  {
+    RIME_STRUCT(RimeCommit, quote_close_commit);
+    if (api->get_commit(session, &quote_close_commit)) {
+      std::cout << "COMMIT\thanlo_quote_second\t" << sanitize(quote_close_commit.text) << '\n';
+      api->free_commit(&quote_close_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_quote_second\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+  // 全羅 mode: the same keys stay half-width (slash → "/").
+  api->set_option(session, "full_romanization", true);
+  api->simulate_key_sequence(session, "tsiah8 ");
+  {
+    RIME_STRUCT(RimeCommit, warm2_commit);
+    if (api->get_commit(session, &warm2_commit)) api->free_commit(&warm2_commit);
+  }
+  api->simulate_key_sequence(session, "tsiah8");
+  api->process_key(session, 0x2f, 0);
+  {
+    RIME_STRUCT(RimeCommit, roman_slash_commit);
+    if (api->get_commit(session, &roman_slash_commit)) {
+      std::cout << "COMMIT\tfullroman_word_slash\t" << sanitize(roman_slash_commit.text) << '\n';
+      api->free_commit(&roman_slash_commit);
+    } else {
+      std::cout << "COMMIT\tfullroman_word_slash\t\n";
+    }
+    api->clear_composition(session);
+  }
+  api->set_option(session, "full_romanization", false);
+
+  // Emoji conversion (rime-emoji, default on): 一 gets 1️⃣ appended.
+  api->simulate_key_sequence(session, "tsit8");
+  print_state(api, session, "emoji_on");
+  api->clear_composition(session);
+  // The built-in Taiwan mapping must also surface on the matching place name.
+  api->simulate_key_sequence(session, "tai5-uan5");
+  print_state(api, session, "emoji_taiwan");
+  api->clear_composition(session);
+
+  api->set_option(session, "emoji_conversion", false);
+  api->simulate_key_sequence(session, "tsit8");
+  print_state(api, session, "emoji_off");
+  api->clear_composition(session);
+  api->set_option(session, "emoji_conversion", true);
+
+  // 漢羅混用 candidate (latin + hanzi mixed, e.g. á無) keeps full-width 。
+  api->simulate_key_sequence(session, "a2-bo5");
+  api->process_key(session, 0x2e, 0);  // period
+  {
+    RIME_STRUCT(RimeCommit, mixed_period_commit);
+    if (api->get_commit(session, &mixed_period_commit)) {
+      std::cout << "COMMIT\thanlo_mixed_word_period\t" << sanitize(mixed_period_commit.text) << '\n';
+      api->free_commit(&mixed_period_commit);
+    } else {
+      std::cout << "COMMIT\thanlo_mixed_word_period\t\n";
+    }
+    api->clear_composition(session);
+  }
+
+
   // 拍台文(Telex): tone letters (d=5, w=7, y=3, v=2/8, q=9), z→ts, zh→tsh,
   // f = syllable hyphen. The Lua processor normalizes input to numeric TL
   // keys before the speller, so dictionary/user-dict stay canonical.
@@ -225,6 +436,20 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "chhia1");
   print_state(api, session, "telex_chhia1");
   api->clear_composition(session);
+
+  // Telex schema: period must also cascade word + full-width 。
+  api->simulate_key_sequence(session, "ziahv");
+  api->process_key(session, 0x2e, 0);  // period
+  {
+    RIME_STRUCT(RimeCommit, telex_period_commit);
+    if (api->get_commit(session, &telex_period_commit)) {
+      std::cout << "COMMIT\ttelex_word_period\t" << sanitize(telex_period_commit.text) << '\n';
+      api->free_commit(&telex_period_commit);
+    } else {
+      std::cout << "COMMIT\ttelex_word_period\t\n";
+    }
+    api->clear_composition(session);
+  }
 
   // Main schema isolation: "taid" must NOT become tai5 there.
   if (!api->select_schema(session, "phah_taibun")) {

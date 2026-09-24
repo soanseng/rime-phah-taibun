@@ -10,3 +10,4 @@ patch:
   switcher/save_options/@before 0: poj_mode
   switcher/save_options/@next: full_romanization
   switcher/save_options/@next 1: hanlo_manual
+  switcher/save_options/@next 2: emoji_conversion

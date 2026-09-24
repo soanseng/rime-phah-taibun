@@ -28,6 +28,9 @@ switches:
     states: [ TL, POJ ]
   - name: hanlo_manual
     states: [ 自動漢羅, 手動漢羅 ]
+  - name: emoji_conversion
+    reset: 1
+    states: [ "🈚︎", "🈶︎" ]
 
 ascii_composer:
   switch_key:
@@ -64,6 +67,7 @@ engine:
     - lua_translator@*phah_taibun_help
     - lua_translator@*phah_taibun_date
     - lua_translator@*phah_taibun_symbols
+    - lua_translator@*phah_taibun_emoji_menu
     - lua_translator@*phah_taibun_wildcard
     - lua_translator@*phah_taibun_phrase
     - lua_translator@*phah_taibun_speedup
@@ -76,6 +80,7 @@ engine:
     - lua_filter@*phah_taibun_long_word
     - reverse_lookup_filter@phah_taibun_reverse_lookup
     - lua_filter@*phah_taibun_reverse_format
+    - simplifier@emoji_conversion
     - lua_filter@*phah_taibun_origin
     - uniquifier
 
@@ -152,7 +157,79 @@ menu:
   alternative_select_keys: "asdfghjkl;"
 
 punctuator:
-  import_preset: default
+  # 完整定義（非 import_preset）：librime 1.13 對 import_preset + 本地
+  # half_shape 的合併會失敗（failed to merge tree），故比照 rime-liur
+  # liu_pinyin 整段定義。內容＝rime 預設 punctuation.yaml，加上自動上屏
+  # 覆寫：( ) / _ < > 直接 commit。`'`（同音選字）、`[` `]`（以詞定字）、
+  # `~` `?` `;` `` ` ``（反查/萬用/造詞/符號）由 recognizer/lua 先攔，
+  # 這裡的映射僅為與預設行為完全相同的鍵盤層後備。
+  half_shape:
+    ",": { commit: "，" }
+    ".": { commit: "。" }
+    "<": { commit: "《" }
+    ">": { commit: "》" }
+    "/": { commit: "、" }
+    "?": { commit: "？" }
+    ";": { commit: "；" }
+    ":": { commit: "：" }
+    "'": { pair: ["‘", "’"] }
+    "\"": { pair: ["“", "”"] }
+    "\\": ["、", "\\", "＼" ]
+    "|": ["·", "|", "｜", "§", "¦"]
+    "`": "`"
+    "~": ["~", "～"]
+    "!": { commit: "！" }
+    "@": "@"
+    "#": "#"
+    "%": ["%", "％", "°", "℃"]
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "^": { commit: "……" }
+    "&": "&"
+    "*": ["*", "＊", "·", "・", "×", "※", "❂"]
+    "(": { commit: "（" }
+    ")": { commit: "）" }
+    "-": "-"
+    "_": { commit: "——" }
+    "+": "+"
+    "=": "="
+    "[": ["「", "【", "〔", "［"]
+    "]": ["」", "】", "〕", "］"]
+    "{": ["『", "〖", "｛"]
+    "}": ["』", "〗", "｝"]
+  full_shape:
+    " ": { commit: "　" }
+    ",": { commit: "，" }
+    ".": { commit: "。" }
+    "<": { commit: "《" }
+    ">": { commit: "》" }
+    "/": { commit: "／" }
+    "?": { commit: "？" }
+    ";": { commit: "；" }
+    ":": { commit: "：" }
+    "'": { pair: ["‘", "’"] }
+    "\"": { pair: ["“", "”"] }
+    "\\": ["、", "＼"]
+    "|": ["·", "｜", "§", "¦"]
+    "`": "｀"
+    "~": "～"
+    "!": { commit: "！" }
+    "@": ["＠", "☯"]
+    "#": ["＃", "⌘"]
+    "%": ["％", "°", "℃"]
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "^": { commit: "……" }
+    "&": "＆"
+    "*": ["＊", "·", "・", "×", "※", "❂"]
+    "(": { commit: "（" }
+    ")": { commit: "）" }
+    "-": "－"
+    "_": { commit: "——" }
+    "+": "＋"
+    "=": "＝"
+    "[": ["「", "【", "〔", "［"]
+    "]": ["」", "】", "〕", "］"]
+    "{": ["『", "〖", "｛"]
+    "}": ["』", "〗", "｝"]
 
 key_binder:
   import_preset: default
@@ -162,12 +239,18 @@ key_binder:
     - { when: composing, accept: Shift+Tab, send: Shift+Left }
     - { when: paging, accept: bracketleft, send: Page_Up }
     - { when: paging, accept: bracketright, send: Page_Down }
+    # 逐字標點（移植 rime-liur）：選單開啟時 `,` `.` 維持標點鍵，不翻頁。
+    # 預設 preset（paging_with_comma_period）在 has_menu 時把 period 送出
+    # Page_Down、在 paging 時把 comma 送出 Page_Up；以同名 send 中和之，
+    # 翻頁改用 [ ] - = PageUp PageDown。
+    - { when: has_menu, accept: period, send: period }
+    - { when: has_menu, accept: comma, send: comma }
 
 recognizer:
   import_preset: default
   patterns:
     reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
-    symbols: "^`$"
+    symbols: "^`(e[1-9]?|[0-9]{0,2})`?$"   # ` 開啟目錄; `NN 直達分類 (尾端 ` 容錯)
     wildcard: "^[a-z]*\\?[a-z0-9]*$"
     phrase: "^;[a-z0-9]*$"
 
@@ -184,6 +267,13 @@ phah_taibun_recommend:
 
 phah_taibun_origin:
   enabled: true
+
+# Emoji 候選（rime-emoji, LGPL-3.0；資料在 opencc/，F4 選單可開關）
+emoji_conversion:
+  opencc_config: emoji.json
+  option_name: emoji_conversion
+  tips: none
+  inherit_comment: false
 
 phah_taibun_reverse_lookup:
   tags: [ reverse_lookup ]

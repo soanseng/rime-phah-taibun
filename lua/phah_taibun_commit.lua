@@ -27,6 +27,10 @@ local PUNCT_MAP = {
   [0x22] = '"',   -- double quote (instead of 「」)
   [0x28] = "(",   -- left paren (instead of （)
   [0x29] = ")",   -- right paren (instead of ）)
+  [0x2f] = "/",   -- slash (instead of 、)
+  [0x5f] = "_",   -- underscore (instead of ——)
+  [0x3c] = "<",   -- less-than (instead of 《)
+  [0x3e] = ">",   -- greater-than (instead of 》)
 }
 
 local SENTENCE_ENDERS = { ["."] = true, ["!"] = true, ["?"] = true }
@@ -142,6 +146,19 @@ function M.func(key, env)
         end
         return 1  -- kAccepted
       end
+    end
+
+    -- 漢羅 mode: double-quote alternates “ / ” (one commit per
+    -- press). Pair punctuation cannot auto-commit via the punctuator,
+    -- so the alternating state lives here (single source: the punctuator
+    -- pair is unreachable because this processor runs first); 全羅
+    -- keeps the straight ASCII quote through PUNCT_MAP above.
+    if not full_roman and key.keycode == 0x22 then
+      local quote = state.quote_open and "”" or "“"
+      state.quote_open = not state.quote_open
+      env.engine:commit_text(quote)
+      state.last_text = nil
+      return 1  -- kAccepted
     end
 
     -- Clear last_text on non-modifier keys (not ', not Shift/Ctrl/etc.)
@@ -392,6 +409,23 @@ function M.func(key, env)
       end
       env.engine:commit_text(roman)
       state.capitalize_next = false
+      context:clear()
+      return 1  -- kAccepted
+    end
+  end
+
+  -- 漢羅 mode: double-quote while composing commits the composition
+  -- plus the alternating “ / ” quote.
+  if not full_roman and kc == 0x22
+     and not input:match("^~") and not input:find("?", 1, true)
+     and not input:match("^`") and not input:match("^;") then
+    local text = context:get_commit_text() or ""
+    if text ~= "" then
+      local quote = state.quote_open and "”" or "“"
+      state.quote_open = not state.quote_open
+      env.engine:commit_text(text)
+      env.engine:commit_text(quote)
+      state.last_text = nil
       context:clear()
       return 1  -- kAccepted
     end

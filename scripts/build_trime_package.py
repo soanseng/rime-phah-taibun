@@ -50,6 +50,34 @@ PHAH_SCHEMA_FILES = [
     "phah_taibun.wordlist",
 ]
 
+PHAH_OPENCC_FILES = [
+    "emoji.json",
+    "emoji_word.txt",
+    "emoji_category.txt",
+]
+
+# LGPL-3.0 來源: rime-emoji (opencc 資料檔)
+PHAH_OPENCC_SOURCES = {
+    "emoji.json": (
+        "rime-emoji",
+        "https://github.com/rime/rime-emoji",
+        "雪齋 <leoyoontsaw@gmail.com>",
+        "Emoji 候選資料 (OpenCC 設定)",
+    ),
+    "emoji_word.txt": (
+        "rime-emoji",
+        "https://github.com/rime/rime-emoji",
+        "雪齋 <leoyoontsaw@gmail.com>",
+        "Emoji 候選資料 (詞彙映射)",
+    ),
+    "emoji_category.txt": (
+        "rime-emoji",
+        "https://github.com/rime/rime-emoji",
+        "雪齋 <leoyoontsaw@gmail.com>",
+        "Emoji 候選資料 (分類映射)",
+    ),
+}
+
 REVERSE_LOOKUP_FILES = [
     "terra_pinyin.dict.yaml",
     "bopomofo.schema.yaml",
@@ -212,6 +240,18 @@ def _write_third_party_notices(dest: Path, *, rime_data_dir: Path, common_licens
         "未做任何修改; 原始碼見下列 repository.",
         "",
     ]
+    for name in PHAH_OPENCC_FILES:
+        project, repository, holders, note = PHAH_OPENCC_SOURCES[name]
+        digest = hashlib.sha256((dest / "opencc" / name).read_bytes()).hexdigest()
+        lines += [
+            f"檔案 file      : opencc/{name}",
+            f"  專案 project : {project}",
+            f"  repository   : {repository}",
+            f"  著作權 owners: {holders}",
+            "  授權 license : LGPL-3.0",
+            f"  sha256       : {digest}",
+            f"  說明 note    : {note} (未修改, 原樣重散布)",
+        ]
     for name in REVERSE_LOOKUP_FILES:
         project, repository, package, holders, note = REVERSE_SOURCES[name]
         digest = hashlib.sha256((dest / name).read_bytes()).hexdigest()
@@ -305,6 +345,12 @@ def build_tree(
         if not src.is_file():
             raise SystemExit(f"錯誤, 找不到反查依賴 {src} (用 --rime-data-dir 指向共享資料夾)")
         _copy_file(src, dest / name)
+
+    for name in PHAH_OPENCC_FILES:
+        src = REPO_ROOT / "opencc" / name
+        if not src.is_file():
+            raise SystemExit(f"錯誤, 找不到 opencc 資料 {src}")
+        _copy_file(src, dest / "opencc" / name)
 
     _write_third_party_notices(dest, rime_data_dir=rime_data_dir, common_licenses_dir=common_licenses_dir)
 

@@ -123,6 +123,8 @@ rime-phah-taibun/
 | LKK 用字表 | 李江却基金會 Google Sheets | 已確認可用，需註明出處 |
 | rime-liur Lua 模組 | ryanwuson/rime-liur | 已確認可使用，需註明出處（PLAN §8） |
 | KeSi POJ↔TL | i3thuan5/KeSi | MIT |
+| rime-emoji（opencc 詞庫） | rime/rime-emoji | LGPL-3.0 |
+| emoji-test.txt（分類選單） | Unicode.org emoji-test 15.1 | Unicode License |
 | 教育部輸入法詞庫增補 | luke871016/Taigi-Input-method-dictionary-supplement | 待確認 |
 | 芫荽字體 | ChhoeTaigi/iansui | SIL OFL 1.1（建議安裝） |
 

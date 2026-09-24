@@ -22,6 +22,8 @@
 | ID | 觸發 | 預期 | 測試 | 狀態 |
 |----|------|------|------|------|
 | INV-08 | `` ` `` | 開符號選單（候選非 `` ` `` 本身） | tests/test_real_rime.py::test_backtick_opens_symbol_menu | ✅ |
+| INV-08a | `` `NN `` | 直達第 NN 類符號（`25→♂♀、`01→，。） | tests/test_real_rime.py（symbol_category 系列） | ✅ |
+| INV-08b | 組字中 `.` `,` `(` `/` `<` `_` | 詞＋全形標點一次上屏（全羅半形） | tests/test_real_rime.py（punct 系列） | ✅ |
 | INV-09 | `,,h` | 說明文字不被羅馬字化 | tests/test_real_rime.py::test_help_descriptions_are_not_rewritten_as_romanization | ✅ |
 | INV-10 | Telex `taid`/`ziahv`/`zhiahv` | 等同 `tai5`/`tsiah8`/`tshiah8` 候選 | tests/test_real_rime.py（telex 系列） | ✅ |
 | INV-11 | 漢羅規則詞（如 ê） | 依 hanlo_rules 輸出羅馬字 | tests/test_lua_filter_behavior.py（hanlo replacement 系列） | ✅ |

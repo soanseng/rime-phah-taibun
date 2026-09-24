@@ -104,12 +104,14 @@ def test_docs_describe_unbundled_optional_assets_as_not_enabled():
     guide = Path("docs/user-guide.md").read_text(encoding="utf-8")
     docs = "\n".join((readme, quickstart, guide))
 
-    assert "候選區自動顯示相關的 emoji" not in docs
-    assert "| **Emoji** | 自動顯示" not in docs
     assert "| **英文混打** | 內建" not in docs
     assert "直接打英文單字" not in docs
     assert "正式安裝包沒有綁定 rime-ice" in guide
     assert any("未內建" in line and "Ctrl+Space" in line for line in readme.splitlines())
+    # Emoji stance (0.10): bundled from rime-emoji (LGPL-3.0) with an F4
+    # toggle; docs must present it as bundled, not as an unbundled asset.
+    assert any(line.startswith("| **Emoji** | 內建") for line in readme.splitlines())
+    assert any(line.startswith("| **Emoji** | 內建") for line in guide.splitlines())
 
 
 def test_output_mode_choices_persist_across_sessions_and_restarts():
@@ -129,7 +131,7 @@ def test_output_mode_choices_persist_across_sessions_and_restarts():
 
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
     saved = {value for key, value in custom["patch"].items() if key.startswith("switcher/save_options/")}
-    assert saved == {"poj_mode", "full_romanization", "hanlo_manual"}
+    assert saved == {"poj_mode", "full_romanization", "hanlo_manual", "emoji_conversion"}
 
 
 def test_telex_schema_shares_main_dictionary_and_normalizes_input():
@@ -174,3 +176,40 @@ def test_main_schema_does_not_load_the_telex_processor():
     schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
 
     assert all("telex" not in p for p in schema["engine"]["processors"])
+
+
+def test_emoji_conversion_is_wired_and_default_on():
+    """Emoji (rime-emoji, LGPL-3.0): 兩方案都掛 simplifier@emoji_conversion,
+    開關預設開, 資產在 opencc/ 且附授權標示."""
+    for schema_name in ("phah_taibun", "phah_taibun_telex"):
+        schema = yaml.safe_load(Path(f"schema/{schema_name}.schema.yaml").read_text(encoding="utf-8"))
+        filters = schema["engine"]["filters"]
+        assert "simplifier@emoji_conversion" in filters, schema_name
+        assert filters.index("simplifier@emoji_conversion") < filters.index(
+            "lua_filter@*phah_taibun_origin"
+        ), schema_name
+        emoji_switch = next(
+            (s for s in schema["switches"] if s["name"] == "emoji_conversion"), None
+        )
+        assert emoji_switch is not None and emoji_switch.get("reset") == 1, schema_name
+
+    custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
+    saved = [
+        value
+        for key, value in custom["patch"].items()
+        if key.startswith("switcher/save_options")
+    ]
+    assert saved and "emoji_conversion" in saved
+
+
+def test_emoji_opencc_assets_are_vendored_with_attribution():
+    """opencc/ 內含 rime-emoji 三檔 + LGPL 授權與作者標示."""
+    opencc = Path("opencc")
+    for name in ("emoji.json", "emoji_word.txt", "emoji_category.txt"):
+        assert (opencc / name).is_file(), name
+    attribution = "\n".join(
+        p.read_text(encoding="utf-8")
+        for p in (opencc.glob("*LICENSE*") or []) if p.is_file()
+    )
+    assert "LESSER GENERAL PUBLIC LICENSE" in attribution
+    assert "雪齋" in attribution or "rime-emoji" in attribution

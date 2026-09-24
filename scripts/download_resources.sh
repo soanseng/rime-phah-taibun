@@ -275,6 +275,11 @@ echo ""
 echo "data/ 目錄："
 du -sh "$DATA_DIR"/*/  2>/dev/null || ls -1d "$DATA_DIR"/*/
 echo ""
+echo "=== Emoji 分類選單資料 ==="
+echo "  Unicode emoji-test.txt（Unicode License）→ lua/phah_taibun_emoji_menu.lua"
+download_verified   "https://unicode.org/Public/emoji/15.1/emoji-test.txt"   "$DATA_DIR/emoji-test.txt"   "d876ee249aa28eaa76cfa6dfaa702847a8d13b062aa488d465d0395ee8137ed9"   "emoji-test.txt"
+uv run python scripts/build_emoji_categories.py --input "$DATA_DIR/emoji-test.txt"
+
 echo "================================================"
 echo " 待手動處理（需使用者操作）"
 echo "================================================"

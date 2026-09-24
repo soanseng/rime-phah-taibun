@@ -692,6 +692,24 @@ for file in "${SCHEMA_FILES[@]}"; do
     fi
 done
 
+
+# OpenCC 資料（Emoji，rime-emoji LGPL-3.0）到 opencc/ 子目錄
+OPENCC_FILES=(
+    "emoji.json"
+    "emoji_word.txt"
+    "emoji_category.txt"
+)
+mkdir -p "$RIME_DIR/opencc"
+for file in "${OPENCC_FILES[@]}"; do
+    src="$PROJ_DIR/opencc/$file"
+    if [ -f "$src" ]; then
+        cp -f "$src" "$RIME_DIR/opencc/$file"
+        echo -e "  ${GREEN}[ok]${NC} opencc/$file"
+    else
+        echo -e "  ${RED}[miss]${NC} opencc/$file（不存在：$src）"
+    fi
+done
+
 # 使用者自訂字典：只在不存在時複製（不覆蓋使用者詞庫）
 for file in "phah_taibun.custom.dict.yaml" "phah_taibun.phrase.dict.yaml"; do
     src="$PROJ_DIR/schema/$file"
