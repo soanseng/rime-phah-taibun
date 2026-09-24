@@ -2,21 +2,29 @@
 
 Orchestrates the full preprocessing pipeline:
 1. Extract word frequencies + sentences from iCorpus corpus
+1b. Extract per-identity frequencies from iCorpus parallel files
 2. Extract word frequencies + sentences from Ungian corpus
 2b. Extract word frequencies + sentences from 康軒 textbooks
 2c. Extract word frequencies + sentences from 900例句
-3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost)
+2d. Extract nmtl literary corpus sentences + frequencies
+2e. Extract KipSutian example sentences
+2f. Extract Khin-hoan POJ texts (with POJ→TL conversion)
+3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost).
+   All corpus extraction runs BEFORE this step so a single fresh run
+   carries every corpus into the dictionary weights — no dependency on
+   stale TSVs from a previous run.
 3b. Build and append Taigi input method dictionary supplement
+3c. Append curated reading variants
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
 4c. Parse MOE 700字 → moe700.yaml
 5. Build Mandarin→Taiwanese mapping
 6. Validate generated dictionary
-7. Extract nmtl literary corpus sentences + frequencies
-8. Extract KipSutian example sentences
-9. Extract Khin-hoan POJ texts (with POJ→TL conversion)
-10. Build bigram phrases from all corpora
-11. Re-validate dictionary (with new phrases)
+7. Build light-tone entries from corpus frequencies + append
+8. Build bigram phrases from all corpora + append
+9. Enforce long-word-first weight invariant
+10. Re-validate dictionary (final artifact, with known-keys gate)
+11. Generate wordlist + word-key snapshot
 
 Usage:
     uv run python scripts/build_all.py
@@ -65,7 +73,7 @@ def main(argv: list[str] | None = None) -> None:
     python = sys.executable
     steps_ok = True
 
-    # Pre-define output paths for corpus extractors (used in Steps 3 and 7-10)
+    # Pre-define output paths for corpus extractors (used in Steps 2-3, 7-8)
     nmtl_freq = data / "nmtl_freq.tsv"
     nmtl_sentences = data / "nmtl_sentences.txt"
     kipsutian_sent_freq = data / "kipsutian_sent_freq.tsv"
@@ -79,6 +87,13 @@ def main(argv: list[str] | None = None) -> None:
     supplement_dir = data / "Taigi-Input-method-dictionary-supplement"
     supplement_entries = data / "dictionary_supplement_entries.tsv"
     supplement_report = data / "dictionary_supplement_report.tsv"
+
+    lighttone_output = data / "lighttone_entries.tsv"
+    # True only when Step 3 rebuilt the dictionary THIS run. Every tail
+    # step that reads or append-writes the dict gates on it, so a failed
+    # or skipped conversion can never layer appends onto the previous
+    # build's stale artifact.
+    dict_rebuilt = False
 
     # Step 1: Extract iCorpus frequencies + sentences
     icorpus_file = data / "icorpus_ka1_han3-ji7" / "語料" / "自動標人工改音標.txt"
@@ -190,6 +205,60 @@ def main(argv: list[str] | None = None) -> None:
                 kipsutian_csv = csv_path
                 break
 
+    # Step 2d: Extract nmtl literary corpus sentences + frequencies
+    nmtl_dir = data / "nmtl_2006_dadwt"
+    if nmtl_dir.exists():
+        steps_ok &= run_step(
+            "Extract nmtl literary corpus",
+            [
+                python,
+                "scripts/extract_nmtl.py",
+                "--input",
+                str(nmtl_dir),
+                "--output",
+                str(nmtl_freq),
+                "--sentences",
+                str(nmtl_sentences),
+            ],
+        )
+    else:
+        print(f"SKIP: nmtl data not found at {nmtl_dir}")
+
+    # Step 2e: Extract KipSutian example sentences
+    if kipsutian_csv and kipsutian_csv.exists():
+        steps_ok &= run_step(
+            "Extract KipSutian example sentences",
+            [
+                python,
+                "scripts/extract_kipsutian_sentences.py",
+                "--input",
+                str(kipsutian_csv),
+                "--output",
+                str(kipsutian_sent_freq),
+                "--sentences",
+                str(kipsutian_sentences),
+            ],
+        )
+
+    # Step 2f: Extract Khin-hoan POJ texts (with POJ→TL conversion)
+    pojbh_dir = data / "Khin-hoan_2010_pojbh"
+    if pojbh_dir.exists():
+        steps_ok &= run_step(
+            "Extract Khin-hoan POJ texts (with POJ→TL conversion)",
+            [
+                python,
+                "scripts/extract_pojbh.py",
+                "--input",
+                str(pojbh_dir),
+                "--output",
+                str(pojbh_freq),
+                "--sentences",
+                str(pojbh_sentences),
+            ],
+        )
+    else:
+        print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
+
     # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
@@ -222,15 +291,18 @@ def main(argv: list[str] | None = None) -> None:
             convert_cmd.extend(["--identity-freq", str(identity_freq)])
         if kipsutian_csv and kipsutian_csv.exists():
             convert_cmd.extend(["--kipsutian-csv", str(kipsutian_csv)])
-        steps_ok &= run_step(
+        if run_step(
             "Convert ChhoeTaigi CSVs to Rime dictionary",
             convert_cmd,
-        )
+        ):
+            dict_rebuilt = True
+        else:
+            steps_ok = False
     else:
         print(f"SKIP: ChhoeTaigi not found at {chhoetaigi_dir}")
 
     # Step 3b: Build third-party dictionary supplement entries
-    if supplement_dir.exists():
+    if supplement_dir.exists() and dict_rebuilt:
         steps_ok &= run_step(
             "Build Taigi input method dictionary supplement",
             [
@@ -246,18 +318,36 @@ def main(argv: list[str] | None = None) -> None:
         )
         dict_yaml = out / "phah_taibun.dict.yaml"
         if dict_yaml.exists() and supplement_entries.exists() and supplement_entries.stat().st_size > 0:
-            with open(dict_yaml, "a", encoding="utf-8") as out_f, open(supplement_entries, encoding="utf-8") as in_f:
-                out_f.write(in_f.read())
-            print(f"  Appended supplement entries from {supplement_entries}")
+            # The supplement curates words the core dictionaries miss; a
+            # (text, code) row already in the freshly built dictionary is a
+            # fatal duplicate-entry gate, so those rows are skipped here.
+            existing: set[tuple[str, str]] = set()
+            with open(dict_yaml, encoding="utf-8") as f:
+                for line in f:
+                    parts = line.rstrip("\n").split("\t")
+                    if len(parts) >= 2:
+                        existing.add((parts[0], parts[1]))
+            appended = skipped = 0
+            with open(supplement_entries, encoding="utf-8") as in_f, open(dict_yaml, "a", encoding="utf-8") as out_f:
+                for line in in_f:
+                    parts = line.rstrip("\n").split("\t")
+                    if len(parts) >= 2 and (parts[0], parts[1]) in existing:
+                        skipped += 1
+                        continue
+                    out_f.write(line)
+                    appended += 1
+            print(
+                f"  Appended {appended} supplement entries ({skipped} duplicate rows skipped) from {supplement_entries}"
+            )
             print(f"  Supplement report: {supplement_report}")
     else:
-        print(f"SKIP: Dictionary supplement not found at {supplement_dir}")
+        print("SKIP: Dictionary supplement not run (source or dictionary build missing)")
 
     # Step 3c: Append curated reading variants (word, variant key) that
     # upstream sources only record under the canonical reading. Weights are
     # copied from the canonical entry so ordering stays source-driven.
     dict_yaml = out / "phah_taibun.dict.yaml"
-    if dict_yaml.exists():
+    if dict_rebuilt and dict_yaml.exists():
         reading_variants = [
             # 教典 records 袂記得 as bē-kì--tit (tit); common writing also
             # uses tsit (e.g. funbiochampion 漢羅文章 "bē-kì-tsit").
@@ -335,67 +425,13 @@ def main(argv: list[str] | None = None) -> None:
 
     # Step 6: Validate
     dict_yaml = out / "phah_taibun.dict.yaml"
-    if dict_yaml.exists():
+    if dict_rebuilt and dict_yaml.exists():
         steps_ok &= run_step(
             "Validate generated dictionary",
             [python, "scripts/validate_dict.py", str(dict_yaml)],
         )
 
-    # Step 7: Extract nmtl literary corpus sentences + frequencies
-    nmtl_dir = data / "nmtl_2006_dadwt"
-    if nmtl_dir.exists():
-        steps_ok &= run_step(
-            "Extract nmtl literary corpus",
-            [
-                python,
-                "scripts/extract_nmtl.py",
-                "--input",
-                str(nmtl_dir),
-                "--output",
-                str(nmtl_freq),
-                "--sentences",
-                str(nmtl_sentences),
-            ],
-        )
-    else:
-        print(f"SKIP: nmtl data not found at {nmtl_dir}")
-
-    # Step 8: Extract KipSutian example sentences
-    if kipsutian_csv and kipsutian_csv.exists():
-        steps_ok &= run_step(
-            "Extract KipSutian example sentences",
-            [
-                python,
-                "scripts/extract_kipsutian_sentences.py",
-                "--input",
-                str(kipsutian_csv),
-                "--output",
-                str(kipsutian_sent_freq),
-                "--sentences",
-                str(kipsutian_sentences),
-            ],
-        )
-
-    # Step 9: Extract Khin-hoan POJ texts (with POJ→TL conversion)
-    pojbh_dir = data / "Khin-hoan_2010_pojbh"
-    if pojbh_dir.exists():
-        steps_ok &= run_step(
-            "Extract Khin-hoan POJ texts (with POJ→TL conversion)",
-            [
-                python,
-                "scripts/extract_pojbh.py",
-                "--input",
-                str(pojbh_dir),
-                "--output",
-                str(pojbh_freq),
-                "--sentences",
-                str(pojbh_sentences),
-            ],
-        )
-    else:
-        print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
-
-    # Step 9b: Build light-tone entries from corpus frequencies
+    # Step 7: Build light-tone entries from corpus frequencies
     dict_yaml = out / "phah_taibun.dict.yaml"
     lighttone_json = out / "lighttone_rules.json"
     all_freq_files = [
@@ -411,8 +447,7 @@ def main(argv: list[str] | None = None) -> None:
         ]
         if f.exists()
     ]
-    if dict_yaml.exists() and lighttone_json.exists() and all_freq_files:
-        lighttone_output = data / "lighttone_entries.tsv"
+    if dict_rebuilt and dict_yaml.exists() and lighttone_json.exists() and all_freq_files:
         steps_ok &= run_step(
             "Build light-tone entries from corpus frequencies",
             [
@@ -428,7 +463,7 @@ def main(argv: list[str] | None = None) -> None:
             + ["--output", str(lighttone_output)],
         )
 
-    # Step 10: Build bigram phrases from all corpora
+    # Step 8: Build bigram phrases from all corpora
     sentence_files = [
         f
         for f in [
@@ -443,7 +478,7 @@ def main(argv: list[str] | None = None) -> None:
         if f.exists()
     ]
     dict_yaml = out / "phah_taibun.dict.yaml"
-    if sentence_files and dict_yaml.exists():
+    if sentence_files and dict_rebuilt and dict_yaml.exists():
         phrase_output = data / "new_phrases.txt"
         steps_ok &= run_step(
             "Build bigram phrases from all corpora",
@@ -462,8 +497,8 @@ def main(argv: list[str] | None = None) -> None:
                 out_f.write(in_f.read())
             print(f"  Appended light-tone entries from {lighttone_output}")
 
-    # Step 11b: Enforce long-word-first weight invariant (PLAN section 9-1A)
-    if dict_yaml.exists():
+    # Step 9: Enforce long-word-first weight invariant (PLAN section 9-1A)
+    if dict_rebuilt and dict_yaml.exists():
         try:
             from scripts.build_frequency import enforce_dict_file_invariant
         except ModuleNotFoundError:
@@ -471,8 +506,8 @@ def main(argv: list[str] | None = None) -> None:
         raised = enforce_dict_file_invariant(dict_yaml)
         print(f"  Long-word invariant raised {raised} entries")
 
-    # Step 11: Re-validate dictionary (final artifact, after all rewrites)
-    if dict_yaml.exists():
+    # Step 10: Re-validate dictionary (final artifact, after all rewrites)
+    if dict_rebuilt and dict_yaml.exists():
         steps_ok &= run_step(
             "Re-validate dictionary (with new phrases)",
             [
@@ -484,8 +519,8 @@ def main(argv: list[str] | None = None) -> None:
             ],
         )
 
-    # Step 11b: Generate wordlist for whole-sentence romanization boundaries
-    if dict_yaml.exists():
+    # Step 11: Generate wordlist for whole-sentence romanization boundaries
+    if dict_rebuilt and dict_yaml.exists():
         steps_ok &= run_step(
             "Generate wordlist for sentence word boundaries",
             [
@@ -497,8 +532,8 @@ def main(argv: list[str] | None = None) -> None:
                 str(out / "phah_taibun.wordlist"),
             ],
         )
-    # Step 11c: Snapshot the dictionary key set for release diffing (PLAN 9-2H)
-    if dict_yaml.exists():
+    # Step 11b: Snapshot the dictionary key set for release diffing (PLAN 9-2H)
+    if dict_rebuilt and dict_yaml.exists():
         try:
             from scripts.build_frequency import write_word_keys
         except ModuleNotFoundError:
@@ -507,12 +542,15 @@ def main(argv: list[str] | None = None) -> None:
         print(f"  Word-key snapshot: {snapshot}")
     # Summary
     print(f"\n{'=' * 60}")
-    if steps_ok:
+    if steps_ok and dict_rebuilt:
         print("  BUILD COMPLETE")
         print(f"  Output: {out}/")
         print("  Install: ./install.sh")
     else:
-        print("  BUILD FAILED — check errors above")
+        if steps_ok:
+            print("  BUILD FAILED — core dictionary was not rebuilt this run")
+        else:
+            print("  BUILD FAILED — check errors above")
         sys.exit(1)
     print(f"{'=' * 60}")
 

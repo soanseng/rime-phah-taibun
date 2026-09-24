@@ -285,12 +285,13 @@ def enforce_dict_file_invariant(dict_path: Path, k: float = 1.2) -> int:
 
     _, raised = enforce_long_word_invariant(entries, k=k)
 
-    for entry, line_no in zip(entries, row_index, strict=True):
-        parts = lines[line_no].split("\t")
-        parts[2] = str(entry["weight"])
-        lines[line_no] = "\t".join(parts)
+    if raised:
+        for entry, line_no in zip(entries, row_index, strict=True):
+            parts = lines[line_no].split("\t")
+            parts[2] = str(entry["weight"])
+            lines[line_no] = "\t".join(parts)
 
-    dict_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        dict_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return raised
 
 

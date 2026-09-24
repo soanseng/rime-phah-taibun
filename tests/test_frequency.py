@@ -243,6 +243,38 @@ class TestEnforceDictFileInvariant:
         assert raised == 0
         assert dict_path.read_text(encoding="utf-8").splitlines()[5] == "食飯\ttsiah8 png7\t960"
 
+    def test_compliant_file_not_rewritten(self, tmp_path, monkeypatch):
+        """A no-op pass must not rewrite the artifact.
+
+        The invariant pass runs over the ~5MB assembled dictionary as the
+        final build step; rewriting it even when nothing changed destroys
+        mtime stability that incremental tooling relies on.
+        """
+        dict_path = tmp_path / "test.dict.yaml"
+        path_lines = [
+            "---",
+            "name: test",
+            "...",
+            "食\ttsiah8\t160",
+            "飯\tpng7\t160",
+            "食飯\ttsiah8 png7\t960",
+        ]
+        dict_path.write_text("\n".join(path_lines) + "\n", encoding="utf-8")
+
+        writes: list[Path] = []
+        real_write_text = Path.write_text
+
+        def spy_write_text(self, data, encoding=None, errors=None, newline=None):
+            writes.append(self)
+            return real_write_text(self, data, encoding=encoding, errors=errors, newline=newline)
+
+        monkeypatch.setattr(Path, "write_text", spy_write_text)
+        raised = enforce_dict_file_invariant(dict_path)
+        monkeypatch.undo()
+
+        assert raised == 0
+        assert writes == [], "compliant dictionary must not be rewritten"
+
 
 class TestCommittedDictInvariant:
     """The long-word invariant must be restorable on the shipped dictionary."""

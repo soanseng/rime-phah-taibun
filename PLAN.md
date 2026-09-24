@@ -739,3 +739,28 @@ build 後對成品字典執行固定查詢集（如 `chi2`、`tsiah8`、`tai5`�
 | P1（下一版） | A、F、G | 演算法核心不變量＋資料閘，風險低收益直接 |
 | P2 | C、D、I、H、J | 行為釘住與流程紀律 |
 | P3 | B、E | 研究型／與現有路徑有疊合需先評估 |
+
+### 9-6. 2026-09 管線修復與資料源決策（audit/pipeline-2026-09）
+
+管線完整稽核（worktree `audit/pipeline-2026-09`）後的已完成修復與定案決策。
+
+#### 已完成（皆有測試釘住，`tests/test_build_all.py`）
+
+- **D1 語料順序**：nmtl／KipSutian 例句／POJBH 萃取（Step 2d-2f）移到字典轉換（Step 3）之前——全新環境單跑一輪即 7 語料詞頻全部進入主字典權重，不再依賴上輪殘留 TSV。
+- **D2 NameError**：`lighttone_output` 改於路徑預定義區綁定；輕聲規則缺失＋語料句子存在時不再崩潰。
+- **D3 fail-loud**：`dict_rebuilt` 閘門——字典未於本輪重建時，所有 append／驗證步驟跳過、總結 `BUILD FAILED` exit 1，不再汙染上輪 stale 字典、不再假性 BUILD COMPLETE。
+- **B1/B5 效能**：nmtl 單遍解析（原 24.2MB JSON 同進程解析兩次）；`enforce_dict_file_invariant` 在 raised==0 時不再重寫 5.1MB 字典。
+- **資料源補齊**：重抓 kok4hau7-kho3pun2、Sin1pak8tshi7_2015_900-le7ku3、Taigi-Input-method-dictionary-supplement、700iongji.csv（pinned revision 全驗證）。注意：`data/` 既有 33 項皆無 `.source-revision` 標記（legacy 下載），`download_resources.sh` 全跑會在 entry 1 拒絕——需刪除重抓或補標記，尚未處理。
+
+#### 決策
+
+- **moedict-data-twblg：不採納**。零消費者、不在 manifest，內容與 KipSutianDataMirror／Kauiokpoo CSV 重複；本地 clone 留置不刪（可隨時手動清）。
+- **moe_minkalaok：暫不納入**。用字規範訊號已由 moe700.yaml＋LKK hanlo_rules 覆蓋；卡拉OK正字表與其高度重疊，待有獨立訊號價值再議。
+- **append 路徑權重公式統一：延後**。稽核結論（2026-09）：11b 全域不變量以所有Scheme 的權重為輸入、非局部重排（R3）；supplement／lighttone／phrases 公式各 encode 不同政策而非漂移。安全小步驟（依序）：(a) 四處常數集中同一模組；(b) 決定 R1 帶寬政策（supplement 920 是否應高於 moe 單字 800）；(c) R5 修法——11b 之後重套 nonLT−100 cap 或輕聲權重改於 phrases append 後計算；(d) 新增 cross-scheme 排序 fixture 後才考慮統一。
+- **B2（ChhoeTaigi CSV 雙解析）：不做**。hoabun_map 只重讀 4/9 CSV 且有自有 priority／POJ-fallback 語意，統一需耦合兩模組，僅換一次性 ~2-3 秒。
+
+#### 待決（NC 授權缺口——需專案所有者裁示）
+
+現況（2026-09 稽核證實）：台日大辭典（CC BY-NC-SA 3.0）與甘字典（CC BY-NC-SA）條目**存在於所有發佈物**（Linux/Windows/macOS/Android zip/源碼 zip），轉換器零授權過濾，且 **LICENSE 的 dict 條目未揭露此二源**（實際內容與授權聲明不符）。provenance 在 `write_rime_dict` 即銷毀，事後無法從成品辨識 NC 列——**任何過濾只能發生在轉換時**。
+
+建議最小正確機制（未實作，待裁示）：`NC_SOURCES = {taijit, kamjitian}` 常數表＋`convert_chhoetaigi.py` 自動發現時預設排除、`--include-nc` 顯式開啟（fail-safe）；`build_hoabun_map.py` 加 guard（現況已 NC-free）；LICENSE 補揭露或改聲明排除；轉換器輸出 per-source 行數 manifest 供 CI 證明。影響：重建後 NC 獨有條目消失（含甘字典 1913 正字法區塊）、`test_dict_conversion.py` 需同步改。

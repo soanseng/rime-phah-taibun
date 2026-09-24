@@ -101,13 +101,17 @@ def write_nmtl_output(
     data_dir: Path,
     freq_path: Path,
     sentences_path: Path | None,
-) -> None:
+) -> tuple[list[str], Counter]:
     """Write frequency TSV and optionally a sentences file.
 
     Args:
         data_dir: Directory containing NMTL corpus data
         freq_path: Output path for frequency TSV
         sentences_path: Output path for tokenized sentences (or None to skip)
+
+    Returns:
+        (sentences, freq) so callers can report counts without re-parsing
+        the multi-MB corpus a second time.
     """
     sentences, freq = extract_nmtl_sentences(data_dir)
 
@@ -122,6 +126,8 @@ def write_nmtl_output(
             for sentence in sentences:
                 f.write(sentence + "\n")
 
+    return sentences, freq
+
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for NMTL frequency extraction."""
@@ -135,10 +141,8 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Error: Input not found: {args.input}", file=sys.stderr)
         sys.exit(1)
 
-    write_nmtl_output(args.input, args.output, args.sentences)
+    sentences, freq = write_nmtl_output(args.input, args.output, args.sentences)
 
-    # Read back for summary
-    sentences, freq = extract_nmtl_sentences(args.input)
     print(f"Extracted {len(freq)} unique words, {sum(freq.values())} total tokens")
     if args.sentences:
         print(f"Wrote {len(sentences)} sentences to {args.sentences}")

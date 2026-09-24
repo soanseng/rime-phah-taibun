@@ -58,7 +58,7 @@
 | 功能 | 狀態 | 說明 |
 |------|------|------|
 | LKK 漢羅規則 → Lua filter | ✅ 已整合 | hanlo_rules.yaml 893 條 → `phah_taibun_data.lua` 查表 → `phah_taibun_filter.lua` 漢羅轉換 |
-| Ungian/iCorpus 詞頻 → dict 權重 | ✅ 已整合 | 93K+57K 詞頻經 `--corpus-freq` 進入 `compute_weights()`，如 食飯 960→1446 |
+| 語料詞頻 → dict 權重 | ✅ 已整合（7 語料） | iCorpus／Ungian／康軒／900例句／nmtl／KipSutian 例句／POJBH 經 `--corpus-freq` 進入 `compute_weights()`；2026-09 起萃取先於轉換，單跑一輪全數生效（`tests/test_build_all.py` 釘住） |
 | 主字典注音反查 | ✅ 已整合 | `reverse_lookup_filter` 直接使用 `phah_taibun` 主字典標註台語讀音，不另建獨立反查字典 |
 | 輕聲規則 → build pipeline | ✅ 已整合 | `lighttone_rules.json` 111 條，隨 install 部署到 Rime |
 | 查讀音 TL+POJ 雙標註 | ✅ 已實作 | `phah_taibun_lookup.lua` 為候選加 `[TL:xxx POJ:yyy]` |
