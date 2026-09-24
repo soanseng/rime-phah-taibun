@@ -882,6 +882,18 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "thau5-cheng5");
   print_state(api, session, "poj_multi_toned");
   api->clear_composition(session);
+
+  // MOE dictionary entries (學科術語/地名) reachable via toneless POJ
+  // spellings: oan-lim (員林), kong-hap-chok-iong (光合作用).
+  api->simulate_key_sequence(session, "oan-lim");
+  print_state(api, session, "poj_yuanlin");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "kong-hap-chok-iong");
+  print_state(api, session, "poj_konghap");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "uan-lim");
+  print_state(api, session, "tl_yuanlin");
+  api->clear_composition(session);
   api->destroy_session(session);
   api->finalize();
   dlclose(lua);

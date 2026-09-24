@@ -763,6 +763,18 @@ def test_poj_multisyllable_second_syllable_ts(real_rime_states):
     assert "頭前" in texts[:10], texts
 
 
+def test_moe_entries_reachable_via_toneless_poj(real_rime_states):
+    """MOE 學科術語/地名詞條: 免調 POJ 拼式要選得到 (oan-lim → 員林)."""
+    for label, target in (
+        ("poj_yuanlin", "員林"),
+        ("tl_yuanlin", "員林"),
+        ("poj_konghap", "光合作用"),
+    ):
+        state = real_rime_states[label]
+        texts = [c["text"] for c in state["candidates"]]
+        assert target in texts[:3], (label, texts[:5])
+
+
 def test_telex_toned_poj_resolves(real_rime_states):
     """Telex 方案帶調 POJ (chhia1) 直接命中; 免調 POJ 為已知限制
     (toneless 升權 filter 僅主方案, Telex 使用者以調鍵輸入為主)."""

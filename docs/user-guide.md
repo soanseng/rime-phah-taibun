@@ -970,7 +970,7 @@ o͘  ⁿ
 | 臺北市 | `tai-pak-tshi` | `tai-pak-chhi` | 前三名 |
 | 烏跤病 | `oo-kha-penn` | `oo-kha-penn` | 第一名 |
 
-地名以「第一優勢腔」做主要讀音；第二優勢腔會以較低排序列出。注音反查（`~`）嘛查會到：打華語「員林」的注音就會照對照表轉台語。來源佮授權對照見 [LICENSE](https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE)。
+地名以「第一優勢腔」做主要讀音；第二優勢腔會以較低排序列出。華語對照表（`hoabun_map`）已收錄這些詞（員林→`uân-lîm`），注音反查（`~`）用同一份對照表。來源佮授權對照見 [LICENSE](https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE)。
 
 建中的增補資料是第三方人工整理，可能有錯。若你自己要大量匯入使用者語詞，先備份 Rime 使用者資料。
 
