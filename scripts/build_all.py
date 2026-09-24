@@ -15,6 +15,7 @@ Orchestrates the full preprocessing pipeline:
    stale TSVs from a previous run.
 3b. Build and append Taigi input method dictionary supplement
 3c. Append curated reading variants
+3d. Parse + append MOE STTI terminology and placename entries
 4. Parse LKK rules → hanlo_rules.yaml
 4b. Parse light-tone rules → lighttone_rules.json
 4c. Parse MOE 700字 → moe700.yaml
@@ -90,6 +91,14 @@ def main(argv: list[str] | None = None) -> None:
     # Curated 書面語 supplement; repo-root-relative because build_all runs
     # from the repo root (as do all child script invocations below).
     written_supplement = Path("scripts/data/written_supplement.tsv")
+    # MOE STTI terminology + placename source TSVs (Step 3d). STTI ships
+    # with source attribution: the program page states results are
+    # 提供一般大眾參考運用 even though the site copyright line reads
+    # "All rights reserved" (user-confirmed open-use intent).
+    stti_ods = data / "stti_ttg" / "ttg_20241219.ods"
+    stti_entries = data / "stti_entries.tsv"
+    placename_odt_dir = data / "moe_placenames" / "odt"
+    placename_entries = data / "placename_entries.tsv"
 
     lighttone_output = data / "lighttone_entries.tsv"
     # True only when Step 3 rebuilt the dictionary THIS run. Every tail
@@ -381,6 +390,72 @@ def main(argv: list[str] | None = None) -> None:
                 appended += 1
         print(f"  Appended {appended} reading-variant entries")
 
+    # Step 3d: Parse MOE STTI terminology + placename lists, then append
+    # entries to the freshly built dictionary. STTI terms share the
+    # supplement tier (600); placenames carry their own weight column
+    # (第一優勢腔 700, 第二優勢腔 650) with 700 as fallback. Only TSVs
+    # produced by a successful parse THIS run are consumed — a stale
+    # artifact from a previous run must never leak into a new build.
+    stti_parsed = False
+    if stti_ods.exists():
+        stti_parsed = run_step(
+            "Parse MOE STTI terminology ODS",
+            [python, "scripts/parse_stti.py", "--input", str(stti_ods), "--output", str(stti_entries)],
+        )
+        steps_ok &= stti_parsed
+    else:
+        print(f"SKIP: STTI ODS not found at {stti_ods}")
+    placename_parsed = False
+    if placename_odt_dir.exists() and any(placename_odt_dir.glob("*.odt")):
+        placename_parsed = run_step(
+            "Parse MOE placename ODT lists",
+            [
+                python,
+                "scripts/parse_placenames.py",
+                "--input",
+                str(placename_odt_dir),
+                "--output",
+                str(placename_entries),
+            ],
+        )
+        steps_ok &= placename_parsed
+    else:
+        print(f"SKIP: placename ODT dir not found at {placename_odt_dir}")
+
+    dict_yaml = out / "phah_taibun.dict.yaml"
+    if dict_rebuilt and dict_yaml.exists():
+        moe_sources = []
+        if stti_parsed and stti_entries.exists() and stti_entries.stat().st_size > 0:
+            moe_sources.append((stti_entries, 600))
+        if placename_parsed and placename_entries.exists() and placename_entries.stat().st_size > 0:
+            moe_sources.append((placename_entries, 700))
+        if moe_sources:
+            # Same duplicate-entry gate as the supplement: a (text, code)
+            # row already in the dictionary must never be appended twice.
+            existing_moe: set[tuple[str, str]] = set()
+            with open(dict_yaml, encoding="utf-8") as f:
+                for line in f:
+                    parts = line.rstrip("\n").split("\t")
+                    if len(parts) >= 2:
+                        existing_moe.add((parts[0], parts[1]))
+            appended = skipped = 0
+            with open(dict_yaml, "a", encoding="utf-8") as out_f:
+                for path, default_weight in moe_sources:
+                    with open(path, encoding="utf-8") as in_f:
+                        for line in in_f:
+                            parts = line.rstrip("\n").split("\t")
+                            if len(parts) < 3:
+                                continue
+                            han, code = parts[1], parts[2]
+                            if (han, code) in existing_moe:
+                                skipped += 1
+                                continue
+                            existing_moe.add((han, code))
+                            weight = int(parts[3]) if len(parts) >= 4 else default_weight
+                            out_f.write(f"{han}\t{code}\t{weight}\n")
+                            appended += 1
+            print(f"  Appended {appended} MOE terminology/placename entries ({skipped} duplicate rows skipped)")
+
     # Step 4: Parse LKK rules
     lkk_csv = data / "lkk_yongji.csv"
     if lkk_csv.exists():
@@ -420,16 +495,20 @@ def main(argv: list[str] | None = None) -> None:
 
     # Step 5: Build Mandarin→Taiwanese mapping (hoabun_map.txt)
     if chhoetaigi_dir.exists():
+        hoabun_cmd = [
+            python,
+            "scripts/build_hoabun_map.py",
+            "--input",
+            str(chhoetaigi_dir),
+            "--output",
+            str(out / "hoabun_map.txt"),
+        ]
+        for parsed, extra_tsv in ((stti_parsed, stti_entries), (placename_parsed, placename_entries)):
+            if parsed and extra_tsv.exists() and extra_tsv.stat().st_size > 0:
+                hoabun_cmd.extend(["--extra-tsv", str(extra_tsv)])
         steps_ok &= run_step(
             "Build Mandarin→Taiwanese mapping (hoabun_map.txt)",
-            [
-                python,
-                "scripts/build_hoabun_map.py",
-                "--input",
-                str(chhoetaigi_dir),
-                "--output",
-                str(out / "hoabun_map.txt"),
-            ],
+            hoabun_cmd,
         )
 
     # Step 6: Validate

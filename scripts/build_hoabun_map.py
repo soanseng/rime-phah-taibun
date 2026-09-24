@@ -26,6 +26,9 @@ SOURCE_PRIORITY = {
     "itaigi": 3,  # iTaigi 社群
     "taihoa": 2,  # 台華線頂
     "maryknoll": 1,  # Maryknoll
+    # MOE extra TSV sources (see _read_extra_tsv_rows); STTI and placename
+    # TSVs share the stti priority tier.
+    "stti": 3,  # 教育部學科術語 + 本土語言標注臺灣地名
 }
 
 CSV_SOURCE_MAP = {
@@ -147,12 +150,38 @@ def _read_csv_rows(data_dir: Path) -> list[tuple[str, str, int, str]]:
     return rows
 
 
-def extract_hoabun_mappings(data_dir: Path) -> dict[str, tuple[str, int]]:
+def _read_extra_tsv_rows(paths: list[Path]) -> list[tuple[str, str, int, str]]:
+    """Read extra source TSVs (華語\t漢字\tcode) such as STTI/placename output.
+
+    Codes are space-delimited numeric TL; pipeline rows carry
+    hyphen-delimited kip, so the conversion keeps downstream logic
+    identical to the ChhoeTaigi path.
+    """
+    rows: list[tuple[str, str, int, str]] = []
+    priority = SOURCE_PRIORITY["stti"]
+    for path in paths:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 3:
+                    continue
+                hua, han, code = (part.strip() for part in parts[:3])
+                if not hua or not han or not code:
+                    continue
+                rows.append((hua, code.replace(" ", "-"), priority, han))
+    return rows
+
+
+def extract_hoabun_mappings(data_dir: Path, extra_tsvs: list[Path] | None = None) -> dict[str, tuple[str, int]]:
     """Extract HoaBun → KipInput mappings from all ChhoeTaigi CSVs.
 
     Two-pass approach:
       Pass 1: Word-level mappings (semantically accurate)
       Pass 2: Character-level splits (fill gaps for single chars)
+
+    Args:
+        data_dir: Path to ChhoeTaigiDatabase directory
+        extra_tsvs: Optional STTI/placename source TSVs (華語\t漢字\tcode)
 
     Returns:
         Dict mapping Mandarin word → (kip_input_space_separated, priority)
@@ -187,6 +216,8 @@ def extract_hoabun_mappings(data_dir: Path) -> dict[str, tuple[str, int]]:
             mappings[mandarin] = (kip, priority, is_primary)
 
     rows = _read_csv_rows(data_dir)
+    if extra_tsvs:
+        rows.extend(_read_extra_tsv_rows(extra_tsvs))
 
     # Pass 1: Word-level mappings (the HoaBun text as-is)
     for hoabun, kip, priority, hanlo in rows:
@@ -208,17 +239,18 @@ def extract_hoabun_mappings(data_dir: Path) -> dict[str, tuple[str, int]]:
     return mappings
 
 
-def build_hoabun_map(data_dir: Path, output_path: Path) -> int:
+def build_hoabun_map(data_dir: Path, output_path: Path, extra_tsvs: list[Path] | None = None) -> int:
     """Build the hoabun_map.txt file.
 
     Args:
         data_dir: Path to ChhoeTaigiDatabase directory
         output_path: Path to write hoabun_map.txt
+        extra_tsvs: Optional STTI/placename source TSVs
 
     Returns:
         Number of entries written
     """
-    mappings = extract_hoabun_mappings(data_dir)
+    mappings = extract_hoabun_mappings(data_dir, extra_tsvs=extra_tsvs)
 
     # Sort by Mandarin word for deterministic output
     sorted_entries = sorted(mappings.items())

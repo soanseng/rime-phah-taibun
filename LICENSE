@@ -29,8 +29,10 @@ SOFTWARE.
 
 | 檔案 | 上游資料 | 授權 |
 |------|----------|------|
-| phah_taibun.dict.yaml | iTaigi 華台對照典（CC0）；台華線頂對照典、台灣白話基礎語句、台灣植物名彙（CC BY-SA 4.0）；教育部台語辭典 KipSutian/Kauiokpoo（CC BY-ND 3.0 TW）；台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、甘字典（CC BY-NC-SA 3.0 TW，**非商用**）；教育部臺灣台語輸入法詞庫增補（luke871016，待確認） | 混合；含 NC 成分 |
+| phah_taibun.dict.yaml | iTaigi 華台對照典（CC0）；台華線頂對照典、台灣白話基礎語句、台灣植物名彙（CC BY-SA 4.0）；教育部台語辭典 KipSutian/Kauiokpoo（CC BY-ND 3.0 TW）；台日大辭典、Maryknoll 台英辭典、Embree 台英辭典、甘字典（CC BY-NC-SA 3.0 TW，**非商用**）；教育部臺灣台語輸入法詞庫增補（luke871016，待確認）；教育部學科術語臺灣台語對譯（STTI，開放運用、標示來源）；教育部本土語言標注臺灣地名（CC BY 3.0 TW） | 混合；含 NC 成分 |
 | phah_taibun.wordlist | 由主字典抽取漢字詞與讀音（來源同上） | 混合；含 NC 成分 |
+| （併入主字典）教育部學科術語臺灣台語對譯 | [STTI stti.moe.edu.tw](https://stti.moe.edu.tw/)：官方計畫說明「提供一般大眾參考運用」；站點版權標示 All rights reserved | 開放運用、標示來源（非標準開源條款） |
+| （併入主字典）教育部以本土語言標注臺灣地名 | [語言成果網地名計畫成果](https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/mhigeonames/twplacename.html)（第1階段站名清單×4＋第2階段地名清單，僅取臺灣台語欄） | CC BY 3.0 TW |
 | hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
 | icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
 | ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |

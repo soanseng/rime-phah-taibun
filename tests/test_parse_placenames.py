@@ -86,6 +86,8 @@ def stage2_table() -> list[list[list[str]]]:
         ["A001", "臺北市", "toi bed sii", "·", "Tâi-pak-tshī", "·"],
         ["A002", "中正區", "zung ziin ki", "·", "Tiong-tsìng-khu", "·"],
         ["A003", "大安區", "tai tung ki", "·", "Tāi-an-khu", "聚落稱大龍峒Tuā-lōng-pōn"],
+        ["A004", "中庄（大庄）", "·", "·", "Tiong-tsng (Tuā-tsng)", "·"],  # noqa: RUF001 - 真實資料全形括號
+        ["A005", "鯉魚潭村", "·", "·", "Lí-hî-thâm-tshun/tshuan", "·"],
     ]
     return [title, date, main_table]
 
@@ -116,6 +118,16 @@ class TestStage1StationLists:
         assert ("猴硐", "kau5 tong7 a2") in pairs
         assert ("猴洞仔", "kau5 tong7 a2") in pairs
 
+    def test_secondary_accent_ranks_below_primary(self, tmp_path):
+        """第一優勢腔 readings get weight 700; 第二優勢腔 extras get 650."""
+        make_odt(tmp_path / "地名清單_臺灣鐵路.odt", stage1_table())
+        entries, _ = parse_placename_dir(tmp_path)
+        weights = {(e.han, e.code): e.weight for e in entries}
+        assert weights[("基隆", "ke1 lang5")] == 700
+        assert weights[("基隆", "kue1 lang5")] == 650
+        assert weights[("八堵", "peh4 too2")] == 700
+        assert weights[("八堵", "pueh4 too2")] == 650
+
     def test_section_and_header_rows_skipped(self, tmp_path):
         make_odt(tmp_path / "地名清單_臺灣鐵路.odt", stage1_table())
         entries, stats = parse_placename_dir(tmp_path)
@@ -141,6 +153,22 @@ class TestStage2PlacenameList:
         assert ("臺北市", "tai5 pak4 tshi7") in pairs
         assert ("中正區", "tiong1 tsing3 khu1") in pairs
         assert ("大安區", "tai7 an1 khu1") in pairs
+
+    def test_parenthesized_alternates_pair_with_hanji(self, tmp_path):
+        """「中庄(大庄)」+「Tiong-tsng (Tuā-tsng)」→ two aligned pairs."""
+        make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
+        entries, _ = parse_placename_dir(tmp_path)
+        pairs = {(e.han, e.code) for e in entries}
+        assert ("中庄", "tiong1 tsng1") in pairs
+        assert ("大庄", "tua7 tsng1") in pairs
+
+    def test_slash_variants_expand_and_partial_tails_dropped(self, tmp_path):
+        """Slash variants split; a single-syllable tail never becomes a word."""
+        make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
+        entries, _ = parse_placename_dir(tmp_path)
+        pairs = {(e.han, e.code) for e in entries}
+        assert ("鯉魚潭村", "li2 hi5 tham5 tshun1") in pairs
+        assert not any(code.endswith(" tshuan") or code == "tshuan" for _, code in pairs)
 
     def test_notes_and_hakka_columns_not_in_codes(self, tmp_path):
         make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
@@ -181,9 +209,11 @@ class TestSharedBehavior:
 
     def test_write_placename_tsv(self, tmp_path):
         out = tmp_path / "placenames.tsv"
-        count = write_placename_tsv([PlacenameEntry(hua="基隆", han="基隆", code="ke1 lang5")], out)
+        count = write_placename_tsv(
+            [PlacenameEntry(hua="基隆", han="基隆", code="ke1 lang5", weight=700)], out
+        )
         assert count == 1
-        assert out.read_text(encoding="utf-8") == "基隆\t基隆\tke1 lang5\n"
+        assert out.read_text(encoding="utf-8") == "基隆\t基隆\tke1 lang5\t700\n"
 
     def test_cli_writes_output(self, tmp_path):
         make_odt(tmp_path / "地名清單_臺灣鐵路.odt", stage1_table())

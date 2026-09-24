@@ -100,6 +100,12 @@ class FakeRunner:
             Path(freq).write_text("我\tgua2\n", encoding="utf-8")
         if script == "build_wordlist.py" and freq:
             Path(freq).write_text("食\ttsiah8\n", encoding="utf-8")
+        if script == "parse_stti.py" and freq:
+            Path(freq).write_text("110\t110\tit4 it4 khong3\n", encoding="utf-8")
+        if script == "parse_placenames.py" and freq:
+            Path(freq).write_text(
+                "左營\t左營\ttso2 iann5\t700\n新地名\t新地名\tsin1 tua7\t650\n", encoding="utf-8"
+            )
         return SimpleNamespace(returncode=0)
 
     def index_of(self, script_name: str) -> int:
@@ -245,6 +251,53 @@ class TestSupplementAppend:
         extra = _value_after(cmd, "--extra-file")
         assert extra is not None, "build_all must pass --extra-file for the written supplement"
         assert Path(extra).name == "written_supplement.tsv"
+
+
+class TestMoeSourcesAppend:
+    """Step 3d parses MOE STTI/placenames and appends fresh TSVs only."""
+
+    def make_moe_markers(self, data: Path) -> None:
+        (data / "stti_ttg").mkdir()
+        (data / "stti_ttg" / "ttg_20241219.ods").write_text("", encoding="utf-8")
+        (data / "moe_placenames" / "odt").mkdir(parents=True)
+        (data / "moe_placenames" / "odt" / "list.odt").write_text("", encoding="utf-8")
+
+    def test_parses_and_appends_with_weight_column(self, run_build, tmp_path):
+        data = make_data_dir(tmp_path)
+        self.make_moe_markers(data)
+        out = tmp_path / "schema"
+        runner = run_build(data, out)
+
+        stti_cmd = runner.commands[runner.index_of("parse_stti.py")]
+        assert Path(_value_after(stti_cmd, "--output")).name == "stti_entries.tsv"
+        placename_cmd = runner.commands[runner.index_of("parse_placenames.py")]
+        assert Path(_value_after(placename_cmd, "--output")).name == "placename_entries.tsv"
+
+        dict_text = (out / "phah_taibun.dict.yaml").read_text(encoding="utf-8")
+        assert "110\tit4 it4 khong3\t600\n" in dict_text  # STTI default tier
+        assert "左營\ttso2 iann5\t700\n" in dict_text  # placename primary weight
+        assert "新地名\tsin1 tua7\t650\n" in dict_text  # placename secondary weight
+        assert "新詞\tsin1 su5\t700\n" in dict_text  # supplement path untouched
+
+        hoabun_cmd = runner.commands[runner.index_of("build_hoabun_map.py")]
+        extras = {
+            Path(hoabun_cmd[i + 1]).name for i, arg in enumerate(hoabun_cmd) if arg == "--extra-tsv"
+        }
+        assert extras == {"stti_entries.tsv", "placename_entries.tsv"}
+
+    def test_failed_parse_leaves_stale_tsv_unconsumed(self, run_build, tmp_path):
+        data = make_data_dir(tmp_path)
+        (data / "moe_placenames" / "odt").mkdir(parents=True)
+        (data / "moe_placenames" / "odt" / "list.odt").write_text("", encoding="utf-8")
+        stale = data / "placename_entries.tsv"
+        stale.write_text("舊地名\t舊地名\tku7 tua7\t700\n", encoding="utf-8")
+        out = tmp_path / "schema"
+
+        with pytest.raises(SystemExit):
+            run_build(data, out, fail_scripts=frozenset({"parse_placenames.py"}))
+
+        dict_text = (out / "phah_taibun.dict.yaml").read_text(encoding="utf-8")
+        assert "舊地名" not in dict_text
 
 
 class TestFailLoud:

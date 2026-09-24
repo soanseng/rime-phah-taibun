@@ -280,6 +280,55 @@ echo "  Unicode emoji-test.txt（Unicode License）→ lua/phah_taibun_emoji_men
 download_verified   "https://unicode.org/Public/emoji/15.1/emoji-test.txt"   "$DATA_DIR/emoji-test.txt"   "d876ee249aa28eaa76cfa6dfaa702847a8d13b062aa488d465d0395ee8137ed9"   "emoji-test.txt"
 uv run python scripts/build_emoji_categories.py --input "$DATA_DIR/emoji-test.txt"
 
+echo ""
+echo "=== 教育部學科術語（STTI 台語對譯）==="
+echo "  學科術語臺灣台語/臺灣客語對譯綜整檔（僅取臺灣台語欄）"
+echo "  授權：官方計畫說明明示「提供一般大眾參考運用」，標示來源使用"
+echo "  （頁面版權標示：教育部版權所有©2023 All rights reserved）"
+mkdir -p "$DATA_DIR/stti_ttg"
+download_verified \
+  "https://stti.moe.edu.tw/.galleries/file-download/ttg_20241219.ods" \
+  "$DATA_DIR/stti_ttg/ttg_20241219.ods" \
+  "e5f996f374ba5e0ad2462f6d03534eb9df06e79b906116c6d84893c26d19a3ba" \
+  "STTI 學科術語 ODS"
+
+echo ""
+echo "=== 教育部以本土語言標注臺灣地名（清單 zip）==="
+echo "  第1階段站名清單×4 + 第2階段地名清單（僅取臺灣台語欄，音檔不下載）"
+echo "  授權：創用CC-姓名標示 3.0 臺灣（CC BY 3.0 TW）"
+MOE_PLACE_BASE="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/mhigeonames"
+mkdir -p "$DATA_DIR/moe_placenames"
+download_verified \
+  "$MOE_PLACE_BASE/railways_list.zip" \
+  "$DATA_DIR/moe_placenames/railways_list.zip" \
+  "ae7e1f0ed82c42ce1795b2cd304272b4efee651e2986f2bb9b7e3ff2db9dcf0a" \
+  "鐵路站名清單 zip"
+download_verified \
+  "$MOE_PLACE_BASE/tkmrt_list.zip" \
+  "$DATA_DIR/moe_placenames/tkmrt_list.zip" \
+  "499261cf27af78f6f81d71364712d2f87d020daee37a82e6d0422506d9ad6509" \
+  "北高捷運站名清單 zip"
+download_verified \
+  "$MOE_PLACE_BASE/thsrc_list.zip" \
+  "$DATA_DIR/moe_placenames/thsrc_list.zip" \
+  "d6adbaaff5b160abbda171647978b74f1728b42f578ee6027e8a04aff83b1f52" \
+  "高鐵快捷站名清單 zip"
+download_verified \
+  "$MOE_PLACE_BASE/twtrip_list.zip" \
+  "$DATA_DIR/moe_placenames/twtrip_list.zip" \
+  "70430697e357631f8fd400d96107a4c9994973a626b61786a71b1422781cd0e1" \
+  "台灣好行站名清單 zip"
+download_verified \
+  "$MOE_PLACE_BASE/placename_list.zip" \
+  "$DATA_DIR/moe_placenames/placename_list.zip" \
+  "fb06c8ee6a2d03c3ef8818ad17dd7c5e03679b3212e416091428081704764ff4" \
+  "第2階段地名清單 zip"
+mkdir -p "$DATA_DIR/moe_placenames/odt"
+for archive in "$DATA_DIR"/moe_placenames/*_list.zip; do
+  unzip -o -j "$archive" "*.odt" -d "$DATA_DIR/moe_placenames/odt" >/dev/null
+done
+echo "  已解壓 ODT 清單至 moe_placenames/odt/"
+
 echo "================================================"
 echo " 待手動處理（需使用者操作）"
 echo "================================================"

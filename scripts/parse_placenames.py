@@ -52,12 +52,16 @@ _MAX_EXPANDED_COLUMNS = 32
 _STATION_HUA, _STATION_PRIMARY, _STATION_HANJI, _STATION_SECONDARY = 2, 3, 4, 5
 _MIN_STATION_CELLS = 6
 
+PRIMARY_WEIGHT = 700  # 第一優勢腔 (使用者明示為主要讀音)
+SECONDARY_WEIGHT = 650  # 第二優勢腔: 保留可用, 排序讓位
+
 
 @dataclass(frozen=True)
 class PlacenameEntry:
     hua: str
     han: str
     code: str
+    weight: int
 
 
 def _cell_paragraphs(cell: ET.Element) -> list[str]:
@@ -98,6 +102,42 @@ def _unwrap_variant(text: str) -> str:
     return match.group(1) if match else text
 
 
+_PAREN_ALT_RE = re.compile(r"[\uff08(]([^\uff08\uff09()]+)[)\uff09]")
+
+
+def _expand_reading(text: str) -> list[str]:
+    """Split one reading cell into candidate readings.
+
+    Handles slash variants and parenthesized alternates. A slash tail
+    with a single syllable is a partial-syllable variant of the previous
+    reading (「Lí-hî-thâm-tshun/tshuan」), not a standalone word, and is
+    dropped rather than fabricated into a one-syllable entry.
+    """
+    readings: list[str] = []
+    for index, part in enumerate(text.split("/")):
+        part = part.strip()
+        if not part:
+            continue
+        alts = _PAREN_ALT_RE.findall(part)
+        base = _PAREN_ALT_RE.sub("", part).strip()
+        if base:
+            readings.append(base)
+        for alt in alts:
+            alt = alt.strip()
+            if not alt:
+                continue
+            if index > 0 and len(re.split(r"[-\s]+", alt)) < 2:
+                continue
+            readings.append(alt)
+    return readings
+
+
+def _split_hanji(text: str) -> tuple[str, list[str]]:
+    """Split 「中庄(大庄)」 into main hanji plus parenthesized alternates."""
+    alts = [a.strip() for a in _PAREN_ALT_RE.findall(text) if a.strip()]
+    return _PAREN_ALT_RE.sub("", text).strip(), alts
+
+
 def _add_reading(
     entries: list[PlacenameEntry],
     stats: dict[str, int],
@@ -105,6 +145,7 @@ def _add_reading(
     hua: str,
     han: str,
     reading: str,
+    weight: int,
 ) -> None:
     code = romanization_to_rime_key(reading)
     if code is None:
@@ -115,7 +156,7 @@ def _add_reading(
         stats["dupe_collapsed"] += 1
         return
     seen.add(key)
-    entries.append(PlacenameEntry(hua=hua, han=han, code=code))
+    entries.append(PlacenameEntry(hua=hua, han=han, code=code, weight=weight))
 
 
 def _parse_station_table(table: ET.Element, entries: list[PlacenameEntry], stats: dict[str, int], seen: set) -> None:
@@ -140,20 +181,22 @@ def _parse_station_table(table: ET.Element, entries: list[PlacenameEntry], stats
         if primary_code is None:
             stats["skipped_invalid"] += 1
         else:
-            _add_entry(entries, stats, seen, hua, hua, primary_code)
+            _add_entry(entries, stats, seen, hua, hua, primary_code, PRIMARY_WEIGHT)
             for hanji in cells[_STATION_HANJI]:
-                _add_entry(entries, stats, seen, hua, hanji, primary_code)
+                _add_entry(entries, stats, seen, hua, hanji, primary_code, PRIMARY_WEIGHT)
         if secondary:
-            _add_reading(entries, stats, seen, hua, hua, _unwrap_variant(secondary))
+            _add_reading(entries, stats, seen, hua, hua, _unwrap_variant(secondary), SECONDARY_WEIGHT)
 
 
-def _add_entry(entries: list[PlacenameEntry], stats: dict[str, int], seen: set, hua: str, han: str, code: str) -> None:
+def _add_entry(
+    entries: list[PlacenameEntry], stats: dict[str, int], seen: set, hua: str, han: str, code: str, weight: int
+) -> None:
     key = (han, code)
     if key in seen:
         stats["dupe_collapsed"] += 1
         return
     seen.add(key)
-    entries.append(PlacenameEntry(hua=hua, han=han, code=code))
+    entries.append(PlacenameEntry(hua=hua, han=han, code=code, weight=weight))
 
 
 def _parse_list_table(table: ET.Element, entries: list[PlacenameEntry], stats: dict[str, int], seen: set) -> None:
@@ -174,12 +217,25 @@ def _parse_list_table(table: ET.Element, entries: list[PlacenameEntry], stats: d
         if len(cells) <= max(han_col, code_col) or not cells[han_col] or not cells[code_col]:
             stats["skipped_rows"] += 1
             continue
-        hua = cells[han_col][0]
-        code = romanization_to_rime_key(cells[code_col][0])
-        if code is None:
-            stats["skipped_invalid"] += 1
+        han_main, han_alts = _split_hanji(cells[han_col][0])
+        if not han_main:
+            stats["skipped_rows"] += 1
             continue
-        _add_entry(entries, stats, seen, hua, hua, code)
+        readings = _expand_reading(cells[code_col][0])
+        codes = [romanization_to_rime_key(reading) for reading in readings]
+        valid = [code for code in codes if code is not None]
+        stats["skipped_invalid"] += len(codes) - len(valid)
+        if not valid:
+            continue
+        if han_alts and len(valid) == len(han_alts) + 1:
+            # 「中庄(大庄)」 + 「Tiong-tsng (Tuā-tsng)」: main hanji takes
+            # the base reading, each parenthesized hanji its alternate.
+            _add_entry(entries, stats, seen, han_main, han_main, valid[0], PRIMARY_WEIGHT)
+            for alt, code in zip(han_alts, valid[1:], strict=True):
+                _add_entry(entries, stats, seen, han_main, alt, code, PRIMARY_WEIGHT)
+        else:
+            for code in valid:
+                _add_entry(entries, stats, seen, han_main, han_main, code, PRIMARY_WEIGHT)
 
 
 def parse_placename_dir(input_dir: Path) -> tuple[list[PlacenameEntry], dict[str, int]]:
@@ -217,10 +273,10 @@ def parse_placename_dir(input_dir: Path) -> tuple[list[PlacenameEntry], dict[str
 
 
 def write_placename_tsv(entries: list[PlacenameEntry], output_path: Path) -> int:
-    """Write entries as 華語地名<TAB>漢字<TAB>rime key lines."""
+    """Write entries as 華語地名<TAB>漢字<TAB>rime key<TAB>weight lines."""
     with output_path.open("w", encoding="utf-8") as out:
         for entry in entries:
-            out.write(f"{entry.hua}\t{entry.han}\t{entry.code}\n")
+            out.write(f"{entry.hua}\t{entry.han}\t{entry.code}\t{entry.weight}\n")
     return len(entries)
 
 
