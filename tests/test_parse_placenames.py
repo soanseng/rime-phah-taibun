@@ -169,10 +169,9 @@ class TestStage2PlacenameList:
         make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
         entries, _ = parse_placename_dir(tmp_path)
         pairs = {(e.han, e.code) for e in entries}
+        assert ("鯉魚潭村", "li2 hi5 tham5 tshun1") in pairs
         assert ("鯉魚潭村", "li2 hi5 tham5 tshuan1") in pairs
-        # 「tshuan」 replaces the final syllable: Lí-hî-thâm-tshuan
-        assert ("鯉魚潭村", "li2 hi5 tham5 tshuan1") in pairs
-        assert ("鯉魚潭村", "tshuan") not in pairs
+        assert ("鯉魚潭村", "tshuan1") not in pairs
 
     def test_notes_and_hakka_columns_not_in_codes(self, tmp_path):
         make_odt(tmp_path / "地名計畫第2階段_地名清單.odt", stage2_table())
