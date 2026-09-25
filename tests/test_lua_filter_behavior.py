@@ -1729,6 +1729,8 @@ def test_recommend_lighttone_variant_gets_no_badge_no_nudge():
     assert texts == ["詞A", "飼--啊", "詞B", "詞C"], lines
     variant_line = next(row for row in lines if row.endswith("飼--啊"))
     assert "◆" not in variant_line.split("|")[0], variant_line
+
+
 def test_commit_punct_width_modes():
     """標點寬度:全羅半角直出;漢羅 Ctrl+標點臨時半角;全羅 Ctrl+標點臨時全角."""
     script = textwrap.dedent(
@@ -1789,6 +1791,7 @@ def test_commit_punct_width_modes():
     )
 
     assert run_lua(script).strip() == "ALL_OK"
+
 
 def test_symbols_menu_includes_halfwidth_bracket_pairs():
     """反引號符號選單:半形括號對可選,既有台文標點不縮水."""
