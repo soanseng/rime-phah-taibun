@@ -273,7 +273,10 @@ def test_release_packages_wait_for_complete_verification_gate():
     verify_commands = "\n".join(step.get("run", "") for step in jobs["verify"]["steps"])
 
     assert "uv run pytest" in verify_commands
-    assert "RIME_SMOKE_REQUIRED=1" in verify_commands
+    # Real-engine corpus replays are verified locally pre-tag (owner decision
+    # 2026-09-25): the CI gate must keep them excluded, not silently re-add
+    # an hour-long stall.
+    assert "--ignore=tests/test_real_rime.py" in verify_commands
     assert "uv run ruff check" in verify_commands
     assert "luac5.4 -p" in verify_commands
     assert "bash -n" in verify_commands
