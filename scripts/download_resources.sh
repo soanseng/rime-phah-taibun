@@ -127,8 +127,10 @@ clone_and_degit \
 echo ""
 echo "=== 8/20 LKK 用字表（Google Sheets CSV 下載）==="
 echo "  李江却台語文教基金會漢羅用字規範"
-echo "  注意：上游 Google Sheets 發布版目前 404（基金會已移除發布狀態）；"
-echo "  本段僅在本機已有 SHA-256 驗證過的副本時 skip，新機器需手動取得後放此路徑。"
+echo "  注意：上游 Google Sheets 發布版目前無法連線（404，原因未確認）；"
+echo "  本段在本機已有 SHA-256 驗證過的副本時會 skip；新機器若下載失敗，"
+echo "  需自行取得用字表後放到對應路徑。"
+LKK_BASE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR6sABIf13wvn95hKApMWmEYYD-vDL62mVAYBE1jycBRTkiJQush3-HCkkaPMSsv2cOcPZ0blNODFpxb/pub"
 download_verified \
   "${LKK_BASE_URL}?gid=1364822222&single=true&output=csv" \
   "$DATA_DIR/lkk_yongji.csv" \
