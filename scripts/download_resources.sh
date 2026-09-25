@@ -126,18 +126,15 @@ clone_and_degit \
 
 echo ""
 echo "=== 8/20 LKK 用字表（Google Sheets CSV 下載）==="
-echo "  李江却台語文教基金會漢羅用字規範"
-echo "  注意：上游 Google Sheets 發布版目前無法連線（404，原因未確認）；"
-echo "  本段在本機已有 SHA-256 驗證過的副本時會 skip；新機器若下載失敗，"
-echo "  需自行取得用字表後放到對應路徑。"
-LKK_BASE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR6sABIf13wvn95hKApMWmEYYD-vDL62mVAYBE1jycBRTkiJQush3-HCkkaPMSsv2cOcPZ0blNODFpxb/pub"
+echo "  李江却台語文教基金會漢羅用字規範（雲端版試算表）"
+LKK_SHEET_EXPORT="https://docs.google.com/spreadsheets/d/1ICPcP3PuEdLirax-HBLtewiOz53KzAfpme9sjmoIO-w/export?format=csv"
 download_verified \
-  "${LKK_BASE_URL}?gid=1364822222&single=true&output=csv" \
+  "${LKK_SHEET_EXPORT}&gid=1364822222" \
   "$DATA_DIR/lkk_yongji.csv" \
   "6a00b025984c57ff53ae78801157a79a3a91c72cbd75b4136f835b819c3707bb" \
   "LKK 字表 CSV（gid=1364822222）"
 download_verified \
-  "${LKK_BASE_URL}?gid=1982799732&single=true&output=csv" \
+  "${LKK_SHEET_EXPORT}&gid=1982799732" \
   "$DATA_DIR/lkk_suji.csv" \
   "50bf19cc3a7c83ec5e291caf951fc4c736131200e8c45d3455611f539533d035" \
   "LKK 數字用法 CSV（gid=1982799732）"
