@@ -34,6 +34,21 @@ class RimeRuntime:
     deployer: Path
 
 
+# ~ 注音反查 needs the bopomofo_tw closure (see schema reverse_lookup:).
+# Distro packages: Arch rime-bopomofo/rime-terra-pinyin, Debian
+# librime-data-bopomofo/librime-data-terra-pinyin (CI installs both).
+_REVERSE_CLOSURE_FILES = (
+    "bopomofo.schema.yaml",
+    "bopomofo_tw.schema.yaml",
+    "zhuyin.yaml",
+    "terra_pinyin.dict.yaml",
+)
+
+
+def _reverse_closure_available(runtime: RimeRuntime) -> bool:
+    return all((runtime.shared_data_dir / name).exists() for name in _REVERSE_CLOSURE_FILES)
+
+
 def _require_or_skip(message: str) -> None:
     if os.environ.get("RIME_SMOKE_REQUIRED") == "1":
         pytest.fail(message)
@@ -115,12 +130,34 @@ def _build_and_run(
     if (ROOT / "opencc").is_dir():
         shutil.copytree(ROOT / "opencc", user_data / "opencc")
 
+    # Stage the ~ 注音反查 closure from shared data and compile it into the
+    # user build dir, mirroring a first deployment on Trime/Android: the smoke
+    # harness points prebuilt_data_dir at user/build, so shared prebuilts are
+    # never found (FallbackResourceResolver: staging -> prebuilt only).
+    if _reverse_closure_available(runtime):
+        for name in _REVERSE_CLOSURE_FILES:
+            shutil.copy2(runtime.shared_data_dir / name, user_data / name)
+
     build_dir = user_data / "build"
     build_dir.mkdir()
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = os.pathsep.join(
         filter(None, (str(runtime.library_dir), str(runtime.lua_plugin.parent), env.get("LD_LIBRARY_PATH")))
     )
+    if _reverse_closure_available(runtime):
+        subprocess.run(
+            [
+                str(runtime.deployer),
+                "--compile",
+                str(user_data / "bopomofo_tw.schema.yaml"),
+                str(user_data),
+                str(runtime.shared_data_dir),
+                str(build_dir),
+            ],
+            check=True,
+            cwd=ROOT,
+            env=env,
+        )
     for schema_name in ("phah_taibun.schema.yaml", "phah_taibun_telex.schema.yaml"):
         subprocess.run(
             [
@@ -186,6 +223,32 @@ def test_backtick_opens_symbol_menu(real_rime_states):
     state = real_rime_states["backtick"]
     assert state["count"] > 0
     assert any(candidate["text"] != "`" for candidate in state["candidates"])
+
+
+@pytest.fixture(scope="session")
+def _reverse_closure() -> None:
+    if not _reverse_closure_available(_find_runtime()):
+        pytest.skip("~ 注音反查 closure (terra_pinyin + bopomofo) absent from shared rime-data")
+
+
+def test_reverse_lookup_zhuyin_shows_taiwanese_readings(real_rime_states, _reverse_closure):
+    """~ㄔ surfaces Mandarin chars annotated with their Taiwanese readings."""
+    cands = real_rime_states["reverse_zhuyin_t"]["candidates"]
+    che = next((c for c in cands if c["text"] == "車"), None)
+    assert che is not None, [c["text"] for c in cands]
+    assert "tshia" in _nfc(che["comment"]), che
+
+
+def test_reverse_lookup_space_feeds_reading_back_to_main_input(real_rime_states, _reverse_closure):
+    """Space on ~ㄔ pushes the highlighted char's TL reading into the main input.
+
+    The ~ composition must be replaced by a plain TL code with a live 台語
+    candidate menu (feed-back via phah_taibun_commit's reverse branch).
+    """
+    state = real_rime_states["reverse_zhuyin_fed"]
+    assert not state["preedit"].startswith("~"), state
+    assert re.fullmatch(r"[a-z0-9]+", state["preedit"]), state
+    assert state["count"] > 0, state
 
 
 def test_main_dictionary_produces_taiwanese_candidates(real_rime_states):

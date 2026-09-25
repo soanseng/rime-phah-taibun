@@ -181,6 +181,16 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "backtick");
   api->clear_composition(session);
 
+  // 注音反查 (華→台): ~ + ㄔ (standard layout 't') surfaces Mandarin chars
+  // annotated with Taiwanese readings. Space (NOT Tab — that only confirms
+  // the Mandarin segment) hits phah_taibun_commit's reverse feed-back: the
+  // highlighted char's TL reading is pushed back as main input.
+  api->simulate_key_sequence(session, "~t");
+  print_state(api, session, "reverse_zhuyin_t");
+  api->process_key(session, 0x20, 0);  // Space: reverse feed-back
+  print_state(api, session, "reverse_zhuyin_fed");
+  api->clear_composition(session);
+
   // Symbol categories (rime-liur port): ` opens a directory, `NN jumps
   // straight into one of the 50 categories.
   api->simulate_key_sequence(session, "`");
