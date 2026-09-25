@@ -33,7 +33,11 @@ jobs:
           for file in rime.lua lua/*.lua; do luac5.4 -p "$file"; done
           bash -n install.sh scripts/*.sh packaging/macos/*.sh packaging/macos/scripts/*
           uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml
-          RIME_SMOKE_REQUIRED=1 uv run pytest
+          # Real-engine suite (tests/test_real_rime.py) is verified on a local
+          # machine before tagging: the corpus-replay tests (written ratchet,
+          # 900-sentence roundtrip) run 1h+ on a 2-core runner and would stall
+          # the release gate. Owner decision 2026-09-25.
+          uv run pytest --ignore=tests/test_real_rime.py
 
   package-source:
     needs: verify
