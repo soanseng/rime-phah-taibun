@@ -46,7 +46,7 @@
 
 - [ChhoeTaigi 台語字詞資料庫](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase)：9 本辭典 CSV，353K 筆原始字詞資料。
 - [KipSutianDataMirror](https://github.com/ChhoeTaigi/KipSutianDataMirror)：教育部台語辭典鏡像，ODS 詞目進主字典並提供注音反查讀音，例句進詞頻語料。
-- LKK 用字表：李江却台語文教基金會漢羅用字規範，決定哪些詞輸出漢字或羅馬字。
+- [LKK 用字表](https://www.tgb.org.tw/)：李江却台語文教基金會漢羅用字規範（Google Sheets 公開），決定哪些詞輸出漢字或羅馬字。
 - [教育部推薦 700 字](https://github.com/yiufung/minnan-700)：候選區 ◆ 推薦漢字標記。
 - [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement)：政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞。
 - [moe_minkalaok](https://github.com/Taiwanese-Corpus/moe_minkalaok)：閩南語卡拉OK正字字表，作為教育部用字規範參考。
