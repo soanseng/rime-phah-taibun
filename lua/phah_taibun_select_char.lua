@@ -21,6 +21,16 @@ function M.func(key, env)
         and (context:is_composing() or context:has_menu())
         and (env.first_key or env.last_key)
     then
+        local special = context.input
+        if
+            special:match("^`")
+            or special:match("^~")
+            or special:match("^;")
+            or special:find("?", 1, true)
+        then
+            return 2 -- kNoop: special menus page with [ ]; 以詞定字
+            -- would destroy compositions whose candidates have no commit text.
+        end
         -- Check if we're on page 2+ — pass through for paging
         if key:repr() == env.first_key or key:repr() == env.last_key then
             local comp = context.composition

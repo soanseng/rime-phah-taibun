@@ -243,8 +243,10 @@ key_binder:
     - { when: always, accept: Control+space, toggle: ascii_mode }
     - { when: composing, accept: Tab, send: Shift+Right }
     - { when: composing, accept: Shift+Tab, send: Shift+Left }
-    - { when: paging, accept: bracketleft, send: Page_Up }
-    - { when: paging, accept: bracketright, send: Page_Down }
+    # 翻頁：`]`／`[` 在任何選單（含 `e emoji、`NN 符號、第 1 頁）即翻頁；
+    # 一般拼音組字的 `[`/`]` 先由 select_char 以詞定字攔走，不衝突。
+    - { when: has_menu, accept: bracketleft, send: Page_Up }
+    - { when: has_menu, accept: bracketright, send: Page_Down }
     # 逐字標點（移植 rime-liur）：選單開啟時 `,` `.` 維持標點鍵，不翻頁。
     # 預設 preset（paging_with_comma_period）在 has_menu 時把 period 送出
     # Page_Down、在 paging 時把 comma 送出 Page_Up；以同名 send 中和之，

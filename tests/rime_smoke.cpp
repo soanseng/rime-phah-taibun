@@ -219,6 +219,21 @@ int main(int argc, char* argv[]) {
   }
   print_state(api, session, "emoji_group2_skin_tone");
   api->clear_composition(session);
+  // `]` must page special menus from the FIRST page: select_char bypasses
+  // non-romanization compositions, key_binder pages while the menu is up.
+  api->simulate_key_sequence(session, "`e9");
+  print_state(api, session, "emoji_flags_p1");
+  api->process_key(session, 0x5D, 0);  // bracketright
+  print_state(api, session, "emoji_flags_p2");
+  api->process_key(session, 0x5B, 0);  // bracketleft: back to page 1
+  print_state(api, session, "emoji_flags_back");
+  api->clear_composition(session);
+
+  api->simulate_key_sequence(session, "`25");
+  api->process_key(session, 0x5D, 0);
+  print_state(api, session, "symbols_cat25_p2");
+  api->clear_composition(session);
+
 
   api->simulate_key_sequence(session, "vvh");
   print_state(api, session, "help");

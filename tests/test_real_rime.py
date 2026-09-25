@@ -1069,3 +1069,17 @@ def test_skin_tone_emoji_survives_category_paging(real_rime_states):
     state = real_rime_states["emoji_group2_skin_tone"]
     texts = [candidate["text"] for candidate in state["candidates"]]
     assert "👍🏻" in texts, texts
+
+
+def test_bracket_pages_special_menus_from_first_page(real_rime_states):
+    """`]` pages emoji/symbol menus from page 1; `[` pages back; no fullwidth 」."""
+    flags_p1 = [c["text"] for c in real_rime_states["emoji_flags_p1"]["candidates"]]
+    flags_p2 = [c["text"] for c in real_rime_states["emoji_flags_p2"]["candidates"]]
+    flags_back = [c["text"] for c in real_rime_states["emoji_flags_back"]["candidates"]]
+    assert flags_p1 and flags_p2 and flags_p1 != flags_p2, (flags_p1[:2], flags_p2[:2])
+    assert flags_p1 == flags_back, flags_back[:2]
+    assert "」" not in flags_p2
+
+    cat25_p1 = [c["text"] for c in real_rime_states["symbols_cat25"]["candidates"]]
+    cat25_p2 = [c["text"] for c in real_rime_states["symbols_cat25_p2"]["candidates"]]
+    assert cat25_p1 and cat25_p2 and cat25_p1 != cat25_p2, (cat25_p1[:2], cat25_p2[:2])

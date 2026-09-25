@@ -1340,7 +1340,11 @@ uv run python scripts/build_all.py
 
 1. 確認 Rime 使用者資料夾的 `lua/` 內有 `phah_taibun_emoji_menu.lua`（路徑見上一節）。
 2. 重跑安裝腳本補齊檔案，然後重新部署 Rime（小狼毫：系統匣選單 → 「重新部署」）。
-3. 再按 `` `e ``；若仍無反應，檢查 `schema/phah_taibun.schema.yaml` 的 `recognizer/patterns/symbols` 是否為 `"^`(e[1-9]?|[0-9]{0,2})`?$"` 形式（舊版無 `e`）。
+3. 再按 `` `e ``；若仍無反應，檢查 Rime 使用者資料夾根目錄的 `phah_taibun.schema.yaml`（安裝器會將方案檔攤平到根目錄），其 `recognizer/patterns/symbols` 應為下列形式（舊版無 `e`）：
+
+   ```
+   ^`(e[1-9]?|[0-9]{0,2})`?$
+   ```
 
 ### 候選區沒有顯示拼音註解
 
