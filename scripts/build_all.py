@@ -496,7 +496,8 @@ def main(argv: list[str] | None = None) -> None:
         ]
         if leku900_json.exists():
             moe700_cmd.extend(["--leku900", str(leku900_json)])
-        steps_ok &= run_step("Parse MOE 700字 → moe700.yaml", moe700_cmd)
+        label = "Parse MOE 700字 + 900例句 → moe700.yaml" if leku900_json.exists() else "Parse MOE 700字 → moe700.yaml"
+        steps_ok &= run_step(label, moe700_cmd)
     else:
         print("SKIP: 700iongji.csv not found (run download_resources.sh)")
 

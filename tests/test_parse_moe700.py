@@ -61,6 +61,41 @@ def test_leku900_terms_merge_after_700_deduped(tmp_path, capsys):
     assert words == ["- 食", "- 一身人", "- 查某人"]
 
 
+def test_internal_700_duplicates_removed(tmp_path, capsys):
+    csv = tmp_path / "700.csv"
+    csv.write_text("建議用字\n食\n食\n天\n", encoding="utf-8")
+    out = tmp_path / "moe700.yaml"
+
+    main(["--input", str(csv), "--output", str(out)])
+
+    words = [ln for ln in out.read_text(encoding="utf-8").splitlines() if ln.startswith("- ")]
+    assert words == ["- 食", "- 天"]
+    assert "skipped 1 duplicate" in capsys.readouterr().out
+
+
+def test_merge_reports_cross_source_duplicates(tmp_path, capsys):
+    csv = tmp_path / "700.csv"
+    csv.write_text("建議用字\n一身人\n食\n", encoding="utf-8")
+    j = tmp_path / "minnan900.json"
+    j.write_text(
+        json.dumps({"001": {"詞條漢字": "一身人"}, "002": {"詞條漢字": "查某人"}}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    out = tmp_path / "moe700.yaml"
+
+    main(["--input", str(csv), "--leku900", str(j), "--output", str(out)])
+
+    assert "skipped 1 duplicate" in capsys.readouterr().out
+
+
+def test_header_mentions_900_only_when_merged(tmp_path):
+    csv = tmp_path / "700.csv"
+    csv.write_text("建議用字\n食\n", encoding="utf-8")
+    solo = tmp_path / "solo.yaml"
+    main(["--input", str(csv), "--output", str(solo)])
+    assert "900例句" not in solo.read_text(encoding="utf-8").splitlines()[0]
+
+
 def test_without_leku900_output_unchanged(tmp_path, capsys):
     csv = tmp_path / "700.csv"
     csv.write_text("建議用字\n食\n", encoding="utf-8")

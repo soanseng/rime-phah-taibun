@@ -55,17 +55,22 @@ def parse_leku900_json(path: Path) -> list[str]:
     return words
 
 
-def write_moe700_yaml(words: list[str], output_path: Path) -> None:
+def write_moe700_yaml(words: list[str], output_path: Path, include_leku900: bool = False) -> None:
     """Write recommended word list to YAML.
 
     Args:
         words: List of recommended words
         output_path: Path to write moe700.yaml
+        include_leku900: Whether the 900例句 corpus was merged
     """
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write("# 推薦用字: 教育部推薦700字台語漢字 + 常用900例句詞條\n")
-        f.write("# Sources: https://github.com/yiufung/minnan-700/blob/master/700iongji.csv\n")
-        f.write("#          https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3\n\n")
+        if include_leku900:
+            f.write("# 推薦用字: 教育部推薦700字台語漢字 + 常用900例句詞條\n")
+            f.write("# Sources: https://github.com/yiufung/minnan-700/blob/master/700iongji.csv\n")
+            f.write("#          https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3\n\n")
+        else:
+            f.write("# 教育部推薦700字台語漢字\n")
+            f.write("# Source: https://github.com/yiufung/minnan-700/blob/master/700iongji.csv\n\n")
         yaml.dump(words, f, allow_unicode=True, default_flow_style=False)
 
 
@@ -86,19 +91,26 @@ def main(argv: list[str] | None = None) -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.input, encoding="utf-8") as f:
-        words = parse_moe700_csv(f)
-
+        raw = parse_moe700_csv(f)
+    # Ordered full-list dedupe: one entry per word across every source, so
+    # a term never carries stacked boosts regardless of where it repeats.
+    words = list(dict.fromkeys(raw))
+    skipped = len(raw) - len(words)
     merged = len(words)
+
     if args.leku900 is not None:
         seen = set(words)
         for word in parse_leku900_json(args.leku900):
-            if word not in seen:
-                seen.add(word)
-                words.append(word)
+            if word in seen:
+                skipped += 1
+                continue
+            seen.add(word)
+            words.append(word)
 
-    write_moe700_yaml(words, args.output)
+    write_moe700_yaml(words, args.output, include_leku900=args.leku900 is not None)
     extra = f" (+{len(words) - merged} from 900例句)" if args.leku900 is not None else ""
-    print(f"Written {len(words)} words to {args.output}{extra}")
+    audit = f" (skipped {skipped} duplicate)" if skipped else ""
+    print(f"Written {len(words)} words to {args.output}{extra}{audit}")
 
 
 if __name__ == "__main__":
