@@ -206,7 +206,7 @@
           <article class="feature-card">
             <span class="marker marker-yellow">07</span>
             <h3>全形標點，隨打隨上</h3>
-            <p>漢羅模式打 <code>tsiah8</code> 按 <code>,</code> 直接出「食，」，<code>.</code> 出「食。」；<code>(</code> <code>/</code> <code>_</code> 免選單自動上屏。全羅模式維持半形。</p>
+            <p>漢羅模式打 <code>tsiah8</code> 按 <code>,</code> 直接出「食，」，<code>.</code> 出「食。」；<code>(</code> <code>/</code> <code>_</code> 免選單自動上屏。全羅模式維持半形；<code>Ctrl+標點</code> 可臨時翻轉寬度（漢羅出半形、全羅出全形）。</p>
           </article>
           <article class="feature-card">
             <span class="marker marker-green">08</span>
@@ -448,6 +448,24 @@
         </div>
         <div class="updates-list" aria-label="最近 5 個變更">
           <article>
+            <time datetime="2026-09-25">2026-09-25</time>
+            <h3>0.9.3：Telex x 調鍵、標點臨時翻轉</h3>
+            <ul>
+              <li>Telex 方案新增選配 <code>x</code> 調鍵：舒聲音節＝第 1 調、促聲尾＝第 4 調（不打仍是預設省略）。</li>
+              <li><code>Ctrl+標點</code> 臨時翻轉標點寬度：漢羅模式出半形、全羅模式出全形。</li>
+              <li>符號選單補半形括號對 <code>() [] {} &lt;&gt;</code>；教育部學科術語佮臺灣地名詞條上線。</li>
+              <li>注音反查 <code>~</code> 加入真引擎端到端測試（候選註解＋選字回送）。</li>
+            </ul>
+          </article>
+          <article>
+            <time datetime="2026-09-24">2026-09-24</time>
+            <h3>0.9.2：排序再進化，字典重建</h3>
+            <ul>
+              <li>整詞拆分不變量、◆ 推薦標記有界重排、輕聲候選定位修正。</li>
+              <li>新增學習模組（只學你選過的詞）佮身分詞組挖掘；字典重建至 211,021 詞。</li>
+            </ul>
+          </article>
+          <article>
             <time datetime="2026-09-24">2026-09-24</time>
             <h3>0.9.1：全形標點與 Emoji 分類瀏覽</h3>
             <ul>
@@ -471,23 +489,6 @@
               <li>打完整句羅馬字，按空白鍵或 <kbd>Enter</kbd> 即可送出。</li>
               <li>輸入途中按 <kbd>Tab</kbd>，可逐字挑字。</li>
               <li>全羅按詞分隔；iCorpus 詞頻讓同音詞排序更貼近實際用法。</li>
-            </ul>
-          </article>
-          <article>
-            <time datetime="2026-09-22">2026-09-22</time>
-            <h3>0.7.0：整詞優先，下載可驗證</h3>
-            <ul>
-              <li>調整多音節詞權重，讓整詞優先。</li>
-              <li>修正部分大寫音節的 POJ 轉換。</li>
-              <li>安裝包新增 <code>SHA256SUMS</code>，可驗證下載檔案。</li>
-            </ul>
-          </article>
-          <article>
-            <time datetime="2026-09-21">2026-09-21</time>
-            <h3>0.6.2：Android 說明、macOS 安裝更新</h3>
-            <ul>
-              <li>Android 部署說明納入來源包。</li>
-              <li>macOS 改用指令安裝，Windows 安裝方式不變。</li>
             </ul>
           </article>
         </div>

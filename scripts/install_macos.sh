@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-RELEASE_VERSION="0.9.2"
+RELEASE_VERSION="0.9.3"
 GITHUB_REPO="soanseng/rime-phah-taibun"
 _TEMP_SOURCE_DIR=""
 

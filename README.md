@@ -47,6 +47,8 @@ Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered acro
 Since 0.8.0, continuous typing composes whole sentences in one commit (Enter or Space), with per-word editing via Tab; every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)), dictionary weights are identity-keyed to corpus frequencies, and builds are byte-for-byte reproducible.
 Since 0.9.0, a 手動漢羅 (manual han-lo mix) switch lets you keep whole sentences in hanzi and mark individual words as romanization with `Tab` + `\`; mid-sentence Tab selection in all-roman mode no longer breaks the sentence, and the toneless boost now works on recommendation-marked candidates.
 Since 0.9.1, Han and Han-lo output use fullwidth punctuation; the `` `e `` browser provides Unicode emoji by category, including skin tones, with 🇹🇼 available from Taiwan vocabulary.
+Since 0.9.2, ranking is protected by build-time invariants (whole-word split, bounded recommendation reorder, light-tone positioning) with a learning module that only learns words you actually select; the dictionary was rebuilt to 211,021 entries.
+Since 0.9.3, the Telex schema has an optional `x` tone key (open syllable → tone 1, checked final → tone 4), `Ctrl+punctuation` temporarily flips punctuation width in either mode, the symbol menu gained half-width bracket pairs, and MOE subject terminology and Taiwan placename entries joined the dictionary.
 
 
 You can type without tone numbers, and POJ/TL spellings can be mixed:

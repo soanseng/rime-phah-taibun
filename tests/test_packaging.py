@@ -43,7 +43,7 @@ def test_windows_installer_tracks_latest_release_and_skips_existing_liur_files()
 
     assert "releases/latest" in installer
     assert "tag_name" in installer
-    assert '$RELEASE_VERSION = "0.9.2"' in installer
+    assert '$RELEASE_VERSION = "0.9.3"' in installer
     assert "$liurSizes" in installer
     assert ".Length -eq $liurSizes[$file]" in installer
     assert "[已安裝]" in installer
@@ -254,7 +254,7 @@ def test_installers_ship_and_register_the_telex_schema():
 
 
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
-    version = "0.9.2"
+    version = "0.9.3"
 
     assert f'version = "{version}"' in read("pyproject.toml")
     assert f'version: "{version}"' in read_prefix("schema/phah_taibun.schema.yaml")
