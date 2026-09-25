@@ -79,10 +79,10 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | 韻母 | `ik` | `ek` | `sik` / `sek` |
 | 元音 | `ua` | `oa` | `guá` / `góa` |
 | 元音 | `ue` | `oe` | `uē` / `oē` |
-| 元音 | `oo` | `ou` | `oo` / `o͘` |
+| 元音 | `oo` | `oo` | `oo` / `o͘` |
 | 鼻化音 | `nn` | `nn` | `ann` / `aⁿ` |
 
-鍵盤輸入使用 ASCII：POJ 的點右音 `o͘` 請打 `ou`，上標鼻音 `ⁿ` 請打 `nn`；正式輸出仍會顯示 `o͘`、`ⁿ`。
+鍵盤輸入使用 ASCII：POJ 的點右音 `o͘` 請打 `oo`，上標鼻音 `ⁿ` 請打 `nn`；正式輸出仍會顯示 `o͘`、`ⁿ`。
 
 可以混打，例如 `goa beh khi` 一樣能找到「我 beh 去」。
 

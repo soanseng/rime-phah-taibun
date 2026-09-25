@@ -82,8 +82,10 @@ def test_shortcut_docs_only_advertise_switches_enabled_by_the_schema():
     assert shortcut_lines
     assert all("emoji" not in line.lower() for line in shortcut_lines)
     assert "| ㄐ | j | l |" not in docs[2]
-    assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[1]
-    assert "POJ 的點右音 `o͘` 請打 `ou`" in docs[2]
+    assert "POJ 的點右音 `o͘` 請打 `oo`" in docs[1]
+    assert "POJ 的點右音 `o͘` 請打 `oo`" in docs[2]
+    assert "| 元音 | `oo` | `oo` | `oo` / `o͘` |" in docs[1]
+    assert "| 元音 | `oo` | `oo` | `oo` / `o͘` |" in docs[2]
 
 
 def test_documented_lua_module_count_matches_release_payload():
