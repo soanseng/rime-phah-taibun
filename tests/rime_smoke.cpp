@@ -233,6 +233,22 @@ int main(int argc, char* argv[]) {
   api->process_key(session, 0x5D, 0);
   print_state(api, session, "symbols_cat25_p2");
   api->clear_composition(session);
+  // 以詞定字 regression: on a NORMAL dictionary menu `]` must still take
+  // the selected candidate's last character (bypass is ` menus only).
+  api->simulate_key_sequence(session, "tai5-uan5");
+  print_state(api, session, "select_char_before");
+  api->process_key(session, 0x5D, 0);  // bracketright: last char
+  {
+    RIME_STRUCT(RimeCommit, commit);
+    if (api->get_commit(session, &commit)) {
+      std::cout << "COMMIT\tselect_char_last\t" << sanitize(commit.text) << '\n';
+      api->free_commit(&commit);
+    } else {
+      std::cout << "COMMIT\tselect_char_last\t\n";
+    }
+  }
+  api->clear_composition(session);
+
 
 
   api->simulate_key_sequence(session, "vvh");

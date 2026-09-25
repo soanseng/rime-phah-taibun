@@ -1077,9 +1077,16 @@ def test_bracket_pages_special_menus_from_first_page(real_rime_states):
     flags_p2 = [c["text"] for c in real_rime_states["emoji_flags_p2"]["candidates"]]
     flags_back = [c["text"] for c in real_rime_states["emoji_flags_back"]["candidates"]]
     assert flags_p1 and flags_p2 and flags_p1 != flags_p2, (flags_p1[:2], flags_p2[:2])
+    p2_preedit = real_rime_states["emoji_flags_p2"]["preedit"]
+    assert "`e9" in p2_preedit, p2_preedit  # composition survives, really paged
     assert flags_p1 == flags_back, flags_back[:2]
     assert "」" not in flags_p2
 
     cat25_p1 = [c["text"] for c in real_rime_states["symbols_cat25"]["candidates"]]
     cat25_p2 = [c["text"] for c in real_rime_states["symbols_cat25_p2"]["candidates"]]
     assert cat25_p1 and cat25_p2 and cat25_p1 != cat25_p2, (cat25_p1[:2], cat25_p2[:2])
+
+
+def test_bracket_keeps_word_last_char_selection(real_rime_states):
+    """`]` on a normal dictionary menu still takes the candidate's last char."""
+    assert real_rime_states["select_char_last"]["commit"] == "灣"
