@@ -65,7 +65,7 @@
 - [NMTL 文學語料](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt)：2,169 篇台語漢羅與全羅文學作品，作為漢羅書寫慣例參考。
 - [白話字文獻館](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh)：歷史 POJ 語料，經 POJ→TL 轉換後納入詞頻。
 - [康軒國小台語課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2)：12 冊漢字與台羅對照，補日常教學詞彙。
-- [常用 900 例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3)：詞條漢字、台羅與例句，補日常高頻詞。
+- [常用 900 例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3)：詞條漢字、台羅與例句，補日常高頻詞；詞條亦列入 ◆ 推薦用字（與700字同層加成，跨來源去重）。
 
 ### 輸入法與語言工具參考
 

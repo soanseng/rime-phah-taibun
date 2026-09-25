@@ -299,6 +299,15 @@ class TestMoeSourcesAppend:
         dict_text = (out / "phah_taibun.dict.yaml").read_text(encoding="utf-8")
         assert "舊地名" not in dict_text
 
+    def test_moe700_step_merges_900_corpus(self, run_build, tmp_path):
+        data = make_data_dir(tmp_path)
+        out = tmp_path / "schema"
+        runner = run_build(data, out)
+
+        cmd = runner.commands[runner.index_of("parse_moe700.py")]
+        leku = _value_after(cmd, "--leku900")
+        assert leku is not None and leku.endswith("minnan900.json")
+
 
 class TestFailLoud:
     """D3: no dictionary rebuild ⇒ no appends to stale dict, exit non-zero."""

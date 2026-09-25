@@ -660,7 +660,7 @@ Step 3: 按 a 選第一個、s 選第二個、d 選第三個...
 
 | 標記 | 意義 | 來源 |
 |------|------|------|
-| ◆ | 推薦用漢字 | LKK 用字規範（type: han）或[教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) |
+| ◆ | 推薦用漢字 | LKK 用字規範（type: han）、[教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) 或常用900例句詞條（同一詞不重複加成；LKK 層優先） |
 | ★ | 推薦用羅馬字 | LKK 用字規範（type: lo） |
 
 ### 標記會影響排序（0.9.x）

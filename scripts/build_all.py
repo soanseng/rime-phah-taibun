@@ -483,13 +483,20 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(f"SKIP: Light-tone CSV not found at {lighttone_csv}")
 
-    # Step 4c: Parse MOE 700 recommended characters
+    # Step 4c: Parse MOE 700 recommended characters (+ 常用900例句詞條)
     moe700_csv = data / "700iongji.csv"
     if moe700_csv.exists():
-        steps_ok &= run_step(
-            "Parse MOE 700字 → moe700.yaml",
-            [python, "scripts/parse_moe700.py", "--input", str(moe700_csv), "--output", str(out / "moe700.yaml")],
-        )
+        moe700_cmd = [
+            python,
+            "scripts/parse_moe700.py",
+            "--input",
+            str(moe700_csv),
+            "--output",
+            str(out / "moe700.yaml"),
+        ]
+        if leku900_json.exists():
+            moe700_cmd.extend(["--leku900", str(leku900_json)])
+        steps_ok &= run_step("Parse MOE 700字 → moe700.yaml", moe700_cmd)
     else:
         print("SKIP: 700iongji.csv not found (run download_resources.sh)")
 
