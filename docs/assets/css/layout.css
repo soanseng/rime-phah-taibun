@@ -20,13 +20,13 @@
   top: 0;
   z-index: 100;
   border-bottom: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px) saturate(1.4);
 }
 
 .site-header.is-elevated {
   border-bottom-color: var(--color-line);
-  box-shadow: 0 8px 24px rgba(18, 24, 40, 0.08);
+  box-shadow: 0 6px 24px var(--color-shadow);
 }
 
 .header-grid {
@@ -67,11 +67,12 @@
 }
 
 .site-nav a {
-  border-radius: 7px;
+  border-radius: 999px;
   color: var(--color-muted);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
-  padding: 0.55rem 0.8rem;
+  padding: 0.5rem 0.95rem;
+  transition: background 140ms ease, color 140ms ease;
 }
 
 .site-nav a:hover,
@@ -81,13 +82,15 @@
 }
 
 .site-nav .nav-cta {
-  background: var(--color-green);
+  background: var(--grad-brand);
+  box-shadow: 0 4px 14px var(--color-shadow);
   color: white;
 }
 
 .site-nav .nav-cta:hover,
 .site-nav .nav-cta:focus-visible {
   background: var(--color-green-dark);
+  box-shadow: 0 6px 18px var(--color-shadow-lg);
   color: white;
 }
 

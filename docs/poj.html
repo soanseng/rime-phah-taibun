@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      白話字輸入法 POJ｜用 Pe̍h-ōe-jī 拍台語（RIME）· 拍台文 Phah Tâi-bûn
+    </title>
+    <meta
+      name="description"
+      content="用白話字 POJ（Pe̍h-ōe-jī、教會羅馬字）拍臺灣台語：拍台文 RIME 台語輸入法支援 POJ 佮台羅 TL 混打、聲調可省略、o͘ 拍 oo，輸出全羅 POJ 抑是漢羅。Windows／macOS／Linux／Android。"
+    />
+    <meta
+      name="keywords"
+      content="白話字輸入法,POJ 輸入法,白話字,POJ,Pe̍h-ōe-jī,Peh-oe-ji,教會羅馬字,教羅,台語羅馬字,台語輸入法,RIME 台語輸入法,臺灣台語,台羅,TL,Tâi-lô,漢羅,台語打字,拍台文,Phah Tâi-bûn"
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://taigi.anatomind.com/poj" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:site_name" content="拍台文 Phah Tâi-bûn" />
+    <meta
+      property="og:title"
+      content="白話字輸入法 POJ｜拍台文 Phah Tâi-bûn（RIME）"
+    />
+    <meta
+      property="og:description"
+      content="我欲用 Pe̍h-ōe-jī 拍字：POJ 佮台羅 TL 攏會通，聲調可省略，o͘ 拍 oo。免錢開源，Windows／macOS／Linux／Android。"
+    />
+    <meta property="og:url" content="https://taigi.anatomind.com/poj" />
+    <meta property="og:image" content="https://taigi.anatomind.com/icon.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="白話字輸入法 POJ｜拍台文 Phah Tâi-bûn（RIME）"
+    />
+    <meta
+      name="twitter:description"
+      content="用 Pe̍h-ōe-jī 拍臺灣台語：POJ／TL 混打、聲調可省略、輸出全羅 POJ 抑是漢羅。"
+    />
+    <meta name="theme-color" content="#0b6f55" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/landing.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "https://taigi.anatomind.com/poj",
+            "url": "https://taigi.anatomind.com/poj",
+            "name": "白話字輸入法 POJ｜拍台文 Phah Tâi-bûn",
+            "inLanguage": "zh-Hant-TW",
+            "description": "用白話字 POJ（Pe̍h-ōe-jī、教會羅馬字 Kàu-hōe Lô-má-jī）拍臺灣台語：RIME 台語輸入法，POJ 佮台羅 TL 混打、聲調可省略、輸出全羅 POJ 抑是漢羅。",
+            "isPartOf": { "@id": "https://taigi.anatomind.com/#website" },
+            "about": { "@id": "https://taigi.anatomind.com/#software" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://taigi.anatomind.com/poj#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "白話字的 o͘ 按怎拍？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "鍵盤拍 oo 兩个 o 就會著：拍 oo 會當配著 o͘，親像「烏」o͘、「府城」Phó͘-siânn。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "袂曉白話字調號嘛會用嗎？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "會。聲調會當先免拍，干焦拍音節就揣會著字；欲精準時才補數字調，親像 e7。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "POJ 白話字佮台羅 TL 有啥物無仝？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "上大的差異是聲母佮拼字：POJ 的 ch 對 TL 的 ts、POJ 的 o͘ 對 TL 的 oo。拍台文兩套自動對應，免揀系統。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "拍台文佇佗位平台會當用 POJ？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Windows（小狼毫）、macOS（鼠鬚管）、Linux（fcitx5-rime／ibus-rime）佮 Android（Trime）攏會用。"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要內容</a>
+    <header class="site-header" data-elevate>
+      <div class="container header-grid">
+        <a class="brand" href="./" aria-label="拍台文首頁"
+          ><img src="icon.png" alt="" width="44" height="44" /><span
+            ><strong>拍台文</strong><small>Phah Tâi-bûn</small></span
+          ></a
+        ><button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+        >
+          <span></span><span></span><span></span
+          ><span class="sr-only">開啟選單</span>
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="主要導覽">
+          <a href="index.html#features">特色</a
+          ><a href="index.html#typing-schemes">拼音</a
+          ><a href="index.html#compare">比較</a
+          ><a href="index.html#install">安裝</a
+          ><a href="poj.html" aria-current="page">白話字 POJ</a
+          ><a href="guide.html">使用說明</a
+          ><a
+            class="nav-cta"
+            href="https://github.com/soanseng/rime-phah-taibun/releases"
+            >下載</a
+          >
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="hero section-tight">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">白話字輸入法 POJ · RIME 台語輸入法</p>
+            <h1>我欲用 Pe̍h-ōe-jī 拍字。</h1>
+            <p class="hero-sub">白話字、台羅，攏總會通。</p>
+            <p class="lead">
+              拍台文是一套 RIME 台語輸入法：你拍白話字 POJ 抑是台羅 TL
+              攏會通，聲調會當先免拍，候選看有讀音，輸出會當揀全羅 POJ
+              抑是漢羅。
+            </p>
+            <div class="hero-actions" aria-label="主要行動">
+              <a class="btn btn-primary" href="index.html#install">看安裝步驟</a
+              ><a
+                class="btn btn-secondary"
+                href="guide.html#/user-guide?id=poj-%e5%92%8c-tl-%e9%83%bd%e9%80%9a"
+                >POJ／TL 對照說明</a
+              >
+            </div>
+            <dl class="hero-facts">
+              <div>
+                <dt>拼音</dt>
+                <dd>POJ 直接拍，TL 嘛會通</dd>
+              </div>
+              <div>
+                <dt>聲調</dt>
+                <dd>免拍、數字調攏會用</dd>
+              </div>
+              <div>
+                <dt>輸出</dt>
+                <dd>全羅 POJ、漢羅 POJ</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="hero-media">
+            <figure class="demo-frame">
+              <video
+                src="demo/demo-part1.mp4"
+                poster="demo/demo-part1-poster.png"
+                controls
+                playsinline
+                preload="none"
+                width="640"
+                height="386"
+                aria-label="拍台文佇電腦輸入台語句子的候選示範"
+              ></video>
+              <figcaption>
+                拍 <code>gua beh khi tshit tho</code>，候選顯示「我 beh 去
+                tshit-thô」。
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+      <section class="section split-section" id="about">
+        <div class="container split-grid">
+          <div>
+            <p class="eyebrow">白話字是啥</p>
+            <h2>
+              教會羅馬字，臺灣台語上通行的書面拼音。<span
+                class="pojo"
+                lang="nan-Latn-pehoeji"
+                >Kàu-hōe Lô-má-jī</span
+              >
+            </h2>
+            <p>
+              白話字（Pe̍h-ōe-jī，簡稱 POJ）佇 19
+              世紀由傳教士制定，是臺灣台語上久長、上通行的羅馬字書面語：聖經、報紙、文學攏有百日冬的累積。教育部台羅（TL）就是對
+              POJ 演變來的，兩套真接近。
+            </p>
+          </div>
+          <div
+            class="typing-table"
+            role="table"
+            aria-label="白話字 POJ 佮拍台文鍵盤對照"
+          >
+            <div role="row">
+              <span role="columnheader">白話字 POJ</span
+              ><span role="columnheader">拍台文按呢拍</span>
+            </div>
+            <div role="row">
+              <code>ch</code
+              ><strong><code>ts</code> 抑是 <code>ch</code> 攏會通</strong>
+            </div>
+            <div role="row">
+              <code>o͘</code><strong><code>oo</code>（兩个 o）</strong>
+            </div>
+            <div role="row">
+              <code>ⁿ</code
+              ><strong><code>nn</code>，親像 <code>phinn</code></strong>
+            </div>
+            <div role="row">
+              <code>ē</code> 等調號<strong
+                >數字調 <code>e7</code>，抑是先免拍</strong
+              >
+            </div>
+            <div role="row">
+              <code>--</code> 輕聲<strong>仝款拍 <code>--</code></strong>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="examples">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">拍看覓</p>
+            <h2>
+              白話字按呢拍，候選直接出。<span
+                class="pojo"
+                lang="nan-Latn-pehoeji"
+                >Phah--khí-lâi</span
+              >
+            </h2>
+          </div>
+          <div class="poj-examples">
+            <div class="typing-table" role="table" aria-label="白話字輸入範例">
+              <div role="row">
+                <span role="columnheader">你輸入（POJ）</span
+                ><span role="columnheader">拍台文候選</span>
+              </div>
+              <div role="row"><code>chiah png</code><strong>食飯</strong></div>
+              <div role="row">
+                <code>goa ai li</code><strong>我愛你</strong>
+              </div>
+              <div role="row">
+                <code>goa beh khi tshit tho</code
+                ><strong>我 beh 去 tshit-thô</strong>
+              </div>
+              <div role="row">
+                <code>phinn</code><strong>鼻（phīⁿ）</strong>
+              </div>
+            </div>
+            <div class="poj-notes">
+              <h3>輸出揀你家己的</h3>
+              <ul>
+                <li><strong>全羅 POJ</strong>——成句白話字，親像原文獻的款。</li>
+                <li>
+                  <strong>漢羅 POJ</strong>——漢字為主，無常用詞自動寫羅馬字。
+                </li>
+                <li>
+                  <strong>手動漢羅</strong>——佗一個詞欲寫 POJ，<kbd>Tab</kbd>
+                  反白了後按 <code>\</code> 標記。
+                </li>
+              </ul>
+              <p>
+                拍 <kbd>F4</kbd> 就會當切輸出模式；Android 佇 Trime 開關面板切。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section install-cta" id="install">
+        <div class="container">
+          <div class="section-heading narrow">
+            <p class="eyebrow">安裝</p>
+            <h2>
+              用白話字拍台文，三分鐘就好。<span
+                class="pojo"
+                lang="nan-Latn-pehoeji"
+                >An-chong</span
+              >
+            </h2>
+          </div>
+          <div class="compare-grid">
+            <article class="compare-card">
+              <h3>Windows</h3>
+              <p>
+                裝小狼毫 Weasel，了後
+                <code>irm .../install_windows.ps1 | iex</code> 抑是雙擊
+                <code>PhahTaiBunSetup.exe</code>。
+              </p>
+            </article>
+            <article class="compare-card">
+              <h3>macOS</h3>
+              <p>
+                裝鼠鬚管 Squirrel，終端機
+                <code>curl -fsSL .../install_macos.sh | bash</code>。
+              </p>
+            </article>
+            <article class="compare-card">
+              <h3>Linux</h3>
+              <p>
+                fcitx5-rime 抑是 ibus-rime，<code>git clone</code> 了後
+                <code>./install.sh</code>。
+              </p>
+            </article>
+            <article class="compare-card">
+              <h3>Android</h3>
+              <p>
+                裝同文 Trime，共 <code>PhahTaiBun-Trime.zip</code> 解壓入 Rime
+                資料夾，重新部署。
+              </p>
+            </article>
+          </div>
+          <div class="center-actions">
+            <a class="btn btn-primary" href="index.html#install">完整安裝步驟</a
+            ><a
+              class="btn btn-secondary"
+              href="https://github.com/soanseng/rime-phah-taibun/releases"
+              >GitHub Releases</a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="section faq-section" id="faq">
+        <div class="container">
+          <div class="section-heading narrow">
+            <p class="eyebrow">常見問題</p>
+            <h2>
+              拍白話字進前，看這。<span class="pojo" lang="nan-Latn-pehoeji"
+                >Siông-kiàn būn-tê</span
+              >
+            </h2>
+          </div>
+          <div class="faq-list">
+            <details open>
+              <summary>白話字的 o͘ 按怎拍？</summary>
+              <p>
+                鍵盤拍 <code>oo</code> 兩个 o 就會著：拍
+                <code>oo</code> 會當配著
+                <code>o͘</code
+                >，親像「烏」<code>o͘</code>、「府城」<code>Phó͘-siânn</code>。
+              </p>
+            </details>
+            <details>
+              <summary>袂曉白話字調號嘛會用嗎？</summary>
+              <p>
+                會。聲調會當先免拍，干焦拍音節就揣會著字；欲精準時才補數字調，親像
+                <code>e7</code>。
+              </p>
+            </details>
+            <details>
+              <summary>POJ 白話字佮台羅 TL 有啥物無仝？</summary>
+              <p>
+                上大的差異是聲母佮拼字：POJ 的 <code>ch</code> 對 TL 的
+                <code>ts</code>、POJ 的 <code>o͘</code> 對 TL 的
+                <code>oo</code>。拍台文兩套自動對應，免揀系統。<a
+                  class="text-link"
+                  href="guide.html#/user-guide?id=poj-%e5%92%8c-tl-%e9%83%bd%e9%80%9a"
+                  >看完整對照</a
+                >。
+              </p>
+            </details>
+            <details>
+              <summary>拍台文佇佗位平台會當用 POJ？</summary>
+              <p>
+                Windows（小狼毫）、macOS（鼠鬚管）、Linux（fcitx5-rime／ibus-rime）佮
+                Android（Trime）攏會用。
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <p>拍台文 Phah Tâi-bûn · RIME 台語輸入法方案</p>
+        <nav aria-label="頁尾連結">
+          <a href="index.html">首頁</a><a href="guide.html">使用說明</a
+          ><a href="guide.html#/quickstart-card">快速上手</a
+          ><a href="sitemap.xml">Sitemap</a
+          ><a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
+        </nav>
+      </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js" defer></script>
+    <script src="assets/js/landing.js" defer></script>
+  </body>
+</html>

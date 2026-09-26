@@ -1,19 +1,21 @@
 :root {
-  --color-ink: #171717;
-  --color-muted: #5c5f66;
-  --color-line: #d9dce1;
+  --color-ink: #1a1f1d;
+  --color-muted: #5b6560;
+  --color-line: #e3e7e4;
   --color-surface: #ffffff;
-  --color-surface-alt: #f4f6f8;
+  --color-surface-alt: #f5f7f5;
   --color-green: #0b6f55;
   --color-green-dark: #084d3c;
   --color-red: #d7442e;
   --color-blue: #2458b8;
   --color-yellow: #efc84a;
-  --color-shadow: rgba(18, 24, 40, 0.12);
-  --font-display: Georgia, "Noto Serif TC", "Source Han Serif TC", serif;
-  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --color-shadow: rgba(16, 32, 26, 0.1);
+  --color-shadow-lg: rgba(16, 32, 26, 0.16);
+  --grad-brand: linear-gradient(135deg, #0b6f55 0%, #128a67 100%);
+  --font-display: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --container: 1160px;
-  --radius: 8px;
+  --radius: 16px;
 }
 
 * {
@@ -60,8 +62,8 @@ pre {
 code,
 kbd {
   border: 1px solid var(--color-line);
-  border-radius: 5px;
-  background: #f7f7f7;
+  border-radius: 6px;
+  background: #f3f6f4;
   padding: 0.05rem 0.35rem;
   white-space: nowrap;
 }
@@ -94,23 +96,24 @@ p {
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
 }
 
 h1 {
-  max-width: 11ch;
-  font-size: clamp(2.65rem, 7vw, 5rem);
+  max-width: 16ch;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 4rem);
+  font-size: clamp(1.8rem, 3.4vw, 2.75rem);
 }
 
 h3 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .skip-link {

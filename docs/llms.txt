@@ -1,0 +1,37 @@
+# 拍台文 Phah Tâi-bûn（RIME 台語輸入法）
+
+> 拍台文是免費、開源的 RIME 台語輸入法方案，予會講臺灣台語的人直接用電腦拍台文。POJ 白話字（Pe̍h-ōe-jī）佮 TL 台羅攏會通，聲調可省略，預設漢羅輸出。
+
+## 重點事實
+
+- 名稱：拍台文 Phah Tâi-bûn（RIME 台語輸入法方案）
+- 版本：0.9.3（2026-09-25）
+- 授權：開源，程式碼佮詞庫授權見 LICENSE（per-source 標示）
+- 平台：Windows（小狼毫 Weasel）、macOS（鼠鬚管 Squirrel）、Linux（fcitx5-rime／ibus-rime）、Android（同文 Trime、fcitx5-android；無官方 APK，提供 Trime 一鍵包）
+- 詞庫：221,792 詞條；9 本開源辭典（ChhoeTaigi）＋ 7 個語料庫詞頻（iCorpus、NMTL、楊允言 2009 等）＋教育部輸入法詞庫增補、學科術語、臺灣地名
+- 費用：免費（price 0）
+
+## 核心功能
+
+- POJ／TL 模糊混打：`chiah` 佮 `tsiah` 攏揣會著「食」，免揀拼音系統
+- 聲調可省略：先拍音節，需要時補數字調（`ho2`）；另有平行 Telex 調鍵方案（`ziahv`）
+- 漢羅輸出（LKK 用字規範）、全羅 TL、全羅 POJ、手動漢羅（Tab＋`\` 標記詞）
+- 整句輸入：拍完整句羅馬字一次送出，中途 Tab 挑字
+- 注音反查：`~` 用華語字揣台語
+- 白話字 o͘ 拍 `oo`；ⁿ 拍 `nn`
+- 符號選單 `` ` ``、Emoji 分類 `` `e ``、萬用查字 `?`、輕聲 `--`
+
+## 安裝
+
+- Windows：裝小狼毫 → Releases 載 `PhahTaiBunSetup.exe`，或 PowerShell `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`
+- macOS：裝鼠鬚管 → `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`
+- Linux：`git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh`
+- Android：裝同文 Trime → Releases 載 `PhahTaiBun-Trime.zip` 解壓入 `Android/data/com.osfans.trime/files/rime` → 重新部署
+
+## 連結
+
+- 首頁：https://taigi.anatomind.com/
+- 白話字 POJ 專頁：https://taigi.anatomind.com/poj
+- 使用說明：https://taigi.anatomind.com/guide
+- 原始碼：https://github.com/soanseng/rime-phah-taibun
+- 下載：https://github.com/soanseng/rime-phah-taibun/releases
