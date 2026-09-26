@@ -219,7 +219,7 @@ uv run python scripts/build_all.py     # 一鍵管線（語料→字典→規則
 1. 新式 `@*` 語法（librime-lua ≥ 2021）：schema 寫 `lua_translator@*phah_taibun_help`，自動載入 `lua/phah_taibun_help.lua`（模組回傳 `{init, func}` table）。
 2. 舊式 `rime.lua` 全域註冊：使用者資料夾放 `rime.lua`，`require()` 註冊為全域變數。
 
-新增模組 checklist：`lua/phah_taibun_xxx.lua` → `rime.lua` 加 require → schema engine 區加 `@*phah_taibun_xxx`。
+**資料模組存取規則（2026-09-26 教訓）**：模組取用 `phah_taibun_data` 一律在模組頂層 `local ok, mod = pcall(require, "phah_taibun_data")`——**禁止讀 `rime.lua` 才會建立的全域變數**。schema 全 `@*` 時全域缺席不報錯，recommend 曾因此整批徽章靜默消失（其他 11 個模組皆 require、故正常）。對應測試：`test_recommend_resolves_data_via_require_without_global`；測試 stub 一律用 `package.loaded["phah_taibun_data"] = {...}` 注入（在 require 目標模組之前），不要設全域。
 
 ## 注意事項
 

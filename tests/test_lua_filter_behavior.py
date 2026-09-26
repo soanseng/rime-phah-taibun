@@ -831,7 +831,7 @@ def test_recommend_badged_candidate_outranks_same_quality_tie():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "伊" then return true, false end
             return false, false
@@ -899,7 +899,7 @@ def test_recommend_lkk_badge_outranks_moe700_badge_at_equal_quality():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "伊" then return true, false end
             return false, false
@@ -944,6 +944,72 @@ def test_recommend_lkk_badge_outranks_moe700_badge_at_equal_quality():
     assert run_lua(script).splitlines() == ["伊\t ◆ [i1]", "醫\t ◆ [i1]"]
 
 
+def test_recommend_resolves_data_via_require_without_global():
+    """recommend 必須自行 require 資料模組, 不得依賴 rime.lua 建立的全域變數。
+
+    其餘 11 個模組都用 pcall(require); recommend 曾讀全域
+    phah_taibun_data——該全域缺席時徽章靜默消失 (症狀: 候選區
+    一切正常但無 ◆/★)。本測試的條件即「全域缺席」, 不設全域、
+    只以真實 schema/ 規則檔驗證模組自行載入並命中 LKK 推薦字。
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        rime_api = {
+          get_user_data_dir = function() return "schema" end,
+          get_shared_data_dir = function() return "schema" end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return {
+            type = type,
+            start = start,
+            _end = end_pos,
+            text = text,
+            comment = comment,
+            quality = 0,
+          }
+        end
+        local yielded = {}
+        function yield(cand)
+          table.insert(yielded, cand)
+        end
+        -- 刻意不設全域 phah_taibun_data: 無論成因, 模組都不得依賴它
+
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = {
+            get_bool = function() return true end,
+          } } },
+        }
+        filter.init(env)
+
+        local items = {
+          Candidate("table", 0, 2, "衣", " [i1]"),
+          Candidate("table", 0, 2, "伊", " [i1]"),
+        }
+        local pos = 0
+        local input = {
+          iter = function()
+            return function()
+              pos = pos + 1
+              return items[pos]
+            end
+          end,
+        }
+
+        filter.func(input, env)
+
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    out = run_lua(script).splitlines()
+    assert out == ["伊\t ◆ [i1]", "衣\t [i1]"], out
+
+
 def test_recommend_badged_candidate_moves_forward_at_most_nudge_slots():
     """有界位移: 徽章把候選往前挪固定格數(LKK 3、moe700 1)。
 
@@ -970,7 +1036,7 @@ def test_recommend_badged_candidate_moves_forward_at_most_nudge_slots():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "伊" then return true, false end
             return false, false
@@ -1041,7 +1107,7 @@ def test_recommend_no_badges_is_byte_identical_pass_through():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function() return false, false end,
           check_moe700 = function() return false end,
         }
@@ -1107,7 +1173,7 @@ def test_recommend_badge_reorders_only_the_badged_candidate():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "伊" then return true, false end
             return false, false
@@ -1353,7 +1419,7 @@ def test_recommend_badge_cannot_cross_beyond_nudge_window():
         function yield(cand)
           table.insert(yielded, cand)
         end
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "伊" then return true, false end
             return false, false
@@ -1462,7 +1528,7 @@ def test_recommend_badges_cannot_flood_candidate_window():
         function yield(cand)
           table.insert(yielded, cand)
         end
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text:find("^變") then return false, true end
             return false, false
@@ -1534,7 +1600,7 @@ def test_recommend_badge_cannot_displace_sentence_candidate():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "是按怎" then return true, false end
             return false, false
@@ -1609,7 +1675,7 @@ def test_recommend_lighttone_variant_is_not_the_sentence_anchor():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "飼--啊" or text == "詞B" then return true, false end
             return false, false
@@ -1682,7 +1748,7 @@ def test_recommend_lighttone_variant_gets_no_badge_no_nudge():
           table.insert(yielded, cand)
         end
 
-        phah_taibun_data = {
+        package.loaded["phah_taibun_data"] = {
           check_lkk_recommend = function(text)
             if text == "飼--啊" then return true, false end
             return false, false

@@ -4,6 +4,12 @@
 -- ★ = LKK type:"lo"
 
 local M = {}
+local data_mod = nil
+local ok, mod = pcall(require, "phah_taibun_data")
+if ok and mod then
+  data_mod = mod
+end
+
 
 function M.init(env)
   local config = env.engine.schema.config
@@ -24,8 +30,6 @@ local NUDGE_LKK = 3
 local NUDGE_MOE = 1
 
 function M.func(input, env)
-  local data_mod = phah_taibun_data
-
   local all = {}
   local order = 0
   -- Sentence anchor: script_translator 的整句組字候選 (type="sentence")
