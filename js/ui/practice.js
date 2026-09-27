@@ -1,7 +1,7 @@
 // 練習分頁：詞語（看漢字拍台羅）＋句子（整句逐詞免調比對；錯題加重抽樣）。
 
-import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=9";
-import { formatRomanization, tlToPoj, pojFixDiacritics, toNumeric } from "../roman.js?v=9";
+import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=11";
+import { formatRomanization, tlToPoj, pojFixDiacritics, toNumeric } from "../roman.js?v=11";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

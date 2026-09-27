@@ -333,6 +333,7 @@ textarea:focus,
   padding-top: 0.3rem;
 }
 
+
 .tbl-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);

@@ -2,8 +2,10 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=9";
-import { formatRomanization, pojToTl } from "../roman.js?v=9";
+} from "../dict.js?v=11";
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -44,11 +46,19 @@ export function initConverter(dict, hints) {
       const $ul = $h.find("ul").last();
       for (const f of found) $ul.append($("<li></li>").html(f));
     }
+    const hitCalque = hints.calque.filter((c) => text.includes(c.han))
+      .sort((a, b) => b.han.length - a.han.length).slice(0, 8);
+    if (hitCalque.length) {
+      $h.append("<div class='hint-title'>華語→台語 對照（這馬文章有用著）</div><ul></ul>");
+      const $u2 = $h.find("ul").last();
+      for (const c of hitCalque)
+        $u2.append($("<li></li>").html(`「${esc(c.han)}」→ <code>${esc(c.suggest)}</code>`));
+    }
     const rows = hints.calque
-      .map((c) => `<li>「${c.han}」→ <code>${c.suggest}</code></li>`)
+      .map((c) => `<li>「${esc(c.han)}」→ <code>${esc(c.suggest)}</code></li>`)
       .join("");
     $h.append(
-      "<details class='calque'><summary>華語直譯通用小提醒（點開看）</summary>" +
+      "<details class='calque'><summary>華語→台語 通用對照表（單字佮多字結構，點開看；參考用，毋是自動文法解析）</summary>" +
       `<ul>${rows}</ul></details>`,
     );
   };
@@ -63,13 +73,20 @@ export function initConverter(dict, hints) {
     $("#cv-tl").text(tl || "—");
     $("#cv-poj").text(poj || "—");
     const $anno = $("#cv-anno").show().empty();
-    for (const seg of segs) {
+    for (let gi = 0; gi < segs.length; ) {
+      const seg = segs[gi];
       if (seg.t === "r") {
         $anno.append($("<span></span>").text(seg.s));
+        gi++;
       } else if (seg.t === "miss") {
+        // 聚合連續 miss（segment 逐字發）成一个詞組區塊
+        let run = "";
+        while (gi < segs.length && segs[gi].t === "miss") { run += segs[gi].s; gi++; }
         $anno.append(
-          $("<span class='anno miss'></span>").attr("title", "詞典揣無").text(`⟨${seg.s}⟩`),
+          $("<span class='anno miss'></span>").attr("title", "詞典揣無").text(`⟨${run}⟩`),
         );
+        // 註：連續 miss 聚合成一个⟨詞組⟩顯示（逐字拆解建議佮 segment
+        // 用仝一個貪婪匹配，數學上拆袂出新的——結構建議改佇 hints 對照表）
       } else {
         const variants = wordVariants(seg, picks);
         const $w = $("<button type='button' class='anno word'></button>")
@@ -81,6 +98,7 @@ export function initConverter(dict, hints) {
           paint();
         });
         $anno.append($w, dictLink(seg.han));
+        gi++;
       }
     }
     renderHints(String($("#cv-in").val() ?? ""));

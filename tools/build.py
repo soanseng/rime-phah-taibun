@@ -236,6 +236,21 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         {"han": "也", "suggest": "嘛（mā）"},
         {"han": "再", "suggest": "閣（koh）"},
         {"han": "從", "suggest": "對（tuì）／tùi"},
+        # ---- 多字結構（2026-09-27 v2 roadmap：通用對照表擴充；參考用，
+        #      毋是自動文法解析；建議詞形以本典/教典慣用為準）----
+        {"han": "的時候", "suggest": "的時陣（ê sî-tsūn）"},
+        {"han": "越來越", "suggest": "愈來愈（jú lâi jú）"},
+        {"han": "每天", "suggest": "逐工（ta̍k-kang）"},
+        {"han": "大家", "suggest": "逐家（ta̍k-ke）"},
+        {"han": "什麼", "suggest": "啥物（sánn-mih）"},
+        {"han": "為什麼", "suggest": "為啥物（uī-sánn-mih）"},
+        {"han": "東西", "suggest": "物件（mi̍h-kiānn）"},
+        {"han": "有沒有", "suggest": "有…無（ū…bô）"},
+        {"han": "看不懂", "suggest": "看無（khuànn-bô）"},
+        {"han": "聽不懂", "suggest": "聽無（thiann-bô）"},
+        {"han": "吃完", "suggest": "食了／食飽（tsia̍h-liáu/-pá）"},
+        {"han": "一下子", "suggest": "一下子（tsi̍t--ē-á）"},
+        {"han": "裡面", "suggest": "裡底／內底（--ní-té/lāi-té）"},
     ]
     hints = {"lighttone": [{k: v for k, v in x.items() if k != "f"} for x in light],
              "calque": calque}

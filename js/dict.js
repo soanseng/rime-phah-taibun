@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=9";
+} from "./roman.js?v=11";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -419,3 +419,4 @@ export function lookup(dict, query, limit = 100) {
   }
   return out;
 }
+
