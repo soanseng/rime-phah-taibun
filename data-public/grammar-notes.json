@@ -50,6 +50,22 @@
     {
       "id": "complement",
       "title": "補語"
+    },
+    {
+      "id": "demonstrative",
+      "title": "指示詞"
+    },
+    {
+      "id": "redup",
+      "title": "疊字"
+    },
+    {
+      "id": "sandhi",
+      "title": "變調"
+    },
+    {
+      "id": "quantity",
+      "title": "數量詞"
     }
   ],
   "notes": [
@@ -768,7 +784,7 @@
     },
     {
       "id": "deixis",
-      "cat": "pronoun",
+      "cat": "demonstrative",
       "title": "這／彼、遮／遐、這馬：指示詞",
       "body": [
         "指物用 <strong>tsit-／hit-</strong>（這／彼）加量詞：tsit ê（這个）、hit ê（彼个）；指所在用 <strong>tsia／hia</strong>（遮／遐）；複數「這些、那些」是 <strong>tsia-ê／hia-ê</strong>（遮的／遐的）。",
@@ -829,7 +845,7 @@
       "cat": "complement",
       "title": "趨向補語：--起來、--落去、--轉來",
       "body": [
-        "動詞後壁會當接送趨向的補語（來、去、起來、落去、出去、入來），講的時陣補語讀輕聲，寫做 <strong>--</strong> 相接：tò--lo̍h-khì（倒--落去）。",
+        "動詞後壁會當接送趨向的補語（來、去、起來、落去、出去、入來），講的時陣補語讀輕聲，寫做 <strong>--</strong> 相接：Tó--lo̍h-khì（倒落去；教典詞條拼 Tó）。",
         "趨向會當疊兩層：phak--lo̍h-khì（仆--落去）、mau--lo̍h-khì--ah（㧌--落去--矣，趨向＋完成）。",
         "方向義有時會虛化：tńg--lâi（轉--來）是「回來」，m̄-thang tshut--khì（毋通出去）的 khì 嘛是輕聲尾。"
       ],
@@ -965,6 +981,147 @@
         {
           "label": "維基學院《閩南語文法》·〈比較句型〉（贏／輸／上概）",
           "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "adj-redup",
+      "cat": "redup",
+      "title": "疊字形容詞：紅紅、白白、清清咧",
+      "body": [
+        "單音節形容詞重疊（AA）連寫：<strong>âng-âng</strong>（紅紅）、<strong>pe̍h-pe̍h</strong>（白白），程度加強、畫面較活。常常 kah 程度補語 kah 做伙出現：tsia̍h kah tshuì-khoo âng-âng（食甲喙箍紅紅）。",
+        "動詞嘛會當輕疊加 <strong>--leh</strong>：tshing-tshing--leh（清清咧，清理一下）——這就接去「試行貌」彼篇。",
+        "三疊（âng âng-âng）佮 AABB、ABAB 的進一步變化，TGGL 053–056 有專門語法點。"
+      ],
+      "examples": [
+        {
+          "han": "你是食啥食甲喙箍紅紅？",
+          "tl": "Lí sī tsia̍h siánn tsia̍h kah tshuì-khoo âng-âng?",
+          "hua": "你是吃什麼吃得嘴邊紅紅的？",
+          "note": "kah 補語＋AA 疊字",
+          "src": "moedict"
+        },
+        {
+          "han": "白白布染甲烏",
+          "tl": "Pe̍h-pe̍h pòo ní kah oo.",
+          "hua": "一塊純白的布料被染成黑的。比喻一個人被抹黑了。",
+          "note": "pe̍h-pe̍h 白白",
+          "src": "moedict"
+        },
+        {
+          "han": "咱共灶跤清清咧",
+          "tl": "Lán kā tsàu-kha tshing-tshing--leh.",
+          "hua": "我們把廚房清理一下。",
+          "note": "VV--leh 輕疊",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 053–056 形容詞重疊 AA／AABB／ABAB、動詞重疊",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E7%B4%85%E7%B4%85"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈形容詞正詞法〉（二重疊／三重疊；閩拼）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%BD%A2%E5%AE%B9%E8%A9%9E%E6%AD%A3%E8%A9%9E%E6%B3%95"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "locative-sandhi",
+      "cat": "sandhi",
+      "title": "方位詞頭前的變調：桌頂、內底、外口",
+      "body": [
+        "名詞後壁囥方位詞（tíng 頂、lāi-té 內底、guā-kháu 外口、pîng 邊），寫做分寫：toh tíng（桌頂）、tshiī-tiûnn guā-kháu（市場外口）。",
+        "唸的時陣，方位詞頭前的名詞愛照變調規則連讀——這是 TGGL 專欄的主題；本站「變調」選項（轉換頁）就是共款規則。",
+        "方位詞系統：tíng（頂，上面）、té（底，下面）、lāi-té／lāi-bīn（內底／內面）、guā-kháu（外口）。"
+      ],
+      "examples": [
+        {
+          "han": "物件囥佇桌頂",
+          "tl": "Mi̍h-kiānn khǹg tī toh tíng.",
+          "hua": "東西放在桌上。",
+          "note": "toh tíng 桌頂",
+          "src": "moedict"
+        },
+        {
+          "han": "市場外口有人咧拚俗貨",
+          "tl": "Tshī-tiûnn guā-kháu ū-lâng teh piànn sio̍k-huè.",
+          "hua": "市場外面有人在拋售便宜貨。",
+          "note": "guā-kháu 外口",
+          "src": "moedict"
+        },
+        {
+          "han": "這跤皮箱內底貯啥物？",
+          "tl": "Tsit kha phuê-siunn lāi-té té siánn-mih?",
+          "hua": "這只皮箱裡面裝什麼東西？",
+          "note": "lāi-té 內底",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法小專欄：方位詞前的名詞變調讀法",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/4"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈空間名詞〉（閩拼；跨方言參考）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E7%A9%BA%E9%96%93%E5%90%8D%E8%A9%9E"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "numerals",
+      "cat": "quantity",
+      "title": "數量詞：一台車、兩百箍、偌濟錢",
+      "body": [
+        "數詞＋量詞＋名詞：<strong>tsi̍t tâi tshia</strong>（一台車）、<strong>tsi̍t ki tik-á</strong>（一枝竹仔）。量詞真豐富（台、枝、欉、丸、塊），佮華語無一一對應。",
+        "問「多少」用 <strong>guā-tsuē</strong>（偌濟）：guā-tsuē tsînn（偌濟錢）；「幾」用 <strong>kuí</strong>（ kuí ê 幾个）。",
+        "數字有文白兩讀（一 tsi̍t／it、二 nn̄g／jī、三 sann／sam），一般算數用白讀、序數佮編號用文讀——規則複雜，TGGL「台語數字的讀法」專欄整理了透徹。"
+      ],
+      "examples": [
+        {
+          "han": "頭家，弓蕉一斤偌濟錢？",
+          "tl": "Thâu-ke, king-tsio tsi̍t kin guā-tsē tsînn?",
+          "hua": "老闆，香蕉一斤多少錢？",
+          "note": "guā-tsuē 偌濟＋量詞 kin 斤",
+          "src": "moedict"
+        },
+        {
+          "han": "遮的上加是兩百箍",
+          "tl": "Tsia-ê siōng-ke sī nn̄g pah khoo.",
+          "hua": "這些頂多兩百元。",
+          "note": "nn̄g pah 兩百（白讀）",
+          "src": "moedict"
+        },
+        {
+          "han": "你一月日趁偌濟錢？",
+          "tl": "Lí tsi̍t gue̍h-ji̍t thàn guā-tsē tsînn?",
+          "hua": "你一個月賺多少錢？",
+          "note": "guā-tsuē 問薪水",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法小專欄：台語數字的讀法（文白異讀、序數、電話號碼）",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/2"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈基序數詞與合成數詞〉（閩拼）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%9F%BA%E5%BA%8F%E6%95%B8%E8%A9%9E%E8%88%87%E5%90%88%E6%88%90%E6%95%B8%E8%A9%9E"
         },
         {
           "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
