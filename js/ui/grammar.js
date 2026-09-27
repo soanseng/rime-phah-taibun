@@ -44,7 +44,8 @@ async function initNotes() {
             (e) =>
               `<div class="gr-ex"><span class="han">${esc(e.han)}</span>` +
               `<span class="tl">　${esc(e.tl)}</span>` +
-              `<span class="hua">　${esc(e.hua)}</span></div>`,
+              `<span class="hua">　${esc(e.hua)}</span>` +
+              `<span class="gr-src-tag">${e.src === "moedict" ? "教典" : "自造"}</span></div>`,
           )
           .join("");
         const refs = n.refs

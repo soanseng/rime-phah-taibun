@@ -427,6 +427,17 @@ textarea:focus,
   padding-top: 0.45rem;
 }
 
+.gr-src-tag {
+  display: inline-block;
+  margin-inline-start: 0.45rem;
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.3rem;
+  vertical-align: middle;
+}
+
 .gr-refs a {
   color: var(--accent-deep);
 }
