@@ -1,3 +1,22 @@
+.about h3 {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 1.02rem;
+  color: var(--accent-deep);
+}
+
+.about p,
+.about li {
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.about code {
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  padding: 0.05em 0.4em;
+  border-radius: 6px;
+}
+
 textarea,
 #vb-in,
 #pr-in {

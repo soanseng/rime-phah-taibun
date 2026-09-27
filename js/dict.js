@@ -168,8 +168,8 @@ export function buildReverseIndex(dict) {
 export function tlToHan(tlText, rev) {
   const parts = [];
   let matched = 0, total = 0;
-  for (const run of tlRuns(tlText)) {
-    if (run.type === "sep") { parts.push(run.s); continue; }
+  for (const run of splitLiterals(tlText, tlRuns)) {
+    if (run.type === "sep" || run.type === "lit") { parts.push(run.s); continue; }
     const { bare, raws } = romToSylls(run.s);
     if (!bare.length) { parts.push(run.s); continue; }
     total += bare.length;
@@ -197,11 +197,25 @@ export function buildLM(lmJson) {
   return { uni, total, bigrams: new Map(Object.entries(lmJson.bigrams)) };
 }
 
+// `...` 反引號內容＝原樣保留（英文專名等，不進解碼）
+function splitLiterals(text, runs) {
+  const re = /`([^`]*)`/g;
+  let last = 0, m;
+  const out = [];
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(...runs(text.slice(last, m.index)));
+    out.push({ type: "lit", s: m[1] });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(...runs(text.slice(last)));
+  return out;
+}
+
 // 輸入切做 [羅馬字段] × [分隔符]（標點、空白、斷行原樣保留）
 function tlRuns(tlText) {
   // 羅馬字段含字母/數字/結合調符/o͘/連字號（-、-- 輕聲、– — dash）；
   // 分隔符只有標點、空白、斷行——原樣保留。
-  const re = /[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u2013\u2014-]+/g;
+  const re = /[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u207F\u2013\u2014-]+/g;
   const runs = [];
   let last = 0, m;
   while ((m = re.exec(tlText))) {
@@ -259,7 +273,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
   };
   const parts = [];
   let matched = 0, total = 0;
-  const runs = tlRuns(tlText);
+  const runs = splitLiterals(tlText, tlRuns);
 
   const decodeSentence = (items) => {
 
@@ -331,6 +345,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
   let sent = [];
   for (const run of runs) {
     if (run.type === "rom") { sent.push({ rom: run.s }); continue; }
+    if (run.type === "lit") { sent.push({ sep: run.s }); continue; }
     if (run.type === "sep" && /[^\s]/.test(run.s)) {
       decodeSentence(sent);              // 句界：先解句內
       parts.push(run.s);                 // 標點原樣

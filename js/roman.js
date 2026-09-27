@@ -126,7 +126,7 @@ function replacePair(t, s, d) {
 }
 
 function subPair(t, s, d) {
-  const re = new RegExp(`[${s[0].toUpperCase()}${s[0]}]${s.slice(1)}\\b`, "g");
+  const re = new RegExp(`[${s[0].toUpperCase()}${s[0]}]${s.slice(1)}(?=[^a-z]|$)`, "g");
   return t.replace(re, (m) => (m[0] === m[0].toUpperCase() ? cap(d) : d));
 }
 
@@ -150,7 +150,7 @@ export function pojToTl(text) {
     .replace(/o\u0358/g, "oo")
     .replace(/ou/g, "oo");
   r = r.split("chh").join("tsh").split("ch").join("ts");
-  r = r.replace(/eng\b/g, "ing").replace(/ek\b/g, "ik");
+  r = r.replace(/eng(?=[^a-z]|$)/g, "ing").replace(/ek(?=[^a-z]|$)/g, "ik");
   return r.split("oa").join("ua").split("oe").join("ue");
 }
 

@@ -41,7 +41,7 @@ const pairs = [];
 let pending = null;
 for (const p of paras) {
   const hR = [...p].filter(isHanC).length / [...p].length;
-  if (hR > 0.5) { pending = p; continue; }
+  if (hR > 0.45) { pending = p; continue; }
   if (hR < 0.15 && pending) { pairs.push([pending, p]); pending = null; }
 }
 console.log(`[${bundleArg}｜${corpusName}] pairs=${pairs.length}`);
