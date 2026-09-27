@@ -40,13 +40,15 @@ async function initNotes() {
       .map((n) => {
         const body = n.body.map((p) => `<p>${p}</p>`).join("");
         const exs = n.examples
-          .map(
-            (e) =>
+          .map((e) => {
+            const hua = e.hua ? `<span class="hua">　${esc(e.hua)}</span>` : "";
+            const note = e.note ? `<span class="hua">　〔註〕${esc(e.note)}</span>` : "";
+            return (
               `<div class="gr-ex"><span class="han">${esc(e.han)}</span>` +
-              `<span class="tl">　${esc(e.tl)}</span>` +
-              `<span class="hua">　${esc(e.hua)}</span>` +
-              `<span class="gr-src-tag">${e.src === "moedict" ? "教典" : "自造"}</span></div>`,
-          )
+              `<span class="tl">　${esc(e.tl)}</span>${hua}${note}` +
+              `<span class="gr-src-tag">${e.src === "moedict" ? "教典" : "自造"}</span></div>`
+            );
+          })
           .join("");
         const refs = n.refs
           .map(
