@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js";
-import { formatRomanization, pojToTl } from "../roman.js";
+} from "../dict.js?v=2";
+import { formatRomanization, pojToTl } from "../roman.js?v=2";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -28,6 +28,7 @@ export function initConverter(dict, hints) {
   };
   const picks = new Map();
   let segs = [];
+  const lighttoneMap = new Map((hints?.lighttone ?? []).map((lt) => [lt.han, lt.reading]));
   let dir = "h2r";
 
   const renderHints = (text) => {
@@ -53,7 +54,10 @@ export function initConverter(dict, hints) {
   };
 
   const paintH2R = () => {
-    const { tl, poj } = render(segs, picks);
+    const { tl, poj } = render(segs, picks, {
+      sandhi: $("#cv-sandhi").prop("checked"),
+      lighttone: lighttoneMap,
+    });
     $("#cv-h1").text("台羅 TL");
     $("#cv-h2").text("白話字 POJ");
     $("#cv-tl").text(tl || "—");
@@ -105,6 +109,7 @@ export function initConverter(dict, hints) {
     }
     paint();
   };
+  $("#cv-sandhi").on("change", paint);
 
   $(".seg-btn").on("click", (ev) => {
     const $b = $(ev.currentTarget);

@@ -247,10 +247,104 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         a, b, c = p[0], p[2], int(p[4])
         if a in uni and b in uni and c >= 2:
             bigrams[f"{a}\t{b}"] = c
-    (out_dir / "bigrams.json").write_text(
-        json.dumps({"uni": uni, "bigrams": bigrams}, ensure_ascii=False,
-                   separators=(",", ":")), encoding="utf-8")
-    print(f"  bigrams: {len(bigrams)} pairs / {len(uni)} unigrams")
+    def save_bigrams():
+        (out_dir / "bigrams.json").write_text(
+            json.dumps({"uni": uni, "bigrams": bigrams}, ensure_ascii=False,
+                       separators=(",", ":")), encoding="utf-8")
+        print(f"  bigrams: {len(bigrams)} pairs / {len(uni)} unigrams")
+
+    # (a) 900句分詞（日常域）例句相鄰詞對
+    fen = data / "Sin1pak8tshi7_2015_900-le7ku3" / "minnan900.分詞"
+    if fen.exists():
+        n_add = 0
+        for line in open(fen, encoding="utf-8"):
+            words = []
+            for tok in line.split():
+                if "｜" not in tok:
+                    continue
+                h, l = tok.split("｜", 1)
+                h = h.replace("-", "")
+                if is_han_str(h) and h in uni:
+                    words.append(h)
+            for a, b in zip(words, words[1:]):
+                k = f"{a}\t{b}"
+                bigrams[k] = bigrams.get(k, 0) + 1
+                n_add += 1
+        print(f"  bigrams +{n_add} pairs from 900句分詞")
+
+    # (b) 詞典長詞條自生 bigram（iTaigi/taihoa 群眾短語編碼了搭配；CC0/BY-SA）
+    def seg_han(text, tbl):
+        out, i = [], 0
+        while i < len(text):
+            hit = None
+            for L in range(min(8, len(text) - i), 1, -1):
+                cand = text[i:i + L]
+                if any(not is_han_str(c) for c in cand):
+                    continue
+                if cand in tbl:
+                    hit = cand
+                    break
+            if hit:
+                out.append(hit)
+                i += len(hit)
+            else:
+                i += 1
+        return out
+
+    n_mine = 0
+    for w in table:
+        if 4 <= len(w) <= 12 and is_han_str(w):
+            words = seg_han(w, table)
+            for a, b in zip(words, words[1:]):
+                if a in uni and b in uni:
+                    k = f"{a}\t{b}"
+                    bigrams[k] = bigrams.get(k, 0) + 1
+                    n_mine += 1
+    print(f"  bigrams +{n_mine} pairs from dict-mined phrases")
+
+    # (c) twblg 教典例句（音節=漢字數逐詞對齊）＋(d) moe700 unigram
+    #     使用者 2026-09-27 確認 twblg 可公開（標示 CC BY-ND 3.0 TW 來源）
+    tw = json.load(open(data / "moedict-data-twblg" / "dict-twblg.json", encoding="utf-8"))
+    if isinstance(tw, dict):
+        tw = list(tw.values())
+    n_sent = n_pair = 0
+    for e in tw:
+        for hx in e.get("heteronyms", []):
+            for d in hx.get("definitions", []):
+                for ex in d.get("example", []) or []:
+                    m = re.match(r"￹(.+?)￺\s*(.+?)￻", ex)
+                    if not m:
+                        continue
+                    han = "".join(c for c in m.group(1) if is_han_str(c))
+                    tl_words = [t for t in m.group(2).split()
+                                if re.fullmatch(r"[A-Za-z\u00C0-\u024F0-9][A-Za-z\u00C0-\u024F0-9\u0300-\u036f\u0358-]*", t)]
+                    syls = [len(t.split("-")) for t in tl_words]
+                    if sum(syls) != len(han) or not tl_words:
+                        continue
+                    seq, pos = [], 0
+                    for t, n in zip(tl_words, syls):
+                        hw = han[pos:pos + n]
+                        pos += n
+                        if hw in table:
+                            seq.append(hw)
+                            uni[hw] = uni.get(hw, 0) + 1
+                    n_sent += 1
+                    for a, b in zip(seq, seq[1:]):
+                        k = f"{a}\t{b}"
+                        bigrams[k] = bigrams.get(k, 0) + 1
+                        n_pair += 1
+    print(f"  bigrams +{n_pair} pairs / {n_sent} sentences from twblg例句")
+    m7 = rime / "schema" / "moe700.yaml"
+    if m7.exists():
+        n7 = 0
+        for line in open(m7, encoding="utf-8"):
+            w = line.strip().removeprefix("- ").strip()
+            if w and is_han_str(w) and w in table:
+                uni[w] = uni.get(w, 0) + 2
+                n7 += 1
+        print(f"  uni +{n7} from moe700")
+
+    save_bigrams()
 
     import gzip
     manifest["_meta"] = {"mode": mode, "words": len(table), "with_gloss": len(gloss)}

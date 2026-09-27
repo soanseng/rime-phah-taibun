@@ -35,6 +35,37 @@ export function addToneToSyllable(syl) {
   return pos < 0 ? base : base.slice(0, pos + 1) + mark + base.slice(pos + 1);
 }
 
+// ---------- 連續變調（主流腔，詞內近似）----------
+// 舒聲：1→7、2→1、3→2、5→7、7→3
+// 入聲 p/t/k 尾：4↔8；h 尾：4→2、8→3；尾音節不變。
+const SANDHI_PLAIN = { "1": "7", "2": "1", "3": "2", "5": "7", "7": "3" };
+const SANDHI_PTK = { "4": "8", "8": "4" };
+const SANDHI_H = { "4": "2", "8": "3" };
+
+export function sandhiSyllable(syl) {
+  const tone = syl.match(/[1-9]$/)?.[0];
+  if (!tone) return syl;
+  const base = syl.slice(0, -1);
+  let next;
+  if (/[ptk]$/.test(base)) next = SANDHI_PTK[tone];
+  else if (/h$/.test(base)) next = SANDHI_H[tone];
+  else next = SANDHI_PLAIN[tone];
+  return next ? base + next : syl;
+}
+
+// 詞內連讀：非尾音節變調、尾音節本調（詞組/句尾規則未做，屬近似）。
+export function sandhiNumeric(numeric) {
+  const groups = numeric.split("--");
+  return groups
+    .map((g) => {
+      const syl = g.split(/\s+/).filter(Boolean);
+      return syl
+        .map((s, k) => (k === syl.length - 1 ? s : sandhiSyllable(s)))
+        .join(" ");
+    })
+    .join("--");
+}
+
 // "kin1 a2 jit8" → "kin-á-ji̍t"; "--" light-tone groups preserved.
 export function formatRomanization(roman) {
   if (!roman) return roman;

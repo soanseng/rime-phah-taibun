@@ -1,9 +1,7 @@
-// Dictionary loading, segmentation and conversion.
-
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
-  addImplicitTones, stripTones,
-} from "./roman.js";
+  addImplicitTones, stripTones, sandhiNumeric,
+} from "./roman.js?v=2";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -57,7 +55,8 @@ export function segment(text, dict) {
 // Segments → {tl, poj} lines. picks: Map(wordIndex → reading offset).
 // Spacing: space between latin-ending and latin-starting tokens only;
 // CJK punctuation binds tight. Tests ignore combining tone marks.
-export function render(segs, picks = new Map()) {
+export function render(segs, picks = new Map(), opts = {}) {
+  const { sandhi = false, lighttone = null } = opts;
   const base = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC");
   const startLatin = (s) => /^[a-z0-9⟨]/i.test(base(s));
   const endLatin = (s) => /[a-z0-9⟩]/i.test(base(s).slice(-1));
@@ -80,10 +79,12 @@ export function render(segs, picks = new Map()) {
       push(`⟨${seg.s}⟩`, `⟨${seg.s}⟩`);
       continue;
     }
-    const numeric = seg.readings[Math.min(picks.get(seg.si) ?? 0, seg.readings.length - 1)];
+    let numeric = seg.readings[Math.min(picks.get(seg.si) ?? 0, seg.readings.length - 1)];
+    if (lighttone?.has(seg.han)) numeric = lighttone.get(seg.han);
+    const outNum = sandhi ? sandhiNumeric(numeric) : numeric;
     push(
-      formatRomanization(numeric),
-      pojFixDiacritics(formatRomanization(tlToPoj(numeric))),
+      formatRomanization(outNum),
+      pojFixDiacritics(formatRomanization(tlToPoj(outNum))),
     );
   }
   return { tl: cap(tlParts.join("")), poj: cap(pojParts.join("")) };
@@ -128,11 +129,15 @@ export function buildReverseIndex(dict) {
   for (const [w, e] of Object.entries(dict)) {
     const nHan = [...w].filter(isHan).length;
     const mixed = /[A-Za-z]/.test(w);
+    const seen = new Set();
     for (const r of e.r) {
+      if (seen.has(r)) continue; // 同詞重複讀音去重
+      seen.add(r);
       const syl = r.split(" ").filter(Boolean);
       const key = syl.map((s) => s.replace(/[0-9]/g, "")).join(" ");
       const sane = mixed || syl.length === nHan;
-      const cand = { word: w, sane, gloss: e.h ? 1 : 0 };
+      const cand = { word: w, sane, gloss: e.h ? 1 : 0,
+                     toned: syl.map((s) => s.match(/[1-9]$/)?.[0] ?? "0").join("") };
       const list = rev.get(key);
       if (list) list.push(cand);
       else rev.set(key, [cand]);
@@ -196,12 +201,16 @@ const isHanTok = (tok) => [...tok].some((ch) => {
   return (o >= 0x3400 && o <= 0x9FFF) || (o >= 0x20000 && o <= 0x3FFFF);
 });
 
-// 羅馬字段 → { bare: 去調 TL 音節鍵, raws: 原字音節（pass-through 用）}
+// 羅馬字段 → { bare: 去調 TL 音節鍵, raws: 原字音節, tones: 每音節調號 }
 function romToSylls(rom) {
   const raws = rom.split(/[-\s]+/).filter(Boolean);
   const nums = toNumeric(rom).split(/[-\s]+/).filter(Boolean);
-  if (raws.length !== nums.length) return { bare: [rom], raws: [rom] };
-  return { bare: nums.map((s) => pojToTl(s).replace(/[0-9]/g, "")), raws };
+  if (raws.length !== nums.length) return { bare: [rom], raws: [rom], tones: ["0"] };
+  return {
+    bare: nums.map((s) => pojToTl(s).replace(/[0-9]/g, "")),
+    raws,
+    tones: nums.map((s) => s.match(/[1-9]$/)?.[0] ?? "0"),
+  };
 }
 
 // 羅→漢解碼：整句 log-prob lattice＋backpointer。
@@ -213,37 +222,43 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
   const {
     beamWidth = 8, interp = 0.65, unknownCost = 10,
     insaneCost = 3.0, glossBonus = 1.0, pFloor = 1e-5,
+    toneBonus = 2.0, tonePenalty = 3.0,
   } = opts;
   const Z = lm.total || 1;
   const pUni = (u) => Math.max((u + 1) / Z, pFloor);
-  const wordScore = (prev, c) => {
+  // 調號完全吻合加分（使用者拍調→讀音調全對）；不合扣分（新聞 sin1bun5 ≠ 訊問 sin7bun7）
+  const toneScore = (c, tones, i, L) => {
+    const inT = tones.slice(i, i + L).join("");
+    if (inT.includes("0")) return 0; // 使用者免調：不判
+    return c.toned === inT ? toneBonus : -tonePenalty;
+  };
+  const wordScore = (prev, c, tones, i, L) => {
     const c12 = prev ? (lm.bigrams.get(`${prev}\t${c.word}`) ?? 0) : 0;
     const cL = prev ? (lm.uni.get(prev) ?? 0) : 0;
     const p = interp * Math.min(c12 / (cL || 1), 1)
       + (1 - interp) * pUni(lm.uni.get(c.word) ?? 0);
     return Math.log(p + 1e-12) + (c.gloss ? glossBonus : 0)
-      - (c.sane ? 0 : insaneCost);
+      - (c.sane ? 0 : insaneCost) + toneScore(c, tones, i, L);
   };
-
   const parts = [];
   let matched = 0, total = 0;
   const runs = tlRuns(tlText);
 
   const decodeSentence = (items) => {
-    // items: {rom}|{sep}——攤平成音節流（詞不跨欄位）
-    const bare = [], raws = [], runEnd = [];
+
+    const bare = [], raws = [], tones = [], runEnd = [];
     const sepAt = new Map(); // 音節 index → 該欄位前的分隔符（空白）
     let pendingSep = "";
     let started = false;
     for (const it of items) {
       if (it.sep !== undefined) { pendingSep += it.sep; continue; }
-      const { bare: b, raws: r } = romToSylls(it.rom);
+      const { bare: b, raws: r, tones: tn } = romToSylls(it.rom);
       if (!b.length) { pendingSep += it.rom; continue; }
       if (started) sepAt.set(bare.length, pendingSep);
       pendingSep = "";
       started = true;
       for (let k = 0; k < b.length; k++) {
-        bare.push(b[k]); raws.push(r[k]);
+        bare.push(b[k]); raws.push(r[k]); tones.push(tn[k]);
         runEnd.push(k === b.length - 1);
       }
     }
@@ -263,7 +278,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
           if (!list) continue;
           for (const c of list.slice(0, 10)) {
             beams[i + L].push({
-              score: st.score + wordScore(st.last, c),
+              score: st.score + wordScore(st.last, c, tones, i, L),
               last: c.word,
               node: { pos: i, tok: c.word, prev: st.node, syl: L },
             });

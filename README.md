@@ -20,8 +20,7 @@
 | 項目 | 數字 | 說明 |
 |---|---|---|
 | 漢→TL | 90.1% 去調音節相似、99.5% 字元涵蓋 | 真實文章 10 對（漢字×TL）嚴格配對；POJ 無對照稿未計分 |
-| 羅→漢（實驗） | 75.3% 字元相似、86.2% 音節覆蓋 | bigram lattice 解碼（identity 語料）；詞典反查 greedy baseline 為 58.3% |
-| 900 句金標準 | 98.4%／95.9% | 含同源詞條，屬上限指標 |
+| 羅→漢（實驗） | 78.7% 字元相似、93.1% 音節覆蓋 | bigram lattice（identity＋900句＋詞典短語＋教典例句四源）；greedy baseline 58.3%。**開發語料（10 對）調參成績，無獨立 held-out** |
 
 > 羅→漢仍屬實驗：同音詞歧義（的/個、人/膿、新聞/訊問）與語料域偏移（identity 為新聞體）
 > 會造成誤選；標點、斷行、未命中音節原樣保留。
@@ -35,7 +34,7 @@
 | 新北市 900 例句工作坊（Taiwanese-Corpus） | MIT（上游 repo 聲明） |
 | 李江却台語文教基金會 LKK 用字表 | 標示來源（非商用） |
 | iCorpus 詞頻 | CC BY 4.0 |
-| 轉換核心 [rime-phah-taibun](https://github.com/soanseng/rime-phah-taibun) | MIT |
+| 教育部臺灣台語常用詞辭典（萌典版 dict-twblg，例句衍生統計） | CC BY-ND 3.0 TW（標示來源；本站非商用） |
 
 BY-SA 資料之衍生詞典包隨 repo 提供（`data-public/dict.json`）；各來源授權以原釋出條款為準。
 
@@ -67,8 +66,8 @@ python3 -m http.server 8765
 
 ## Roadmap（v2）
 
-- [ ] 連讀變調佮輕聲顯示（這馬輸出本調）
-- [ ] bigram 語言模型提升羅→漢（`identity_bigrams.tsv`）
+- [x] 連讀變調 toggle（詞內連讀近似）佮輕聲詞顯示（`--`）
+- [x] bigram 語言模型提升羅→漢（identity＋900句＋詞典短語＋教典例句，58.3%→78.7%）
 - [ ] 900 例句句級練習
 - [ ] 補齊 之／枵／植／臨 等缺詞
 - [ ] 多字結構文法建議（這馬干焦通用對照表）
