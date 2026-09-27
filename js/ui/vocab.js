@@ -1,8 +1,10 @@
 // 詞彙分頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
 
-import { lookup, sutianUrl } from "../dict.js?v=8";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=8";
+import { lookup, sutianUrl } from "../dict.js?v=9";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=9";
 
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export async function initVocab(dict) {
   const $tb = $("#vb-tbl tbody");
   let examples = {};
@@ -11,7 +13,7 @@ export async function initVocab(dict) {
   } catch { /* 例句載入失敗：欄位留空 */ }
   const exHtml = (han) =>
     (examples[han] ?? [])
-      .map(([h, t]) => `<div class="ex">${h}<br><span class="roman">${t}</span></div>`)
+      .map(([h, t]) => `<div class="ex">${esc(h)}<br><span class="roman">${esc(t)}</span></div>`)
       .join("");
   const run = () => {
     const rows = lookup(dict, String($("#vb-in").val() ?? ""));

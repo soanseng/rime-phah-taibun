@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=8";
+} from "./roman.js?v=9";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -312,7 +312,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     total += N;
     if (!N) { parts.push(tailSep); return; }
     const beams = Array.from({ length: N + 1 }, () => []);
-    beams[0] = [{ score: 0, last: null, node: null }];
+    beams[0] = [{ score: 0, last: null, last2: null, node: null }];
     for (let i = 0; i < N; i++) {
       if (!beams[i].length) continue;
       const maxL = runEnd[i] ? 1 : (() => { let j = i; while (j < N && !runEnd[j]) j++; return j - i + 1; })();
@@ -329,9 +329,10 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
             });
           }
         }
+        // 未音節：上下文歸零——trigram/bigram 毋通橋過 unknown
         beams[i + 1].push({
           score: st.score - unknownCost,
-          last: st.last, last2: st.last2,
+          last: null, last2: null,
           node: { pos: i, tok: raws[i], prev: st.node, syl: 1 },
         });
       }

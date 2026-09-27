@@ -1,9 +1,10 @@
 // 練習分頁：詞語（看漢字拍台羅）＋句子（整句逐詞免調比對；錯題加重抽樣）。
 
-import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=8";
-import { formatRomanization, tlToPoj, pojFixDiacritics, toNumeric } from "../roman.js?v=8";
+import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=9";
+import { formatRomanization, tlToPoj, pojFixDiacritics, toNumeric } from "../roman.js?v=9";
 
-const stripDigits = (s) => s.replace(/[1-9]/g, "");
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const revealHtml = (cur) =>
   `${formatRomanization(cur.r[0])}（POJ：${pojFixDiacritics(formatRomanization(tlToPoj(cur.r[0])))}）　<a class='dict-link' href='${sutianUrl(cur.han)}' target='_blank' rel='noopener'>教典</a>`;
 
@@ -101,8 +102,8 @@ export async function initSentencePractice() {
     askedSent++;
     let ok = 0;
     const marks = exp.map((w, i) => {
-      if (i < got.length && wordToneless(got[i]) === wordToneless(w)) { ok++; return `<span class="w-ok">${w}</span>`; }
-      return `<span class="w-bad">${w}</span>`;
+      if (i < got.length && wordToneless(got[i]) === wordToneless(w)) { ok++; return `<span class="w-ok">${esc(w)}</span>`; }
+      return `<span class="w-bad">${esc(w)}</span>`;
     });
     if (got.length > exp.length)
       marks.push(`<span class="w-bad">（多出 ${got.length - exp.length} 詞）</span>`);
@@ -112,7 +113,7 @@ export async function initSentencePractice() {
     else missPool.add(idx);
     $("#ps-feedback")
       .removeClass("bad").addClass(allOk ? "good" : "bad")
-      .html(`逐詞比對（${ok}/${exp.length} 詞，${pct}%）：${marks.join(" ")}<br>正確：${sents[idx][1]}`);
+      .html(`逐詞比對（${ok}/${exp.length} 詞，${pct}%）：${marks.join(" ")}<br>正確：${esc(sents[idx][1])}`);
     $("#ps-score").text(`${okSent} 句全對 / ${askedSent} 句`);
   };
 

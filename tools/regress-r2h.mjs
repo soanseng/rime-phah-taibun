@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=8";
-import { segment, render } from "../js/dict.js?v=8";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=9";
+import { segment, render } from "../js/dict.js?v=9";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -21,7 +21,7 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization } = await import("../js/roman.js?v=8");
+const { formatRomanization } = await import("../js/roman.js?v=9");
 ok("免調顯示無 0", wc.words.every(x => !/[0-9]/.test(formatRomanization(x.reading))));
 const r2 = decodeTlToHan("Guá ê lāu-pē sī lâng.", rev, lm);
 ok("的 選中", r2.han.includes("的"));

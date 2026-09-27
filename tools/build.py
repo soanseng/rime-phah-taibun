@@ -325,7 +325,7 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                     if not m:
                         continue
                     han = "".join(c for c in m.group(1) if is_han_str(c))
-                    han_clean = re.sub(r"[^\u3400-\u9fff]", "", han)
+                    han_clean = "".join(c for c in han if is_han_str(c))
                     twblg_han.add(han_clean)
                     tl_words = [t for t in m.group(2).split()
                                 if re.fullmatch(r"[A-Za-z\u00C0-\u024F0-9][A-Za-z\u00C0-\u024F0-9\u0300-\u036f\u0358-]*", t)]
@@ -394,7 +394,7 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                 han = (row.get("例句") or "").strip()
                 tl = (row.get("例句標音") or "").strip()
                 hoa = (row.get("華語翻譯") or "").strip()
-                key = re.sub(r"[^\u3400-\u9fff]", "", han)
+                key = "".join(c for c in han if is_han_str(c))
                 if han and tl and key in twblg_han:
                     sents.append([han, tl, hoa])
                 elif han and tl:
