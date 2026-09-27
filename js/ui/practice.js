@@ -1,7 +1,7 @@
 // 練習分頁：看漢字拍台羅；免調可比對，調號另計。
 
-import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=3";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=3";
+import { practicePool, normalizeAnswer, readingToneless, sutianUrl } from "../dict.js?v=5";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=5";
 
 const stripDigits = (s) => s.replace(/[1-9]/g, "");
 const revealHtml = (cur) =>

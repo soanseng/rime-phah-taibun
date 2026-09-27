@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=4";
-import { formatRomanization, pojToTl } from "../roman.js?v=4";
+} from "../dict.js?v=5";
+import { formatRomanization, pojToTl } from "../roman.js?v=5";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")

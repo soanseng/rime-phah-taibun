@@ -2,8 +2,8 @@
 // bundle 可為相對（repo 內）或絕對路徑；corpus 預設 weightloss（開發集）
 import {
   segment, render, buildReverseIndex, buildLM, decodeTlToHan, tlToHan,
-} from "../js/dict.js?v=4";
-import { toNumeric } from "../js/roman.js?v=4";
+} from "../js/dict.js?v=5";
+import { toNumeric } from "../js/roman.js?v=5";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
