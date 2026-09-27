@@ -3,10 +3,10 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { loadDict } from "./dict.js?v=12";
-import { initConverter } from "./ui/converter.js?v=12";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=12";
-import { initVocab } from "./ui/vocab.js?v=12";
+import { loadDict } from "./dict.js?v=13";
+import { initConverter } from "./ui/converter.js?v=13";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=13";
+import { initVocab } from "./ui/vocab.js?v=13";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {

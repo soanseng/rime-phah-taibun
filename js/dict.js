@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=12";
+} from "./roman.js?v=13";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -271,7 +271,9 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     // 歸鍵無半個全對（變調形輸入）→ 按語料調形分布減罰（per-key 調號 prior）。
     if (!hasExact && key) {
       const dist = lm.tonefreq[key];
-      if (dist && dist[c.toned]) {
+      // 愛有 ≥2 个調形記錄才用分布：單一調形鍵 share=1 會變做全面減罰、
+      // 無鑑別性（known-vs-unknown 判斷煞來振動）。
+      if (dist && dist[c.toned] && Object.keys(dist).length > 1) {
         const total = Object.values(dist).reduce((a, b) => a + b, 0);
         const share = dist[c.toned] / total;
         return -tonePenalty * (1 - 0.7 * share);
