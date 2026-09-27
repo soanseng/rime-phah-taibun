@@ -248,9 +248,8 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         {"han": "有沒有", "suggest": "有…無（ū…bô）"},
         {"han": "看不懂", "suggest": "看無（khuànn-bô）"},
         {"han": "聽不懂", "suggest": "聽無（thiann-bô）"},
-        {"han": "吃完", "suggest": "食了／食飽（tsia̍h-liáu/-pá）"},
-        {"han": "一下子", "suggest": "一下子（tsi̍t--ē-á）"},
-        {"han": "裡面", "suggest": "裡底／內底（--ní-té/lāi-té）"},
+        {"han": "吃完", "suggest": "食飽（tsia̍h-pá）／動詞＋矣（--ah）"},
+        {"han": "裡面", "suggest": "內底（lāi-té）"},
     ]
     hints = {"lighttone": [{k: v for k, v in x.items() if k != "f"} for x in light],
              "calque": calque}
@@ -392,9 +391,23 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                 continue
             k3 = f"{a}\t{b}\t{c3}"
             trigrams[k3] = trigrams.get(k3, 0) + 1
+    # ---- tonefreq：逐「免調鍵」的調形分布（羅→漢調號 prior 用）。
+    #      key＝去調數讀音；sig＝逐音節調數。權重＝詞 uni（+1 平滑）。
+    tonefreq = {}
+    for w, rs in table.items():
+        r0 = rs[0]
+        key = re.sub(r"\d", "", r0)
+        sig = "".join(re.findall(r"\d", r0))
+        if not sig:
+            continue
+        d = tonefreq.setdefault(key, {})
+        d[sig] = d.get(sig, 0) + uni.get(w, 0) + 1
+    tonefreq = {k: v for k, v in tonefreq.items() if sum(v.values()) >= 3 or len(v) > 1}
     (out_dir / "bigrams.json").write_text(
-        json.dumps({"uni": uni, "bigrams": bigrams, "trigrams": trigrams},
+        json.dumps({"uni": uni, "bigrams": bigrams, "trigrams": trigrams,
+                    "tonefreq": tonefreq},
                    ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"  tonefreq: {len(tonefreq)} keys")
     # ---- sentences.json：句級練習——只收「佮教典原文核對著有重叠」的句子
     # （使用者 2026-09-27 准教典例句重發布，標示 CC BY-ND 3.0 TW 來源；
     #   例句.csv 其餘 2,324 句出處未驗證，剔除）。

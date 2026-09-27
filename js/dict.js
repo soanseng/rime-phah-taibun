@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=11";
+} from "./roman.js?v=12";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -198,6 +198,7 @@ export function buildLM(lmJson) {
     uni, total,
     bigrams: new Map(Object.entries(lmJson.bigrams)),
     trigrams: new Map(Object.entries(lmJson.trigrams ?? {})),
+    tonefreq: lmJson.tonefreq ?? {},
   };
 }
 
@@ -260,14 +261,26 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
   } = opts;
   const Z = lm.total || 1;
   const pUni = (u) => Math.max((u + 1) / Z, pFloor);
-  // 調號完全吻合加分（使用者拍調→讀音調全對）；不合扣分（新聞 sin1bun5 ≠ 訊問 sin7bun7）
-  const toneScore = (c, tones, i, L) => {
+  // 調號完全吻合加分；不合時按語料調形分布減罰（per-key 調號 prior）：
+  // 仝鍵內佗一个調形較常出現（親像變調輸入），罰較輕。
+  const toneScore = (c, tones, i, L, key, hasExact) => {
     const inT = tones.slice(i, i + L).join("");
     if (inT.includes("0")) return 0; // 使用者免調：不判
-    return c.toned === inT ? toneBonus : -tonePenalty;
+    if (c.toned === inT) return toneBonus;
+    // 有別个候選全對（本調輸入）→ 保持平罰，鑑別毋通減。
+    // 歸鍵無半個全對（變調形輸入）→ 按語料調形分布減罰（per-key 調號 prior）。
+    if (!hasExact && key) {
+      const dist = lm.tonefreq[key];
+      if (dist && dist[c.toned]) {
+        const total = Object.values(dist).reduce((a, b) => a + b, 0);
+        const share = dist[c.toned] / total;
+        return -tonePenalty * (1 - 0.7 * share);
+      }
+    }
+    return -tonePenalty;
   };
   // bigram→trigram backoff：有 (a,b,w) 就用 P(w|a,b)，無就退 P(w|b)
-  const wordScore = (prev2, prev, c, tones, i, L) => {
+  const wordScore = (prev2, prev, c, tones, i, L, key, hasExact) => {
     const w_uni = lm.uni.get(c.word) ?? 0;
     let pCtx = 0;
     if (prev) {
@@ -283,7 +296,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     }
     const p = interp * pCtx + (1 - interp) * pUni(w_uni);
     return Math.log(p + 1e-12) + (c.gloss ? glossBonus : 0)
-      - (c.sane ? 0 : insaneCost) + toneScore(c, tones, i, L);
+      - (c.sane ? 0 : insaneCost) + toneScore(c, tones, i, L, key, hasExact);
   };
   const parts = [];
   let matched = 0, total = 0;
@@ -321,9 +334,11 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
           if (L > 1 && !runEnd[i + L - 1]) continue; // 詞尾須在欄位尾
           const list = rev.get(bare.slice(i, i + L).join(" "));
           if (!list) continue;
+          const inT = tones.slice(i, i + L).join("");
+          const hasExact = inT.includes("0") || list.some((c) => c.toned === inT);
           for (const c of list.slice(0, 24)) {
             beams[i + L].push({
-              score: st.score + wordScore(st.last2, st.last, c, tones, i, L),
+              score: st.score + wordScore(st.last2, st.last, c, tones, i, L, bare.slice(i, i + L).join(" "), hasExact),
               last: c.word, last2: st.last,
               node: { pos: i, tok: c.word, prev: st.node, syl: L },
             });

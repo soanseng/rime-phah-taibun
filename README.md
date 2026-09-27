@@ -80,3 +80,6 @@ python3 -m http.server 8765
 ## 授權
 
 程式碼：MIT。資料：依各來源條款（見上表）。
+- [x] per-key 調號頻率 prior：變調形輸入（連讀輸出貼回解碼）+0.9~+6.2pp
+  （brownfat 71.8→78.0），本調輸入零變動（護欄：同鍵有全對候選時不免罰，
+  保持 新聞/訊問 調號鑑別）。tonefreq 14,763 鍵入 bigrams.json
