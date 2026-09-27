@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=6";
-import { formatRomanization, pojToTl } from "../roman.js?v=6";
+} from "../dict.js?v=7";
+import { formatRomanization, pojToTl } from "../roman.js?v=7";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -128,6 +128,7 @@ export function initConverter(dict, hints) {
     $(".seg-btn").removeClass("is-active");
     $b.addClass("is-active");
     dir = $b.data("dir");
+    $("#panel-convert h2").text(dir === "h2r" ? "漢羅 → TL／POJ" : "羅馬字 → 漢字");
     $("#cv-in").attr(
       "placeholder",
       dir === "h2r"
