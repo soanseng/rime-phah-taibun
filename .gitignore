@@ -1,0 +1,4 @@
+# data/：本機實驗產物（授權組合實驗用），不進版控
+data/
+node_modules/
+__pycache__/

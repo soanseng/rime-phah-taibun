@@ -1,0 +1,100 @@
+.site-head {
+  padding-block: 1.4rem 0.6rem;
+}
+
+.site-head h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.site-head h1 .accent {
+  color: var(--accent);
+}
+
+.tagline {
+  margin: 0.15rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 0.3rem;
+  padding-block: 0.6rem;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tab:hover {
+  background: rgba(13, 148, 136, 0.1);
+  color: var(--accent-deep);
+}
+
+.tab.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem;
+  margin-bottom: 1.3rem;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.site-foot {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  padding-block: 0.5rem 2.2rem;
+}
+
+.site-foot p {
+  margin: 0.3rem 0;
+}
+
+.load-state {
+  text-align: center;
+  padding: 1rem;
+  color: var(--accent-deep);
+  font-weight: 600;
+}
+
+@media (min-width: 48rem) {
+  .panel {
+    padding: 1.5rem 1.6rem;
+  }
+
+  .site-head h1 {
+    font-size: 1.6rem;
+  }
+}

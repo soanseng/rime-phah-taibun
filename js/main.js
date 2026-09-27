@@ -1,0 +1,42 @@
+// 入口：載詞典、接分頁、啟動三個分頁模組。
+// 預設載 data-public＝設定的公開包（來源已標示於頁脚；STTI 之開放運用/ARR
+// 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
+// 本機測其他組合請改 fetch("./data/dict.json")。
+
+import { loadDict } from "./dict.js";
+import { initConverter } from "./ui/converter.js";
+import { initPractice } from "./ui/practice.js";
+import { initVocab } from "./ui/vocab.js";
+
+const ready = async () => {
+  if (typeof jQuery === "undefined") {
+    const el = document.querySelector("#load-state");
+    if (el) el.textContent = "jQuery 載入失敗（CDN 無法連線？）";
+    return;
+  }
+  try {
+    const [dict, hints] = await Promise.all([
+      loadDict("./data-public/dict.json"),
+      fetch("./data-public/hints.json")
+        .then((r) => (r.ok ? r.json() : { lighttone: [], calque: [] }))
+        .catch(() => ({ lighttone: [], calque: [] })),
+    ]);
+    $("#load-state").remove();
+    initConverter(dict, hints);
+    initPractice(dict);
+    initVocab(dict);
+  } catch (err) {
+    $("#load-state").text(`詞典載入失敗：${err.message}`);
+    return;
+  }
+
+  $(".tab").on("click", (ev) => {
+    const $b = $(ev.currentTarget);
+    $(".tab").removeClass("is-active").attr("aria-selected", "false");
+    $b.addClass("is-active").attr("aria-selected", "true");
+    $(".panel").removeClass("is-active").prop("hidden", true);
+    $(`#panel-${$b.data("tab")}`).addClass("is-active").prop("hidden", false);
+  });
+};
+
+$(ready);

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>讀台文 Tha̍k Tâi-bûn｜漢羅 ⇄ 台羅 TL／白話字 POJ</title>
+    <meta
+      name="description"
+      content="讀台文：漢羅文章轉台羅 TL 佮白話字 POJ，點字換讀音；拼音練習免調就會當拍；詞彙查詢附華語釋義。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Iansui&display=swap"
+    />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/widgets.css" />
+  </head>
+  <body>
+    <header class="site-head">
+      <h1>讀台文<span class="accent">。</span>Tha̍k Tâi-bûn</h1>
+      <p class="tagline">漢羅 ⇄ 台羅 TL／白話字 POJ　・　點字換讀音　・　免調練習</p>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="功能">
+      <button class="tab is-active" id="tab-convert" data-tab="convert" role="tab" aria-selected="true" aria-controls="panel-convert">轉換</button>
+      <button class="tab" id="tab-practice" data-tab="practice" role="tab" aria-selected="false" aria-controls="panel-practice">練習</button>
+      <button class="tab" id="tab-vocab" data-tab="vocab" role="tab" aria-selected="false" aria-controls="panel-vocab">詞彙</button>
+    </nav>
+
+    <main>
+      <section id="panel-convert" class="panel is-active" role="tabpanel" aria-labelledby="tab-convert">
+        <h2>漢羅 → TL／POJ</h2>
+        <textarea id="cv-in" placeholder="貼漢羅文章，親像：我今仔日欲去台北。"></textarea>
+        <div class="row">
+          <div class="seg" role="group" aria-label="方向">
+            <button type="button" class="seg-btn is-active" data-dir="h2r">漢→羅</button>
+            <button type="button" class="seg-btn" data-dir="r2h">羅→漢</button>
+          </div>
+          <button id="cv-run" class="btn primary">轉換</button>
+          <label class="opt"><input type="checkbox" id="cv-live" checked /> 即時轉換</label>
+          <span class="hint" id="cv-hint">點漢字換讀音；⟨?⟩ 表示詞典揣無。</span>
+        </div>
+        <div class="out-grid">
+          <div class="out-card">
+            <div class="out-head">
+              <h3 id="cv-h1">台羅 TL</h3>
+              <button class="btn-ghost copy" data-copy="cv-tl">複製</button>
+            </div>
+            <output id="cv-tl" class="roman">—</output>
+          </div>
+          <div class="out-card">
+            <div class="out-head">
+              <h3 id="cv-h2">白話字 POJ</h3>
+              <button class="btn-ghost copy" data-copy="cv-poj">複製</button>
+            </div>
+            <output id="cv-poj" class="roman">—</output>
+          </div>
+        </div>
+        <div id="cv-anno" class="anno" aria-label="漢字讀音對照"></div>
+        <div id="cv-hints" class="hints" hidden></div>
+      </section>
+
+      <section id="panel-practice" class="panel" role="tabpanel" aria-labelledby="tab-practice" hidden>
+        <h2>拼音練習</h2>
+        <p class="hint">看漢字拍台羅。免調嘛會使（kin a jit），拍調號嘛會當（kin1 a2 jit8）。</p>
+        <div class="prac-card">
+          <div class="prac-score" id="pr-score">0 對 / 0 題</div>
+          <div class="prac-han" id="pr-han">–</div>
+          <div class="prac-gloss" id="pr-gloss"></div>
+          <input id="pr-in" placeholder="拍拼音，親像 kin a jit" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          <div class="row">
+            <button id="pr-check" class="btn primary">檢查</button>
+            <button id="pr-show" class="btn">看答案</button>
+            <button id="pr-next" class="btn">下一題</button>
+          </div>
+          <div id="pr-feedback" class="prac-fb" role="status"></div>
+        </div>
+      </section>
+
+      <section id="panel-vocab" class="panel" role="tabpanel" aria-labelledby="tab-vocab" hidden>
+        <h2>詞彙查詢</h2>
+        <input id="vb-in" placeholder="揣台語詞，抑是華語釋義…" autocomplete="off" spellcheck="false" />
+        <div id="vb-count" class="hint"></div>
+        <div class="tbl-wrap">
+          <table id="vb-tbl">
+            <thead>
+              <tr><th>詞</th><th>TL</th><th>POJ</th><th>華語</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <p>
+        資料來源：iTaigi 華台對照典（CC0）・台華線頂對照典（CC BY-SA 4.0）・台灣植物名彙
+        （CC BY-SA 4.0）・教育部「以本土語言標注臺灣地名」（CC BY 3.0 TW）・教育部學科術語臺灣台語對譯
+        STTI（依官方說明開放運用、標示來源）・新北市104學年度閩南語字音字形900例句工作坊
+        （Taiwanese-Corpus，MIT；標示來源）・李江却台語文教基金會 LKK 用字表（標示來源）。
+        轉換核心移植自
+        <a href="https://github.com/soanseng/rime-phah-taibun" rel="noopener">rime-phah-taibun</a>（MIT）。
+      </p>
+      <p>本站非商業用途，僅作台語學習教育之用；各來源授權以原釋出條款為準。</p>
+      <p id="foot-mode" class="hint"></p>
+    </footer>
+
+    <div id="load-state" class="load-state" role="status">載入詞典中…</div>
+
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
