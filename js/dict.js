@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=3";
+} from "./roman.js?v=4";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -339,7 +339,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
       if (isHanTok(t.tok)) {
         matched += t.syl;
         const num = bare.slice(t.pos, t.pos + t.syl)
-          .map((b, k) => b + tones[t.pos + k]).join(" ");
+          .map((b, k) => b + (tones[t.pos + k] === "0" ? "" : tones[t.pos + k])).join(" ");
         words.push({ word: t.tok, reading: num });
       }
     }

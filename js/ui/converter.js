@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=3";
-import { formatRomanization, pojToTl } from "../roman.js?v=3";
+} from "../dict.js?v=4";
+import { formatRomanization, pojToTl } from "../roman.js?v=4";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -93,10 +93,10 @@ export function initConverter(dict, hints) {
     $("#cv-h1").text("漢字（實驗）");
     $("#cv-h2").text("詞對照");
     $("#cv-tl").text(r.han || "—");
-        const tl = formatRomanization(w.reading.replace(/0(?=[a-z])/g, ""));
+    const $list = $("#cv-poj").empty().removeClass("roman");
     if (r.words?.length) {
       for (const w of r.words.slice(0, 80)) {
-        const tl = formatRomanization(w.reading);
+        const tl = formatRomanization(w.reading.replace(/0(?=[a-z])/g, ""));
         $list.append(
           $("<span class='wchip'></span>")
             .append($("<b></b>").text(w.word))

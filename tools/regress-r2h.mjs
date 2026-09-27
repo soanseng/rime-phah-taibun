@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=3";
-import { segment, render } from "../js/dict.js?v=3";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=4";
+import { segment, render } from "../js/dict.js?v=4";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -16,6 +16,12 @@ const ok = (name, cond) => { if (!cond) fail++; console.log(`${cond ? "ok " : "F
 const r0 = decodeTlToHan("Tsi-hông sī lán-lâng ê îng-ióng-sòo.", rev, lm);
 ok("si7 → 是", r0.han.includes("是"));
 console.log("KNOWN 濟/坐（uni 17v48 無上下文）:", decodeTlToHan("Lú lú tsē.", rev, lm).han);
+// words 契約：跨標點完整、詞/讀音齊全、免調 0 不入 reading 顯示
+const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
+ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
+ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
+ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
+ok("免調無 0 外露", !wc.words.some(x => /0(?=[a-z])/.test(String(x.reading).replace(/0(?=[a-z])/g, "")) ));
 const r2 = decodeTlToHan("Guá ê lāu-pē sī lâng.", rev, lm);
 ok("的 選中", r2.han.includes("的"));
 // 標點/換行/未命中原樣保留
