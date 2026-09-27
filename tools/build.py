@@ -253,10 +253,10 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                        separators=(",", ":")), encoding="utf-8")
         print(f"  bigrams: {len(bigrams)} pairs / {len(uni)} unigrams")
 
-    # (a) 900句分詞（日常域）例句相鄰詞對
+    # (a) 900句分詞（日常域）：uni 累積＋例句相鄰詞對
     fen = data / "Sin1pak8tshi7_2015_900-le7ku3" / "minnan900.分詞"
     if fen.exists():
-        n_add = 0
+        n_add = n_tok = 0
         for line in open(fen, encoding="utf-8"):
             words = []
             for tok in line.split():
@@ -264,16 +264,18 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                     continue
                 h, l = tok.split("｜", 1)
                 h = h.replace("-", "")
-                if is_han_str(h) and h in uni:
+                if is_han_str(h) and h in table:
                     words.append(h)
+                    uni[h] = uni.get(h, 0) + 1
+                    n_tok += 1
             for a, b in zip(words, words[1:]):
-                k = f"{a}\t{b}"
-                bigrams[k] = bigrams.get(k, 0) + 1
+                bigrams[f"{a}\t{b}"] = bigrams.get(f"{a}\t{b}", 0) + 1
                 n_add += 1
-        print(f"  bigrams +{n_add} pairs from 900句分詞")
+        print(f"  bigrams +{n_add} pairs / uni +{n_tok} tokens from 900句分詞")
 
     # (b) 詞典長詞條自生 bigram（iTaigi/taihoa 群眾短語編碼了搭配；CC0/BY-SA）
     def seg_han(text, tbl):
+        # 未匹配字以 None 邊界標記——不橋接跨缺口的偽 bigram
         out, i = [], 0
         while i < len(text):
             hit = None
@@ -288,6 +290,8 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                 out.append(hit)
                 i += len(hit)
             else:
+                if out and out[-1] is not None:
+                    out.append(None)
                 i += 1
         return out
 
@@ -296,9 +300,10 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         if 4 <= len(w) <= 12 and is_han_str(w):
             words = seg_han(w, table)
             for a, b in zip(words, words[1:]):
+                if a is None or b is None:
+                    continue
                 if a in uni and b in uni:
-                    k = f"{a}\t{b}"
-                    bigrams[k] = bigrams.get(k, 0) + 1
+                    bigrams[f"{a}\t{b}"] = bigrams.get(f"{a}\t{b}", 0) + 1
                     n_mine += 1
     print(f"  bigrams +{n_mine} pairs from dict-mined phrases")
 
@@ -328,8 +333,12 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                         if hw in table:
                             seq.append(hw)
                             uni[hw] = uni.get(hw, 0) + 1
+                        else:
+                            seq.append(None)  # 邊界：不橋接跨缺口 bigram
                     n_sent += 1
                     for a, b in zip(seq, seq[1:]):
+                        if a is None or b is None:
+                            continue
                         k = f"{a}\t{b}"
                         bigrams[k] = bigrams.get(k, 0) + 1
                         n_pair += 1
