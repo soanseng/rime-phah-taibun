@@ -1,11 +1,18 @@
-// 詞彙分頁：台語詞／華語釋義查詢。
+// 詞彙分頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
 
-import { lookup, sutianUrl } from "../dict.js?v=7";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=7";
+import { lookup, sutianUrl } from "../dict.js?v=8";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=8";
 
-export function initVocab(dict) {
+export async function initVocab(dict) {
   const $tb = $("#vb-tbl tbody");
-
+  let examples = {};
+  try {
+    examples = await (await fetch("../data-public/examples.json")).json();
+  } catch { /* 例句載入失敗：欄位留空 */ }
+  const exHtml = (han) =>
+    (examples[han] ?? [])
+      .map(([h, t]) => `<div class="ex">${h}<br><span class="roman">${t}</span></div>`)
+      .join("");
   const run = () => {
     const rows = lookup(dict, String($("#vb-in").val() ?? ""));
     $("#vb-count").text(rows.length ? `${rows.length} 筆` : "（這馬無半筆）");
@@ -18,7 +25,7 @@ export function initVocab(dict) {
           .append($("<td class='w'></td>").text(r.han))
           .append($("<td class='roman'></td>").text(tl))
           .append($("<td class='roman'></td>").text(poj))
-          .append($("<td></td>").text(r.h || ""))
+          .append($("<td class='ex-cell'></td>").html(exHtml(r.han)))
           .append(
             $("<td></td>").append(
               $("<a class='dict-link'></a>")

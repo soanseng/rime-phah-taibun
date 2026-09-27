@@ -27,9 +27,17 @@
     "entries": 526,
     "license": "使用者確認可用：非商用、標示來源 (LKK 李江却基金會用字表)"
   },
+  "charsiu": {
+    "entries": 4,
+    "license": "curated：讀音內證自本典 CC0/BY-SA 複詞（之/枵/植/臨）"
+  },
+  "le7csv": {
+    "entries": 0,
+    "license": "教育部教典例句（CC BY-ND 3.0 TW，使用者 2026-09-27 准重發布、標示來源）——只收佮教典原文核對著的句子"
+  },
   "_meta": {
     "mode": "public",
-    "words": 82435,
+    "words": 82439,
     "with_gloss": 81643
   }
 }

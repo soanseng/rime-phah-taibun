@@ -312,6 +312,27 @@ textarea:focus,
   color: var(--bad);
 }
 
+.prac-fb .w-ok {
+  color: var(--good);
+}
+
+.prac-fb .w-bad {
+  color: var(--bad);
+  text-decoration: line-through;
+}
+
+.ex-cell .ex {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  padding-block: 0.2rem;
+}
+
+.ex-cell .ex + .ex {
+  border-top: 1px dashed var(--line);
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+}
+
 .tbl-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);

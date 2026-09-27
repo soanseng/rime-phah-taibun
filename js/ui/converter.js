@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=7";
-import { formatRomanization, pojToTl } from "../roman.js?v=7";
+} from "../dict.js?v=8";
+import { formatRomanization, pojToTl } from "../roman.js?v=8";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -122,11 +122,10 @@ export function initConverter(dict, hints) {
   };
   $("#cv-sandhi").on("change", paint);
 
-  $(".seg-btn").on("click", (ev) => {
+  $(".seg-btn[data-dir]").on("click", (ev) => {
     const $b = $(ev.currentTarget);
     if ($b.hasClass("is-active")) return;
-    $(".seg-btn").removeClass("is-active");
-    $b.addClass("is-active");
+    $(".seg-btn[data-dir]").removeClass("is-active");
     dir = $b.data("dir");
     $("#panel-convert h2").text(dir === "h2r" ? "漢羅 → TL／POJ" : "羅馬字 → 漢字");
     $("#cv-in").attr(

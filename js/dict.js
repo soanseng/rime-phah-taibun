@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=7";
+} from "./roman.js?v=8";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -194,7 +194,11 @@ export function buildLM(lmJson) {
   const uni = new Map(Object.entries(lmJson.uni));
   let total = 0;
   for (const v of uni.values()) total += v;
-  return { uni, total, bigrams: new Map(Object.entries(lmJson.bigrams)) };
+  return {
+    uni, total,
+    bigrams: new Map(Object.entries(lmJson.bigrams)),
+    trigrams: new Map(Object.entries(lmJson.trigrams ?? {})),
+  };
 }
 
 // `...` 反引號內容＝原樣保留（英文專名等，不進解碼）
@@ -262,11 +266,22 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     if (inT.includes("0")) return 0; // 使用者免調：不判
     return c.toned === inT ? toneBonus : -tonePenalty;
   };
-  const wordScore = (prev, c, tones, i, L) => {
-    const c12 = prev ? (lm.bigrams.get(`${prev}\t${c.word}`) ?? 0) : 0;
-    const cL = prev ? (lm.uni.get(prev) ?? 0) : 0;
-    const p = interp * Math.min(c12 / (cL || 1), 1)
-      + (1 - interp) * pUni(lm.uni.get(c.word) ?? 0);
+  // bigram→trigram backoff：有 (a,b,w) 就用 P(w|a,b)，無就退 P(w|b)
+  const wordScore = (prev2, prev, c, tones, i, L) => {
+    const w_uni = lm.uni.get(c.word) ?? 0;
+    let pCtx = 0;
+    if (prev) {
+      const c123 = prev2 ? (lm.trigrams.get(`${prev2}\t${prev}\t${c.word}`) ?? 0) : 0;
+      if (c123 > 0) {
+        const denom = lm.bigrams.get(`${prev2}\t${prev}`) ?? 0;
+        pCtx = denom > 0 ? Math.min(c123 / denom, 1) : Math.min(c123, 1);
+      } else {
+        const c12 = lm.bigrams.get(`${prev}\t${c.word}`) ?? 0;
+        const cL = lm.uni.get(prev) ?? 0;
+        pCtx = Math.min(c12 / (cL || 1), 1);
+      }
+    }
+    const p = interp * pCtx + (1 - interp) * pUni(w_uni);
     return Math.log(p + 1e-12) + (c.gloss ? glossBonus : 0)
       - (c.sane ? 0 : insaneCost) + toneScore(c, tones, i, L);
   };
@@ -308,15 +323,15 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
           if (!list) continue;
           for (const c of list.slice(0, 24)) {
             beams[i + L].push({
-              score: st.score + wordScore(st.last, c, tones, i, L),
-              last: c.word,
+              score: st.score + wordScore(st.last2, st.last, c, tones, i, L),
+              last: c.word, last2: st.last,
               node: { pos: i, tok: c.word, prev: st.node, syl: L },
             });
           }
         }
         beams[i + 1].push({
           score: st.score - unknownCost,
-          last: st.last,
+          last: st.last, last2: st.last2,
           node: { pos: i, tok: raws[i], prev: st.node, syl: 1 },
         });
       }

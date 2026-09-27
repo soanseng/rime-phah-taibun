@@ -68,7 +68,11 @@
       <section id="panel-practice" class="panel" role="tabpanel" aria-labelledby="tab-practice" hidden>
         <h2>拼音練習</h2>
         <p class="hint">看漢字拍台羅。免調嘛會使（kin a jit），拍調號嘛會當（kin1 a2 jit8）。</p>
-        <div class="prac-card">
+        <div class="seg" role="tablist" aria-label="練習模式">
+          <button class="seg-btn is-active" data-pmode="word">詞語</button>
+          <button class="seg-btn" data-pmode="sent">句子</button>
+        </div>
+        <div class="prac-card" id="pr-word-card">
           <div class="prac-score" id="pr-score">0 對 / 0 題</div>
           <div class="prac-han" id="pr-han">–</div>
           <div class="prac-gloss" id="pr-gloss"></div>
@@ -80,6 +84,19 @@
           </div>
           <div id="pr-feedback" class="prac-fb" role="status"></div>
         </div>
+        <div class="prac-card" id="pr-sent-card" hidden>
+          <div class="prac-score" id="ps-score">0 句全對 / 0 句</div>
+          <div class="prac-han" id="ps-han">–</div>
+          <div class="prac-gloss" id="ps-hint"></div>
+          <textarea id="ps-in" rows="3" placeholder="拍整句台羅，詞佮詞中間留空白，親像：Goá kin-á-ji̍t beh khì Tâi-pak."></textarea>
+          <div class="row">
+            <button id="ps-check" class="btn primary">檢查</button>
+            <button id="ps-show" class="btn">看答案</button>
+            <button id="ps-next" class="btn">下一題</button>
+          </div>
+          <div id="ps-feedback" class="prac-fb" role="status"></div>
+          <p class="hint">句源：教育部臺灣台語常用詞辭典例句（萌典版，CC BY-ND 3.0 TW，標示來源；11,513 句，逐句佮教典原文核對）。</p>
+        </div>
       </section>
 
       <section id="panel-vocab" class="panel" role="tabpanel" aria-labelledby="tab-vocab" hidden>
@@ -89,7 +106,7 @@
         <div class="tbl-wrap">
           <table id="vb-tbl">
             <thead>
-              <tr><th>詞</th><th>TL</th><th>POJ</th><th>華語</th><th></th></tr>
+              <tr><th>詞</th><th>TL</th><th>POJ</th><th>華語</th><th>例句（教典）</th><th></th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -106,7 +123,6 @@
         <h3>羅 → 漢（實驗功能）</h3>
         <p>台羅佮 POJ <strong>免勾選</strong>——輸入先經拼法正規化（ch→ts、oa→ua、eng→ing……）了後，走<strong>仝一條</strong>統計解碼管線，實測兩種拼法輸出逐字相同。解碼是整句 lattice（beam search）：</p>
         <ul>
-          <li><strong>詞頻</strong>：identity 語料（新聞域）＋900 句分詞＋教育部辭典 6,359 句例句（音節＝漢字數逐詞對齊）＋ moe700 推薦詞</li>
           <li><strong>相鄰詞 bigram</strong>：上述語料加上對詞典長詞條（親像「減肥計畫」）切詞自生的搭配統計</li>
           <li><strong>調號比對</strong>：你有拍調（親像 <code>sin1-bun5</code>）的時，讀音調號全對的候選加分——按呢「新聞」佮「訊問」（sin1-bun5 vs sin7-bun7）就分會開</li>
           <li>分數是正規 log 機率，無「切愈濟詞分數愈懸」的偏差；未命中的音節<strong>保留原音原字</strong>，標點、斷行原樣</li>
@@ -124,7 +140,7 @@
         <p>會曉讀，嘛愛會曉拍！<a href="https://taigi.anatomind.com/" target="_blank" rel="noopener">拍台文 Phah Tâi-bûn</a>（taigi.anatomind.com）是本站的姊妹品：RIME 台語輸入法，POJ／TL 混打、聲調可省略、漢羅輸出。讀台文的轉核心正是移植自拍台文。</p>
 
         <h3>資料來源（敬致謝！）</h3>
-        <p>iTaigi 華台對照典（CC0）・台華線頂對照典、台灣植物名彙（CC BY-SA 4.0）・教育部以本土語言標注臺灣地名（CC BY 3.0 TW）・教育部 STTI 學科術語（開放運用、標示來源）・新北市900例句（Taiwanese-Corpus，MIT）・教育部臺灣台語常用詞辭典（萌典版，CC BY-ND 3.0 TW，衍生統計）・LKK 用字表（標示來源）・iCorpus（CC BY 4.0）・identity 語料。本站<strong>非商業用途</strong>，僅作台語學習教育之用。</p>
+        <p>iTaigi 華台對照典（CC0）・台華線頂對照典、台灣植物名彙（CC BY-SA 4.0）・教育部以本土語言標注臺灣地名（CC BY 3.0 TW）・教育部 STTI 學科術語（開放運用、標示來源）・新北市900例句（Taiwanese-Corpus，MIT）・教育部臺灣台語常用詞辭典（萌典版，CC BY-ND 3.0 TW；衍生統計＋例句重發布〔詞彙例句、句級練習〕，標示來源）・LKK 用字表（標示來源）・iCorpus（CC BY 4.0）・identity 語料。本站<strong>非商業用途</strong>，僅作台語學習教育之用。</p>
         <p class="hint">全部程式佮資料佇 <a href="https://github.com/soanseng/thak-tai-bun" target="_blank" rel="noopener">GitHub：soanseng/thak-tai-bun</a>，歡迎貢獻語料佮回報問題。</p>
       </section>
     </main>
@@ -140,12 +156,12 @@
       </p>
       <p>本站非商業用途，僅作台語學習教育之用；各來源授權以原釋出條款為準。</p>
       <p>姊妹站：<a href="https://taigi.anatomind.com/" target="_blank" rel="noopener">拍台文 Phah Tâi-bûn</a>（taigi.anatomind.com）——台語輸入法，POJ／TL 混打、免調。</p>
-      <p id="foot-mode" class="hint">build 2026-09-27.v8</p>
+      <p id="foot-mode" class="hint">build 2026-09-27.v9</p>
     </footer>
 
     <div id="load-state" class="load-state" role="status">載入詞典中…</div>
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-    <script type="module" src="js/main.js?v=7"></script>
+    <script type="module" src="js/main.js?v=8"></script>
   </body>
 </html>

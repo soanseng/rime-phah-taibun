@@ -150,6 +150,15 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         if isinstance(e, dict) and e.get("type") == "han" and e.get("kip"):
             cur_add(w, str(e["kip"]), 800, str(e.get("hoabun", "")), "lkk")
 
+    # 單字條手補（之/枵/植/臨）：讀音由本典既有複詞內證一致推得
+    # （如 哭枵=khau3 iau1、扶植=hu5 sit8、肺腑之言 hi3 hu2 tsi1 gian5），
+    # 未引入外部聚合典。權重 550＝同 le9ku3 單字。
+    reg("charsiu", "curated：讀音內證自本典 CC0/BY-SA 複詞（之/枵/植/臨）")
+    for ch, readings in [("之", ["tsi1"]), ("枵", ["iau1"]),
+                         ("植", ["sit8"]), ("臨", ["lim5"])]:
+        for r in readings:
+            cur_add(ch, r, 550, "", "charsiu")
+
     # ---- freq
     freq: dict[str, int] = {}
     for fn in FREQ_LOCAL if mode == "local" else FREQ_PUBLIC:
@@ -233,7 +242,9 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
     (out_dir / "hints.json").write_text(
         json.dumps(hints, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-    # ---- bigrams.json：identity 語料漢字詞 bigram＋unigram（羅→漢 Viterbi 用）
+    # ---- bigrams.json：identity＋900句＋詞典短語＋教典例句
+    #      uni/bigram/trigram（羅→漢 Viterbi 用）；twblg 例句 → examples.json
+    seqs = []          # 詞序語料（(b)(c) 用 None 標缺詞邊界）
     uni = {}
     for line in open(data / "identity_freq.tsv", encoding="utf-8"):
         p = line.rstrip("\n").split("\t")
@@ -247,33 +258,27 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
         a, b, c = p[0], p[2], int(p[4])
         if a in uni and b in uni and c >= 2:
             bigrams[f"{a}\t{b}"] = c
-    def save_bigrams():
-        (out_dir / "bigrams.json").write_text(
-            json.dumps({"uni": uni, "bigrams": bigrams}, ensure_ascii=False,
-                       separators=(",", ":")), encoding="utf-8")
-        print(f"  bigrams: {len(bigrams)} pairs / {len(uni)} unigrams")
 
-    # (a) 900句分詞（日常域）：uni 累積＋例句相鄰詞對
+    # (a) 900句分詞（日常域）：uni 累積＋詞序入 seqs
     fen = data / "Sin1pak8tshi7_2015_900-le7ku3" / "minnan900.分詞"
     if fen.exists():
-        n_add = n_tok = 0
+        n_tok = 0
         for line in open(fen, encoding="utf-8"):
-            words = []
+            words_a = []
             for tok in line.split():
                 if "｜" not in tok:
                     continue
                 h, l = tok.split("｜", 1)
                 h = h.replace("-", "")
                 if is_han_str(h) and h in table:
-                    words.append(h)
+                    words_a.append(h)
                     uni[h] = uni.get(h, 0) + 1
                     n_tok += 1
-            for a, b in zip(words, words[1:]):
-                bigrams[f"{a}\t{b}"] = bigrams.get(f"{a}\t{b}", 0) + 1
-                n_add += 1
-        print(f"  bigrams +{n_add} pairs / uni +{n_tok} tokens from 900句分詞")
+            if len(words_a) >= 2:
+                seqs.append(words_a)
+        print(f"  seqs +900句 ({n_tok} tokens)")
 
-    # (b) 詞典長詞條自生 bigram（iTaigi/taihoa 群眾短語編碼了搭配；CC0/BY-SA）
+    # (b) 詞典長詞條自生（iTaigi/taihoa 群眾短語；CC0/BY-SA）
     def seg_han(text, tbl):
         # 未匹配字以 None 邊界標記——不橋接跨缺口的偽 bigram
         out, i = [], 0
@@ -298,21 +303,20 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
     n_mine = 0
     for w in table:
         if 4 <= len(w) <= 12 and is_han_str(w):
-            words = seg_han(w, table)
-            for a, b in zip(words, words[1:]):
-                if a is None or b is None:
-                    continue
-                if a in uni and b in uni:
-                    bigrams[f"{a}\t{b}"] = bigrams.get(f"{a}\t{b}", 0) + 1
-                    n_mine += 1
-    print(f"  bigrams +{n_mine} pairs from dict-mined phrases")
+            words_b = seg_han(w, table)
+            if len(words_b) >= 2:
+                seqs.append(words_b)
+                n_mine += 1
+    print(f"  seqs +{n_mine} dict-mined phrases")
 
-    # (c) twblg 教典例句（音節=漢字數逐詞對齊）＋(d) moe700 unigram
+    # (c) twblg 教典例句（音節=漢字數逐詞對齊）＋examples.json
     #     使用者 2026-09-27 確認 twblg 可公開（標示 CC BY-ND 3.0 TW 來源）
+    examples: dict[str, list] = {}
+    twblg_han = set()   # 教典例句漢文指紋（句子出處驗證用）
     tw = json.load(open(data / "moedict-data-twblg" / "dict-twblg.json", encoding="utf-8"))
     if isinstance(tw, dict):
         tw = list(tw.values())
-    n_sent = n_pair = 0
+    n_sent = 0
     for e in tw:
         for hx in e.get("heteronyms", []):
             for d in hx.get("definitions", []):
@@ -321,6 +325,8 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                     if not m:
                         continue
                     han = "".join(c for c in m.group(1) if is_han_str(c))
+                    han_clean = re.sub(r"[^\u3400-\u9fff]", "", han)
+                    twblg_han.add(han_clean)
                     tl_words = [t for t in m.group(2).split()
                                 if re.fullmatch(r"[A-Za-z\u00C0-\u024F0-9][A-Za-z\u00C0-\u024F0-9\u0300-\u036f\u0358-]*", t)]
                     syls = [len(t.split("-")) for t in tl_words]
@@ -334,15 +340,19 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                             seq.append(hw)
                             uni[hw] = uni.get(hw, 0) + 1
                         else:
-                            seq.append(None)  # 邊界：不橋接跨缺口 bigram
+                            seq.append(None)  # 邊界：不橋接跨缺口
+                    seqs.append(seq)
                     n_sent += 1
-                    for a, b in zip(seq, seq[1:]):
-                        if a is None or b is None:
-                            continue
-                        k = f"{a}\t{b}"
-                        bigrams[k] = bigrams.get(k, 0) + 1
-                        n_pair += 1
-    print(f"  bigrams +{n_pair} pairs / {n_sent} sentences from twblg例句")
+                    tl_text = " ".join(tl_words)
+                    for w in seq:
+                        if w is not None and len(examples.get(w, [])) < 2:
+                            examples.setdefault(w, []).append([han, tl_text])
+    print(f"  seqs +{n_sent} twblg sentences")
+    (out_dir / "examples.json").write_text(
+        json.dumps(examples, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8")
+    print(f"  examples.json: {len(examples)} words")
+
     m7 = rime / "schema" / "moe700.yaml"
     if m7.exists():
         n7 = 0
@@ -353,7 +363,46 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                 n7 += 1
         print(f"  uni +{n7} from moe700")
 
-    save_bigrams()
+    # ---- 詞序一次性計數：bigram＋trigram（None 邊界不橋接）
+    # trigram 語料稀疏（短句為主），≥1 全收——bytes 換準確率
+    trigrams = {}
+    for words_s in seqs:
+        for a, b in zip(words_s, words_s[1:]):
+            if a is None or b is None:
+                continue
+            k = f"{a}\t{b}"
+            bigrams[k] = bigrams.get(k, 0) + 1
+        for a, b, c3 in zip(words_s, words_s[1:], words_s[2:]):
+            if a is None or b is None or c3 is None:
+                continue
+            k3 = f"{a}\t{b}\t{c3}"
+            trigrams[k3] = trigrams.get(k3, 0) + 1
+    (out_dir / "bigrams.json").write_text(
+        json.dumps({"uni": uni, "bigrams": bigrams, "trigrams": trigrams},
+                   ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    # ---- sentences.json：句級練習——只收「佮教典原文核對著有重叠」的句子
+    # （使用者 2026-09-27 准教典例句重發布，標示 CC BY-ND 3.0 TW 來源；
+    #   例句.csv 其餘 2,324 句出處未驗證，剔除）。
+    reg("le7csv", "教育部教典例句（CC BY-ND 3.0 TW，使用者 2026-09-27 准重發布、標示來源）——只收佮教典原文核對著的句子")
+    import csv as _csv
+    sents = []
+    n_drop = 0
+    liku = data / "Sin1pak8tshi7_2015_900-le7ku3" / "例句.csv"
+    if liku.exists():
+        with open(liku, encoding="utf-8") as f:
+            for row in _csv.DictReader(f):
+                han = (row.get("例句") or "").strip()
+                tl = (row.get("例句標音") or "").strip()
+                hoa = (row.get("華語翻譯") or "").strip()
+                key = re.sub(r"[^\u3400-\u9fff]", "", han)
+                if han and tl and key in twblg_han:
+                    sents.append([han, tl, hoa])
+                elif han and tl:
+                    n_drop += 1
+    (out_dir / "sentences.json").write_text(
+        json.dumps({"s": sents}, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8")
+    print(f"  sentences.json: {len(sents)} sentences")
 
     import gzip
     manifest["_meta"] = {"mode": mode, "words": len(table), "with_gloss": len(gloss)}
