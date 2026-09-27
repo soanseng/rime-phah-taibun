@@ -66,6 +66,10 @@
     {
       "id": "quantity",
       "title": "數量詞"
+    },
+    {
+      "id": "proverb",
+      "title": "諺語熟語"
     }
   ],
   "notes": [
@@ -1177,7 +1181,7 @@
       "cat": "case",
       "title": "予……--去：被動的完成佮允許",
       "body": [
-        "<strong>hōo…--khì</strong>（予……--去）是被動句加上趨向補語：受事予人提走、騙走、收去的完成感——tshù hōo gîn-hâng kóo--khì（厝予銀行估去）。",
+        "<strong>hōo…--khì</strong>（予……--去）是被動句加上趨向補語：官方對譯「厝煞予銀行估去」＝「房子卻被銀行拿去抵債」、「毋通予伊騙去」＝「別讓他給騙了」——受事去予人「估去」「騙去」，有轉移、受害的完成感。",
         "允許義嘛定定用 <strong>hōo i khì</strong>（予伊去，讓他去）；命令句尾閣加 --lah（予伊去--啦）。",
         "佮「予」彼篇（hōo 給／被／讓）做伙看：這篇專講結尾 --khì 的變化。"
       ],
@@ -1221,7 +1225,7 @@
       "title": "當咧（tng-teh）：進行貌的強調",
       "body": [
         "進行貌基本是 <strong>teh／leh</strong>（咧），看「咧、矣、bat」彼篇。欲強調「正當彼當時」，頭前加 <strong>tng</strong>（當）：<strong>tng-teh</strong>（當咧）。",
-        "當咧會當佮完成貌連用：tng-teh tsú--ah（當咧煮--矣，正在煮了）——進行中而且已經到位。",
+        "教典例句「……看著大漢查某囝當咧煮矣」是敘述看著的當時，動作已經佇咧進行——tng-teh 佮句尾 --ah 連用，語感是「已經在煮了」。",
         "教典例句的芥菜「當咧出」（正當產季）顯示 tng-teh 嘛會當表示正當某個時節。"
       ],
       "examples": [
@@ -1251,6 +1255,149 @@
         {
           "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 進行式動詞組：當咧／咧）",
           "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "proverbs",
+      "cat": "proverb",
+      "title": "諺語熟語：一兼二顧、校長兼摃鐘",
+      "body": [
+        "教典收真濟俗諺，官方華語對譯直接說明比喻義。讀諺語是文法總複習——一句底豆 often 有三四個虛詞做伙出現。",
+        "「一兼二顧，摸蜊仔兼洗褲」用 <strong>kiam</strong>（兼）做連接；「校長兼摃鐘」嘛是 kiam。",
+        "「倖豬夯灶，倖囝不孝」是教誨型諺語；「惹熊惹虎，毋通惹著刺查某」用 <strong>m̄-thang</strong>（毋通）＋<strong>jia̍h--tio̍h</strong>（惹--著）的結構。"
+      ],
+      "examples": [
+        {
+          "han": "一兼二顧，摸蜊仔兼洗褲",
+          "tl": "It kiam jī kòo, bong lâ-á kiam sé khòo.",
+          "hua": "比喻二者兼顧。",
+          "note": "kiam 兼＋二者兼顧",
+          "src": "moedict"
+        },
+        {
+          "han": "校長兼摃鐘",
+          "tl": "Hāu-tiúnn kiam kòng-tsing.",
+          "hua": "校長兼工友。比喻包辦所有事情。",
+          "note": "kiam 兼",
+          "src": "moedict"
+        },
+        {
+          "han": "倖豬夯灶，倖囝不孝",
+          "tl": "Sīng ti giâ tsàu, sīng kiánn put-hàu.",
+          "hua": "比喻子女要加以管教，不能放縱，否則會變成不孝。",
+          "note": "教誨諺",
+          "src": "moedict"
+        },
+        {
+          "han": "石頭浸久嘛會上青苔",
+          "tl": "Tsio̍h-thâu tsìm kú mā ē tshiūnn-tshenn-thî.",
+          "hua": "石頭浸久了也會長青苔。比喻從事某一工作，時間久了也會有所成就。",
+          "note": "嘛 bē…（mā）也會；勵志諺",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "ka-imperative",
+      "cat": "syntax",
+      "title": "共我＋動詞：對人的句式",
+      "body": [
+        "<strong>kā guá</strong>（共我）＋動詞是固定的對人句式：Lí kā guá ē-kì--leh!（你共我會記咧！）＝「你給我記住！」——命令、警告語氣真重。",
+        "無仝於命令的場合，kā＋人就是「對／向／替」：I kā guá tò-siàu（伊共我倒數，他欠我錢不還）；你若想欲 kā guá tsioh-tsînn（共我借錢）。",
+        "「共我」佮「予我」愛分：kā 是對我做、hōo 是給我受益／受害，看「予」佮「共」兩篇。"
+      ],
+      "examples": [
+        {
+          "han": "你共我會記咧！",
+          "tl": "Lí kā guá ē kì--leh!",
+          "hua": "你給我記住！",
+          "note": "kā guá＋V 命令",
+          "src": "moedict"
+        },
+        {
+          "han": "伊共我倒數",
+          "tl": "I kā guá tó-siàu.",
+          "hua": "他欠我錢不還。",
+          "note": "kā＝對（欠我）",
+          "src": "moedict"
+        },
+        {
+          "han": "你若想欲共我借錢，就愛先揣一个保家",
+          "tl": "Lí nā siūnn-beh kā guá tsioh-tsînn, tō ài sing tshuē tsi̍t ê pó-ke.",
+          "hua": "你如果想向我借錢，就要先找一個保人。",
+          "note": "nā 若＋kā＋人",
+          "src": "moedict"
+        },
+        {
+          "han": "伊閣咧共我供體矣",
+          "tl": "I koh teh kā guá king-thé.",
+          "hua": "他又對我冷嘲熱諷了。",
+          "note": "koh＋teh＋kā 三點",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 108「共」群組（共+[對象]+[動作]、共我……）",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E5%85%B1"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "q-final",
+      "cat": "question",
+      "title": "句尾疑問系統：--無、--未、--呢",
+      "body": [
+        "是非問的句尾助詞是一組：<strong>--bô</strong>（--無，問狀態）、<strong>--buē</strong>（--未，問完成）、<strong>--nih</strong>（--呢，帶推測的反問）。",
+        "教典直接用輕聲符號標：Lí tsia̍h-pá--buē?（你食飽未？）；Pe̋nn hó guân-tsuân--buē?（病好原全未？）。",
+        "會當疊：khùn-pá--ah--nih（睏飽--矣--呢？）是完成貌 --ah 加推測 --nih；hó-sè--ah--buē（好勢--矣--未？）是 --ah 加 --buē。"
+      ],
+      "examples": [
+        {
+          "han": "病好原全未？",
+          "tl": "Pēnn hó guân-tsuân--buē?",
+          "hua": "病痊癒了沒？",
+          "note": "--buē 未＝完成問",
+          "src": "moedict"
+        },
+        {
+          "han": "代誌好勢矣未？",
+          "tl": "Tāi-tsì hó-sè--ah--buē?",
+          "hua": "事情順利了嗎？",
+          "note": "--ah＋--buē 疊用",
+          "src": "moedict"
+        },
+        {
+          "han": "你睏飽矣呢？",
+          "tl": "Lí khùn-pá--ah--nih?",
+          "hua": "你睡飽了是嗎？",
+          "note": "--ah＋--nih 推測反問",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法小專欄：各種疑問句的比較",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/12"
+        },
+        {
+          "label": "TGGL 語法點 037「……未？」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E6%9C%AA"
         },
         {
           "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
