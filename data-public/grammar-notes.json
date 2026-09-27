@@ -46,6 +46,10 @@
     {
       "id": "light",
       "title": "輕聲變義"
+    },
+    {
+      "id": "complement",
+      "title": "補語"
     }
   ],
   "notes": [
@@ -759,6 +763,212 @@
         {
           "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·10 輕聲變義（框架；例句自造，無重刊原句）",
           "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+        }
+      ]
+    },
+    {
+      "id": "deixis",
+      "cat": "pronoun",
+      "title": "這／彼、遮／遐、這馬：指示詞",
+      "body": [
+        "指物用 <strong>tsit-／hit-</strong>（這／彼）加量詞：tsit ê（這个）、hit ê（彼个）；指所在用 <strong>tsia／hia</strong>（遮／遐）；複數「這些、那些」是 <strong>tsia-ê／hia-ê</strong>（遮的／遐的）。",
+        "時間指示：<strong>tsit-má</strong>（這馬，現在）佮 <strong>khah-tsá</strong>（較早，以前）對比；<strong>tsiah／hiah</strong>（遮爾／遐爾）是程度「這麼／那麼」。",
+        "教典例句「伊較早咧作田，這馬咧做生理」一句鞠三个點：較早、這馬、進行貌 teh。"
+      ],
+      "examples": [
+        {
+          "han": "伊較早咧作田，這馬咧做生理",
+          "tl": "I khah-tsá teh tsoh-tshân, tsit-má teh tsò-sing-lí.",
+          "hua": "他早先是在種田，現在是在做生意。",
+          "note": "較早／這馬對比＋teh 進行",
+          "src": "moedict"
+        },
+        {
+          "han": "這个囡仔真乖巧",
+          "tl": "Tsit ê gín-á tsin kuai-khá.",
+          "hua": "這個孩子聰明伶俐，討人喜歡。",
+          "note": "tsit ê 這个",
+          "src": "moedict"
+        },
+        {
+          "han": "遮的物件攏是免稅的",
+          "tl": "Tsia-ê mi̍h-kiānn lóng sī bián-suè--ê.",
+          "hua": "這些東西都是免稅的。",
+          "note": "tsia-ê 遮的＝這些",
+          "src": "moedict"
+        },
+        {
+          "han": "遐有一台哹哹",
+          "tl": "Hia ū tsi̍t tâi pu-pu.",
+          "hua": "那裡有一輛車車。",
+          "note": "hia 遐＝那裡",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 017「這/彼」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E9%80%99"
+        },
+        {
+          "label": "TGGL 語法點 018「遮/遐」群組",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E9%81%AE"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈指示代詞〉（閩拼；跨方言參考）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E6%8C%87%E7%A4%BA%E4%BB%A3%E8%A9%9E"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "directional",
+      "cat": "complement",
+      "title": "趨向補語：--起來、--落去、--轉來",
+      "body": [
+        "動詞後壁會當接送趨向的補語（來、去、起來、落去、出去、入來），講的時陣補語讀輕聲，寫做 <strong>--</strong> 相接：tò--lo̍h-khì（倒--落去）。",
+        "趨向會當疊兩層：phak--lo̍h-khì（仆--落去）、mau--lo̍h-khì--ah（㧌--落去--矣，趨向＋完成）。",
+        "方向義有時會虛化：tńg--lâi（轉--來）是「回來」，m̄-thang tshut--khì（毋通出去）的 khì 嘛是輕聲尾。"
+      ],
+      "examples": [
+        {
+          "han": "倒落去",
+          "tl": "Tó--lo̍h-khì.",
+          "hua": "倒下去。",
+          "note": "雙輕聲趨向補語",
+          "src": "moedict"
+        },
+        {
+          "han": "伊跋一下規个人仆落去",
+          "tl": "I pua̍h tsi̍t-ē kui-ê lâng phak--lo̍h-khì.",
+          "hua": "他跌得整個人撲倒在地。",
+          "note": "仆--落去",
+          "src": "moedict"
+        },
+        {
+          "han": "伊昨昏三更半暝才轉來",
+          "tl": "I tsa-hng sann-kenn-puànn-mê tsiah tńg--lâi.",
+          "hua": "他昨天三更半夜才回來。",
+          "note": "tńg--lâi 轉--來",
+          "src": "moedict"
+        },
+        {
+          "han": "伊規工攏佇厝裡無出去",
+          "tl": "I kui-kang lóng tī tshù--lí bô tshut--khì.",
+          "hua": "他整天都在家沒出門。",
+          "note": "tshut--khì 出去（輕聲尾）",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 趨向補語讀輕聲）",
+          "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈動詞短語〉（V+方向動詞，多輕聲）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%8B%95%E8%A9%9E%E7%9F%AD%E8%AA%9E"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "trial",
+      "cat": "complement",
+      "title": "試行貌：V 看覓、V--一下、VV--咧",
+      "body": [
+        "動詞後壁加 <strong>khuànn-māi</strong>（看覓）是「試試看」：kau-sia̍p khuànn-māi（交涉看覓）。看覓後壁閣會當 tah <strong>--leh</strong>（看覓咧），語氣較軟。",
+        "另外兩款：V＋<strong>--tsi̍t-ē</strong>（--一下，借我看一下）佮動詞重疊 <strong>VV--leh</strong>（行行咧、看看咧）——動作放慢、放輕的語感。",
+        "「試看覓」tshì-khuànn-māi 已經做一個固定詞。"
+      ],
+      "examples": [
+        {
+          "han": "你去交涉看覓",
+          "tl": "Lí khì kau-sia̍p khuànn-māi.",
+          "hua": "你去交涉看看。",
+          "note": "V＋看覓",
+          "src": "moedict"
+        },
+        {
+          "han": "我想欲捻一塊粿來食看覓",
+          "tl": "Guá siūnn-beh liàm tsi̍t tè kué lâi tsia̍h khuànn-māi.",
+          "hua": "我想要捏取一塊糕來吃看看。",
+          "note": "來＋V＋看覓",
+          "src": "moedict"
+        },
+        {
+          "han": "家己先照鏡看覓咧，才袂卸世眾",
+          "tl": "Ka-kī sing tsiò-kiànn khuànn-māi--leh, tsiah bē sià-sì-tsìng.",
+          "hua": "自己先反省看看，才不會貽笑大方。",
+          "note": "看覓＋咧",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 嘗試動補：V＋看覓咧／V--一下／V--咧）",
+          "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        },
+        {
+          "label": "TGGL 語法點 028「[動詞重疊]+--咧」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E5%92%A7"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
+        }
+      ]
+    },
+    {
+      "id": "win-lose",
+      "cat": "syntax",
+      "title": "輸贏佮「上蓋」：比較的另一路",
+      "body": [
+        "「較」以外，台語嘛用 <strong>iânn（贏）／su（輸）</strong> 做比較動詞：khah iânn（較贏）＝划得來；A iânn B＝A 贏過 B。",
+        "最高級用 <strong>siōng-kài（上蓋）</strong>抑是 siōng（上）：上蓋好＝最好。TGGL 149 有專門語法點。",
+        "「拚輸贏」是固定詞——爭勝負。"
+      ],
+      "examples": [
+        {
+          "han": "俗賣減趁較贏了錢",
+          "tl": "Sio̍k-bē kiám-thàn khah iânn liáu-tsînn.",
+          "hua": "賤賣少賺些還是比賠錢好。",
+          "note": "khah iânn 較贏",
+          "src": "moedict"
+        },
+        {
+          "han": "比賽會贏會輸無包穩的",
+          "tl": "Pí-sài ē iânn ē su bô pau-ún--ê.",
+          "hua": "比賽有贏有輸沒有一個定數。",
+          "note": "iânn／su 對比",
+          "src": "moedict"
+        },
+        {
+          "han": "占贏毋占輸",
+          "tl": "Tsiàm-iânn m̄ tsiàm-su.",
+          "hua": "只想佔上風，不想屈居下風。",
+          "note": "諺語式用法",
+          "src": "moedict"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 149「上蓋……」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E4%B8%8A%E8%93%8B"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈比較句型〉（贏／輸／上概）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+        },
+        {
+          "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+          "url": "https://sutian.moe.edu.tw/"
         }
       ]
     }
