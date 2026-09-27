@@ -1,7 +1,7 @@
 // 詞彙分頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
 
-import { lookup, sutianUrl } from "../dict.js?v=13";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=13";
+import { lookup, sutianUrl } from "../dict.js?v=15";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=15";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

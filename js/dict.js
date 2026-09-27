@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=13";
+} from "./roman.js?v=15";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 

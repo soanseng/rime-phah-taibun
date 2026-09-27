@@ -38,7 +38,8 @@
 
 textarea,
 #vb-in,
-#pr-in {
+#pr-in,
+#gr-in {
   width: 100%;
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--line);
@@ -53,14 +54,16 @@ textarea {
 }
 
 #vb-in,
-#pr-in {
+#pr-in,
+#gr-in {
   min-height: 0;
   max-width: 32rem;
 }
 
 textarea:focus,
 #vb-in:focus,
-#pr-in:focus {
+#pr-in:focus,
+#gr-in:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
@@ -340,20 +343,24 @@ textarea:focus,
   border-radius: var(--radius-sm);
 }
 
-#vb-tbl {
+#vb-tbl,
+#gr-tbl {
   width: 100%;
   border-collapse: collapse;
 }
 
 #vb-tbl th,
-#vb-tbl td {
+#vb-tbl td,
+#gr-tbl th,
+#gr-tbl td {
   text-align: left;
   padding: 0.5rem 0.7rem;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
 }
 
-#vb-tbl th {
+#vb-tbl th,
+#gr-tbl th {
   position: sticky;
   top: 0;
   background: #f7f9fa;
@@ -362,17 +369,52 @@ textarea:focus,
   color: var(--ink-soft);
 }
 
-#vb-tbl tbody tr:nth-child(even) {
+#vb-tbl tbody tr:nth-child(even),
+#gr-tbl tbody tr:nth-child(even) {
   background: #fafbfc;
 }
 
-#vb-tbl td.w {
+#vb-tbl td.w,
+#gr-tbl td.w {
   font-weight: 700;
   white-space: nowrap;
 }
 
-#vb-tbl td.roman {
+#vb-tbl td.roman,
+#gr-tbl td.roman {
   overflow-wrap: anywhere;
+}
+
+#gr-tbl td.gr-id {
+  white-space: nowrap;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+#gr-group {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fbfcfd;
+  max-width: 22rem;
+}
+
+.gr-sub {
+  margin: 1.4rem 0 0.3rem;
+  font-size: 1.02rem;
+  color: var(--accent-deep);
+}
+
+.gr-snips {
+  margin: 0.3rem 0;
+  padding-inline-start: 1.2rem;
+  font-size: 0.95rem;
+  line-height: 1.9;
+}
+
+.gr-snips a {
+  color: var(--accent-deep);
+  font-weight: 600;
 }
 
 @media (min-width: 48rem) {

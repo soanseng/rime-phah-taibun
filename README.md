@@ -35,6 +35,7 @@
 | 李江却台語文教基金會 LKK 用字表 | 標示來源（非商用） |
 | iCorpus 詞頻 | CC BY 4.0 |
 | 教育部臺灣台語常用詞辭典（萌典版 dict-twblg，例句衍生統計） | CC BY-ND 3.0 TW（標示來源；本站非商用） |
+| 臺灣台語語料庫應用檢索系統 TGGL（國家教育研究院，文法頁） | 語料庫授權條款：**只收書目索引**（編號／語法點／臺羅／群組），說明佮例句不重刊、外連原站；標示來源、致謝教育部 |
 
 BY-SA 資料之衍生詞典包隨 repo 提供（`data-public/dict.json`）；各來源授權以原釋出條款為準。
 
@@ -53,6 +54,9 @@ BY-SA 資料之衍生詞典包隨 repo 提供（`data-public/dict.json`）；各
 ```bash
 # 產生資料包（需 sibling 目錄 rime-phah-taibun 佮伊的 data/）
 python3 tools/build.py --mode public --out data-public
+
+# 重抓 TGGL 語法點索引 → data-public/grammars.json（只取中繼資料，原文不落地）
+node tools/fetch-grammar.mjs
 
 # 本機起 web server
 python3 -m http.server 8765

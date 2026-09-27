@@ -3,10 +3,11 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { loadDict } from "./dict.js?v=13";
-import { initConverter } from "./ui/converter.js?v=13";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=13";
-import { initVocab } from "./ui/vocab.js?v=13";
+import { loadDict } from "./dict.js?v=15";
+import { initConverter } from "./ui/converter.js?v=15";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=15";
+import { initVocab } from "./ui/vocab.js?v=15";
+import { initGrammar } from "./ui/grammar.js?v=15";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {
@@ -14,6 +15,7 @@ const ready = async () => {
     if (el) el.textContent = "jQuery 載入失敗（CDN 無法連線？）";
     return;
   }
+  initGrammar(); // 獨立載入：文法索引失敗嘛袂拖累其他分頁
   try {
     const [dict, hints] = await Promise.all([
       loadDict("./data-public/dict.json"),
