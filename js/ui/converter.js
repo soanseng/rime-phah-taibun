@@ -1,7 +1,7 @@
 // 轉換分頁：漢→羅（點字換讀音）／羅→漢（實驗功能）。
 
 import {
-  segment, render, wordVariants, buildReverseIndex, tlToHan, sutianUrl,
+  segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
 } from "../dict.js";
 import { formatRomanization, pojToTl } from "../roman.js";
 
@@ -14,6 +14,18 @@ const dictLink = (word, label = "教典") =>
 
 export function initConverter(dict, hints) {
   const rev = buildReverseIndex(dict);
+  let lm = null;        // bigram LM（羅→漢用）
+  let lmPromise = null; // single-flight：避免重複 fetch
+  const ensureLM = () => {
+    if (lm) return Promise.resolve(lm);
+    if (!lmPromise) {
+      lmPromise = fetch("./data-public/bigrams.json")
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then((j) => { lm = buildLM(j); return lm; })
+        .catch(() => { lm = false; return false; });
+    }
+    return lmPromise;
+  };
   const picks = new Map();
   let segs = [];
   let dir = "h2r";
@@ -72,7 +84,8 @@ export function initConverter(dict, hints) {
 
   const paintR2H = () => {
     const input = String($("#cv-in").val() ?? "");
-    const { han, matched, total } = tlToHan(input, rev);
+    const { han } = lm ? decodeTlToHan(input, rev, lm) : tlToHan(input, rev);
+    if (!lm) ensureLM().then((m) => { if (m && dir === "r2h") paint(); });
     // pojToTl：POJ 拼法→TL、調符→數字調，再上調符——輸出即台羅正規化。
     const norm = formatRomanization(pojToTl(input.replace(/--/g, " ").replace(/-/g, " ")));
     $("#cv-h1").text("漢字（實驗）");

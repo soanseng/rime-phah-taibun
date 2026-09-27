@@ -233,6 +233,25 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
     (out_dir / "hints.json").write_text(
         json.dumps(hints, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
+    # ---- bigrams.json：identity 語料漢字詞 bigram＋unigram（羅→漢 Viterbi 用）
+    uni = {}
+    for line in open(data / "identity_freq.tsv", encoding="utf-8"):
+        p = line.rstrip("\n").split("\t")
+        if len(p) == 3 and p[0] in table and p[2].strip().isdigit():
+            uni[p[0]] = uni.get(p[0], 0) + int(p[2])
+    bigrams = {}
+    for line in open(data / "identity_bigrams.tsv", encoding="utf-8"):
+        p = line.rstrip("\n").split("\t")
+        if len(p) != 5 or not p[4].strip().isdigit():
+            continue
+        a, b, c = p[0], p[2], int(p[4])
+        if a in uni and b in uni and c >= 2:
+            bigrams[f"{a}\t{b}"] = c
+    (out_dir / "bigrams.json").write_text(
+        json.dumps({"uni": uni, "bigrams": bigrams}, ensure_ascii=False,
+                   separators=(",", ":")), encoding="utf-8")
+    print(f"  bigrams: {len(bigrams)} pairs / {len(uni)} unigrams")
+
     import gzip
     manifest["_meta"] = {"mode": mode, "words": len(table), "with_gloss": len(gloss)}
     (out_dir / "manifest.json").write_text(

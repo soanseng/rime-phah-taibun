@@ -144,22 +144,171 @@ export function buildReverseIndex(dict) {
 }
 
 export function tlToHan(tlText, rev) {
-  const raw = toNumeric(tlText.replace(/--/g, " ").replace(/-/g, " "))
-    .split(/[\s,.;:!?()"“”《》〈〉·]+/)
-    .filter((t) => /^[a-z0-9]+$/.test(t));
-  const bare = raw.map((s) => pojToTl(s).replace(/[0-9]/g, ""));
-  const out = [];
-  let i = 0, matched = 0;
-  while (i < bare.length) {
-    let hit = null, hitLen = 0;
-    for (let L = Math.min(8, bare.length - i); L >= 1; L--) {
-      const list = rev.get(bare.slice(i, i + L).join(" "));
-      if (list) { hit = list[0].word; hitLen = L; break; }
+  const parts = [];
+  let matched = 0, total = 0;
+  for (const run of tlRuns(tlText)) {
+    if (run.type === "sep") { parts.push(run.s); continue; }
+    const { bare, raws } = romToSylls(run.s);
+    if (!bare.length) { parts.push(run.s); continue; }
+    total += bare.length;
+    const out = [];
+    let i = 0;
+    while (i < bare.length) {
+      let hit = null, hitLen = 0;
+      for (let L = Math.min(8, bare.length - i); L >= 1; L--) {
+        const list = rev.get(bare.slice(i, i + L).join(" "));
+        if (list) { hit = list[0].word; hitLen = L; break; }
+      }
+      if (hit) { out.push(hit); matched += hitLen; i += hitLen; }
+      else { out.push(raws[i]); i++; }
     }
-    if (hit) { out.push(hit); matched += hitLen; i += hitLen; }
-    else { out.push(raw[i]); i++; }
+    parts.push(out.join(""));
   }
-  return { han: out.join(""), matched, total: bare.length };
+  return { han: parts.join(""), matched, total };
+}
+
+// ---------- bigram LM（identity 語料漢字詞）→ 羅→漢 beam 解碼 ----------
+export function buildLM(lmJson) {
+  const uni = new Map(Object.entries(lmJson.uni));
+  let total = 0;
+  for (const v of uni.values()) total += v;
+  return { uni, total, bigrams: new Map(Object.entries(lmJson.bigrams)) };
+}
+
+// 輸入切做 [羅馬字段] × [分隔符]（標點、空白、斷行原樣保留）
+function tlRuns(tlText) {
+  // 羅馬字段含字母/數字/結合調符/o͘/連字號（-、-- 輕聲、– — dash）；
+  // 分隔符只有標點、空白、斷行——原樣保留。
+  const re = /[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u2013\u2014-]+/g;
+  const runs = [];
+  let last = 0, m;
+  while ((m = re.exec(tlText))) {
+    if (m.index > last) runs.push({ type: "sep", s: tlText.slice(last, m.index) });
+    runs.push({ type: "rom", s: m[0] });
+    last = m.index + m[0].length;
+  }
+  if (last < tlText.length) runs.push({ type: "sep", s: tlText.slice(last) });
+  return runs;
+}
+
+const isHanTok = (tok) => [...tok].some((ch) => {
+  const o = ch.codePointAt(0);
+  return (o >= 0x3400 && o <= 0x9FFF) || (o >= 0x20000 && o <= 0x3FFFF);
+});
+
+// 羅馬字段 → { bare: 去調 TL 音節鍵, raws: 原字音節（pass-through 用）}
+function romToSylls(rom) {
+  const raws = rom.split(/[-\s]+/).filter(Boolean);
+  const nums = toNumeric(rom).split(/[-\s]+/).filter(Boolean);
+  if (raws.length !== nums.length) return { bare: [rom], raws: [rom] };
+  return { bare: nums.map((s) => pojToTl(s).replace(/[0-9]/g, "")), raws };
+}
+
+// 羅→漢解碼：整句 log-prob lattice＋backpointer。
+// P(w|prev) = interp·min(C12/C(prev),1) + (1−interp)·Puni(w)
+// 每詞分數 = log P（≤0，無長度紅利）＋gloss 小紅利−insane 罰。
+// 空白保留輸出且延續上下文；標點／斷行保留輸出並切句。
+// 未命中音節保留原音原字（固定成本）。
+export function decodeTlToHan(tlText, rev, lm, opts = {}) {
+  const {
+    beamWidth = 8, interp = 0.65, unknownCost = 10,
+    insaneCost = 3.0, glossBonus = 1.0, pFloor = 1e-5,
+  } = opts;
+  const Z = lm.total || 1;
+  const pUni = (u) => Math.max((u + 1) / Z, pFloor);
+  const wordScore = (prev, c) => {
+    const c12 = prev ? (lm.bigrams.get(`${prev}\t${c.word}`) ?? 0) : 0;
+    const cL = prev ? (lm.uni.get(prev) ?? 0) : 0;
+    const p = interp * Math.min(c12 / (cL || 1), 1)
+      + (1 - interp) * pUni(lm.uni.get(c.word) ?? 0);
+    return Math.log(p + 1e-12) + (c.gloss ? glossBonus : 0)
+      - (c.sane ? 0 : insaneCost);
+  };
+
+  const parts = [];
+  let matched = 0, total = 0;
+  const runs = tlRuns(tlText);
+
+  const decodeSentence = (items) => {
+    // items: {rom}|{sep}——攤平成音節流（詞不跨欄位）
+    const bare = [], raws = [], runEnd = [];
+    const sepAt = new Map(); // 音節 index → 該欄位前的分隔符（空白）
+    let pendingSep = "";
+    let started = false;
+    for (const it of items) {
+      if (it.sep !== undefined) { pendingSep += it.sep; continue; }
+      const { bare: b, raws: r } = romToSylls(it.rom);
+      if (!b.length) { pendingSep += it.rom; continue; }
+      if (started) sepAt.set(bare.length, pendingSep);
+      pendingSep = "";
+      started = true;
+      for (let k = 0; k < b.length; k++) {
+        bare.push(b[k]); raws.push(r[k]);
+        runEnd.push(k === b.length - 1);
+      }
+    }
+    const tailSep = pendingSep;
+    const N = bare.length;
+    total += N;
+    if (!N) { parts.push(tailSep); return; }
+    const beams = Array.from({ length: N + 1 }, () => []);
+    beams[0] = [{ score: 0, last: null, node: null }];
+    for (let i = 0; i < N; i++) {
+      if (!beams[i].length) continue;
+      const maxL = runEnd[i] ? 1 : (() => { let j = i; while (j < N && !runEnd[j]) j++; return j - i + 1; })();
+      for (const st of beams[i]) {
+        for (let L = Math.min(8, maxL, N - i); L >= 1; L--) {
+          if (L > 1 && !runEnd[i + L - 1]) continue; // 詞尾須在欄位尾
+          const list = rev.get(bare.slice(i, i + L).join(" "));
+          if (!list) continue;
+          for (const c of list.slice(0, 10)) {
+            beams[i + L].push({
+              score: st.score + wordScore(st.last, c),
+              last: c.word,
+              node: { pos: i, tok: c.word, prev: st.node, syl: L },
+            });
+          }
+        }
+        beams[i + 1].push({
+          score: st.score - unknownCost,
+          last: st.last,
+          node: { pos: i, tok: raws[i], prev: st.node, syl: 1 },
+        });
+      }
+      for (let j = i + 1; j <= Math.min(N, i + 8); j++) {
+        if (beams[j].length > beamWidth) {
+          beams[j].sort((a, b) => b.score - a.score);
+          beams[j].length = beamWidth;
+        }
+      }
+    }
+    const best = beams[N][0] ?? { node: null };
+    // backtrace
+    const toks = [];
+    for (let n = best.node; n; n = n.prev) toks.unshift(n);
+    let out = "";
+    for (const t of toks) {
+      const s = sepAt.get(t.pos);
+      if (s !== undefined) out += s;
+      out += t.tok;
+      if (isHanTok(t.tok)) matched += t.syl;
+    }
+    parts.push(out + tailSep);
+  };
+
+  let sent = [];
+  for (const run of runs) {
+    if (run.type === "rom") { sent.push({ rom: run.s }); continue; }
+    if (run.type === "sep" && /[^\s]/.test(run.s)) {
+      decodeSentence(sent);              // 句界：先解句內
+      parts.push(run.s);                 // 標點原樣
+      sent = [];                         // 上下文重置
+      continue;
+    }
+    sent.push({ sep: run.s });           // 空白：句內保留
+  }
+  decodeSentence(sent);
+  return { han: parts.join(""), matched, total };
 }
 
 // Candidate pool for practice: words with a gloss and 2–4 Han characters,
