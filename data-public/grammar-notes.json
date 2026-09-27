@@ -1,0 +1,510 @@
+{
+  "meta": {
+    "title": "文法筆記",
+    "authorship": "讀台文自行整理——說明佮例句是本站原創編寫，分類是本站自訂（非來源提供）",
+    "sources": "參考資料逐篇標示：臺灣台語語料庫應用檢索系統 TGGL（國家教育研究院）語法點／語法小專欄（謹此致謝教育部）、維基學院《閩南語文法》（CC BY-SA 4.0，採閩拼系統——佮本站臺羅拼法無仝，參考其概念）、廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉（國立臺灣師範大學碩士論文，虛詞／複句／語氣詞框架參考）、郭永錕（2016）《台語《語法》》講義（高雄市政府教育局，疑問／否定句型框架參考）",
+    "disclaimer": "筆記是學習性整理，若有錯誤歡迎回報；欲看語法點完整說明佮語料例句，請點參考連結去原系統",
+    "updated": "2026-09-27"
+  },
+  "categories": [
+    {
+      "id": "pronoun",
+      "title": "人稱代名詞"
+    },
+    {
+      "id": "negation",
+      "title": "否定系統"
+    },
+    {
+      "id": "question",
+      "title": "疑問句"
+    },
+    {
+      "id": "modality",
+      "title": "能願佮存在"
+    },
+    {
+      "id": "case",
+      "title": "連接佮處置"
+    },
+    {
+      "id": "aspect",
+      "title": "時貌"
+    },
+    {
+      "id": "conj",
+      "title": "複句關鍵字"
+    },
+    {
+      "id": "mood",
+      "title": "語氣詞"
+    }
+  ],
+  "notes": [
+    {
+      "id": "guan-lan-in",
+      "cat": "pronoun",
+      "title": "阮、咱：exclusive／inclusive 的分別",
+      "body": [
+        "台語人稱代名詞單數是 <strong>guá</strong>（我）、<strong>lí</strong>（你）、<strong>i</strong>（伊），無分男女。第三人稱複數兼所有格是 <strong>in</strong>（𪜶）。",
+        "第一人稱複數上愛分的就是「有無包含聽的人」：<strong>lán</strong>（咱）包含對方，<strong>guán</strong>（阮；南部腔 gún）無包含對方。「lán tsò-hué khì」是邀請你做伙去；講家內代誌用「guán tau」——你家就是你家，無包含聽的人。",
+        "所有格直接黏名詞就好：in tau（𪜶兜）、guán lāu-su（阮老師）；若單獨講「我的、你的」才用 ê：<strong>guá--ê</strong>（我的）。"
+      ],
+      "examples": [
+        {
+          "han": "咱做伙去！",
+          "tl": "Lán tsò-hué khì!",
+          "hua": "我們（含你）一起去！"
+        },
+        {
+          "han": "阮兜佇台北。",
+          "tl": "Guán tau tī Tâi-pak.",
+          "hua": "我家（不含你）在台北。"
+        },
+        {
+          "han": "𪜶的囡仔真古錐。",
+          "tl": "In ê gín-á tsin kó-tsai.",
+          "hua": "他們的孩子很可愛。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 006「阮/咱」（阮1·阮2·阮3·咱1·咱2·咱3）",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=阮"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈人稱代詞〉（inclusive/exclusive 表）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E4%BA%BA%E7%A8%B1%E4%BB%A3%E8%A9%9E"
+        }
+      ]
+    },
+    {
+      "id": "geng-teng-su",
+      "cat": "negation",
+      "title": "毋、無、袂、未、免、莫：否定詞點點名",
+      "body": [
+        "台語否定比華語分較細：<strong>m̄</strong>（毋）否定意願佮性質；<strong>bô</strong>（無）否定領有、存在、完成；<strong>buē</strong>（袂）否定能力佮可能（是「ē 會」的否定）。",
+        "語感三分（郭永錕 2016 的教學框架）：<strong>bô</strong>（無）講「事實」（無錢、無去）；<strong>buē</strong>（袂）講「判斷」（袂好看、看袂清楚）；<strong>m̄</strong>（毋）講「意願」（毋去、毋知）。",
+        "外沿閣有四个：<strong>iáu-buē</strong>（猶未）「還沒」；<strong>bián</strong>（免）「不必」；<strong>mài</strong>（莫）「別」（阻止的命令）；<strong>m̄-thang</strong>（毋通）「不可以」（警告）。語感攏無仝：mài 是叫你莫去，bián 是講無需要，m̄-thang 是按呢做會出代誌。",
+        "答話上利便用 bô 佮 m̄-sī：「Lí ū tsia̍h--bô?」——「Bô!」（有吃嗎？沒有。）"
+      ],
+      "examples": [
+        {
+          "han": "我毋知影。",
+          "tl": "Guá m̄ tsai-iânn.",
+          "hua": "我不知道。"
+        },
+        {
+          "han": "伊無錢。",
+          "tl": "I bô tsînn.",
+          "hua": "他沒有錢。"
+        },
+        {
+          "han": "我猶未食飯。",
+          "tl": "Guá iáu-buē tsia̍h-pn̄g.",
+          "hua": "我還沒吃飯。"
+        },
+        {
+          "han": "莫去矣！",
+          "tl": "Mài khì--ah!",
+          "hua": "別去了！"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 024 否定詞群組",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=毋"
+        },
+        {
+          "label": "TGGL 語法小專欄：無、毋、袂、免、莫各種否定詞的比較",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/13"
+        },
+        {
+          "label": "TGGL 語法小專欄：「毋」的否定與疑問",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/11"
+        },
+        {
+          "label": "郭永錕（2016）《台語《語法》》講義（第 1 節：否定句）（高雄市政府教育局）",
+          "url": "https://www.kh.edu.tw/filemanage/upload/2301/0712-2%E8%AA%9E%E6%B3%95-%E9%83%AD%E6%B0%B8%E9%8F%9C%E8%80%81%E5%B8%AB.pdf"
+        }
+      ]
+    },
+    {
+      "id": "gi-mun-ku",
+      "cat": "question",
+      "title": "疑問句：疑問詞、句尾「--無／--未」佮「敢」",
+      "body": [
+        "特指疑問用疑問詞：<strong>siánn-mih</strong>（啥物，什麼）、<strong>tó-uī</strong>（佗位，哪裡）、<strong>tang-sî</strong>（當時，何時）、<strong>uī-siánn-mih</strong>（為啥物）、<strong>án-tsuánn</strong>（按怎，怎樣）。",
+        "是非疑問上捷用句尾 <strong>--bô</strong>（…無）：tsia̍h-pn̄g--bô?（食飯--無？吃飯了嗎）；問完成用 <strong>--buē</strong>（…未）。",
+        "<strong>kam</strong>（敢）是反詰、確認：「kam m̄ sī」（敢毋是，難道不是）。注意敢毋是「勇敢」彼个敢的語感，是提出質疑的。"
+      ],
+      "examples": [
+        {
+          "han": "你想欲食啥物？",
+          "tl": "Lí siūnn beh tsia̍h siánn-mih?",
+          "hua": "你想吃什麼？"
+        },
+        {
+          "han": "你食飯--無？",
+          "tl": "Lí tsia̍h-pn̄g--bô?",
+          "hua": "你吃飯了嗎？"
+        },
+        {
+          "han": "佗位有便當？",
+          "tl": "Tó-uī ū piān-tong?",
+          "hua": "哪裡有便當？"
+        },
+        {
+          "han": "敢毋是恁--的？",
+          "tl": "Kam m̄ sī lín--ê?",
+          "hua": "難道不是你們的嗎？"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 035「敢……？」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=敢"
+        },
+        {
+          "label": "TGGL 語法小專欄：各種疑問句的比較",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/12"
+        },
+        {
+          "label": "TGGL 語法小專欄：……矣、未……、……未？",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/10"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈疑問代詞〉",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E7%96%91%E5%95%8F%E4%BB%A3%E8%A9%9E"
+        },
+        {
+          "label": "郭永錕（2016）《台語《語法》》講義（第 1 節：疑問句 8 型——有…無、會…袂、欲…毋、敢、乎、特指）（高雄市政府教育局）",
+          "url": "https://www.kh.edu.tw/filemanage/upload/2301/0712-2%E8%AA%9E%E6%B3%95-%E9%83%AD%E6%B0%B8%E9%8F%9C%E8%80%81%E5%B8%AB.pdf"
+        }
+      ]
+    },
+    {
+      "id": "u-bo",
+      "cat": "modality",
+      "title": "有／無：領有、存在、完成",
+      "body": [
+        "<strong>ū</strong>（有）三个主要用法：領有（ū tsînn 有錢）、存在（toh-tíng ū thng 桌頂有湯）、經驗／完成（guá ū khì--kuè 我有去過）。",
+        "否定佮疑問攏用 <strong>bô</strong>（無）：Guá bô khì（我沒去）；Lí ū khì--bô?（你有去無？）。動詞前的 ū／bô 是完成體的標記——華語「我有去」感覺是新用法，台語本底就按呢用。",
+        "「有……無？」是是非問的萬用型，欲練習會當逐項物攏按呢問。"
+      ],
+      "examples": [
+        {
+          "han": "桌頂有一碗湯。",
+          "tl": "Toh-tíng ū tsi̍t uánn thng.",
+          "hua": "桌上有一碗湯。"
+        },
+        {
+          "han": "我有去--過台北。",
+          "tl": "Guá ū khì--kuè Tâi-pak.",
+          "hua": "我去過台北。"
+        },
+        {
+          "han": "你有看--著我無？",
+          "tl": "Lí ū khuànn--tio̍h guá--bô?",
+          "hua": "你有沒有看到我？"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 010「[動詞]+有/無」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=有"
+        },
+        {
+          "label": "TGGL 語法小專欄：有、無、有……無？",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/8"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈完成式動詞組〉（u+動詞 表完成）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%AE%8C%E6%88%90%E5%BC%8F%E5%8B%95%E8%A9%9E%E7%B5%84"
+        }
+      ]
+    },
+    {
+      "id": "e-bue",
+      "cat": "modality",
+      "title": "會／袂：能力、可能佮「會使、會當」",
+      "body": [
+        "<strong>ē</strong>（會）表能力佮可能：I ē phah-kiû（伊會拍球）。否定 <strong>buē</strong>（袂）；講技能「不會」上標準是 <strong>buē-hiáu</strong>（袂曉）。",
+        "情態詞組：<strong>ē-sú</strong>（會使，可以）、<strong>ē-tàng</strong>（會當，能夠）；否定 buē-sú（袂使，不可以）、buē-tàng（袂當，不能）。語感：會使是許可，會當是能力所及。",
+        "疑問用「會……袂？」：Mî-á-tsài ē lâi buē?（明仔載會來袂？）"
+      ],
+      "examples": [
+        {
+          "han": "伊會拍球。",
+          "tl": "I ē phah-kiû.",
+          "hua": "他會打球。"
+        },
+        {
+          "han": "我袂曉寫台文。",
+          "tl": "Guá buē-hiáu siá Tâi-bûn.",
+          "hua": "我不會寫台文。"
+        },
+        {
+          "han": "明仔載你會來袂？",
+          "tl": "Mî-á-tsài lí ē lâi buē?",
+          "hua": "明天你會不會來？"
+        },
+        {
+          "han": "按呢會使無？",
+          "tl": "Án-ne ē-sú--bô?",
+          "hua": "這樣可以嗎？"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 009「會/袂+使/當」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=會"
+        },
+        {
+          "label": "TGGL 語法小專欄：會、袂、會……袂？",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/9"
+        },
+        {
+          "label": "TGGL 語法小專欄：會/袂使、會/袂當、會/袂[動詞]得",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/1"
+        }
+      ]
+    },
+    {
+      "id": "kah",
+      "cat": "case",
+      "title": "佮：連詞「和」嘛是介詞「跟」",
+      "body": [
+        "<strong>kah</strong>（佮）做連詞，連兩个對等的名詞：Tâi-pak kah Tâi-lâm（台北佮台南）。",
+        "做介詞是「跟、和」的意思，後壁常孤做伙：<strong>kah i tsò-hué</strong>（佮伊做伙，和他一起）。",
+        "一个常見的混淆：佮（kah，佮人做伙）佮共（kā，對人做代誌）無仝——共看後一篇。"
+      ],
+      "examples": [
+        {
+          "han": "我佮你做伙食飯。",
+          "tl": "Guá kah lí tsò-hué tsia̍h-pn̄g.",
+          "hua": "我和你一起吃飯。"
+        },
+        {
+          "han": "台北佮台南攏是真媠的城市。",
+          "tl": "Tâi-pak kah Tâi-lâm lóng sī tsin suí ê sîng-tshī.",
+          "hua": "台北和台南都是很美的城市。"
+        },
+        {
+          "han": "阮老師佮恁老師是好朋友。",
+          "tl": "Guán lāu-su kah lín lāu-su sī hó-pêng-iú.",
+          "hua": "我們老師和你們老師是好朋友。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 007「佮」",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=佮"
+        },
+        {
+          "label": "TGGL 語法小專欄：「佮」的用法及讀音解析",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/7"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈介系詞正詞法〉（gaq 與）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E4%BB%8B%E7%B3%BB%E8%A9%9E%E6%AD%A3%E8%A9%9E%E6%B3%95"
+        }
+      ]
+    },
+    {
+      "id": "ka",
+      "cat": "case",
+      "title": "共：對人／處置「把」",
+      "body": [
+        "<strong>kā</strong>（共）會當共受事提到動詞頭前，親像華語「把」：Kā mn̂g kuan--khì（共門關--去，把門關上）。",
+        "「kā＋人＋動詞」是對某人做動作（華語「跟／對」）：Guá kā i kóng（我共伊講，我對他說）。佮 kah 的分別：kā 是單向「對伊做」，kah 是「佮伊做伙」。",
+        "命令句「共我……」語氣真重：Kā guá thèng-hāu（共我等，給我等著）。"
+      ],
+      "examples": [
+        {
+          "han": "共門關--去。",
+          "tl": "Kā mn̂g kuan--khì.",
+          "hua": "把門關上。"
+        },
+        {
+          "han": "我共伊講--過矣。",
+          "tl": "Guá kā i kóng--kuè--ah.",
+          "hua": "我跟他說過了。"
+        },
+        {
+          "han": "共我等。",
+          "tl": "Kā guá thèng-hāu.",
+          "hua": "給我等著。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 108「共」群組（共+[對象]+[動作]、共（伊）、共我、共……做……）",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=共"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈句法：主語+gaq+受詞+動詞（主動/處置語態）〉",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+        }
+      ]
+    },
+    {
+      "id": "hoo",
+      "cat": "case",
+      "title": "予：給、被、讓",
+      "body": [
+        "<strong>hōo</strong>（予）是台語上無閒的虛詞之一，四个主要用法：<strong>給</strong>（物件轉移）：tsit pún tsheh hōo lí；<strong>被</strong>（被動）：guá hōo i mà（我予伊罵）；<strong>讓</strong>（使役）：hōo i khì（予伊去）；<strong>予人</strong>＝「令人」。",
+        "被動句 hōo 後壁愛接施事者（誰做的）：Thng hōo i lim--liáu（湯予伊飲--了，湯被他喝完了）。若是無講是啥人做的，會當用泛指的「予人」。",
+        "一个陷阱：hōo（予）佮 hōo…去（予…去）有時華語攏翻「給」，但是台語語感無仝——多看語例上實在。"
+      ],
+      "examples": [
+        {
+          "han": "這本冊予你。",
+          "tl": "Tsit pún tsheh hōo lí.",
+          "hua": "這本書給你。"
+        },
+        {
+          "han": "我予老師罵。",
+          "tl": "Guá hōo lāu-su mà.",
+          "hua": "我被老師罵。"
+        },
+        {
+          "han": "予伊去。",
+          "tl": "Hōo i khì.",
+          "hua": "讓他去。"
+        },
+        {
+          "han": "這齣戲予人感動。",
+          "tl": "Tsit tsut hì hōo lâng kám-tōng.",
+          "hua": "這齣戲令人感動。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "TGGL 語法點 109「予」群組（予1+[賓語]、予3/4+[對象]+[動詞]、予5（伊））",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=予"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈句法：受詞+ho+主語+動詞（被動語態；施事者必須講明）〉",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+        }
+      ]
+    },
+    {
+      "id": "leh-ah-bat",
+      "cat": "aspect",
+      "title": "咧、矣、bat：進行、完成、經驗",
+      "body": [
+        "台語的時貌靠虛詞標記，無華語「了、著、過」的一一對應。<strong>leh</strong>（咧）是進行貌：I leh lim tê（伊咧飲茶，他正在喝茶）；也會當講 tng-leh（當咧）。",
+        "<strong>--ah</strong>（--矣）是完成／變化貌，讀輕聲：I tsia̍h-pá--ah（伊食飽--矣）。否定「還沒」用 <strong>iáu-buē</strong>（猶未）：Guá iáu-buē tsia̍h-pn̄g。",
+        "經驗貌用 <strong>bat…--kuè</strong>（bat…過）：Guá bat khì--kuè Tâi-pak（我捌去--過台北）。bat 單獨也會使：Lí bat khuànn--tio̍h i--bô?（你捌看--著伊無？）"
+      ],
+      "examples": [
+        {
+          "han": "伊咧飲茶。",
+          "tl": "I leh lim tê.",
+          "hua": "他正在喝茶。"
+        },
+        {
+          "han": "伊食飽--矣。",
+          "tl": "I tsia̍h-pá--ah.",
+          "hua": "他吃飽了。"
+        },
+        {
+          "han": "我捌去--過台北。",
+          "tl": "Guá bat khì--kuè Tâi-pak.",
+          "hua": "我去過台北。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 時態語：完成／未來／經驗／進行）（國立臺灣師範大學碩士論文）",
+          "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        },
+        {
+          "label": "TGGL 語法小專欄：……矣、未……、……未？",
+          "url": "https://tggl.naer.edu.tw/grammar_snippets/10"
+        },
+        {
+          "label": "維基學院《閩南語文法》·〈完成式動詞組〉（u+動詞 表完成）",
+          "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%AE%8C%E6%88%90%E5%BC%8F%E5%8B%95%E8%A9%9E%E7%B5%84"
+        }
+      ]
+    },
+    {
+      "id": "na-to-lu-lu",
+      "cat": "conj",
+      "title": "若…就…、愈…愈…、那…那…：複句關鍵字",
+      "body": [
+        "台語複句的骨架是一組封閉的關鍵字，學著就會當自由組合。<strong>nā…tō…</strong>（若…就…）是假設：Nā lo̍h-hōo, tō mài khì（若落雨，就莫去）。",
+        "<strong>lú…lú…</strong>（愈…愈…）表程度遞增：Lú kóng lú tsin（愈講愈真）。<strong>ná…ná…</strong>（那…那…）表同時進行：I ná kiânn ná chhiò（伊那行那笑）。",
+        "其他常用的：m̄-nā…iáu-koh…（毋但…閣…，不但…而且…）、sī…iáh-sī…（是…抑是…，選擇）。"
+      ],
+      "examples": [
+        {
+          "han": "若落雨，就莫去。",
+          "tl": "Nā lo̍h-hōo, tō mài khì.",
+          "hua": "如果下雨，就別去。"
+        },
+        {
+          "han": "愈講愈真。",
+          "tl": "Lú kóng lú tsin.",
+          "hua": "越說越真。"
+        },
+        {
+          "han": "伊那行那笑。",
+          "tl": "I ná kiânn ná chhiò.",
+          "hua": "他邊走邊笑。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.2 複句句型及關鍵字：假設句、比較句、選擇句）（國立臺灣師範大學碩士論文）",
+          "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        },
+        {
+          "label": "TGGL 語法點 007「佮」（並列連接）",
+          "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=佮"
+        }
+      ]
+    },
+    {
+      "id": "lah-leh-hoo",
+      "cat": "mood",
+      "title": "lah、leh、ho͘ⁿh、niā-niā：語氣詞",
+      "body": [
+        "語氣詞黏佇句尾，決定句子的態度，數量有限但是使用頻率真高。<strong>--lah</strong>（啦）是決定、勸告：Lí lâi--lah（你來--啦）。<strong>--leh</strong>（咧）是輕聲提醒、命令：Tsiânn--leh（靜--咧）。",
+        "<strong>hooNnh</strong>（乎）是不確定、推敲的疑問語氣：Lí ē lâi--hooNnh?（你會來--乎？）——佮 --bô 的是非問無仝，hooNnh 是「我猜是按呢，是無？」的語感。",
+        "<strong>niā-niā</strong>（爾爾）是「而已、不過如此」：Tsi̍t ê niā-niā（一个爾爾）。"
+      ],
+      "examples": [
+        {
+          "han": "你來--啦。",
+          "tl": "Lí lâi--lah.",
+          "hua": "你來吧。"
+        },
+        {
+          "han": "靜--咧。",
+          "tl": "Tsiânn--leh.",
+          "hua": "安靜點。"
+        },
+        {
+          "han": "你會來--乎？",
+          "tl": "Lí ē lâi--hooNnh?",
+          "hua": "你會來吧？（不確定的推敲）"
+        },
+        {
+          "han": "一个爾爾。",
+          "tl": "Tsi̍t ê niā-niā.",
+          "hua": "一個而已。"
+        }
+      ],
+      "refs": [
+        {
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.2 語氣詞：完成 lah/ah、疑問 bô/neh、商榷 ouh、決定）（國立臺灣師範大學碩士論文）",
+          "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+        }
+      ]
+    }
+  ]
+}

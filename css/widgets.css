@@ -368,6 +368,68 @@ textarea:focus,
   letter-spacing: 0.04em;
   color: var(--ink-soft);
 }
+.gr-notes {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.7rem;
+}
+
+.gr-note {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem 0.55rem;
+  background: linear-gradient(180deg, #fdfefe, #f7faf9);
+}
+
+.gr-note h4 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.06rem;
+}
+
+.gr-note p {
+  font-size: 0.93rem;
+  line-height: 1.78;
+  margin: 0.3rem 0;
+}
+
+.gr-cat {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: var(--accent-deep);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+}
+
+.gr-ex {
+  margin: 0.5rem 0;
+  padding-inline-start: 0.8rem;
+  border-inline-start: 3px solid var(--accent-soft);
+}
+
+.gr-ex .han {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.gr-ex .tl {
+  color: var(--accent-deep);
+}
+
+.gr-ex .hua {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.gr-refs {
+  border-top: 1px dashed var(--line);
+  margin-top: 0.6rem;
+  padding-top: 0.45rem;
+}
+
+.gr-refs a {
+  color: var(--accent-deep);
+}
 
 #vb-tbl tbody tr:nth-child(even),
 #gr-tbl tbody tr:nth-child(even) {

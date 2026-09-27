@@ -115,8 +115,13 @@
       </section>
 
       <section id="panel-grammar" class="panel" role="tabpanel" aria-labelledby="tab-grammar" hidden>
-        <h2>語法點檢索</h2>
-        <p class="hint">來源：臺灣台語語料庫應用檢索系統（國家教育研究院）。本頁只收語法點索引（編號、名稱、臺羅），語法說明佮例句依原站授權條款無佇咧重刊——點「原文」去查完整內容；謹此致謝教育部。</p>
+        <h2>文法筆記（本站整理）</h2>
+        <p class="hint">說明佮例句是讀台文原創編寫，分類是本站自訂；參考資料逐篇標示（TGGL、維基學院），點連結看原文。筆記會繼續增加。</p>
+        <div class="seg" id="gr-note-cats" role="group" aria-label="筆記分類"></div>
+        <div id="gr-notes" class="gr-notes"></div>
+
+        <h3 class="gr-sub">語法點檢索（TGGL 索引，外連原文）</h3>
+        <p class="hint">來源：臺灣台語語料庫應用檢索系統（國家教育研究院）。本表只收語法點索引（編號、名稱、臺羅），語法說明佮例句依原站授權條款無佇咧重刊——點「原文」去查完整內容；謹此致謝教育部。</p>
         <div class="row">
           <input id="gr-in" placeholder="揣語法點，親像「阮」「sī」「006」…" autocomplete="off" spellcheck="false" />
           <select id="gr-group" aria-label="群組分類"></select>
@@ -147,8 +152,11 @@
           <li><strong>相鄰詞 bigram</strong>：上述語料加上對詞典長詞條（親像「減肥計畫」）切詞自生的搭配統計</li>
           <li><strong>調號比對</strong>：你有拍調（親像 <code>sin1-bun5</code>）的時，讀音調號全對的候選加分——按呢「新聞」佮「訊問」（sin1-bun5 vs sin7-bun7）就分會開</li>
           <li>分數是正規 log 機率，無「切愈濟詞分數愈懸」的偏差；未命中的音節<strong>保留原音原字</strong>，標點、斷行原樣</li>
+
         </ul>
         <p>實測（四篇真實文章，嚴格配對）：88.4／89.4／89.0／83.4% 字元相似（醫學篇因複合詞多略低）——毋過這是實驗功能，<strong>同鍵同調的同音詞</strong>（儲存/除船、濟/坐）愛靠閣較濟語料才選會對，請用佮「輔助對照」的心情來用。</p>
+        <h3>文法筆記佮語法點檢索</h3>
+        <p>「文法」頁有兩段：<strong>文法筆記</strong>是本站原創整理（說明、例句攏是家己寫的，分類自訂），參考資料逐篇標示——TGGL 語法點／語法小專欄（臺灣台語語料庫應用檢索系統，國家教育研究院，謹此致謝教育部）、維基學院《閩南語文法》（CC BY-SA 4.0，採閩拼系統）、廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉（國立臺灣師範大學碩士論文）、郭永錕（2016）《台語《語法》》講義（高雄市政府教育局）。<strong>語法點檢索</strong>是 TGGL 的書目索引（253 點），依原站授權條款語法說明佮例句無重刊，點「原文」連去原系統查閱。</p>
 
         <h3>英文詞按怎處理</h3>
         <p>dopamine、nicotine、CNN 這類<em>多音節專名</em>因為袂命中任何台語音節鍵，會自動原樣保留；短字（in、to）有機會拄著台語音節予人轉做漢字——欲保險就用<strong>反引號</strong>包起來：<code>`CNN News`</code> 保證原樣。</p>
