@@ -83,8 +83,8 @@
       "cat": "negation",
       "title": "毋、無、袂、未、免、莫：否定詞點點名",
       "body": [
-        "台語否定比華語分較細：<strong>m̄</strong>（毋）否定意願佮性質；<strong>bô</strong>（無）否定領有、存在、完成；<strong>buē</strong>（袂）否定能力佮可能（是「ē 會」的否定）。",
-        "語感三分（郭永錕 2016 的教學框架）：<strong>bô</strong>（無）講「事實」（無錢、無去）；<strong>buē</strong>（袂）講「判斷」（袂好看、看袂清楚）；<strong>m̄</strong>（毋）講「意願」（毋去、毋知）。",
+        "台語否定比華語分較細：<strong>m̄</strong>（毋）否定意願佮性質；<strong>bô</strong>（無）否定領有、存在、完成；<strong>bē</strong>（袂）否定能力佮可能（是「ē 會」的否定）。",
+        "語感三分（郭永錕 2016 的教學框架）：<strong>bô</strong>（無）講「事實」（無錢、無去）；<strong>bē</strong>（袂）講「判斷」（袂好看、看袂清楚）；<strong>m̄</strong>（毋）講「意願」（毋去、毋知）。",
         "外沿閣有四个：<strong>iáu-buē</strong>（猶未）「還沒」；<strong>bián</strong>（免）「不必」；<strong>mài</strong>（莫）「別」（阻止的命令）；<strong>m̄-thang</strong>（毋通）「不可以」（警告）。語感攏無仝：mài 是叫你莫去，bián 是講無需要，m̄-thang 是按呢做會出代誌。",
         "答話上利便用 bô 佮 m̄-sī：「Lí ū tsia̍h--bô?」——「Bô!」（有吃嗎？沒有。）"
       ],
@@ -189,7 +189,7 @@
       "title": "有／無：領有、存在、完成",
       "body": [
         "<strong>ū</strong>（有）三个主要用法：領有（ū tsînn 有錢）、存在（toh-tíng ū thng 桌頂有湯）、經驗／完成（guá ū khì--kuè 我有去過）。",
-        "否定佮疑問攏用 <strong>bô</strong>（無）：Guá bô khì（我沒去）；Lí ū khì--bô?（你有去無？）。動詞前的 ū／bô 是完成體的標記——華語「我有去」感覺是新用法，台語本底就按呢用。",
+        "否定佮疑問常用 <strong>bô</strong>（無）：Guá bô khì（我沒去）；Lí ū khì--bô?（你有去無？）。動詞頭前的 ū／bô 會當標完成或經驗（我有去），毋過 ū 本身嘛是領有、存在——毋是見著 ū 就完成體。台灣華語「我有去」是ùi台語借去的。",
         "「有……無？」是是非問的萬用型，欲練習會當逐項物攏按呢問。"
       ],
       "examples": [
@@ -229,9 +229,9 @@
       "cat": "modality",
       "title": "會／袂：能力、可能佮「會使、會當」",
       "body": [
-        "<strong>ē</strong>（會）表能力佮可能：I ē phah-kiû（伊會拍球）。否定 <strong>buē</strong>（袂）；講技能「不會」上標準是 <strong>buē-hiáu</strong>（袂曉）。",
-        "情態詞組：<strong>ē-sú</strong>（會使，可以）、<strong>ē-tàng</strong>（會當，能夠）；否定 buē-sú（袂使，不可以）、buē-tàng（袂當，不能）。語感：會使是許可，會當是能力所及。",
-        "疑問用「會……袂？」：Mî-á-tsài ē lâi buē?（明仔載會來袂？）"
+        "<strong>ē</strong>（會）表能力佮可能：I ē phah-kiû（伊會拍球）。否定是 <strong>bē</strong>（袂，TGGL 024-02）；講技能「不會」是 <strong>bē-hiáu</strong>（袂曉）。注意「未」（iáu-buē 猶未、句尾 --buē）是另外一个詞，臺羅寫 buē，毋是 bē。",
+        "情態詞組照 TGGL 009：<strong>ē-sái</strong>（會使，可以）、<strong>ē-tàng</strong>（會當，能夠）；否定 <strong>bē-sái</strong>（袂使）、<strong>bē-tàng</strong>（袂當）。語感：會使偏許可，會當偏能力所及。",
+        "疑問用「會……袂？」：Mî-á-tsài ē lâi bē?（明仔載會來袂？）句尾袂讀輕聲 --bē。"
       ],
       "examples": [
         {
@@ -241,17 +241,17 @@
         },
         {
           "han": "我袂曉寫台文。",
-          "tl": "Guá buē-hiáu siá Tâi-bûn.",
+          "tl": "Guá bē-hiáu siá Tâi-bûn.",
           "hua": "我不會寫台文。"
         },
         {
           "han": "明仔載你會來袂？",
-          "tl": "Mî-á-tsài lí ē lâi buē?",
+          "tl": "Mî-á-tsài lí ē lâi bē?",
           "hua": "明天你會不會來？"
         },
         {
           "han": "按呢會使無？",
-          "tl": "Án-ne ē-sú--bô?",
+          "tl": "Án-ne ē-sái--bô?",
           "hua": "這樣可以嗎？"
         }
       ],
@@ -354,7 +354,7 @@
       "title": "予：給、被、讓",
       "body": [
         "<strong>hōo</strong>（予）是台語上無閒的虛詞之一，四个主要用法：<strong>給</strong>（物件轉移）：tsit pún tsheh hōo lí；<strong>被</strong>（被動）：guá hōo i mà（我予伊罵）；<strong>讓</strong>（使役）：hōo i khì（予伊去）；<strong>予人</strong>＝「令人」。",
-        "被動句 hōo 後壁愛接施事者（誰做的）：Thng hōo i lim--liáu（湯予伊飲--了，湯被他喝完了）。若是無講是啥人做的，會當用泛指的「予人」。",
+        "被動句 hōo 後壁定定接施事者（誰做的）：Thng hōo i lim--liáu（湯予伊飲--了）。無講是啥人的時，口語會用泛指「予人」。這是常見句式，毋是維基學院頁面的結論。",
         "一个陷阱：hōo（予）佮 hōo…去（予…去）有時華語攏翻「給」，但是台語語感無仝——多看語例上實在。"
       ],
       "examples": [
@@ -385,7 +385,7 @@
           "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=予"
         },
         {
-          "label": "維基學院《閩南語文法》·〈句法：受詞+ho+主語+動詞（被動語態；施事者必須講明）〉",
+          "label": "維基學院《閩南語文法》·〈句法〉（閩拼 ho 被動句式；跨方言參考，臺羅以 TGGL 為準）",
           "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
         }
       ]
@@ -473,7 +473,7 @@
       "cat": "mood",
       "title": "lah、leh、ho͘ⁿh、niā-niā：語氣詞",
       "body": [
-        "語氣詞黏佇句尾，決定句子的態度，數量有限但是使用頻率真高。<strong>--lah</strong>（啦）是決定、勸告：Lí lâi--lah（你來--啦）。<strong>--leh</strong>（咧）是輕聲提醒、命令：Tsiânn--leh（靜--咧）。",
+        "語氣詞黏佇句尾，數量有限、頻率懸。<strong>--lah</strong>（啦）口語定定用佇勸告、決定：Lí lâi--lah（你來--啦）。廖淑鳳（2007）分析教科書的時，把 lah 歸佇「完成」類——分類標準無仝，毋通當成唯一規則。<strong>--leh</strong>（咧）會當是輕聲提醒：Tsiânn--leh（靜--咧）；咧嘛是進行貌（看時貌篇），兩個愛分開。",
         "<strong>hooNnh</strong>（乎）是不確定、推敲的疑問語氣：Lí ē lâi--hooNnh?（你會來--乎？）——佮 --bô 的是非問無仝，hooNnh 是「我猜是按呢，是無？」的語感。",
         "<strong>niā-niā</strong>（爾爾）是「而已、不過如此」：Tsi̍t ê niā-niā（一个爾爾）。"
       ],
@@ -501,7 +501,7 @@
       ],
       "refs": [
         {
-          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.2 語氣詞：完成 lah/ah、疑問 bô/neh、商榷 ouh、決定）（國立臺灣師範大學碩士論文）",
+          "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（教科書語氣詞表把 lah 歸完成類；本篇口語用法是另行整理）",
           "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
         }
       ]
