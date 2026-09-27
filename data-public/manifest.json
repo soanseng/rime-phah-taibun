@@ -27,13 +27,9 @@
     "entries": 526,
     "license": "使用者確認可用：非商用、標示來源 (LKK 李江却基金會用字表)"
   },
-  "moesupp": {
-    "entries": 3510,
-    "license": "標示來源 (教育部臺灣台語輸入法詞庫增補, luke871016)"
-  },
   "_meta": {
     "mode": "public",
-    "words": 84319,
+    "words": 82435,
     "with_gloss": 81643
   }
 }

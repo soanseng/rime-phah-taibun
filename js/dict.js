@@ -70,11 +70,10 @@ export function render(segs, picks = new Map(), opts = {}) {
     pojParts.push(lastPoj && endLatin(lastPoj) && startLatin(poj) ? ` ${poj}` : poj);
   };
 
-  // 句界：。！？；切句；非句尾詞全部音節變調（sandhiWordAll），
-  // 句尾詞用詞內變調（尾音節本調）。輕聲 "--" 群組不變調。
+  // 句界：。！？；切句；換行視為停頓（flush）。非句尾詞全音節變調
+  // （sandhiWordAll），句尾詞用詞內變調（尾音節本調）。輕聰 "--" 不變調。
   const SENT_END = /[。！？；!?;]/;
-  let sentenceEnd = true; // 下一個詞若直接跟句尾標點→句尾詞
-  const pendWords = [];   // (seg, numeric) 待句界決定後輸出
+  const pendWords = [];   // (seg) 待句界決定後輸出
   const flush = () => {
     for (let k = 0; k < pendWords.length; k++) {
       const { seg } = pendWords[k];
@@ -93,9 +92,8 @@ export function render(segs, picks = new Map(), opts = {}) {
   };
   for (const seg of segs) {
     if (seg.t === "r") {
-      if (SENT_END.test(seg.s)) { flush(); push(seg.s, seg.s); }
-      else if (seg.s.trim()) { flush(); push(seg.s, seg.s); }
-      else push(seg.s, seg.s);
+      if (SENT_END.test(seg.s) || /\n|\r/.test(seg.s) || seg.s.trim()) flush();
+      push(seg.s, seg.s);
       continue;
     }
     if (seg.t === "miss") {
