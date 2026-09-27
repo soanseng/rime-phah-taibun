@@ -1,18 +1,20 @@
 // 雙向評測：bun tools/measure-r2h.mjs [bundle] [corpus]
-// bundle 預設 data-public；corpus 預設 weightloss（開發集）
+// bundle 可為相對（repo 內）或絕對路徑；corpus 預設 weightloss（開發集）
 import {
   segment, render, buildReverseIndex, buildLM, decodeTlToHan, tlToHan,
 } from "../js/dict.js?v=2";
 import { toNumeric } from "../js/roman.js?v=2";
 import { readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
-const bundle = process.argv[2] || "data-public";
-const corpus = process.argv[3] || "weightloss-corpus.txt";
+const bundleArg = process.argv[2] || "data-public";
+const corpusName = process.argv[3] || "weightloss-corpus.txt";
+const bundle = isAbsolute(bundleArg) ? bundleArg : join(root, bundleArg);
 
-const dict = JSON.parse(readFileSync(`${root}${bundle}/dict.json`, "utf8"));
+const dict = JSON.parse(readFileSync(join(bundle, "dict.json"), "utf8"));
 const rev = buildReverseIndex(dict);
-const lm = buildLM(JSON.parse(readFileSync(`${root}${bundle}/bigrams.json`, "utf8")));
+const lm = buildLM(JSON.parse(readFileSync(join(bundle, "bigrams.json"), "utf8")));
 
 const isHanC = (ch) => {
   const o = ch.codePointAt(0);
@@ -33,7 +35,7 @@ const syls = (t) =>
   toNumeric(t.replace(/--/g, " ")).split(/[\s\-,.;:!?()"“”《》〈〉·]+/).filter((x) => /^[a-z0-9]+$/.test(x));
 const tlJoin = (arr) => arr.map((s) => s.replace(/[0-9]/g, "")).join("");
 
-const paras = readFileSync(`${root}tools/${corpus}`, "utf8")
+const paras = readFileSync(join(root, "tools", corpusName), "utf8")
   .split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
 const pairs = [];
 let pending = null;
@@ -42,7 +44,7 @@ for (const p of paras) {
   if (hR > 0.5) { pending = p; continue; }
   if (hR < 0.15 && pending) { pairs.push([pending, p]); pending = null; }
 }
-console.log(`[${bundle}｜${corpus}] pairs=${pairs.length}`);
+console.log(`[${bundleArg}｜${corpusName}] pairs=${pairs.length}`);
 
 // ---- A：漢→TL ----
 let aSim = 0, aMiss = 0, aHan = 0;

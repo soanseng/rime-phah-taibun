@@ -66,6 +66,15 @@ export function sandhiNumeric(numeric) {
     .join("--");
 }
 
+// 句內連讀：非句尾詞的所有音節（輕聲 -- 後音節除外）皆變調。
+export function sandhiWordAll(numeric) {
+  return numeric
+    .split("--")
+    .map((g, k) =>
+      k === 0 ? g.split(/\s+/).filter(Boolean).map(sandhiSyllable).join(" ") : g)
+    .join("--");
+}
+
 // "kin1 a2 jit8" → "kin-á-ji̍t"; "--" light-tone groups preserved.
 export function formatRomanization(roman) {
   if (!roman) return roman;

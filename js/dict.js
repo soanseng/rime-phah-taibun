@@ -1,6 +1,6 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
-  addImplicitTones, stripTones, sandhiNumeric,
+  addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
 } from "./roman.js?v=2";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
@@ -70,23 +70,42 @@ export function render(segs, picks = new Map(), opts = {}) {
     pojParts.push(lastPoj && endLatin(lastPoj) && startLatin(poj) ? ` ${poj}` : poj);
   };
 
+  // 句界：。！？；切句；非句尾詞全部音節變調（sandhiWordAll），
+  // 句尾詞用詞內變調（尾音節本調）。輕聲 "--" 群組不變調。
+  const SENT_END = /[。！？；!?;]/;
+  let sentenceEnd = true; // 下一個詞若直接跟句尾標點→句尾詞
+  const pendWords = [];   // (seg, numeric) 待句界決定後輸出
+  const flush = () => {
+    for (let k = 0; k < pendWords.length; k++) {
+      const { seg } = pendWords[k];
+      let numeric = seg.readings[Math.min(picks.get(seg.si) ?? 0, seg.readings.length - 1)];
+      if (lighttone?.has(seg.han)) numeric = lighttone.get(seg.han);
+      const isLast = k === pendWords.length - 1;
+      const outNum = !sandhi ? numeric
+        : isLast ? sandhiNumeric(numeric)
+        : sandhiWordAll(numeric);
+      push(
+        formatRomanization(outNum),
+        pojFixDiacritics(formatRomanization(tlToPoj(outNum))),
+      );
+    }
+    pendWords.length = 0;
+  };
   for (const seg of segs) {
     if (seg.t === "r") {
-      push(seg.s, seg.s);
+      if (SENT_END.test(seg.s)) { flush(); push(seg.s, seg.s); }
+      else if (seg.s.trim()) { flush(); push(seg.s, seg.s); }
+      else push(seg.s, seg.s);
       continue;
     }
     if (seg.t === "miss") {
+      flush();
       push(`⟨${seg.s}⟩`, `⟨${seg.s}⟩`);
       continue;
     }
-    let numeric = seg.readings[Math.min(picks.get(seg.si) ?? 0, seg.readings.length - 1)];
-    if (lighttone?.has(seg.han)) numeric = lighttone.get(seg.han);
-    const outNum = sandhi ? sandhiNumeric(numeric) : numeric;
-    push(
-      formatRomanization(outNum),
-      pojFixDiacritics(formatRomanization(tlToPoj(outNum))),
-    );
+    pendWords.push({ seg });
   }
+  flush();
   return { tl: cap(tlParts.join("")), poj: cap(pojParts.join("")) };
 }
 
@@ -276,7 +295,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
           if (L > 1 && !runEnd[i + L - 1]) continue; // 詞尾須在欄位尾
           const list = rev.get(bare.slice(i, i + L).join(" "));
           if (!list) continue;
-          for (const c of list.slice(0, 10)) {
+          for (const c of list.slice(0, 24)) {
             beams[i + L].push({
               score: st.score + wordScore(st.last, c, tones, i, L),
               last: c.word,
