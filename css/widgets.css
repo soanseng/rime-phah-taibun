@@ -1,3 +1,22 @@
+.wchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.15rem 0.5rem;
+  margin: 0.15rem 0.2rem;
+  font-size: 0.92rem;
+}
+
+.wchip b {
+  font-size: 1.05rem;
+}
+
+.wchip-tl {
+  color: var(--accent-deep);
+}
+
 .about h3 {
   margin: 1.2rem 0 0.4rem;
   font-size: 1.02rem;

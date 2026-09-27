@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=2";
-import { formatRomanization, pojToTl } from "../roman.js?v=2";
+} from "../dict.js?v=3";
+import { formatRomanization, pojToTl } from "../roman.js?v=3";
 
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
@@ -85,17 +85,28 @@ export function initConverter(dict, hints) {
     }
     renderHints(String($("#cv-in").val() ?? ""));
   };
-
   const paintR2H = () => {
     const input = String($("#cv-in").val() ?? "");
-    const { han } = lm ? decodeTlToHan(input, rev, lm) : tlToHan(input, rev);
+    // bigram lattice 解碼（LM lazy-load；載入前 fallback greedy）
+    const r = lm ? decodeTlToHan(input, rev, lm) : tlToHan(input, rev);
     if (!lm) ensureLM().then((m) => { if (m && dir === "r2h") paint(); });
-    // pojToTl：POJ 拼法→TL、調符→數字調，再上調符——輸出即台羅正規化。
-    const norm = formatRomanization(pojToTl(input.replace(/--/g, " ").replace(/-/g, " ")));
     $("#cv-h1").text("漢字（實驗）");
-    $("#cv-h2").text("TL 正規化");
-    $("#cv-tl").text(han || "—");
-    $("#cv-poj").text(norm || "—");
+    $("#cv-h2").text("詞對照");
+    $("#cv-tl").text(r.han || "—");
+        const tl = formatRomanization(w.reading.replace(/0(?=[a-z])/g, ""));
+    if (r.words?.length) {
+      for (const w of r.words.slice(0, 80)) {
+        const tl = formatRomanization(w.reading);
+        $list.append(
+          $("<span class='wchip'></span>")
+            .append($("<b></b>").text(w.word))
+            .append($("<span class='wchip-tl'></span>").text(tl))
+            .append(dictLink(w.word)),
+        );
+      }
+    } else {
+      $list.text("—");
+    }
     $("#cv-anno").hide().empty();
     $("#cv-hints").hide().prop("hidden", true).empty();
   };

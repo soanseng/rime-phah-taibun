@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=2";
-import { segment, render } from "../js/dict.js?v=2";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=3";
+import { segment, render } from "../js/dict.js?v=3";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;

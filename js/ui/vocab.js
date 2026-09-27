@@ -1,7 +1,7 @@
 // 詞彙分頁：台語詞／華語釋義查詢。
 
-import { lookup, sutianUrl } from "../dict.js?v=2";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=2";
+import { lookup, sutianUrl } from "../dict.js?v=3";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=3";
 
 export function initVocab(dict) {
   const $tb = $("#vb-tbl tbody");

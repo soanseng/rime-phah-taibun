@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=2";
+} from "./roman.js?v=3";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -247,9 +247,8 @@ function romToSylls(rom) {
 // 羅→漢解碼：整句 log-prob lattice＋backpointer。
 // P(w|prev) = interp·min(C12/C(prev),1) + (1−interp)·Puni(w)
 // 每詞分數 = log P（≤0，無長度紅利）＋gloss 小紅利−insane 罰。
-// 空白保留輸出且延續上下文；標點／斷行保留輸出並切句。
-// 未命中音節保留原音原字（固定成本）。
 export function decodeTlToHan(tlText, rev, lm, opts = {}) {
+  const words = [];   // 解碼詞序（詞對照卡用）
   const {
     beamWidth = 8, interp = 0.65, unknownCost = 10,
     insaneCost = 3.0, glossBonus = 1.0, pFloor = 1e-5,
@@ -337,7 +336,12 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
       const s = sepAt.get(t.pos);
       if (s !== undefined) out += s;
       out += t.tok;
-      if (isHanTok(t.tok)) matched += t.syl;
+      if (isHanTok(t.tok)) {
+        matched += t.syl;
+        const num = bare.slice(t.pos, t.pos + t.syl)
+          .map((b, k) => b + tones[t.pos + k]).join(" ");
+        words.push({ word: t.tok, reading: num });
+      }
     }
     parts.push(out + tailSep);
   };
@@ -355,7 +359,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     sent.push({ sep: run.s });           // 空白：句內保留
   }
   decodeSentence(sent);
-  return { han: parts.join(""), matched, total };
+  return { han: parts.join(""), matched, total, words };
 }
 
 // Candidate pool for practice: words with a gloss and 2–4 Han characters,
