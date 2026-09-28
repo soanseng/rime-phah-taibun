@@ -2,7 +2,7 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=15";
+} from "../dict.js?v=17";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -14,7 +14,7 @@ const dictLink = (word, label = "教典") =>
     .attr("rel", "noopener")
     .text(label);
 
-export function initConverter(dict, hints) {
+export function initConverter(dict, hints, grammarCheck) {
   const rev = buildReverseIndex(dict);
   let lm = null;        // bigram LM（羅→漢用）
   let lmPromise = null; // single-flight：避免重複 fetch
@@ -33,35 +33,8 @@ export function initConverter(dict, hints) {
   const lighttoneMap = new Map((hints?.lighttone ?? []).map((lt) => [lt.han, lt.reading]));
   let dir = "h2r";
 
-  const renderHints = (text) => {
-    const found = [];
-    for (const lt of hints.lighttone) {
-      if (text.includes(lt.han)) found.push(`輕聲：<code>${lt.marked}</code>（${lt.reading}）`);
-      if (found.length >= 8) break;
-    }
-    const $h = $("#cv-hints");
-    $h.prop("hidden", false).show().empty();
-    if (found.length) {
-      $h.append("<div class='hint-title'>輕聲建議（依用字偵測）</div><ul></ul>");
-      const $ul = $h.find("ul").last();
-      for (const f of found) $ul.append($("<li></li>").html(f));
-    }
-    const hitCalque = hints.calque.filter((c) => text.includes(c.han))
-      .sort((a, b) => b.han.length - a.han.length).slice(0, 8);
-    if (hitCalque.length) {
-      $h.append("<div class='hint-title'>華語→台語 對照（這馬文章有用著）</div><ul></ul>");
-      const $u2 = $h.find("ul").last();
-      for (const c of hitCalque)
-        $u2.append($("<li></li>").html(`「${esc(c.han)}」→ <code>${esc(c.suggest)}</code>`));
-    }
-    const rows = hints.calque
-      .map((c) => `<li>「${esc(c.han)}」→ <code>${esc(c.suggest)}</code></li>`)
-      .join("");
-    $h.append(
-      "<details class='calque'><summary>華語→台語 通用對照表（單字佮多字結構，點開看；參考用，毋是自動文法解析）</summary>" +
-      `<ul>${rows}</ul></details>`,
-    );
-  };
+  // 文法檢查／輕聲／對照表：全部交予 grammarcheck 模組（#cv-gram）
+  const renderHints = (text) => grammarCheck?.(text);
 
   const paintH2R = () => {
     const { tl, poj } = render(segs, picks, {
@@ -126,14 +99,14 @@ export function initConverter(dict, hints) {
       $list.text("—");
     }
     $("#cv-anno").hide().empty();
-    $("#cv-hints").hide().prop("hidden", true).empty();
+    $("#cv-gram").hide().prop("hidden", true).empty();
   };
 
   const paint = () => (dir === "h2r" ? paintH2R() : paintR2H());
   const run = () => {
     const text = String($("#cv-in").val() ?? "");
     if (dir === "h2r") {
-      segs = segment(text, dict);
+      segs = segment(text, dict, rev); // rev：羅馬字黏漢字混寫合詞用
       picks.clear();
     }
     paint();

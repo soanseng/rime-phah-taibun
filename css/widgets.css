@@ -128,6 +128,79 @@ textarea:focus,
   font-weight: 600;
 }
 
+
+/* —— 文法檢查佮教學（轉換頁 #cv-gram） —— */
+.hints .chk-list li {
+  margin: 0.25rem 0;
+  line-height: 1.75;
+}
+
+.chk-han {
+  /* 建議檢查，毋是判錯：虛線底標「看這搭」，無用紅色 */
+  border-bottom: 2px dotted var(--ink-soft);
+}
+
+.chk-n {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.chk-note {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  border: none;
+  border-radius: 6px;
+  padding: 0.05rem 0.45rem;
+  cursor: pointer;
+}
+
+.gram-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.gram-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.gram-chip:hover {
+  border-color: var(--accent);
+}
+
+.gram-chip b {
+  font-size: 0.98rem;
+}
+
+.gram-chip-t {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.gr-note.flash {
+  animation: gr-flash 1.5s ease 2;
+}
+
+@keyframes gr-flash {
+  0%,
+  100% {
+    background: transparent;
+  }
+  30% {
+    background: #fff3c4;
+  }
+}
 .dict-link {
   font-size: 0.72rem;
   color: var(--accent-deep);

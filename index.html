@@ -66,7 +66,7 @@
           </div>
         </div>
         <div id="cv-anno" class="anno" aria-label="漢字讀音對照"></div>
-        <div id="cv-hints" class="hints" hidden></div>
+        <div id="cv-gram" class="hints" aria-label="文法檢查佮教學" hidden></div>
       </section>
 
       <section id="panel-practice" class="panel" role="tabpanel" aria-labelledby="tab-practice" hidden>
@@ -158,6 +158,9 @@
 
         </ul>
         <p>實測（四篇真實文章，嚴格配對）：88.4／89.4／89.0／83.4% 字元相似（醫學篇因複合詞多略低）——毋過這是實驗功能，<strong>同鍵同調的同音詞</strong>（儲存/除船、濟/坐）愛靠閣較濟語料才選會對，請用佮「輔助對照」的心情來用。</p>
+
+      <h3>文法檢查佮教學（轉換頁輸入區，建議性質）</h3>
+      <p>輸入漢羅了後，輸入區下跤自動生一區<strong>文法檢查佮教學</strong>：① <strong>建議檢查——華語用字／直譯</strong>——比對華台對照表（上長片語優先，按呢「有沒有」著了，「沒」「不」就袂閣重複列），有對應筆記的會使點「看文法」；② <strong>輕聲標記建議</strong>——偵測著輕聲詞的建議寫法；③ <strong>可能用著的文法點</strong>——照文法筆記的觸發詞掃（漢字做子字串、臺羅做詞界比對、疊字用正規表示式），點 chip 跳去文法頁看彼篇說明佮例句。遮是純規則比對，毋是語法解析：攏是「建議檢查／可參考」，對照表用字嘛有對本典稽核過，毋代表一定有錯。</p>
         <h3>文法筆記佮語法點檢索</h3>
         <p>「文法」頁有兩段：<strong>文法筆記</strong>是本站整理（說明自寫、分類自訂），例句優先採教育部臺灣台語常用詞辭典真實句（逐句標〔教典〕，連官方華語對譯照原句重刊，CC BY-ND 3.0 TW，標示來源），無適配句的主題用自造短句（標〔自造〕）；其他參考逐篇標示——TGGL 語法點／語法小專欄（臺灣台語語料庫應用檢索系統，國家教育研究院，謹此致謝教育部）、維基學院《閩南語文法》（CC BY-SA 4.0，採閩拼系統）、廖淑鳳（2007）臺師大碩論、郭永錕（2016）高雄市教育局講義、塗豆仁學台語（2024-10-03）臉書短文、李淑鳳（2013）〈台語連詞和副詞的關聯性〉（《台灣學誌》第7期）——TGGL、臉書佮論文的例句無重刊。<strong>語法點檢索</strong>是 TGGL 的書目索引（253 點），依原站授權條款語法說明佮例句無重刊，點「原文」連去原系統查閱。</p>
 
@@ -194,12 +197,12 @@
       </p>
       <p>本站非商業用途，僅作台語學習教育之用；各來源授權以原釋出條款為準。</p>
       <p>姊妹站：<a href="https://taigi.anatomind.com/" target="_blank" rel="noopener">拍台文 Phah Tâi-bûn</a>（taigi.anatomind.com）——台語輸入法，POJ／TL 混打、免調。</p>
-      <p id="foot-mode" class="hint">build 2026-09-27.v15</p>
+      <p id="foot-mode" class="hint">build 2026-09-28.v17</p>
     </footer>
 
     <div id="load-state" class="load-state" role="status">載入詞典中…</div>
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-    <script type="module" src="js/main.js?v=15"></script>
+    <script type="module" src="js/main.js?v=17"></script>
   </body>
 </html>

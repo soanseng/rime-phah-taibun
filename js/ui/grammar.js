@@ -14,6 +14,8 @@ async function fetchJson(url) {
   return r.json();
 }
 
+let notesReady = Promise.resolve(); // initNotes 的 promise：revealNote 愛等伊
+
 // —— ① 文法筆記（本站整理） ——
 async function initNotes() {
   let data;
@@ -57,7 +59,7 @@ async function initNotes() {
           )
           .join("・");
         return (
-          `<article class="gr-note" data-cat="${n.cat}">` +
+          `<article class="gr-note" id="note-${esc(n.id)}" data-cat="${n.cat}">` +
           `<span class="gr-cat">${esc(catTitle.get(n.cat) ?? "")}</span>` +
           `<h4>${esc(n.title)}</h4>${body}` +
           `<div class="gr-ex-list">${exs}</div>` +
@@ -146,7 +148,21 @@ async function initIndex() {
   );
 }
 
+// 予文法檢查 chip 點了跳過來看：切去文法頁、重頭顯示全部、滾去彼篇閃一下
+export async function revealNote(id) {
+  if (!$("#tab-grammar").hasClass("is-active")) $("#tab-grammar").trigger("click");
+  await notesReady;
+  $("#gr-note-cats .seg-btn").first().trigger("click");
+  const el = document.getElementById(`note-${id}`);
+  if (!el) return;
+  el.hidden = false;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.classList.remove("flash");
+  void el.offsetWidth; // 重啟動畫
+  el.classList.add("flash");
+}
+
 export function initGrammar() {
-  initNotes(); // 各自 catch：一篇失敗嘛袂拖累另外一篇
+  notesReady = initNotes(); // 各自 catch：一篇失敗嘛袂拖累另外一篇
   initIndex();
 }

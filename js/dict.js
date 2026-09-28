@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=15";
+} from "./roman.js?v=17";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -19,16 +19,61 @@ export async function loadDict(url) {
 // Greedy longest-match segmentation (codepoint-based: astral chars such as
 // 𤆬/𨑨 are single units, unlike UTF-16 string indices).
 // Returns segments: {t:"w",han,readings,gloss,si} | {t:"r",s} | {t:"miss",s}
-export function segment(text, dict) {
+// rev（反查索引）有傳入時：羅馬字尾直接黏漢字（混寫、無空白）當做仝一个
+// 詞——羅馬字去調音節反查起頭漢字，佮後壁漢字組詞典最長匹配，讀音前綴
+// 去調著合才算（「Pháiⁿ命人」→ 歹命人 → pháinn-miā-lâng）。組袂起——
+// 親像 to̍h是（就是 讀 tsiū-sī，前綴無合）——就照原本規則隔空白分詞。
+export function segment(text, dict, rev = null) {
   const cps = [...text];
   const segs = [];
   let i = 0;
   let si = 0; // word index for pick cycling
+  const tonelessSyl = (r) => r.split(" ").filter(Boolean).map((x) => x.replace(/[0-9]/g, ""));
+  // rom（羅馬字尾）＋ cps[from] 起的漢字 → {han,readings,gloss,skip} | null
+  const mergeMixed = (rom, from) => {
+    if (!rev) return null;
+    const { bare } = romToSylls(rom);
+    if (!bare.length || !bare.every((s) => /^[a-z]+$/.test(s))) return null;
+    const cands = rev.get(bare.join(" "));
+    if (!cands) return null;
+    const ahead = [];
+    while (from + ahead.length < cps.length && ahead.length < MAX_WORD
+           && isHan(cps[from + ahead.length])) ahead.push(cps[from + ahead.length]);
+    for (const cand of cands) {
+      const cw = [...cand.word];
+      if (!cw.length || !cw.every((c) => isHan(c))) continue; // 只綴純漢字候選
+      for (let L = Math.min(MAX_WORD - cw.length, ahead.length); L > 0; L--) {
+        const combined = cand.word + ahead.slice(0, L).join("");
+        const e = dict[combined];
+        if (!e) continue;
+        const readings = e.r.filter((r) => {
+          const s = tonelessSyl(r);
+          return bare.length <= s.length && bare.every((b, k) => s[k] === b);
+        });
+        if (readings.length) {
+          return { han: combined, readings, gloss: e.h || "", skip: L };
+        }
+      }
+    }
+    return null;
+  };
   while (i < cps.length) {
     if (!isHan(cps[i])) {
       let j = i;
       while (j < cps.length && !isHan(cps[j])) j++;
-      segs.push({ t: "r", s: cps.slice(i, j).join("") });
+      const s = cps.slice(i, j).join("");
+      // 尾羅馬字（無空白/標點隔）直接黏漢字 → 試合做一个詞；charset 佮 tlRuns 仝款
+      const m = j < cps.length
+        ? s.match(/[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u207F\u2013\u2014-]+$/) : null;
+      const hit = m ? mergeMixed(m[0], j) : null;
+      if (hit) {
+        if (m.index > 0) segs.push({ t: "r", s: s.slice(0, m.index) });
+        segs.push({ t: "w", han: hit.han, readings: hit.readings, gloss: hit.gloss, si });
+        si++;
+        i = j + hit.skip;
+        continue;
+      }
+      segs.push({ t: "r", s });
       i = j;
       continue;
     }
@@ -59,13 +104,16 @@ export function render(segs, picks = new Map(), opts = {}) {
   const { sandhi = false, lighttone = null } = opts;
   const base = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC");
   const startLatin = (s) => /^[a-z0-9⟨]/i.test(base(s));
-  const endLatin = (s) => /[a-z0-9⟩]/i.test(base(s).slice(-1));
+  const endLatin = (s) => /[a-z0-9⟩\u207F]/i.test(base(s).slice(-1)); // \u207F＝POJ 上標 ⁿ
 
   const tlParts = [];
   const pojParts = [];
   const push = (tl, poj) => {
     const lastTl = tlParts[tlParts.length - 1];
     const lastPoj = pojParts[pojParts.length - 1];
+    // 連紲 r 段（「字 羅 字」）尾空白＋頭空白 → 塌做一个，避免雙空白
+    if (lastTl && lastTl.endsWith(" ") && tl.startsWith(" ")) tl = tl.replace(/^ +/, "");
+    if (lastPoj && lastPoj.endsWith(" ") && poj.startsWith(" ")) poj = poj.replace(/^ +/, "");
     tlParts.push(lastTl && endLatin(lastTl) && startLatin(tl) ? ` ${tl}` : tl);
     pojParts.push(lastPoj && endLatin(lastPoj) && startLatin(poj) ? ` ${poj}` : poj);
   };
@@ -107,7 +155,8 @@ export function render(segs, picks = new Map(), opts = {}) {
   return { tl: cap(tlParts.join("")), poj: cap(pojParts.join("")) };
 }
 
-const cap = (s) => s.replace(/[a-z]/, (c) => c.toUpperCase());
+// 句首大寫：干焦大寫頭一字（原版揣頭一个 a-z 會共「Pháiⁿ」變「PHáiⁿ」）
+const cap = (s) => s.replace(/^[a-z]/, (c) => c.toUpperCase());
 
 // All romanization renderings of one word for the annotation view.
 export function wordVariants(seg, picks) {
