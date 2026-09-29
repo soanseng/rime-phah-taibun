@@ -5,7 +5,7 @@
 //    chip 點了 revealNote 跳去文法頁看彼篇。
 // 子字串比對天然會拄著（親像「的」佇教典詞內底）——一律「建議檢查／可參考」口氣。
 
-import { revealNote } from "./grammar.js?v=17";
+import { revealNote } from "./grammar.js?v=18";
 
 const deaccent = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 

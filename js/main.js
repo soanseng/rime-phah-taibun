@@ -3,12 +3,12 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { loadDict } from "./dict.js?v=17";
-import { initConverter } from "./ui/converter.js?v=17";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=17";
-import { initVocab } from "./ui/vocab.js?v=17";
-import { initGrammar } from "./ui/grammar.js?v=17";
-import { initGrammarCheck } from "./ui/grammarcheck.js?v=17";
+import { loadDict } from "./dict.js?v=18";
+import { initConverter } from "./ui/converter.js?v=18";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=18";
+import { initVocab } from "./ui/vocab.js?v=18";
+import { initGrammar } from "./ui/grammar.js?v=18";
+import { initGrammarCheck } from "./ui/grammarcheck.js?v=18";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {

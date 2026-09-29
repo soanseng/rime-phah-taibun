@@ -31,7 +31,11 @@ export function addToneToSyllable(syl) {
     const pu = base.indexOf("u");
     pos = pi >= 0 && pu >= 0 ? Math.max(pi, pu) : pi >= 0 ? pi : pu;
   }
-  if (pos < 0) pos = base.startsWith("nn") ? 1 : base.search(/[mn]/);
+  if (pos < 0) {
+    // 韻化輔音：標 ng 的 n（mn̂g、nn̄g、n̂g）；乾若 m 標 m（m̄）
+    const ng = base.indexOf("ng");
+    pos = ng >= 0 ? ng : base.search(/[mn]/);
+  }
   return pos < 0 ? base : base.slice(0, pos + 1) + mark + base.slice(pos + 1);
 }
 
@@ -137,6 +141,10 @@ export function tlToPoj(tl) {
   r = replacePair(r, "ts", "ch");
   r = subPair(r, "ing", "eng");
   r = subPair(r, "ik", "ek");
+  // POJ 正式字形（lua tl_to_poj）：鼻化 nn→ⁿ（U+207F）——nng 音節鼻音、
+  // n 帶調符（nn̄g）袂換；oo→o͘（U+0358，調符綴佇頭一个 o 後壁）。
+  r = r.replace(/nn([^g\u0300-\u036f])/g, "\u207F$1").replace(/nn$/g, "\u207F");
+  r = r.replace(/o([\u0300-\u036f]?)o/g, "o$1\u0358");
   r = replacePair(r, "ua", "oa");
   r = replacePair(r, "ue", "oe");
   return r;

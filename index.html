@@ -147,7 +147,7 @@
         <p>讀台文是一个純靜態網頁：詞典佮語料模型隨頁面載入，一切計算攏在你的瀏覽器內底，無後端。</p>
 
         <h3>漢羅 → 台羅 TL／白話字 POJ</h3>
-        <p>用 82,000 外詞的詞典做<a href="https://github.com/soanseng/rime-phah-taibun" target="_blank" rel="noopener">最長匹配斷詞</a>：每一冬漢字對著一組讀音，<strong>點漢字會使循環切換讀音</strong>（方言變體攏接收）；詞典揣無的字顯示 ⟨?⟩。逐音節的調符定位（oo 標頭一个 o、iu/ui 標第二母音……）是對拍台文輸入法的 Lua 核心 1:1 移植。</p>
+        <p>用 82,000 外詞的詞典做<a href="https://github.com/soanseng/rime-phah-taibun" target="_blank" rel="noopener">最長匹配斷詞</a>：每一冬漢字對著一組讀音，<strong>點漢字會使循環切換讀音</strong>（方言變體攏接收）；詞典揣無的字顯示 ⟨?⟩。逐音節的調符定位（oo 標頭一个 o、iu/ui 標第二母音……）是對拍台文輸入法的 Lua 核心 1:1 移植。全羅 POJ 閣進一步用<strong>正式字形</strong>：oo→o͘、鼻化 nn→ⁿ、ts→ch、tsh→chh、ing→eng、ua→oa、ue→oe，調符照 POJ 慣例重新定位（gōa、hōe、chúi；有韻尾照舊標 a／e：koán、goe̍h）——佮拍台文的全羅 POJ 輸出仝款。</p>
 
         <h3>羅 → 漢（實驗功能）</h3>
         <p>台羅佮 POJ <strong>免勾選</strong>——輸入先經拼法正規化（ch→ts、oa→ua、eng→ing……）了後，走<strong>仝一條</strong>統計解碼管線，實測兩種拼法輸出逐字相同。解碼是整句 lattice（beam search）：</p>
@@ -197,12 +197,12 @@
       </p>
       <p>本站非商業用途，僅作台語學習教育之用；各來源授權以原釋出條款為準。</p>
       <p>姊妹站：<a href="https://taigi.anatomind.com/" target="_blank" rel="noopener">拍台文 Phah Tâi-bûn</a>（taigi.anatomind.com）——台語輸入法，POJ／TL 混打、免調。</p>
-      <p id="foot-mode" class="hint">build 2026-09-28.v17</p>
+      <p id="foot-mode" class="hint">build 2026-09-29.v18</p>
     </footer>
 
     <div id="load-state" class="load-state" role="status">載入詞典中…</div>
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-    <script type="module" src="js/main.js?v=17"></script>
+    <script type="module" src="js/main.js?v=18"></script>
   </body>
 </html>
