@@ -275,12 +275,18 @@ def test_release_packages_wait_for_complete_verification_gate():
     assert "uv run pytest" in verify_commands
     # Real-engine corpus replays are verified locally pre-tag (owner decision
     # 2026-09-25): the CI gate must keep them excluded, not silently re-add
-    # an hour-long stall.
-    assert "--ignore=tests/test_real_rime.py" in verify_commands
+    # an hour-long stall. Since the real_rime marker (2026-09-29) the
+    # exclusion lives in pyproject addopts + the marker on the module — pin
+    # all three pieces so removing any one trips this test.
+    assert "--ignore=tests/test_real_rime.py" not in verify_commands
+    assert "addopts = \"-m 'not real_rime'\"" in read("pyproject.toml")
+    assert "pytestmark = pytest.mark.real_rime" in read("tests/test_real_rime.py")
     assert "uv run ruff check" in verify_commands
     assert "luac5.4 -p" in verify_commands
     assert "bash -n" in verify_commands
-    assert "rime-prelude" in verify_commands
+    # The default suite drives the real Lua modules (test_lua_romanization
+    # etc.); the trimmed verify job installs only lua5.4, no librime/g++.
+    assert "lua5.4" in verify_commands
     for package_job in ("package-source", "package-windows"):
         assert jobs[package_job]["needs"] == "verify"
     assert "opencc" in source_archive, "the source release must bundle runtime Emoji OpenCC data"

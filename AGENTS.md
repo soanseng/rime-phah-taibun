@@ -187,8 +187,8 @@ Red → Green → Refactor：
 # === 環境 ===
 uv sync                                # 安裝所有依賴
 
-# === 測試 / 品質 ===
-uv run pytest                          # 全部測試
+uv run pytest                          # 日常全套（自動跳過 real_rime 真引擎 84 條, 約 1 分鐘）
+uv run pytest -m real_rime             # 真 librime 整合測試（g++＋部署 220K 字典, 15+ 分鐘, release 前跑）
 uv run pytest tests/test_xxx.py -x     # 單檔，遇錯即停
 uv run pytest --cov=scripts --cov-report=term-missing
 uv run ruff check scripts/ tests/      # lint

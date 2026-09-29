@@ -35,3 +35,7 @@ known-first-party = ["scripts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "real_rime: 真 librime 整合測試（g++ 編譯＋部署 220K 字典，84 條 15+ 分鐘）；日常迴圈預設跳過，全套驗證用 -m real_rime",
+]
+addopts = "-m 'not real_rime'"

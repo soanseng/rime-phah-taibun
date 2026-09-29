@@ -18,26 +18,25 @@ jobs:
         uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
         with:
           python-version: "3.11"
+          enable-cache: true
 
-      - name: Install real Rime test runtime
+      - name: Install Lua (luac syntax check + lua-module behavior tests)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            g++ lua5.4 librime-bin librime-dev librime-plugin-lua \
-            rime-prelude rime-data-bopomofo rime-data-terra-pinyin
+          sudo apt-get install -y --no-install-recommends lua5.4
 
-      - name: Validate Python, Lua, shell, dictionary, and real Rime behavior
+      - name: Validate Python, Lua, shell, dictionary, and Lua behavior
         run: |
           uv sync --locked
           uv run ruff check scripts tests
           for file in rime.lua lua/*.lua; do luac5.4 -p "$file"; done
           bash -n install.sh scripts/*.sh packaging/macos/*.sh packaging/macos/scripts/*
           uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml
-          # Real-engine suite (tests/test_real_rime.py) is verified on a local
-          # machine before tagging: the corpus-replay tests (written ratchet,
-          # 900-sentence roundtrip) run 1h+ on a 2-core runner and would stall
-          # the release gate. Owner decision 2026-09-25.
-          uv run pytest --ignore=tests/test_real_rime.py
+          # Real-engine suite (tests/test_real_rime.py, marker real_rime) is
+          # verified on a local machine before tagging: the corpus-replay
+          # tests run 1h+ on a 2-core runner. Owner decision 2026-09-25.
+          # pyproject addopts already deselects real_rime; full: -m real_rime.
+          uv run pytest
 
   package-source:
     needs: verify
@@ -73,6 +72,7 @@ jobs:
         uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
         with:
           python-version: "3.11"
+          enable-cache: true
 
       - name: Install real Rime runtime and reverse-lookup data
         run: |
@@ -89,7 +89,6 @@ jobs:
       - name: Build and verify the Trime overlay zips
         run: |
           uv sync --locked
-          uv run ruff check scripts tests
           RIME_SMOKE_REQUIRED=1 uv run pytest tests/test_android_package.py
           uv run python scripts/build_trime_package.py
           uv run python scripts/build_trime_package.py --with-liur
