@@ -67,6 +67,12 @@ class TestTlToPojFormalGlyphs:
     def test_toned_oo_keeps_mark_on_first_o(self):
         assert tl_to_poj("tóo") == "tó͘"
 
+    def test_capitalized_oo_to_o_with_dot(self):
+        # 教典 KipSutian 烏 entries capitalize the first letter (Oo/Ôo);
+        # formal POJ is O͘/Ô͘ (gate catch 2026-09-29, 4 stale rows)
+        assert tl_to_poj("Oo") == "O͘"
+        assert tl_to_poj("Ôo") == "Ô͘"
+
     def test_ing_before_digit_is_syllable_boundary(self):
         # digits carry the tone: ing/ik followed by a digit is a boundary
         # (lua uses [^a-z], not \b, for the same reason)

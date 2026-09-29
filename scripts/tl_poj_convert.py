@@ -70,7 +70,7 @@ def tl_to_poj(tl_text: str) -> str:
     # oo → o͘, keeping any tone mark on the first o (tóo → tó͘).
     result = re.sub(r"nn([^g\u0300-\u036f])", "\u207f\\1", result)
     result = re.sub(r"nn$", "\u207f", result)
-    result = re.sub(r"o([\u0300-\u036f]?)o", "o\\1\u0358", result)
+    result = re.sub(r"([oO])([\u0300-\u036f]?)[oO]", "\\1\\2\u0358", result)
     result = _replace_pair(result, "ua", "oa")
     result = _replace_pair(result, "ue", "oe")
     return unicodedata.normalize("NFC", result)

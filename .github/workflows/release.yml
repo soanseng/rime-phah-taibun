@@ -35,7 +35,8 @@ jobs:
           # Real-engine suite (tests/test_real_rime.py, marker real_rime) is
           # verified on a local machine before tagging: the corpus-replay
           # tests run 1h+ on a 2-core runner. Owner decision 2026-09-25.
-          # pyproject addopts already deselects real_rime; full: -m real_rime.
+          # pyproject addopts deselects real_rime here; full local run
+          # (580 default + 84 real_rime): uv run pytest -o addopts=''.
           uv run pytest
 
   package-source:
