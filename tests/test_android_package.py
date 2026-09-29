@@ -100,6 +100,7 @@ def _rel_names(tree: Path) -> set[str]:
     return {str(p.relative_to(tree)) for p in tree.rglob("*") if p.is_file()}
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None:
     """--no-liur 仍是自足的拍台文 overlay: 核心檔 + 反查閉包 + @next 註冊."""
     tree = _build_tree(tmp_path, liur=False)
@@ -122,6 +123,7 @@ def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None
     assert patch["switcher/save_options/@next"] == "full_romanization"
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_zip_is_deterministic_and_sorted(tmp_path: Path) -> None:
     """同一份輸入兩次建包必須位元組一致 (PLAN 9-3J), 條目依路徑排序."""
     sys.path.insert(0, str(SCRIPTS))
@@ -196,6 +198,7 @@ def test_default_custom_registers_liur_easy_en_and_bopomofo(tmp_path: Path) -> N
     assert patch["schema_list/@next 4"] == {"schema": "bopomofo_tw"}
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_install_doc_ships_verbatim_from_packaging_dir(tmp_path: Path) -> None:
     """zip 內 INSTALL-Trime.md 必須逐字來自 packaging/android/ (單一事實來源)."""
     tree = _build_tree(tmp_path, liur=False)
@@ -205,6 +208,7 @@ def test_install_doc_ships_verbatim_from_packaging_dir(tmp_path: Path) -> None:
     assert (tree / INSTALL_NAME).read_bytes() == source.read_bytes()
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_trime_theme_patch_ships_inert_with_documented_options(tmp_path: Path) -> None:
     """排版 patch 進包但預設不生效 (空 patch): 版面未經實機驗證, 不替使用者改外觀.
 
@@ -263,6 +267,7 @@ def test_deployer_smoke_builds_all_registered_schemas(tmp_path: Path) -> None:
     assert (staging / "default.yaml").exists()
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_cli_default_bundle_is_the_liur_free_variant(tmp_path: Path) -> None:
     """預設產物 = 不含嘸蝦米的輕量包; 要嘸蝦米必須明確 --with-liur (使用者自選)."""
     output = tmp_path / "release.zip"
@@ -320,6 +325,7 @@ def test_liur_bundle_records_provenance(tmp_path: Path) -> None:
     assert "source path:" not in notice
 
 
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_third_party_notices_and_license_texts_are_bundled(tmp_path: Path) -> None:
     sys.path.insert(0, str(SCRIPTS))
     from build_trime_package import build_zip

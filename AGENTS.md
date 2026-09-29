@@ -105,7 +105,7 @@ rime-phah-taibun/
 ├── install.sh / install_windows.ps1
 └── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
-    ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout 則 skip）
+    ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
     └── rime_smoke.cpp             # C++ smoke
