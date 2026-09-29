@@ -109,7 +109,6 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | `Enter` | 全羅模式下照目前輸入音直接送出 |
 | `vvh` | 在候選區顯示按鍵說明 |
 | `vvjit` | 台語日期 |
-| `vvsp` | 簡拼對照 |
 
 > 拍台文的數字鍵專心用來打聲調；選字請按 `Tab` 後用 `asdfghjkl;`。這和教育部輸入法以數字選字的習慣不同。
 
@@ -155,4 +154,4 @@ tsiah png → 食飯
 | `` `e `` Emoji 分類沒反應（但 `` ` `` 符號選單正常） | 多半是安裝版本較舊或部署未更新：確認 Rime 使用者資料夾有 `lua/phah_taibun_emoji_menu.lua`，重跑安裝器並重新部署 |
 | 英文候選沒有出現 | 未內建英文字典；請按 `Ctrl+Space` 切英文模式。Emoji 已內建，可按 `` `e `` 瀏覽（方案選單可關） |
 
-完整排錯看[使用說明的疑難排解](user-guide.md#十七疑難排解)。
+完整排錯看[使用說明的疑難排解](user-guide.md#十六疑難排解)。
