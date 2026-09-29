@@ -158,7 +158,60 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                          ("植", ["sit8"]), ("臨", ["lim5"])]:
         for r in readings:
             cur_add(ch, r, 550, "", "charsiu")
+    # ---- rime 主詞庫 fallback（使用者 2026-09-29 要求＋裁定入公開包）：
+    # phah_taibun.dict.yaml 內「頂懸層本典無收」的純漢字詞補入轉換層，
+    # 標 src=rime／rime-moe（UI 顯示「延伸詞」）。過濾：1–4 字、逐字漢字、
+    # 音節數＝字數、讀音 [a-z]+數字、頻率 ≥500；新聞導語片語（…表示／
+    # 認為／報導／指出）佮 ≥5 字長詞（機關名／句子殘片）袂入來。
+    # 授權（使用者 2026-09-29 裁定，照 rime repo 2026-09-24 慣例）：
+    # dict.yaml 聚合 CC0／CC BY-SA／CC BY-ND／CC BY-NC-SA 3.0 TW（台日
+    # 大辭典、Maryknoll、Embree、甘字典）佮待確認來源——非商業用途＋
+    # 完整來源揭露（rime LICENSE 資料表；PLAN.md §9-6）。NC 排除重建
+    # 若未來實作，會使改收乾淨子集。教典收詞狀態用 twblg title 核對。
+    reg("rimeword", "混合授權、非商業（rime-phah-taibun phah_taibun.dict.yaml："
+        "CC0＋CC BY-SA 4.0＋CC BY-ND 3.0 TW＋CC BY-NC-SA 3.0 TW〔台日大辭典、"
+        "Maryknoll、Embree、甘字典〕＋待確認來源；rime LICENSE 完整揭露）。"
+        "使用者 2026-09-29 裁定照 rime repo 2026-09-24 慣例入公開包")
+    rime_tbl: dict[str, dict[str, int]] = {}
+    for line in open(rime / "schema" / "phah_taibun.dict.yaml", encoding="utf-8"):
+        if line.startswith("#"):
+            continue
+        p = line.rstrip("\n").split("\t")
+        if len(p) < 3 or not p[2].strip().isdigit():
+            continue
+        w = p[0].strip()
+        n = len(w)  # python str 逐碼位，astral 字安全
+        if not 1 <= n <= 4 or not all(is_han_str(c) for c in w):
+            continue
+        if n >= 3 and re.search(r"(表示|認為|報導|指出)$", w):
+            continue
+        syl = p[1].split()
+        if len(syl) != n or not all(re.fullmatch(r"[a-z]+[0-9]+", s) for s in syl):
+            continue
+        f = int(p[2])
+        if f < 500:
+            continue
+        d = rime_tbl.setdefault(w, {})
+        d[" ".join(syl)] = max(d.get(" ".join(syl), 0), f)
+    rime_added: set[str] = set()
+    for w, d in rime_tbl.items():
+        if w in words or w in cur:  # 干焦補本典層無收的詞
+            continue
+        rime_added.add(w)
+        for r in sorted(d, key=lambda x: -d[x]):
+            cur_add(w, r, d[r], "", "rimeword")
 
+
+    # 教典（twblg）收詞對照：rime 補入的詞若佇教典詞條（title），src 標
+    # rime-moe（UI 顯示「教典有收」）；無佇，才標 rime（「教典未收」）。
+    # 干焦用 title 精確比對（異體／又見形無算），避免無證據的主張。
+    tw_titles: set[str] = set()
+    tw_path = data / "moedict-data-twblg" / "dict-twblg.json"
+    if tw_path.exists():
+        _tw = json.load(open(tw_path, encoding="utf-8"))
+        if isinstance(_tw, dict):
+            _tw = list(_tw.values())
+        tw_titles = {e.get("title", "") for e in _tw if isinstance(e, dict)}
     # ---- freq
     freq: dict[str, int] = {}
     for fn in FREQ_LOCAL if mode == "local" else FREQ_PUBLIC:
@@ -197,7 +250,10 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
             cs = [r for r, _ in sorted(d.items(), key=lambda kv: -kv[1])]
             table[w] = [r for r in cs if sane(w, r)] + [r for r in cs if not sane(w, r)]
 
-    payload = {w: {"r": rs, **({"h": gloss[w]} if w in gloss else {})}
+    payload = {w: {"r": rs,
+                   **({"h": gloss[w]} if w in gloss else {}),
+                   **({"src": "rime-moe" if w in tw_titles else "rime"}
+                      if w in rime_added else {})}
                for w, rs in table.items()}
     out_dir.mkdir(parents=True, exist_ok=True)
     js = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
@@ -220,36 +276,48 @@ def build(mode: str, rime: Path, out_dir: Path) -> None:
                       "reading": reading, "f": f})
     light.sort(key=lambda x: -x["f"])
     light = light[:1200]
+    # calque 39 條＝f26d97b 上線版（2026-09-28 文法檢查用，note＝文法點代號；
+    # 2026-09-29 修 build.py 落後 hints.json 的不一致——單一真相回 build.py）
     calque = [
+        {"han": "的時候", "suggest": "的時陣（ê sî-tsūn）"},
+        {"han": "越來越", "suggest": "愈來愈（jú lâi jú）", "note": "na-to-lu-lu"},
+        {"han": "為什麼", "suggest": "為啥物（uī-sánn-mih）", "note": "gi-mun-ku"},
+        {"han": "有沒有", "suggest": "有…無（ū…bô）", "note": "q-final"},
+        {"han": "看不懂", "suggest": "看無（khuànn-bô）", "note": "light-sense"},
+        {"han": "聽不懂", "suggest": "聽無（thiann-bô）", "note": "light-sense"},
+        {"han": "是不是", "suggest": "是毋是（sī-m̄-sī）", "note": "q-final"},
+        {"han": "每天", "suggest": "逐工（ta̍k-kang）"},
+        {"han": "大家", "suggest": "逐家（ta̍k-ke）"},
+        {"han": "什麼", "suggest": "啥物（sánn-mih）", "note": "gi-mun-ku"},
+        {"han": "東西", "suggest": "物件（mi̍h-kiānn）"},
+        {"han": "吃完", "suggest": "食飽（tsia̍h-pá）／動詞＋矣（--ah）", "note": "leh-ah-bat"},
+        {"han": "裡面", "suggest": "內底（lāi-té）", "note": "locative-sandhi"},
+        {"han": "我們", "suggest": "咱（lán，含聽者）／阮（guán，無含）", "note": "guan-lan-in"},
+        {"han": "你們", "suggest": "恁（lín）", "note": "guan-lan-in"},
+        {"han": "他們", "suggest": "𪜶（in）", "note": "guan-lan-in"},
+        {"han": "知道", "suggest": "知影（tsai-iánn）"},
+        {"han": "喜歡", "suggest": "歡喜（huann-hí）／愛（ài）"},
+        {"han": "還是", "suggest": "抑是（ah-sī）", "note": "gi-mun-ku"},
+        {"han": "哪裡", "suggest": "佗位（tó-uī）", "note": "gi-mun-ku"},
+        {"han": "怎麼", "suggest": "按怎（án-tsuánn）", "note": "gi-mun-ku"},
+        {"han": "昨天", "suggest": "昨昏（tsa-hng）"},
+        {"han": "這裡", "suggest": "遮（tsia）／這搭（tsit-tah）", "note": "deixis"},
+        {"han": "那裡", "suggest": "遐（hia）／彼搭（hit-tah）", "note": "deixis"},
         {"han": "的", "suggest": "ê（的）"},
-        {"han": "了", "suggest": "矣（ah）"},
+        {"han": "了", "suggest": "矣（ah）", "note": "leh-ah-bat"},
         {"han": "很", "suggest": "誠／足（tsiânn/tsiok）"},
         {"han": "在", "suggest": "佇（tī）"},
-        {"han": "跟", "suggest": "佮／kap"},
-        {"han": "和", "suggest": "佮（kap）"},
-        {"han": "不", "suggest": "毋（m̄）／無（bô）"},
-        {"han": "沒", "suggest": "無（bô）"},
-        {"han": "把", "suggest": "共（kā）"},
-        {"han": "被", "suggest": "予（hōo）"},
-        {"han": "讓", "suggest": "予／hōo"},
+        {"han": "跟", "suggest": "佮／kap", "note": "kah"},
+        {"han": "和", "suggest": "佮（kap）", "note": "kah"},
+        {"han": "不", "suggest": "毋（m̄）／無（bô）", "note": "geng-teng-su"},
+        {"han": "沒", "suggest": "無（bô）", "note": "geng-teng-su"},
+        {"han": "把", "suggest": "共（kā）", "note": "ka"},
+        {"han": "被", "suggest": "予（hōo）", "note": "hoo"},
+        {"han": "讓", "suggest": "予／hōo", "note": "hoo"},
         {"han": "都", "suggest": "攏（lóng）"},
         {"han": "也", "suggest": "嘛（mā）"},
         {"han": "再", "suggest": "閣（koh）"},
         {"han": "從", "suggest": "對（tuì）／tùi"},
-        # ---- 多字結構（2026-09-27 v2 roadmap：通用對照表擴充；參考用，
-        #      毋是自動文法解析；建議詞形以本典/教典慣用為準）----
-        {"han": "的時候", "suggest": "的時陣（ê sî-tsūn）"},
-        {"han": "越來越", "suggest": "愈來愈（jú lâi jú）"},
-        {"han": "每天", "suggest": "逐工（ta̍k-kang）"},
-        {"han": "大家", "suggest": "逐家（ta̍k-ke）"},
-        {"han": "什麼", "suggest": "啥物（sánn-mih）"},
-        {"han": "為什麼", "suggest": "為啥物（uī-sánn-mih）"},
-        {"han": "東西", "suggest": "物件（mi̍h-kiānn）"},
-        {"han": "有沒有", "suggest": "有…無（ū…bô）"},
-        {"han": "看不懂", "suggest": "看無（khuànn-bô）"},
-        {"han": "聽不懂", "suggest": "聽無（thiann-bô）"},
-        {"han": "吃完", "suggest": "食飽（tsia̍h-pá）／動詞＋矣（--ah）"},
-        {"han": "裡面", "suggest": "內底（lāi-té）"},
     ]
     hints = {"lighttone": [{k: v for k, v in x.items() if k != "f"} for x in light],
              "calque": calque}

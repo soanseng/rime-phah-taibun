@@ -217,6 +217,10 @@ textarea:focus,
   background: var(--accent-soft);
 }
 
+.anno.word.rime:hover {
+  background: #fdf0ee;
+}
+
 .row {
   display: flex;
   gap: 0.7rem;
@@ -343,6 +347,22 @@ textarea:focus,
 
 .anno.word:hover {
   background: var(--accent-soft);
+}
+
+.anno.word.rime {
+  border-bottom: 2px dotted var(--miss);
+}
+
+.rimetag {
+  display: inline-block;
+  font-size: 0.66rem;
+  color: var(--miss);
+  border: 1px dashed var(--miss);
+  border-radius: 5px;
+  padding: 0 0.3rem;
+  margin-inline-start: 0.35rem;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .anno.miss {

@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=18";
+} from "./roman.js?v=19";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -41,17 +41,17 @@ export function segment(text, dict, rev = null) {
            && isHan(cps[from + ahead.length])) ahead.push(cps[from + ahead.length]);
     for (const cand of cands) {
       const cw = [...cand.word];
-      if (!cw.length || !cw.every((c) => isHan(c))) continue; // 只綴純漢字候選
+      if (!cw.length || !cw.every((c) => isHan(c)) || cand.rime) continue; // 只綴純漢字本典詞（延伸詞未驗證，毋合混寫）
       for (let L = Math.min(MAX_WORD - cw.length, ahead.length); L > 0; L--) {
         const combined = cand.word + ahead.slice(0, L).join("");
         const e = dict[combined];
-        if (!e) continue;
+        if (!e || e.src) continue; // 合出來的詞嘛愛是本典層（延伸詞袂用來綴混寫）
         const readings = e.r.filter((r) => {
           const s = tonelessSyl(r);
           return bare.length <= s.length && bare.every((b, k) => s[k] === b);
         });
         if (readings.length) {
-          return { han: combined, readings, gloss: e.h || "", skip: L };
+          return { han: combined, readings, gloss: e.h || "", skip: L, src: e.src };
         }
       }
     }
@@ -68,7 +68,7 @@ export function segment(text, dict, rev = null) {
       const hit = m ? mergeMixed(m[0], j) : null;
       if (hit) {
         if (m.index > 0) segs.push({ t: "r", s: s.slice(0, m.index) });
-        segs.push({ t: "w", han: hit.han, readings: hit.readings, gloss: hit.gloss, si });
+        segs.push({ t: "w", han: hit.han, readings: hit.readings, gloss: hit.gloss, si, src: hit.src });
         si++;
         i = j + hit.skip;
         continue;
@@ -86,7 +86,7 @@ export function segment(text, dict, rev = null) {
     }
     if (hit) {
       const e = dict[hit];
-      segs.push({ t: "w", han: hit, readings: e.r, gloss: e.h || "", si });
+      segs.push({ t: "w", han: hit, readings: e.r, gloss: e.h || "", si, src: e.src });
       si++;
       i += hitLen;
     } else {
@@ -203,14 +203,15 @@ export function buildReverseIndex(dict) {
       const key = syl.map((s) => s.replace(/[0-9]/g, "")).join(" ");
       const sane = mixed || syl.length === nHan;
       const cand = { word: w, sane, gloss: e.h ? 1 : 0,
-                     toned: syl.map((s) => s.match(/[1-9]$/)?.[0] ?? "0").join("") };
+                     toned: syl.map((s) => s.match(/[1-9]$/)?.[0] ?? "0").join(""),
+                     rime: e.src ? 1 : 0 };
       const list = rev.get(key);
       if (list) list.push(cand);
       else rev.set(key, [cand]);
     }
   }
   for (const list of rev.values())
-    list.sort((a, b) => b.sane - a.sane || b.gloss - a.gloss);
+    list.sort((a, b) => b.sane - a.sane || b.gloss - a.gloss || a.rime - b.rime);
   return rev;
 }
 

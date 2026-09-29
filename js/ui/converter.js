@@ -2,7 +2,7 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=18";
+} from "../dict.js?v=19";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -15,6 +15,11 @@ const dictLink = (word, label = "教典") =>
     .text(label);
 
 export function initConverter(dict, hints, grammarCheck) {
+  // 延伸詞層：hint 照字典實際內容顯示——無 src 詞就毋通講一个
+  // 永遠出袂來的橘虛線標記（公開包這馬有延伸詞，會顯示）。
+  const hasExt = Object.values(dict).some((e) => e.src);
+  const hintH2R = () => "點漢字換讀音；⟨?⟩ 表示詞典揣無。"
+    + (hasExt ? "虛線橘字＝延伸詞（讀音出自拍台文字典，指頭懸看教典收錄狀態）。" : "");
   const rev = buildReverseIndex(dict);
   let lm = null;        // bigram LM（羅→漢用）
   let lmPromise = null; // single-flight：避免重複 fetch
@@ -63,8 +68,11 @@ export function initConverter(dict, hints, grammarCheck) {
       } else {
         const variants = wordVariants(seg, picks);
         const $w = $("<button type='button' class='anno word'></button>")
-          .attr("title", variants.map((v) => `${v.tl}${v.active ? " ✓" : ""}`).join("　"))
+          .attr("title", variants.map((v) => `${v.tl}${v.active ? " ✓" : ""}`).join("　")
+            + (seg.src === "rime" ? "　〔教典未收：讀音出自拍台文字典〕"
+              : seg.src === "rime-moe" ? "　〔教典有收、本典建立層無：讀音出自拍台文字典〕" : ""))
           .text(seg.han);
+        if (seg.src) $w.addClass("rime");
         $w.on("click", () => {
           const cur = picks.get(seg.si) ?? 0;
           picks.set(seg.si, (cur + 1) % seg.readings.length);
@@ -125,13 +133,12 @@ export function initConverter(dict, hints, grammarCheck) {
         ? "貼漢羅文章，親像：我今仔日欲去台北。"
         : "貼台羅／POJ，親像：Goá kin-á-ji̍t beh khì Tâi-pak.",
     );
-    $("#cv-hint").text(
-      dir === "h2r" ? "點漢字換讀音；⟨?⟩ 表示詞典揣無。" : "實驗功能：同音詞真濟，可能選錯詞義，輸出僅供輔助對照，毋是可靠翻譯。",
-    );
+    $("#cv-hint").text(dir === "h2r" ? hintH2R() : "實驗功能：同音詞真濟，可能選錯詞義，輸出僅供輔助對照，毋是可靠翻譯。");
     run();
   });
 
   $("#cv-run").on("click", run);
+  $("#cv-hint").text(hintH2R()); // 初始載入就照 hasExt 顯示，毋免等方向切換
   $("#cv-in").on("input", () => {
     if ($("#cv-live").prop("checked")) run();
   });

@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=18";
-import { segment, render } from "../js/dict.js?v=18";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=19";
+import { segment, render } from "../js/dict.js?v=19";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -21,7 +21,7 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=18");
+const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=19");
 ok("免調顯示無 0", wc.words.every(x => !/[0-9]/.test(formatRomanization(x.reading))));
 const r2 = decodeTlToHan("Guá ê lāu-pē sī lâng.", rev, lm);
 ok("的 選中", r2.han.includes("的"));
@@ -43,7 +43,13 @@ ok("前綴無合勿綴（to̍h是→to̍h sī）", nfc(mx.tl).includes("to̍h s�
 ok("混寫 POJ 雙軌（正式字形 ⁿ）", nfc(mx.poj).includes(nfc("Pháiⁿ-miā-lâng")));
 ok("tsit款→這款", nfc(render(segment("tsit款", dict, rev), new Map(), {}).tl) === "Tsit-khuán");
 const sp = render(segment("Pháiⁿ 命人 to̍h 是 艱苦人", dict, rev), new Map(), {});
-ok("有空白照舊＋單空白", nfc(sp.tl) === nfc("Pháiⁿ miā lâng to̍h sī kan-khóo-lâng"));
+const spt = nfc(sp.tl);
+// 空白規則性質斷言（詞典成長予分詞變化：命人 會當是詞）：
+// 輸入空白保留、無雙空白、羅馬字／漢字讀音之間單空白隔開。
+ok("有空白照舊＋單空白", spt.startsWith(nfc("Pháiⁿ "))
+  && spt.includes(nfc(" to̍h ")) && spt.endsWith(nfc("kan-khóo-lâng"))
+  && !/\s\s/.test(spt) && !/^[\s-]|[\s-]$/.test(spt)
+  && nfc(render(segment("Pháiⁿ miā lâng", dict, rev), new Map(), {}).tl) === nfc("Pháiⁿ miā lâng"));
 // 語料級混寫：合詞（hit款→彼款）、多音節尾退空白（ka-tī 行止）、前綴無合（tio̍h 關）
 ok("hit款→彼款", nfc(render(segment("hit款", dict, rev), new Map(), {}).tl) === "Hit-khuán");
 ok("多音節羅馬尾退空白", nfc(render(segment("ka-tī行止", dict, rev), new Map(), {}).tl) === "Ka-tī hîng-tsí");
