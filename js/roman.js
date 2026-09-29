@@ -147,7 +147,10 @@ export function tlToPoj(tl) {
   r = r.replace(/o([\u0300-\u036f]?)o/g, "o$1\u0358");
   r = replacePair(r, "ua", "oa");
   r = replacePair(r, "ue", "oe");
-  return r;
+  // 上游 v0.9.4 parity：Python tl_to_poj 內嵌調符位置修正（oa/oe 音節尾
+  // 標 o、ui 標 u、大小寫攏支援、空白係音節邊界）——tlToPoj 單獨用嘛
+  // 佇 Lua commit 路徑（tl_to_poj→format→fix）输出一致。
+  return pojFixDiacritics(r);
 }
 
 // POJ → TL numeric (port of poj_to_tl).
@@ -162,16 +165,18 @@ export function pojToTl(text) {
   return r.split("oa").join("ua").split("oe").join("ue");
 }
 
-// POJ diphthong tone-mark repositioning (port of poj_fix_diacritics):
+// POJ diphthong tone-mark repositioning (port of poj_fix_diacritics;
+// aligned with upstream scripts/tl_poj_convert.py v0.9.4):
 // open-syllable oa/oe mark the o (goā→gōa, hoé→hōe); ui marks the u (uī→ūi);
-// iu unchanged.
-const MARK = "[\\u0300-\\u036f]";
+// iu unchanged. Case-aware (Uē→Ōe); whitespace is a syllable boundary
+// (upstream Lua hyphen-joins first, Python added \s for end-to-end parity).
+// Mark class \u0300-\u033f mirrors Lua \204[\128-\191] exactly.
+const MARK = "[\\u0300-\\u033f]";
 export function pojFixDiacritics(text) {
   if (!text) return text;
   return text
-    .replace(new RegExp(`oa(${MARK})(?=-|\\u207f|$)`, "g"), "o$1a")
-    .replace(new RegExp(`oe(${MARK})(?=-|\\u207f|$)`, "g"), "o$1e")
-    .replace(new RegExp(`ui(${MARK})`, "g"), "u$1i");
+    .replace(new RegExp(`([oO])([ae])(${MARK})(?=[-\\s\\u207f]|$)`, "g"), "$1$3$2")
+    .replace(new RegExp(`([uU])i(${MARK})`, "g"), "$1$2i");
 }
 
 // Bare syllable → explicit tone (Lua add_implicit_tone).

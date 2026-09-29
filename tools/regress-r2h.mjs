@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=19";
-import { segment, render } from "../js/dict.js?v=19";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=20";
+import { segment, render } from "../js/dict.js?v=20";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -21,7 +21,18 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=19");
+const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=20");
+// 上游 rime-phah-taibun v0.9.4 parity：Python tl_to_poj 內嵌 poj_fix_diacritics
+// （音節尾 oa/oe 標 o、ui 標 u；大小寫攏支援；空白嘛是音節邊界）
+ok("tlToPoj oa 修正", nfc(tlToPoj("gua\u0304")) === nfc("go\u0304a"));
+ok("tlToPoj oe 修正", nfc(tlToPoj("hue\u0304")) === nfc("ho\u0304e"));
+ok("tlToPoj ui 修正", nfc(tlToPoj("ui\u0304")) === nfc("u\u0304i"));
+ok("tlToPoj 有韻尾無徙", nfc(tlToPoj("kua\u0301n")) === nfc("koa\u0301n") && nfc(tlToPoj("gue\u030Dh")) === nfc("goe\u030Dh"));
+ok("tlToPoj oai 無徙", nfc(tlToPoj("kua\u0300i")) === nfc("koa\u0300i"));
+ok("tlToPoj 大寫 OA", nfc(tlToPoj("Gua\u0304")) === nfc("Go\u0304a") && nfc(tlToPoj("Ui\u0304")) === nfc("U\u0304i"));
+ok("tlToPoj 空白分音節", nfc(tlToPoj("gua\u0304 hue\u0304")) === nfc("go\u0304a ho\u0304e"));
+ok("tlToPoj 數字照舊", tlToPoj("gua7 hue7") === "goa7 hoe7");
+ok("fix 冪等", nfc(pojFixDiacritics(tlToPoj("gua\u0304"))) === nfc(tlToPoj("gua\u0304")));
 ok("免調顯示無 0", wc.words.every(x => !/[0-9]/.test(formatRomanization(x.reading))));
 const r2 = decodeTlToHan("Guá ê lāu-pē sī lâng.", rev, lm);
 ok("的 選中", r2.han.includes("的"));
