@@ -886,7 +886,7 @@ Step 3: 選字輸出
 
 ## 八之三、調符標記規則
 
-全羅模式輸出的調符位置遵循[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)：
+**TL（台羅）**：全羅模式輸出的調符位置遵循[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)：
 
 **優先順序**：`a > oo > e > o`；`i` 和 `u` 同時出現時，前者為介音，後者為主要元音（標在後者）。
 
@@ -898,19 +898,30 @@ Step 3: 選字輸出
 | `ui7` | uī | i,u 同時出現 → 標在後者 i |
 | `iu5` | iû | i,u 同時出現 → 標在後者 u |
 | `oo7` | ōo | oo 標在第一個 o |
-| `ng2` | ńg | 韻化輔音 |
+| `ng2` | ńg | 韻化輔音 → 標在 ng 的 n |
+| `mng5` | mn̂g | 韻化輔音 mng：標 ng 的 n，毋是頭前个 m |
+| `nng7` | nn̄g | 標第二个 n（ng 的 n） |
+| `m7` | m̄ | 單音節 m → 標 m |
 | `ere5` | erê | 三字母雙元音 → 標在後面的 e |
 
-**POJ 差異**：POJ 的調符位置在部分韻母與 TL 不同：
+**POJ 差異**：POJ 的調符位置在部分韻母與 TL 不同；`iu` 兩式攏標在 `u`（iû、khiû、chiū），無仝款的是 `ui`：
 
 | 韻母 | TL | POJ | 規則 |
 |------|-----|-----|------|
 | ua/oa（開音節） | guā | gōa | POJ 標在 o |
-| ua/oa（有韻尾） | kuán | koán | 有韻尾時標在 a |
+| ua/oa（有韻尾） | kuán | koán | 有韻尾時標在 a；oai 仝款標第二個母音（kuài → kòai） |
 | ua/oa + ⁿ | khuàⁿ | khòaⁿ | ⁿ 是鼻化不是韻尾，標在 o |
-| ue/oe | hué | hōe | POJ 標在 o |
+| ue/oe（開音節） | huē | hōe | POJ 標在 o |
+| ue/oe（有韻尾） | gue̍h | goe̍h | 有韻尾時標在 e |
 | ui | uī | ūi | POJ 標在前者 u |
-| iu | iû | îu | POJ 標在前者 i |
+| iu | iû | iû | 兩式攏標 u（POJ 慣例 "mark the u"：iû、ùi） |
+| 韻化輔音 | mn̂g | mn̂g | 兩式攏標鼻音輔音（m̄、ǹg、mn̂g） |
+
+**調符位置參考資料**（規則的憑據）：
+
+- [教育部《臺灣台語羅馬字拼音方案使用手冊》](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)——TL 調符優先順序（`a > oo > e > o`；i/u 標後者）佮羅馬字書寫規範
+- [Tone markings in Pe̍h-ōe-jī（Ē-mn̂g-oē・Tâi-lâm-oē）](https://amoytainan.wordpress.com/2011/07/19/poj-tone-markings/)——POJ 慣例總整理：oa/oe 標 o、"iu"/"ui" mark the "u"、三字母以上標第二母音（goán、oāi、khiáu）、無母音時標鼻音輔音（m̄、ǹg、mn̂g）
+- [Wikipedia：Pe̍h-ōe-jī](https://en.wikipedia.org/wiki/Pe̍h-ōe-jī)——POJ 字母系統、調符與書寫慣例總覽
 
 **羅馬字書寫規則**：
 - 句首第一個字母大寫（全羅模式自動處理）
@@ -1443,6 +1454,8 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
 | [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) | 政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞 |
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
+| [Tone markings in Pe̍h-ōe-jī — Ē-mn̂g-oē・Tâi-lâm-oē](https://amoytainan.wordpress.com/2011/07/19/poj-tone-markings/) | POJ 調符位置慣例（iu/ui 標 u、oa/oe 標 o、無母音標鼻音） |
+| [Wikipedia：Pe̍h-ōe-jī](https://en.wikipedia.org/wiki/Pe̍h-ōe-jī) | POJ 字母與調符參考 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考 |
@@ -1460,4 +1473,4 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 
 ---
 
-*最後更新：2026-09-21*
+*最後更新：2026-09-29*

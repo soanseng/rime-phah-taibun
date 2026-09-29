@@ -38,6 +38,44 @@ class TestTlToPoj:
         assert tl_to_poj("") == ""
 
 
+class TestTlToPojFormalGlyphs:
+    """POJ formal glyphs: nn → ⁿ (U+207F), oo → o͘ (U+0358).
+
+    Mirrors lua/phah_taibun_data.lua tl_to_poj so dictionary POJ output
+    candidates (moe_poj) and the Lua commit path emit identical text.
+    """
+
+    def test_nasalization_nn_to_superscript(self):
+        assert tl_to_poj("khuann3") == "khoaⁿ3"
+
+    def test_nasalization_end_of_string(self):
+        assert tl_to_poj("phinn") == "phiⁿ"
+
+    def test_nasalization_with_h_coda(self):
+        assert tl_to_poj("sannh4") == "saⁿh4"
+
+    def test_syllabic_nng_keeps_nn(self):
+        assert tl_to_poj("nng7") == "nng7"
+
+    def test_toned_syllabic_nasal_keeps_nn(self):
+        # the n carries the tone mark (nn̄g) — must not become ⁿ
+        assert tl_to_poj("nn̄g") == "nn̄g"
+
+    def test_oo_to_o_with_dot(self):
+        assert tl_to_poj("too7") == "to͘7"
+
+    def test_toned_oo_keeps_mark_on_first_o(self):
+        assert tl_to_poj("tóo") == "tó͘"
+
+    def test_ing_before_digit_is_syllable_boundary(self):
+        # digits carry the tone: ing/ik followed by a digit is a boundary
+        # (lua uses [^a-z], not \b, for the same reason)
+        assert tl_to_poj("ping2") == "peng2"
+
+    def test_ik_before_digit_is_syllable_boundary(self):
+        assert tl_to_poj("sik8") == "sek8"
+
+
 class TestTlToPojCapitalized:
     """Capitalized syllables must convert too, preserving initial case."""
 

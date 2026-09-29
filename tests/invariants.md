@@ -31,6 +31,8 @@
 | INV-13 | 輸出模式切換（TL/POJ、漢羅/全羅） | 跨 session 記憶（switcher/save_options） | tests/test_schema_config.py | ✅ |
 | INV-21 | 全羅模式整句連打，句中 Tab→asdf 選字後續打→空白 | 不中途送出；已選詞保留在組句，最後整句羅馬字一次上屏（詞界保留） | tests/test_real_rime.py::test_full_roman_tab_selection_keeps_composition | ✅ |
 | INV-22 | 手動漢羅整句，Tab 反白詞按 \\ 標記→Space | 標記詞輸出羅馬字（隨 TL/POJ 開關），其餘詞漢字；Escape 取消後不殘留 | tests/test_real_rime.py（manual_mix 系列） | ✅ |
+| INV-23 | 全羅輸出 `mng5`／`nng7` | `mn̂g`／`nn̄g`——韻化輔音標 ng 的 n（mng 毋是標 m）；單音節 m 標 m̄ | tests/test_lua_romanization.py::test_syllabic_nasals_mark_the_n_of_ng | ✅ |
+| INV-24 | `tl_to_poj("khuann3"/"too7"/"tsui2"/"khiu5")` | `khoaⁿ3`／`to͘7`（正式字形 ⁿ・o͘；nng、n 帶調符袂換）；`chúi`（POJ ui 標 u）；iu 兩式攏標 u（`khiû`） | tests/test_lua_romanization.py、tests/test_tl_poj_convert.py::TestTlToPojFormalGlyphs | ✅ |
 
 ## 資料管線
 

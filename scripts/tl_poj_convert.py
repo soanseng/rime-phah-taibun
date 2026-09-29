@@ -31,7 +31,7 @@ def _sub_pair(text: str, source: str, target: str) -> str:
     the case onto the target (eng/Eng).
     """
 
-    pattern = re.compile(rf"[{source[0].upper()}{source[0]}]{source[1:]}\b")
+    pattern = re.compile(rf"[{source[0].upper()}{source[0]}]{source[1:]}(?=[^a-z]|$)")
 
     def _repl(match: re.Match) -> str:
         matched = match.group(0)
@@ -44,7 +44,10 @@ def tl_to_poj(tl_text: str) -> str:
     """Convert TL romanization to POJ.
 
     Case-preserving: capitalized syllables (Tsuí, Ing-ko) convert with the
-    initial capital kept (Chuí, Eng-ko).
+    initial capital kept (Chuí, Eng-ko). Emits POJ formal glyphs
+    (nn → ⁿ, oo → o͘), keeping parity with lua/phah_taibun_data.lua
+    tl_to_poj so dictionary POJ output candidates and the Lua commit
+    path render identically.
 
     Args:
         tl_text: Text in TL romanization
@@ -54,15 +57,23 @@ def tl_to_poj(tl_text: str) -> str:
     """
     if not tl_text:
         return tl_text
-    result = tl_text
+    # NFD first so precomposed vowels (tóo) match the combining-mark
+    # patterns; NFC back for canonical output.
+    result = unicodedata.normalize("NFD", tl_text)
     # Order matters: longer patterns first to avoid partial matches
     result = _replace_pair(result, "tsh", "chh")
     result = _replace_pair(result, "ts", "ch")
     result = _sub_pair(result, "ing", "eng")
     result = _sub_pair(result, "ik", "ek")
+    # POJ special characters (lua tl_to_poj): nn → ⁿ unless followed by g
+    # (syllabic nng) or a combining mark (the n carries the tone, nn̄g);
+    # oo → o͘, keeping any tone mark on the first o (tóo → tó͘).
+    result = re.sub(r"nn([^g\u0300-\u036f])", "\u207f\\1", result)
+    result = re.sub(r"nn$", "\u207f", result)
+    result = re.sub(r"o([\u0300-\u036f]?)o", "o\\1\u0358", result)
     result = _replace_pair(result, "ua", "oa")
     result = _replace_pair(result, "ue", "oe")
-    return result
+    return unicodedata.normalize("NFC", result)
 
 
 def poj_diacritics_to_tone_numbers(text: str) -> str:
