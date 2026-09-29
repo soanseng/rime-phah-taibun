@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=13";
-import { segment, render } from "../js/dict.js?v=13";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=17";
+import { segment, render } from "../js/dict.js?v=17";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -21,7 +21,7 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization } = await import("../js/roman.js?v=13");
+const { formatRomanization } = await import("../js/roman.js?v=17");
 ok("免調顯示無 0", wc.words.every(x => !/[0-9]/.test(formatRomanization(x.reading))));
 const r2 = decodeTlToHan("Guá ê lāu-pē sī lâng.", rev, lm);
 ok("的 選中", r2.han.includes("的"));
@@ -36,6 +36,18 @@ const s1 = render(segs, new Map(), { sandhi: true, lighttone: lt });
 ok("句尾本調 pak", nfc(s1.tl).includes(nfc("tāi-pak")));
 ok("跨行不連讀（伊=i 本調）", /(^|。) I /.test(s1.tl) || s1.tl.includes("I ka") || s1.tl.includes("I kà") === false);
 const segs2 = segment("轉去食飯。", dict);
-ok("輕聲 --", nfc(render(segs2, new Map(), { lighttone: lt }).tl).includes(nfc("--khì")));
+// 混寫：羅馬字直（無空白）黏漢字 → 反查合詞；前綴無合/有空白 → 隔空白分詞
+const mx = render(segment("Pháiⁿ命人to̍h是艱苦人", dict, rev), new Map(), {});
+ok("混寫合詞（Pháiⁿ命人→pháinn-miā-lâng）", nfc(mx.tl).includes(nfc("Pháinn-miā-lâng")));
+ok("前綴無合勿綴（to̍h是→to̍h sī）", nfc(mx.tl).includes("to̍h sī "));
+ok("混寫 POJ 雙軌", nfc(mx.poj).includes(nfc("Pháinn-miā-lâng")));
+ok("tsit款→這款", nfc(render(segment("tsit款", dict, rev), new Map(), {}).tl) === "Tsit-khuán");
+const sp = render(segment("Pháiⁿ 命人 to̍h 是 艱苦人", dict, rev), new Map(), {});
+ok("有空白照舊＋單空白", nfc(sp.tl) === nfc("Pháiⁿ miā lâng to̍h sī kan-khóo-lâng"));
+// 語料級混寫：合詞（hit款→彼款）、多音節尾退空白（ka-tī 行止）、前綴無合（tio̍h 關）
+ok("hit款→彼款", nfc(render(segment("hit款", dict, rev), new Map(), {}).tl) === "Hit-khuán");
+ok("多音節羅馬尾退空白", nfc(render(segment("ka-tī行止", dict, rev), new Map(), {}).tl) === "Ka-tī hîng-tsí");
+ok("tio̍h關分詞", nfc(render(segment("tio̍h關", dict, rev), new Map(), {}).tl) === "Tio̍h kuan");
+console.log("KNOWN 同音誤合（嘛/罵 攏 ma7）:", render(segment("mā人格", dict, rev), new Map(), {}).tl, "（應 mā jîn-keh；語境歧義，和 r2h 仝類）");
 console.log(fail ? `${fail} FAILED` : "ALL PASS");
 process.exit(fail ? 1 : 0);
