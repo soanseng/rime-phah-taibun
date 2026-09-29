@@ -160,6 +160,25 @@ def test_telex_schema_shares_main_dictionary_and_normalizes_input():
     assert processors[0] == "lua_processor@*phah_taibun_telex"
 
 
+def test_f_means_hyphen_never_ph_fuzzy():
+    """f 的唯一意義是音節連字符, 不再是 ph 的模糊拼寫.
+
+    台語 ph = 送氣 [pʰ] (等同英文 p), 沒有 [f] 音, ph/f 模糊在語音上就是
+    錯的; 且 Telex 已把 f 當連字符, 文檔若再說主方案 f=ph 會自相矛盾
+    (v0.9.4 使用者回報). 兩個方案的 algebra 都不得有 ph/f, 文檔也不得再
+    宣稱主方案提供 f 模糊.
+    """
+    for schema_path in ("schema/phah_taibun.schema.yaml", "schema/phah_taibun_telex.schema.yaml"):
+        schema = yaml.safe_load(Path(schema_path).read_text(encoding="utf-8"))
+        algebra = "\n".join(schema["speller"]["algebra"])
+        assert "derive/ph/f/" not in algebra, schema_path
+
+    guide = Path("docs/user-guide.md").read_text(encoding="utf-8")
+    assert "`ph`/`f` 模糊" not in guide
+    assert "`f` 仍是 `ph` 模糊" not in guide
+    assert "`f` 模糊拼寫只在" not in guide
+
+
 def test_telex_schema_is_registered_alongside_the_main_schema():
     """Fresh installs get both schemas from default.custom.yaml and rime.lua."""
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
@@ -187,20 +206,14 @@ def test_emoji_conversion_is_wired_and_default_on():
         schema = yaml.safe_load(Path(f"schema/{schema_name}.schema.yaml").read_text(encoding="utf-8"))
         filters = schema["engine"]["filters"]
         assert "simplifier@emoji_conversion" in filters, schema_name
-        assert filters.index("simplifier@emoji_conversion") < filters.index(
-            "lua_filter@*phah_taibun_origin"
-        ), schema_name
-        emoji_switch = next(
-            (s for s in schema["switches"] if s["name"] == "emoji_conversion"), None
+        assert filters.index("simplifier@emoji_conversion") < filters.index("lua_filter@*phah_taibun_origin"), (
+            schema_name
         )
+        emoji_switch = next((s for s in schema["switches"] if s["name"] == "emoji_conversion"), None)
         assert emoji_switch is not None and emoji_switch.get("reset") == 1, schema_name
 
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
-    saved = [
-        value
-        for key, value in custom["patch"].items()
-        if key.startswith("switcher/save_options")
-    ]
+    saved = [value for key, value in custom["patch"].items() if key.startswith("switcher/save_options")]
     assert saved and "emoji_conversion" in saved
 
 
@@ -209,9 +222,6 @@ def test_emoji_opencc_assets_are_vendored_with_attribution():
     opencc = Path("opencc")
     for name in ("emoji.json", "emoji_word.txt", "emoji_category.txt"):
         assert (opencc / name).is_file(), name
-    attribution = "\n".join(
-        p.read_text(encoding="utf-8")
-        for p in (opencc.glob("*LICENSE*") or []) if p.is_file()
-    )
+    attribution = "\n".join(p.read_text(encoding="utf-8") for p in (opencc.glob("*LICENSE*") or []) if p.is_file())
     assert "LESSER GENERAL PUBLIC LICENSE" in attribution
     assert "雪齋" in attribution or "rime-emoji" in attribution

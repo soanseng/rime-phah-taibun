@@ -357,7 +357,6 @@ speller:
     - derive/nn/ⁿ/             # 鼻化音
 
     # === 進一步模糊（降低門檻）===
-    - derive/ph/f/             # 有人會打 f 代替 ph
     - derive/nng/ng/           # 簡化
     - derive/h$//              # 入聲尾可省略
 

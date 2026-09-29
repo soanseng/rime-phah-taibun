@@ -119,8 +119,8 @@ speller:
 
     # === 進一步模糊 ===
     # 泉腔等來源可能以 l 對應 j；這是腔口模糊，不是 POJ/TL 差異
+    # 不加 derive/ph/f/：台語 ph 讀如英文 p（非 f），f 保留給 Telex 當連字符
     - derive/^j/l/
-    - derive/ph/f/
     - derive/nng/ng/
     - derive/h$//
 
