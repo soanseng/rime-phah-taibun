@@ -888,40 +888,76 @@ Step 3: 選字輸出
 
 **TL（台羅）**：全羅模式輸出的調符位置遵循[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)：
 
-**優先順序**：`a > oo > e > o`；`i` 和 `u` 同時出現時，前者為介音，後者為主要元音（標在後者）。
+**優先順序**：`a > oo > e > o`——一个音節內底照這條鏈捉第一个出現的母音標調；若這四个攏無，賰的是 `i`、`u`：毋分先後，兩个攏有就標**後壁**彼个（後壁是主要元音，頭前是介音），干焦一个就標伊家己。
+
+1. 有 `a` → 標 `a`
+2. 無 `a`，有 `oo` → 標**頭前**彼个 `o`（hóo，毋是 hoó）
+3. 無 `oo`，有 `e` → 標 `e`（例外 `ere`：標**後壁**彼个 e，erê）
+4. 無 `e`，有 `o` → 標 `o`
+5. 賰 `i`、`u`：兩个攏有 → 標後壁彼个（`iu` 標 u、`ui` 標 i）；干焦一个 → 標伊家己（bí、tsú）
+
+另外一个好記的等價說法（《[狗公會曉學台語](https://oh.taigi.info/kauchai/)》§45）：**有 a 標 a；無 a 標上右爿的母音**——`iu` 標 u、`ui` 標 i、`io` 標 o、`ere` 標第二个 e 攏是這條的自然結果；`oo` 算一字，標頭前彼个 o；無母音 → 標鼻音。
 
 | 拼音 | 調符位置 | 說明 |
 |------|---------|------|
 | `gua2` | guá | 有 a → 標在 a |
 | `ue2` | ué | 有 e → 標在 e |
 | `io2` | ió | 有 o → 標在 o |
-| `ui7` | uī | i,u 同時出現 → 標在後者 i |
-| `iu5` | iû | i,u 同時出現 → 標在後者 u |
-| `oo7` | ōo | oo 標在第一個 o |
+| `oo7` | ōo | oo 標在第一個 o（hóo 仝款） |
+| `ui7` | uī | i、u 併做伙 → 標在後壁的 i |
+| `iu5` | iû | i、u 併做伙 → 標在後壁的 u |
+| `bi2` | bí | 干焦 i 一个母音 → 標伊家己 |
+| `tsu2` | tsú | 干焦 u 一个母音 → 標伊家己 |
 | `ng2` | ńg | 韻化輔音 → 標在 ng 的 n |
 | `mng5` | mn̂g | 韻化輔音 mng：標 ng 的 n，毋是頭前个 m |
 | `nng7` | nn̄g | 標第二个 n（ng 的 n） |
 | `m7` | m̄ | 單音節 m → 標 m |
 | `ere5` | erê | 三字母雙元音 → 標在後面的 e |
 
-**POJ 差異**：POJ 的調符位置在部分韻母與 TL 不同；`iu` 兩式攏標在 `u`（iû、khiû、chiū），無仝款的是 `ui`：
+**POJ 差異**：POJ 的標調毋免另外背一套——**就是 TL 的規則，加三條例外**：
+
+1. `oa`、`oe` 兩母音佇**音節尾**（後壁的 `ⁿ` 是鼻化無算韻尾）→ 標 `o`（guā→gōa、huē→hōe、khuàⁿ→khòaⁿ）；有韻尾就照 TL 標 a／e（kuán→koán、gue̍h→goe̍h）；三母音 `oai` 嘛照 TL 標第二母音（kuài→koài）
+2. `ui` → 標**頭前**的 `u`（uī→ūi；TL 顛倒標後壁的 i）
+3. 音節內底無母音 → 標鼻音輔音（m̄、ǹg、mn̂g）
+
+口訣：**o 頭標 o（音節尾的 oa、oe）、ui 標 u、無母音標鼻音**——賰的全部照 TL。
+
+另外一種好記的說法（[台南妹仔教你講台語](https://youtu.be/mtewhXgoQ6o) EP6，佮頂懸規則完全仝款）：
+
+1. **有 a 就標佇 a**，除了**音節尾**的 `oa`、`oe` 標佇 `o`（有韻尾照 a／e：koán、goe̍h）——**ōa、ôe 做一組來記**
+2. **`i` 開頭 ê 組合**（ia、io、iu、iau…）**攏標佇後壁彼个母音**——道理是響度（âng）：`a > o͘ > e = o > i = u`，調符掛佇上響的母音
+
+伊嘛有講「`ui` 嘛有人標佇 i」——彼就是下跤文獻差異表內底文獻館語料的舊體（tuì 標 i），現代標準佮拍台文攏標 u（tùi）。
 
 | 韻母 | TL | POJ | 規則 |
 |------|-----|-----|------|
+| ui | uī | ūi | POJ 標在前者 u（TL 標後者，會記得顛倒） |
 | ua/oa（開音節） | guā | gōa | POJ 標在 o |
-| ua/oa（有韻尾） | kuán | koán | 有韻尾時標在 a；oai 仝款標第二個母音（kuài → kòai） |
-| ua/oa + ⁿ | khuàⁿ | khòaⁿ | ⁿ 是鼻化不是韻尾，標在 o |
 | ue/oe（開音節） | huē | hōe | POJ 標在 o |
+| ua/oa + ⁿ | khuàⁿ | khòaⁿ | ⁿ 是鼻化不是韻尾，標在 o |
+| ua/oa（有韻尾） | kuán | koán | 有韻尾時標在 a；oai 仝款標第二個母音（kuài → koài） |
 | ue/oe（有韻尾） | gue̍h | goe̍h | 有韻尾時標在 e |
-| ui | uī | ūi | POJ 標在前者 u |
-| iu | iû | iû | 兩式攏標 u（POJ 慣例 "mark the u"：iû、ùi） |
+| iu | iû | iû | 兩式攏標 u，免特別改（iû、khiû、chiū） |
 | 韻化輔音 | mn̂g | mn̂g | 兩式攏標鼻音輔音（m̄、ǹg、mn̂g） |
+
+**規則憑據佮文獻差異**：頂懸三條例外是張裕宏《白話字基本論》的簡化規則（《[狗公會曉學台語](https://oh.taigi.info/kauchai/)》§21 採用），信望愛、PhahTaigi 台語輸入法攏照這个規則設計。白話字歷史文獻的掛音位置無完全一致，用[《甘字典》（1913）](https://github.com/ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian)佮[白話字文獻館語料](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh)計量（數字＝舊體:現代體出現擺數）：
+
+| 類別 | 1913 甘字典 | 文獻館語料 | 現代規則（拍台文照這个） |
+|------|-----------|-----------|----------------------|
+| oa 開音節 | **標 a**（705:14） | **標 a**（44,374:624） | 標 o（góa） |
+| oe 開音節 | 標 o（460:18）＝現代 | **標 e**（68,737:864） | 標 o（hōe） |
+| ui | 標 u（67:1）＝現代 | **標 i**（46,901:496） | 標 u（tùi） |
+| oa／oe 有韻尾、oai、iu、單母音、鼻音 | 攏一致 | 攏一致 | — |
+
+也就是講：**oa 開音節標 a 是舊文獻的主流共識**，oe／ui 兩源無仝（1913 甘字典就已經照現代規則）。拍台文佮信望愛、PhahTaigi 攏照現代規則輸出。
 
 **調符位置參考資料**（規則的憑據）：
 
 - [教育部《臺灣台語羅馬字拼音方案使用手冊》](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)——TL 調符優先順序（`a > oo > e > o`；i/u 標後者）佮羅馬字書寫規範
 - [Tone markings in Pe̍h-ōe-jī（Ē-mn̂g-oē・Tâi-lâm-oē）](https://amoytainan.wordpress.com/2011/07/19/poj-tone-markings/)——POJ 慣例總整理：oa/oe 標 o、"iu"/"ui" mark the "u"、三字母以上標第二母音（goán、oāi、khiáu）、無母音時標鼻音輔音（m̄、ǹg、mn̂g）
 - [Wikipedia：Pe̍h-ōe-jī](https://en.wikipedia.org/wiki/Pe̍h-ōe-jī)——POJ 字母系統、調符與書寫慣例總覽
+- [狗公會曉學台語（烏狗兄 Hê-bí）](https://oh.taigi.info/kauchai/)——台語正寫法入門教材：§21 白話字掛音規則（張裕宏《白話字基本論》簡化版：音節尾 oa/oe 標 o、ui 標 u）佮 §45 教羅掛音規則（無 a 標上右爿母音）
+- [台南妹仔教你講台語 EP6：白話字聲調篇（上）](https://youtu.be/mtewhXgoQ6o)——POJ 標調位置好記法（有 a 標 a、oa/oe 標 o；i 開頭標後壁母音）佮響度排序 a > o͘ > e = o > i = u
 
 **羅馬字書寫規則**：
 - 句首第一個字母大寫（全羅模式自動處理）
@@ -1457,6 +1493,7 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 | [Tone markings in Pe̍h-ōe-jī — Ē-mn̂g-oē・Tâi-lâm-oē](https://amoytainan.wordpress.com/2011/07/19/poj-tone-markings/) | POJ 調符位置慣例（iu/ui 標 u、oa/oe 標 o、無母音標鼻音） |
 | [Wikipedia：Pe̍h-ōe-jī](https://en.wikipedia.org/wiki/Pe̍h-ōe-jī) | POJ 字母與調符參考 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，驗證調符顯示與輸出效果 |
+| [狗公會曉學台語](https://oh.taigi.info/kauchai/) | 台語正寫法教材；白話字／台羅掛音規則（§21、§45）與輸入法慣例 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
 | [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考 |
 

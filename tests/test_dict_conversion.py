@@ -320,6 +320,20 @@ class TestParseGenericCsv:
         assert entries[0]["rime_key"] == "tsiah8 png7"
         assert entries[0]["source"] == "kamjitian"
 
+    def test_poj_hanlo_placement_canonicalized_to_modern(self):
+        """Corpus PojUnicode text arrives in historical mark placement
+        (oa marks the a: p,o,a,U+0300,ⁿ). Placement is not word identity
+        (INV-17), so ingestion canonicalizes it to the modern rule
+        (syllable-final oa marks the o) — otherwise the same word splits
+        into two near-duplicate romanization candidates now that the
+        generated moe_poj rows carry the modern placement."""
+        # corpus: chi̍t + p,o,a,grave,ⁿ (grave AFTER a = historical)
+        hanlo_corpus = "chi\u030d" + "-po" + "a\u0300\u207f"
+        csv_data = f"KipInput,HanLoTaibunPoj,HoaBun\ntsit8-puann3,{hanlo_corpus},一半年\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        # canonical (NFC composes o+grave → ò): chi̍t-pòaⁿ
+        assert entries[0]["hanlo"] == "chi\u030d-p\u00f2a\u207f"
+
     def test_self_declared_variant_headword_demoted(self):
         """Rows whose description says 本辭典使用「X」來表示 are variant
         spellings the upstream dictionary itself declines to use; they must

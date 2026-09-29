@@ -73,6 +73,15 @@ def tl_to_poj(tl_text: str) -> str:
     result = re.sub(r"([oO])([\u0300-\u036f]?)[oO]", "\\1\\2\u0358", result)
     result = _replace_pair(result, "ua", "oa")
     result = _replace_pair(result, "ue", "oe")
+    # POJ tone-mark placement (parity with lua/phah_taibun_data.lua
+    # poj_fix_diacritics — 狗公會曉學台語 §21 / 張裕宏《白話字基本論》):
+    # syllable-final oa/oe carry the mark on o (ⁿ nasalization is not a
+    # coda); ui carries the mark on u. Lua hyphen-joins syllables before
+    # fixing, so syllable boundaries here are "-", whitespace, "ⁿ", or end
+    # of string. Mark class [\u0300-\u033f] mirrors Lua's \204[\128-\191];
+    # capitalized forms (Uē → Ōe) shift like _replace_pair does.
+    result = re.sub(r"([oO])([ae])([\u0300-\u033f])(?=[-\s\u207f]|$)", r"\1\3\2", result)
+    result = re.sub(r"([uU])i([\u0300-\u033f])", r"\1\2i", result)
     return unicodedata.normalize("NFC", result)
 
 

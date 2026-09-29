@@ -280,7 +280,13 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
         # Try HanLoTaibunKip, fall back to HanLoTaibunPoj
         hanlo = clean_hanlo_text(row.get("HanLoTaibunKip", ""))
         if not hanlo:
-            hanlo = clean_hanlo_text(row.get("HanLoTaibunPoj", ""))
+            # PojUnicode prose can arrive in the historical mark placement
+            # (oa/oe marking the a/e). Placement is not word identity
+            # (INV-17): canonicalize to the modern rule so corpus rows and
+            # the generated moe_poj candidates dedup into one row instead
+            # of shipping near-duplicate romanization candidates. On POJ
+            # text tl_to_poj is a no-op on letters; it only moves marks.
+            hanlo = clean_hanlo_text(tl_to_poj(row.get("HanLoTaibunPoj", "")))
         hoabun = row.get("HoaBun", "").strip()
         if not kip_raw or not hanlo:
             continue

@@ -86,7 +86,8 @@ class TestTlToPojCapitalized:
     """Capitalized syllables must convert too, preserving initial case."""
 
     def test_capitalized_ts(self):
-        assert tl_to_poj("Tsuí") == "Chuí"
+        # POJ ui carries the mark on u (Tsuí → Chúi, not Chuí)
+        assert tl_to_poj("Tsuí") == "Chúi"
 
     def test_capitalized_tsh(self):
         assert tl_to_poj("Tshiū-nâ") == "Chhiū-nâ"
@@ -96,6 +97,50 @@ class TestTlToPojCapitalized:
 
     def test_capitalized_ua(self):
         assert tl_to_poj("Uan-á") == "Oan-á"
+
+class TestTlToPojDiacriticPlacement:
+    """Diacritic input must land on the modern-POJ mark position, matching
+    lua/phah_taibun_data.lua poj_fix_diacritics (狗公會曉學台語 §21 /
+    張裕宏《白話字基本論》): syllable-final oa/oe mark the o; ui marks the u.
+    The build pipeline emits moe_poj candidates through this path, so
+    dictionary POJ text and the Lua commit path must render the same
+    visible text and mark placement (Python emits NFC, Lua NFD —
+    canonical-equivalent, not byte-identical)."""
+
+    def test_open_oa_moves_mark_to_o(self):
+        assert tl_to_poj("guā") == "gōa"
+
+    def test_open_oe_moves_mark_to_o(self):
+        assert tl_to_poj("huē") == "hōe"
+
+    def test_open_oa_before_nasal_n_moves_mark_to_o(self):
+        assert tl_to_poj("khuànn") == "khòaⁿ"
+
+    def test_coda_oa_keeps_mark_on_a(self):
+        assert tl_to_poj("kuán") == "koán"
+
+    def test_triple_vowel_oai_keeps_mark_on_a(self):
+        assert tl_to_poj("kuài") == "koài"
+
+    def test_coda_oe_keeps_mark_on_e(self):
+        assert tl_to_poj("gue̍h") == "goe̍h"
+
+    def test_ui_moves_mark_to_u(self):
+        assert tl_to_poj("uī") == "ūi"
+
+    def test_iu_unchanged_marks_u(self):
+        assert tl_to_poj("iû") == "iû"
+
+    def test_numeric_input_unchanged(self):
+        assert tl_to_poj("gua7 hue7 ui7") == "goa7 hoe7 ui7"
+
+    def test_capitalized_open_oa(self):
+        assert tl_to_poj("Guā") == "Gōa"
+
+    def test_space_separated_syllables_fixed_too(self):
+        """Lua format_romanization hyphen-joins before poj_fix_diacritics,
+        so space-separated input must fix each syllable identically."""
+        assert tl_to_poj("guā huē") == "gōa hōe"
 
 
 class TestPojToTl:

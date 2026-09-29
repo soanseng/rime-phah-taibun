@@ -39,10 +39,11 @@
 | ID | 觸發 | 預期 | 測試 | 狀態 |
 |----|------|------|------|------|
 | INV-14 | build 時 moe_poj 候選 ≠ tl_to_poj(moe_tl 兄弟) | build 立即失敗 | tests/test_validate.py::TestVerifyPojIntegrity、test_dict_conversion.py::TestPojIntegrityGate | ✅ |
-| INV-15 | 大寫音節輸入 tl_to_poj（Tsuí、Ing-ko） | 轉換且保留字首大寫（Chuí、Eng-ko） | tests/test_tl_poj_convert.py::TestTlToPojCapitalized | ✅ |
+| INV-15 | 大寫音節輸入 tl_to_poj（Tsuí、Ing-ko） | 轉換且保留字首大寫（Chúi、Eng-ko） | tests/test_tl_poj_convert.py::TestTlToPojCapitalized | ✅ |
 | INV-16 | known-keys fixture 任一 key 命中數低於門檻 | validate 失敗（exit 1） | tests/test_validate.py::TestVerifyKnownKeys | ✅ |
 | INV-17 | 詞身份 | (漢字, 正規化讀音) 成對——重/tîng ≠ 重/tāng；Uan5-A2 = uan5 a2 | tests/test_lua_filter_behavior.py（word_identity 系列）、tests/test_frequency.py | ✅ |
 | INV-18 | 字典格式 | 無 editorial marker、鍵合法、無重複 | tests/test_validate.py::TestValidateDictFormat | ✅ |
+| INV-25 | Python `tl_to_poj` 帶調號輸入（guā/huē/uī/Uē） | `gōa`／`hōe`／`ūi`／`Ōe`——佮 Lua `poj_fix_diacritics` 逐字仝款（音節尾 oa/oe 標 o、ui 標 u），字典 moe_poj 候選佮 runtime 輸出一致 | tests/test_tl_poj_convert.py::TestTlToPojDiacriticPlacement、test_validate.py::TestVerifyPojIntegrity | ✅ |
 
 ## 排程中（⏸）
 
