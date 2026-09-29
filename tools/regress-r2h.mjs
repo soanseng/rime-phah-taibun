@@ -46,6 +46,10 @@ const lt = new Map(JSON.parse(readFileSync(join(bundle, "hints.json"), "utf8")).
 const s1 = render(segs, new Map(), { sandhi: true, lighttone: lt });
 ok("句尾本調 pak", nfc(s1.tl).includes(nfc("tāi-pak")));
 ok("跨行不連讀（伊=i 本調）", /(^|。) I /.test(s1.tl) || s1.tl.includes("I ka") || s1.tl.includes("I kà") === false);
+// render 層 e2e：實際呈現路徑（dict.js flush chain）出現代體 POJ
+const rp = render(segment("我講台語。", dict), new Map(), { sandhi: false });
+ok("render POJ góa（oa 標 o）", nfc(rp.poj).includes(nfc("Go\u0301a")));
+ok("render POJ tâi-gí", nfc(rp.poj).includes(nfc("ta\u0302i-gi\u0301")));
 const segs2 = segment("轉去食飯。", dict);
 // 混寫：羅馬字直（無空白）黏漢字 → 反查合詞；前綴無合/有空白 → 隔空白分詞
 const mx = render(segment("Pháiⁿ命人to̍h是艱苦人", dict, rev), new Map(), {});
