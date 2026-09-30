@@ -50,7 +50,7 @@ engine:
     - punctuator
     - selector
     - navigator
-    - fluency_editor
+    - express_editor #選字涵蓋全部輸入即上屏；fluency_editor＝整句連打，點候選只進組字（A-d）
   segmentors:
     - ascii_segmentor
     - matcher
