@@ -299,11 +299,13 @@ def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
     assert [k["click"] for k in panel] == [
         "Taigi_Tab",
         "Taigi_Roman",
+        "Page_Up",
+        "Page_Down",
         "Taigi_Poj",
         "Taigi_Hanlo",
         "Taigi_Menu",
         "Taigi_Back",
-    ], "面板=選字/羅/TL-POJ/漢全羅/方案選單/返回"
+    ], "面板=選字/羅/上頁/下頁/TL-POJ/漢全羅/方案選單/返回"
     assert sum(k["width"] for k in panel) == 100, "面板寬度和須為 100 (自成一列)"
     assert patch["preset_keys/BackSpace/label"] == "←", "退格鍵面=倒退箭頭"
 

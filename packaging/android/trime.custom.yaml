@@ -31,7 +31,7 @@
 #   style/candidate_padding: 8
 patch:
   # ── 主題版本：bump 此值才會觸發 Trime 重新部署主題（升級路徑必備） ──
-  config_version: "3.3.12-ptaibun2"
+  config_version: "3.3.12-ptaibun3"
 
   # ── 候選註解（拼音）：對齊桌面版「漢字＋拼音」雙欄 ──
   style/comment_position: right
@@ -58,10 +58,12 @@ patch:
     height: 44
     lock: false
     keys:
-      - {click: Taigi_Tab, width: 20}
-      - {click: Taigi_Roman, width: 20}
-      - {click: Taigi_Poj, width: 20}
-      - {click: Taigi_Hanlo, width: 20}
+      - {click: Taigi_Tab, width: 14}
+      - {click: Taigi_Roman, width: 10}
+      - {click: Page_Up, width: 12}
+      - {click: Page_Down, width: 12}
+      - {click: Taigi_Poj, width: 16}
+      - {click: Taigi_Hanlo, width: 16}
       - {click: Taigi_Menu, width: 10}
       - {click: Taigi_Back, width: 10}
 

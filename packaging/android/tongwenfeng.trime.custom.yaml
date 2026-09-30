@@ -12,7 +12,7 @@
 # 鍵盤/面板定義與 trime.custom.yaml 相同（兩主題各自自帶 preset_keys，
 # 引用的上游鍵名兩邊皆有）。
 patch:
-  config_version: "3.3.12-ptaibun2"
+  config_version: "3.3.12-ptaibun3"
   name: 標準
 
   preset_color_schemes/default/name: 標準配色！
@@ -34,10 +34,12 @@ patch:
     height: 44
     lock: false
     keys:
-      - {click: Taigi_Tab, width: 20}
-      - {click: Taigi_Roman, width: 20}
-      - {click: Taigi_Poj, width: 20}
-      - {click: Taigi_Hanlo, width: 20}
+      - {click: Taigi_Tab, width: 14}
+      - {click: Taigi_Roman, width: 10}
+      - {click: Page_Up, width: 12}
+      - {click: Page_Down, width: 12}
+      - {click: Taigi_Poj, width: 16}
+      - {click: Taigi_Hanlo, width: 16}
       - {click: Taigi_Menu, width: 10}
       - {click: Taigi_Back, width: 10}
 
