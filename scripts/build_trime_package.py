@@ -147,8 +147,9 @@ LIUR_PROVENANCE = "LIUR-PROVENANCE.txt"
 RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
+TRIME_UPSTREAM = "trime.upstream.yaml" #上游基座 (osfans/trime v3.3.12, 釘住)
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
+APK_ASSET_EXCLUDED = (INSTALL_DOC, "default.custom.yaml")
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -381,9 +382,10 @@ def build_apk_assets(
 ) -> Path:
     """產出 Trime 客製 APK 的 assets/shared 內容樹 (台語+注音+嘸蝦米全包).
 
-    與 zip overlay 的差異: 不含 INSTALL 文件、trime.custom.yaml (版面直接烘進
-    fork 的 trime.yaml) 與 default.custom.yaml (方案註冊由 fork 的 DataManager
-    提供), 其餘閉包與授權標示完整保留.
+    與 zip overlay 的差異: 不含 INSTALL 文件與 default.custom.yaml (方案註冊
+    由 fork 的 DataManager 提供). 主題=上游基座 (trime.upstream.yaml, 釘住
+    版本) + trime.custom.yaml — Trime 部署期由 librime 合併 (ThemeManager
+    呼叫 deployRimeConfigFile), fork 的 trime.yaml 因此保持純上游複本.
     """
     tree = build_tree(
         dest,
@@ -393,6 +395,7 @@ def build_apk_assets(
     )
     for name in APK_ASSET_EXCLUDED:
         (tree / name).unlink(missing_ok=True)
+    _copy_file(REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM, tree / "trime.yaml")
     return tree
 
 

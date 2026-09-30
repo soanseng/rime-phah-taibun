@@ -1,20 +1,22 @@
 # trime.custom.yaml — 拍台文（Android / 同文 Trime 3.3.x）
 #
-# 由 scripts/build_trime_package.py 打包進 PhahTaiBun-Trime.zip。
-# Trime 以 librime 的設定機制載入 trime.yaml，本檔的 patch 會覆蓋 App 內建主題。
+# 由 scripts/build_trime_package.py 打包進 PhahTaiBun-Trime.zip；APK 路徑
+# (build_apk_assets) 同時放進本檔與上游基座 trime.upstream.yaml 複本 —
+# Trime 部署期由 librime 合併（ThemeManager 呼叫 deployRimeConfigFile），
+# fork 的 trime.yaml 保持純上游複本。
 #
-# 0.9.0 起預設生效，對齊桌面版操作：
-#   1. 候選顯示「漢字＋拼音註解」（註解放大至 13sp；內建 10sp 太小）
-#   2. 鍵盤底部加一列矮功能列（26 鍵 qwerty 與 40 鍵 default 都有）：
-#        選字    上頁   下頁   羅    TL/POJ   漢羅/全羅
-#      - 選字＝桌面 Tab：整句連打中途逐詞選字（選完用 asdf 選候選）
-#      - 上頁／下頁＝桌面 [ ]：候選翻頁
-#      - 羅＝桌面 \：手動漢羅模式下，把該詞改成羅馬字輸出
-#      - TL/POJ、漢羅/全羅：一鍵切換輸出模式，鍵面顯示現況，
-#        狀態存 user.yaml（default.custom.yaml 的 save_options），跨 session 記憶
-#     想移除功能列：刪掉 preset_keyboards 段落後在 App 內重新部署。
+# 設計（2026-09-30 使用者定案）：
+#   1. 候選顯示「漢字＋拼音註解」（13sp；內建 10sp 太小）
+#   2. 拍台文方案（phah_taibun / phah_taibun_telex）專用鍵盤＝上游 26 鍵
+#      版面（無數字列、無功能列）：q..p 長按＝!@#$ 等符號、上滑＝數字
+#      1-0；a 長按＝全選；s 上/下滑＝上/下頁；z x c v 長按＝剪/複製/貼上
+#      （Trime 依方案 id 優先配對同名鍵盤，KeyboardWindow.smartMatchKeyboard）
+#   3. 其他方案（嘸蝦米/注音…）完全不動＝上游原版鍵盤
+#   4. 拍台文六功能改「中文(方案)鍵長按」彈出面板：
+#        選字(Tab)  羅(\)  TL/POJ  漢羅/全羅  方案選單  返回
+#   5. 退格鍵面改 <-
 #
-# 鍵名皆取自 Trime v3.3.12 內建 trime.yaml（style 段、preset_keys、preset_keyboards）。
+# 鍵名皆取自上游 trime.yaml（preset_keys、preset_keyboards）。
 #
 # ── 註解版面替代方案（窄螢幕）：註解改上方整列 ───────────────────
 #   top 模式時 comment_height 是「註解列」高度，candidate_view_height 必須同時
@@ -28,29 +30,149 @@
 #   style/candidate_view_height: 48
 #   style/candidate_padding: 8
 patch:
+  # ── 主題版本：bump 此值才會觸發 Trime 重新部署主題（升級路徑必備） ──
+  config_version: "3.3.12-ptaibun1"
+
   # ── 候選註解（拼音）：對齊桌面版「漢字＋拼音」雙欄 ──
   style/comment_position: right
   style/comment_text_size: 13
   style/candidate_view_height: 30
 
+  # ── 退格鍵面 ──
+  preset_keys/BackSpace/label: "<-"
+
   # ── 拍台文專用鍵（行為定義在 lua/ 與 schema key_binder） ──
-  preset_keys/Taigi_Tab: {label: 選字, send: Tab}
-  preset_keys/Taigi_Roman: {label: 羅, send: backslash}
+  preset_keys/Taigi_Tab: {label: 選字, send: Tab} #桌面 Tab: 整句連打逐詞選字 (asdf…)
+  preset_keys/Taigi_Roman: {label: 羅, send: backslash} #桌面 \: 手動漢羅標記羅馬字
   preset_keys/Taigi_Poj: {label: TL/POJ, send: SWITCH_CHARSET, toggle: poj_mode, states: [TL, POJ]}
   preset_keys/Taigi_Hanlo: {label: 漢/全, send: SWITCH_CHARSET, toggle: full_romanization, states: [漢羅, 全羅]}
+  preset_keys/Taigi_Menu: {label: 方案, send: MENU} #上游中文鍵長按功能，移入面板
+  preset_keys/Taigi_Back: {label: 返回, send: Eisu_toggle, select: .default}
+  preset_keys/Taigi_Panel: {label: 台文, send: Eisu_toggle, select: taigi_panel}
 
-  # ── 功能列（矮列 34）：26 鍵 qwerty ──
-  preset_keyboards/qwerty/keys/@next: {click: Taigi_Tab, height: 34, width: 22}
-  preset_keyboards/qwerty/keys/@next 1: {click: Page_Up, height: 34, width: 13}
-  preset_keyboards/qwerty/keys/@next 2: {click: Page_Down, height: 34, width: 13}
-  preset_keyboards/qwerty/keys/@next 3: {click: Taigi_Roman, height: 34, width: 13}
-  preset_keyboards/qwerty/keys/@next 4: {click: Taigi_Poj, height: 34, width: 19.5}
-  preset_keyboards/qwerty/keys/@next 5: {click: Taigi_Hanlo, height: 34, width: 19.5}
+  # ── 拍台文面板（一列六鍵；寬度和 100） ──
+  preset_keyboards/taigi_panel:
+    name: 拍台文
+    ascii_mode: 0
+    width: 10
+    height: 44
+    lock: false
+    keys:
+      - {click: Taigi_Tab, width: 20}
+      - {click: Taigi_Roman, width: 20}
+      - {click: Taigi_Poj, width: 20}
+      - {click: Taigi_Hanlo, width: 20}
+      - {click: Taigi_Menu, width: 10}
+      - {click: Taigi_Back, width: 10}
 
-  # ── 功能列（矮列 34）：40 鍵 default（含數字列，方便聲調） ──
-  preset_keyboards/default/keys/@next: {click: Taigi_Tab, height: 34, width: 22}
-  preset_keyboards/default/keys/@next 1: {click: Page_Up, height: 34, width: 13}
-  preset_keyboards/default/keys/@next 2: {click: Page_Down, height: 34, width: 13}
-  preset_keyboards/default/keys/@next 3: {click: Taigi_Roman, height: 34, width: 13}
-  preset_keyboards/default/keys/@next 4: {click: Taigi_Poj, height: 34, width: 19.5}
-  preset_keyboards/default/keys/@next 5: {click: Taigi_Hanlo, height: 34, width: 19.5}
+  # ── 拍台文主鍵盤＝上游 26 鍵版面＋中文鍵長按開面板 ──
+  preset_keyboards/phah_taibun:
+    name: 拍台文26鍵
+    author: "osfans <waxaca@163.com>"
+    ascii_mode: 0
+    columns: 10
+    width: 10
+    height: 55
+    lock: true
+    key_symbol_offset_x: 0
+    key_symbol_offset_y: 0
+    key_text_offset_x: 0
+    key_text_offset_y: 0
+    key_hint_offset_x: 0
+    key_hint_offset_y: 0
+    key_press_offset_x: 2
+    key_press_offset_y: 2
+    keys:
+    - {click: 'q', long_click: '!', swipe_up: 1}
+    - {click: 'w', long_click: '@', swipe_up: 2}
+    - {click: 'e', long_click: '#', swipe_up: 3}
+    - {click: 'r', long_click: '$', swipe_up: 4}
+    - {click: 't', long_click: '%', swipe_up: 5}
+    - {click: 'y', long_click: '^', swipe_up: 6}
+    - {click: 'u', long_click: '&', swipe_up: 7}
+    - {click: 'i', long_click: '*', swipe_up: 8}
+    - {click: 'o', long_click: '(){Left}', swipe_up: 9}
+    - {click: 'p', long_click: 'Hide', swipe_up: 0}
+    - {width: 5}
+    - {click: 'a', long_click: select_all, swipe_left: Left, swipe_right: Right, swipe_up: Up, swipe_down: Down}
+    - {click: 's', long_click: '~', swipe_left: Home, swipe_right: End, swipe_up: Page_Up, swipe_down: Page_Down}
+    - {click: 'd', long_click: '-', swipe_down: '_'}
+    - {click: 'f', long_click: '+', swipe_down: '='}
+    - {click: 'g', long_click: '\', swipe_down: '|'}
+    - {click: 'h', long_click: '[]{Left}', swipe_left: '[', swipe_right: ']'}
+    - {click: 'j', long_click: '{}{Left}', swipe_left: '{', swipe_right: '}'}
+    - {click: 'k', long_click: ':'}
+    - {click: 'l', long_click: ';'}
+    - {width: 5}
+    - {click: Shift_L, send_bindings: false, width: 15}
+    - {click: 'z', long_click: '`'}
+    - {click: 'x', long_click: cut}
+    - {click: 'c', long_click: copy}
+    - {click: 'v', long_click: paste}
+    - {click: 'b', long_click: Time, swipe_up: Date}
+    - {click: 'n', long_click: '"'}
+    - {click: 'm', long_click: "'"}
+    - {click: BackSpace, swipe_left: Escape, width: 15}
+    - {click: Mode_switch, long_click: Taigi_Panel, width: 15} #上游=Menu（方案選單已入面板）
+    - {click: Keyboard_symbols, long_click: Keyboard_number}
+    - {click: ',', long_click: '<'}
+    - {click: space, width: 30}
+    - {click: '.', long_click: '>'}
+    - {click: '/', long_click: '?'}
+    - {click: Return, composing: Return1, long_click: CommitComment, width: 15}
+
+  # Telex 調鍵變體（字母表同含 '-'，亦需同名鍵盤才配對得到）
+  preset_keyboards/phah_taibun_telex:
+    name: 拍台文Telex26鍵
+    author: "osfans <waxaca@163.com>"
+    ascii_mode: 0
+    columns: 10
+    width: 10
+    height: 55
+    lock: true
+    key_symbol_offset_x: 0
+    key_symbol_offset_y: 0
+    key_text_offset_x: 0
+    key_text_offset_y: 0
+    key_hint_offset_x: 0
+    key_hint_offset_y: 0
+    key_press_offset_x: 2
+    key_press_offset_y: 2
+    keys:
+    - {click: 'q', long_click: '!', swipe_up: 1}
+    - {click: 'w', long_click: '@', swipe_up: 2}
+    - {click: 'e', long_click: '#', swipe_up: 3}
+    - {click: 'r', long_click: '$', swipe_up: 4}
+    - {click: 't', long_click: '%', swipe_up: 5}
+    - {click: 'y', long_click: '^', swipe_up: 6}
+    - {click: 'u', long_click: '&', swipe_up: 7}
+    - {click: 'i', long_click: '*', swipe_up: 8}
+    - {click: 'o', long_click: '(){Left}', swipe_up: 9}
+    - {click: 'p', long_click: 'Hide', swipe_up: 0}
+    - {width: 5}
+    - {click: 'a', long_click: select_all, swipe_left: Left, swipe_right: Right, swipe_up: Up, swipe_down: Down}
+    - {click: 's', long_click: '~', swipe_left: Home, swipe_right: End, swipe_up: Page_Up, swipe_down: Page_Down}
+    - {click: 'd', long_click: '-', swipe_down: '_'}
+    - {click: 'f', long_click: '+', swipe_down: '='}
+    - {click: 'g', long_click: '\', swipe_down: '|'}
+    - {click: 'h', long_click: '[]{Left}', swipe_left: '[', swipe_right: ']'}
+    - {click: 'j', long_click: '{}{Left}', swipe_left: '{', swipe_right: '}'}
+    - {click: 'k', long_click: ':'}
+    - {click: 'l', long_click: ';'}
+    - {width: 5}
+    - {click: Shift_L, send_bindings: false, width: 15}
+    - {click: 'z', long_click: '`'}
+    - {click: 'x', long_click: cut}
+    - {click: 'c', long_click: copy}
+    - {click: 'v', long_click: paste}
+    - {click: 'b', long_click: Time, swipe_up: Date}
+    - {click: 'n', long_click: '"'}
+    - {click: 'm', long_click: "'"}
+    - {click: BackSpace, swipe_left: Escape, width: 15}
+    - {click: Mode_switch, long_click: Taigi_Panel, width: 15} #上游=Menu（方案選單已入面板）
+    - {click: Keyboard_symbols, long_click: Keyboard_number}
+    - {click: ',', long_click: '<'}
+    - {click: space, width: 30}
+    - {click: '.', long_click: '>'}
+    - {click: '/', long_click: '?'}
+    - {click: Return, composing: Return1, long_click: CommitComment, width: 15}

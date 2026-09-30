@@ -272,21 +272,40 @@ def test_trime_patch_defines_taigi_function_keys(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
-def test_trime_patch_appends_function_row_to_main_keyboards(tmp_path: Path) -> None:
-    """qwerty(26鍵) 與 default(40鍵) 底部各加一列矮功能列 (A-b/c/e).
+def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
+    """拍台文鍵盤=上游 26 鍵版面+中文鍵長按面板; 其他方案鍵盤零改動 (2026-09-30 定案).
 
-    Trime 以累積鍵寬換行: 功能列寬度總和必須恰為 100 才會自成一列;
-    列高由該列首鍵決定, 必須矮於主鍵列.
+    - 無矮功能列: patch 不得用清單運算 (@next) 修改上游 qwerty/default 鍵盤
+    - phah_taibun / phah_taibun_telex 專屬鍵盤 (Trime 依方案 id 配對同名鍵盤),
+      版面=上游 26 鍵 (37 keys), 僅中文鍵長按從 Menu 改 Taigi_Panel
+    - 面板 taigi_panel 一列六鍵, 寬度和恰為 100 才會自成一列
+    - config_version 必須 bump (≠上游 "3.0"), 升級安裝才會重新部署主題
     """
     tree = _build_tree(tmp_path, liur=False)
     patch = yaml.safe_load((tree / "trime.custom.yaml").read_text(encoding="utf-8"))["patch"]
-    for kb, main_height in (("qwerty", 55), ("default", 44)):
-        row = [v for k, v in patch.items() if k.startswith(f"preset_keyboards/{kb}/keys/@next")]
-        assert len(row) >= 6, f"{kb} 功能列需含 Tab/翻頁x2/羅/TL-POJ/漢全羅 六鍵"
-        clicks = {key["click"] for key in row}
-        assert {"Taigi_Tab", "Page_Up", "Page_Down", "Taigi_Roman", "Taigi_Poj", "Taigi_Hanlo"} <= clicks
-        assert sum(key["width"] for key in row) == 100, f"{kb} 功能列寬度和須為 100"
-        assert all(key["height"] < main_height for key in row), f"{kb} 功能列必須是矮列"
+
+    assert not [k for k in patch if k.startswith(("preset_keyboards/qwerty", "preset_keyboards/default"))], (
+        "上游 qwerty/default 鍵盤必須零改動 (其他方案共用)"
+    )
+    assert patch["config_version"] != "3.0", "主題 config_version 須 bump 才會觸發重部署"
+
+    for kb in ("phah_taibun", "phah_taibun_telex"):
+        keys = patch[f"preset_keyboards/{kb}"]["keys"]
+        assert len(keys) == 37, f"{kb} 應為上游 26 鍵版面 (37 keys)"
+        mode = [k for k in keys if k.get("click") == "Mode_switch"]
+        assert mode and mode[0]["long_click"] == "Taigi_Panel", f"{kb} 中文鍵長按應開拍台文面板"
+
+    panel = patch["preset_keyboards/taigi_panel"]["keys"]
+    assert [k["click"] for k in panel] == [
+        "Taigi_Tab",
+        "Taigi_Roman",
+        "Taigi_Poj",
+        "Taigi_Hanlo",
+        "Taigi_Menu",
+        "Taigi_Back",
+    ], "面板=選字/羅/TL-POJ/漢全羅/方案選單/返回"
+    assert sum(k["width"] for k in panel) == 100, "面板寬度和須為 100 (自成一列)"
+    assert patch["preset_keys/BackSpace/label"] == "<-", "退格鍵面改 <-"
 
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
@@ -294,9 +313,10 @@ def test_trime_patch_appends_function_row_to_main_keyboards(tmp_path: Path) -> N
 def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Path) -> None:
     """--apk-assets 產 Trime 客製 APK 的 assets/shared 內容樹 (F2: 台語+注音+嘸蝦米全包).
 
-    APK 的版面烘進 fork 的 trime.yaml, 方案註冊由 fork 的 DataManager
-    (SCHEMA_LIST_CUSTOM_PATCH) 提供 — zip 專屬的安裝文件與客製 patch 進 assets
-    只會混淆; 授權標示 (THIRD-PARTY-NOTICES / licenses / LIUR-PROVENANCE) 仍須隨包.
+    主題=上游基座複本 (trime.yaml) + trime.custom.yaml, 由 Trime 部署期
+    (librime deployRimeConfigFile) 合併 — fork 的 trime.yaml 保持純上游複本;
+    方案註冊由 fork 的 DataManager (SCHEMA_LIST_CUSTOM_PATCH) 提供;
+    授權標示 (THIRD-PARTY-NOTICES / licenses / LIUR-PROVENANCE) 仍須隨包.
     """
     sys.path.insert(0, str(SCRIPTS))
     import build_trime_package as btp
@@ -311,8 +331,12 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     rime_lua = (dest / "rime.lua").read_text(encoding="utf-8")
     assert rime_lua.count("rime-liur) registrations appended") == 1, "liur 註冊只附加一次"
 
-    for overlay_only in ("INSTALL-Trime.md", "trime.custom.yaml", "default.custom.yaml"):
+    for overlay_only in ("INSTALL-Trime.md", "default.custom.yaml"):
         assert overlay_only not in names, f"{overlay_only} 不進 APK assets"
+    assert "trime.custom.yaml" in names, "客製 patch 隨 APK assets (部署期合併)"
+    assert (dest / "trime.yaml").read_bytes() == (
+        REPO / "packaging" / "android" / "trime.upstream.yaml"
+    ).read_bytes(), "trime.yaml 必須是釘住上游基座的位元組複本"
     assert "THIRD-PARTY-NOTICES.txt" in names
     assert "licenses/LGPL-3.0.txt" in names
     assert "LIUR-PROVENANCE.txt" in names
