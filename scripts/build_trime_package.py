@@ -146,6 +146,7 @@ RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -369,6 +370,30 @@ def build_tree(
     return dest
 
 
+def build_apk_assets(
+    dest: Path,
+    *,
+    liur_dir: Path,
+    rime_data_dir: Path,
+    common_licenses_dir: Path = Path("/usr/share/common-licenses"),
+) -> Path:
+    """產出 Trime 客製 APK 的 assets/shared 內容樹 (台語+注音+嘸蝦米全包).
+
+    與 zip overlay 的差異: 不含 INSTALL 文件、trime.custom.yaml (版面直接烘進
+    fork 的 trime.yaml) 與 default.custom.yaml (方案註冊由 fork 的 DataManager
+    提供), 其餘閉包與授權標示完整保留.
+    """
+    tree = build_tree(
+        dest,
+        liur_dir=liur_dir,
+        rime_data_dir=rime_data_dir,
+        common_licenses_dir=common_licenses_dir,
+    )
+    for name in APK_ASSET_EXCLUDED:
+        (tree / name).unlink(missing_ok=True)
+    return tree
+
+
 def build_zip(tree: Path, output: Path) -> Path:
     """把 overlay 目錄壓成決定性 zip: 路徑排序, 固定時間戳與權限位."""
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -406,6 +431,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--common-licenses-dir", type=Path, default=Path("/usr/share/common-licenses"))
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "dist" / "PhahTaiBun-Trime.zip")
     parser.add_argument("--tree-only", type=Path, default=None, help="只產出 overlay 目錄, 不壓 zip")
+    parser.add_argument(
+        "--apk-assets",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help="產出 Trime 客製 APK 的 assets/shared 內容樹 (台語+注音+嘸蝦米全包; 需 --with-liur)",
+    )
     args = parser.parse_args(argv)
 
     liur_dir = args.liur_dir if args.with_liur else None
@@ -422,6 +454,18 @@ def main(argv: list[str] | None = None) -> int:
             common_licenses_dir=args.common_licenses_dir,
         )
         print(f"overlay: {tree}")
+        return 0
+
+    if args.apk_assets is not None:
+        if not (args.with_liur and args.liur_dir.is_dir()):
+            raise SystemExit("錯誤, --apk-assets 需要 --with-liur 與可用的 --liur-dir (F2 全包)")
+        tree = build_apk_assets(
+            args.apk_assets,
+            liur_dir=args.liur_dir,
+            rime_data_dir=args.rime_data_dir,
+            common_licenses_dir=args.common_licenses_dir,
+        )
+        print(f"apk-assets: {tree}")
         return 0
 
     with tempfile.TemporaryDirectory(prefix="phah-taibun-trime-") as tmp:

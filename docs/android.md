@@ -30,7 +30,7 @@
 
 - `default.custom.yaml` 以 `@next` 追加方案，不動前端內建清單（嘸蝦米版多註冊 `liur`／`easy_en`）
 - `THIRD-PARTY-NOTICES.txt`＋`licenses/`（LGPL-3.0／GPL-3.0 全文）＋`LICENSE-PhahTaiBun.txt`：terra_pinyin 與 bopomofo 為 LGPL-3.0，隨包附授權全文與逐檔來源
-- `trime.custom.yaml`（排版範例，預設不生效）與 `INSTALL-Trime.md` 逐步說明
+- `trime.custom.yaml`（**預設生效**：候選拼音註解＋鍵盤功能列）與 `INSTALL-Trime.md` 逐步說明
 
 **不含**字體與使用者詞庫。
 
@@ -148,9 +148,9 @@ patch:
 
 ## Android 按鍵與排版
 
-桌面快捷鍵在手機上不存在，但功能都在：`[`／`]`（翻頁）＝長按 `u`／`i`，`?`（萬用查字）＝長按 `/`，`~`（**華語注音反查**：輸入注音查漢字候選，候選附台語讀音）＝長按 `b`，`` ` ``（符號選單）＝長按 `z`，`\`（漢羅↔全羅）＝長按 `y`；`;`、`'`（上屏後同音選字，取回該字詞台語讀音重組）、`,`、`.` 是直鍵。方案選單／模式開關（漢羅/全羅、TL/POJ）改在 App 的方案選單與**開關面板**切換，中英切換用中英鍵（`toggle: ascii_mode`）。手機上唯一真的缺的是 `Tab` 逐音節選取（桌面工作流），請直接點候選，或先翻頁再點；`Ctrl+Enter`、`Ctrl+Backspace` 在 Trime 有現成預設鍵（`CommitRawInput`、`BackToPreviousSyllable`）可放上鍵盤。完整對照表見一鍵包內的 `INSTALL-Trime.md`。
+桌面快捷鍵在手機上不存在，但功能都在：一鍵包的 `trime.custom.yaml` 會在鍵盤底部加一列**拍台文功能列**——`選字`（＝桌面 `Tab`：整句連打逐詞選字，選完用 `asdfghjkl;` 挑候選）、`上頁`／`下頁`（＝`[`／`]` 翻頁）、`羅`（＝`\`：手動漢羅下把該詞輸出成羅馬字）、`TL/POJ` 與 `漢羅/全羅`（一鍵切換模式，鍵面顯示現況，狀態跨 session 記憶）。不想用功能列就刪掉 `trime.custom.yaml` 裡 `preset_keyboards/…/keys/@next` 各行再重新部署。其他入口照舊：`?`（萬用查字）＝長按 `/`，`~`（**華語注音反查**）＝長按 `b`，`` ` ``（符號選單）＝長按 `z`；`;`、`'`（上屏後同音選字）、`,`、`.` 是直鍵；`Ctrl+Enter`、`Ctrl+Backspace` 在 Trime 有現成預設鍵（`CommitRawInput`、`BackToPreviousSyllable`）可放上鍵盤。完整對照表見一鍵包內的 `INSTALL-Trime.md`。
 
-一鍵包附 `trime.custom.yaml`，**預設不生效**（空 patch，不替你改外觀）。拍台文的候選註解（拼音＋推薦標記）比一般方案長，檔內附兩組範例：A 只把註解字級 10→12sp（維持右側註解，列高不變，低風險）；B 改成註解置頂整列（`comment_position: top`），此時 `candidate_view_height` 要同時容納 22sp 候選字與註解列，**48 只是保守起點、非保證**（預設 28／12 是 right 模式的數值，搭 top 幾乎一定不足）。兩者都需自行取消註解、上機確認沒有裁切後再重新部署。
+候選註解（拼音＋推薦標記）預設開啟：右側註解 13sp、候選列高 30（對齊桌面版「漢字＋拼音」）。窄螢幕想改註解置頂整列（`comment_position: top`）：`candidate_view_height` 要同時容納 22sp 候選字與註解列，**48 只是保守起點、非保證**（預設數值是 right 模式的，搭 top 幾乎一定不足），改完上機確認沒有裁切再重新部署。
 
 ---
 

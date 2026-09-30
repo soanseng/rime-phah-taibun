@@ -209,10 +209,11 @@ def test_install_doc_ships_verbatim_from_packaging_dir(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
-def test_trime_theme_patch_ships_inert_with_documented_options(tmp_path: Path) -> None:
-    """排版 patch 進包但預設不生效 (空 patch): 版面未經實機驗證, 不替使用者改外觀.
+def test_trime_patch_ships_verbatim_and_enables_comment_annotation(tmp_path: Path) -> None:
+    """trime.custom.yaml 逐字進包, 且候選註解 (拼音) 預設生效 (A-a).
 
-    檔內範例必須涵蓋 Trime v3.3.12 trime.yaml style 段的既有鍵名, 否則使用者照抄會無效.
+    桌面版候選一律「漢字+拼音註解」; Trime 內建註解 10sp 太小, 0.9.0 起
+    預設放大, 不再是空 patch — 註解與功能列都是拍台文手機輸入的必要操作.
     """
     tree = _build_tree(tmp_path, liur=False)
     patch_file = tree / "trime.custom.yaml"
@@ -221,19 +222,124 @@ def test_trime_theme_patch_ships_inert_with_documented_options(tmp_path: Path) -
     source = REPO / "packaging" / "android" / "trime.custom.yaml"
     assert patch_file.read_bytes() == source.read_bytes()
 
-    text = patch_file.read_text(encoding="utf-8")
-    patch = yaml.safe_load(text)["patch"]
-    assert patch == {}, "出貨預設不可覆蓋使用者外觀"
+    patch = yaml.safe_load(patch_file.read_text(encoding="utf-8"))["patch"]
+    assert patch["style/comment_position"] == "right"
+    assert patch["style/comment_text_size"] >= 12, "註解至少 12sp 才看得清拼音"
+    assert patch["style/candidate_view_height"] >= 30, "列高須容納候選字+註解"
 
+    # top 模式範例保留在註解, 供窄螢幕使用者改版; 鍵名須存在於 Trime v3.3.12
+    text = patch_file.read_text(encoding="utf-8")
     for key in [
         "style/comment_position",
-        "style/comment_text_size",
         "style/comment_height",
         "style/candidate_view_height",
         "style/candidate_padding",
     ]:
-        assert f"#   {key}:" in text, f"範例缺少 {key}"
+        assert f"#   {key}:" in text, f"top 模式範例缺少 {key}"
     assert "48" in text, "top 模式的候選列高度必須給足, 否則註解被裁切"
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+def test_trime_patch_defines_taigi_function_keys(tmp_path: Path) -> None:
+    """preset_keys 定義 Tab 選字、羅馬字標記與 TL/POJ、漢羅/全羅切換鍵 (A-b/c/e).
+
+    toggle 的選項名必須是 schema switches 的實際名稱, 且已列入
+    default.custom.yaml 的 save_options — Trime 按鍵切換的模式才會跨 session 記憶.
+    """
+    tree = _build_tree(tmp_path, liur=False)
+    patch = yaml.safe_load((tree / "trime.custom.yaml").read_text(encoding="utf-8"))["patch"]
+    pk = {k.split("/", 1)[1]: v for k, v in patch.items() if k.startswith("preset_keys/")}
+    assert pk["Taigi_Tab"]["send"] == "Tab", "桌面 Tab 逐詞選字在 Trime 靠這顆鍵"
+    assert pk["Taigi_Roman"]["send"] == "backslash", "手動漢羅的 \\ 標記鍵"
+    # send: SWITCH_CHARSET 是必要條件: Trime 的 CommonKeyboardActionListener
+    # 只在 KEYCODE_SWITCH_CHARSET 路徑呼叫 handleSwitchCharset (set_option);
+    # 對照內建 Mode_switch preset 的寫法, 少了它 toggle 不會觸發.
+    assert pk["Taigi_Poj"]["send"] == "SWITCH_CHARSET"
+    assert pk["Taigi_Hanlo"]["send"] == "SWITCH_CHARSET"
+    assert pk["Taigi_Poj"]["toggle"] == "poj_mode"
+    assert pk["Taigi_Poj"]["states"] == ["TL", "POJ"]
+    assert pk["Taigi_Hanlo"]["toggle"] == "full_romanization"
+    assert pk["Taigi_Hanlo"]["states"] == ["漢羅", "全羅"]
+
+    switches = yaml.safe_load(
+        (REPO / "schema" / "phah_taibun.schema.yaml").read_text(encoding="utf-8")
+    )["switches"]
+    names = {s["name"] for s in switches}
+    assert {"poj_mode", "full_romanization"} <= names, "toggle 名稱必須對應 schema switch"
+    dc = yaml.safe_load((REPO / "schema" / "default.custom.yaml").read_text(encoding="utf-8"))["patch"]
+    saved = {v for k, v in dc.items() if k.startswith("switcher/save_options")}
+    assert {"poj_mode", "full_romanization"} <= saved, "切換鍵的模式必須會被 save_options 保存"
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+def test_trime_patch_appends_function_row_to_main_keyboards(tmp_path: Path) -> None:
+    """qwerty(26鍵) 與 default(40鍵) 底部各加一列矮功能列 (A-b/c/e).
+
+    Trime 以累積鍵寬換行: 功能列寬度總和必須恰為 100 才會自成一列;
+    列高由該列首鍵決定, 必須矮於主鍵列.
+    """
+    tree = _build_tree(tmp_path, liur=False)
+    patch = yaml.safe_load((tree / "trime.custom.yaml").read_text(encoding="utf-8"))["patch"]
+    for kb, main_height in (("qwerty", 55), ("default", 44)):
+        row = [v for k, v in patch.items() if k.startswith(f"preset_keyboards/{kb}/keys/@next")]
+        assert len(row) >= 6, f"{kb} 功能列需含 Tab/翻頁x2/羅/TL-POJ/漢全羅 六鍵"
+        clicks = {key["click"] for key in row}
+        assert {"Taigi_Tab", "Page_Up", "Page_Down", "Taigi_Roman", "Taigi_Poj", "Taigi_Hanlo"} <= clicks
+        assert sum(key["width"] for key in row) == 100, f"{kb} 功能列寬度和須為 100"
+        assert all(key["height"] < main_height for key in row), f"{kb} 功能列必須是矮列"
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+@pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
+def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Path) -> None:
+    """--apk-assets 產 Trime 客製 APK 的 assets/shared 內容樹 (F2: 台語+注音+嘸蝦米全包).
+
+    APK 的版面烘進 fork 的 trime.yaml, 方案註冊由 fork 的 DataManager
+    (SCHEMA_LIST_CUSTOM_PATCH) 提供 — zip 專屬的安裝文件與客製 patch 進 assets
+    只會混淆; 授權標示 (THIRD-PARTY-NOTICES / licenses / LIUR-PROVENANCE) 仍須隨包.
+    """
+    sys.path.insert(0, str(SCRIPTS))
+    import build_trime_package as btp
+
+    dest = btp.build_apk_assets(tmp_path / "shared", liur_dir=LIUR_DIR, rime_data_dir=RIME_DATA)
+    names = _rel_names(dest)
+
+    for required in REQUIRED_PHAH + REQUIRED_REVERSE + REQUIRED_LIUR:
+        assert required in names, f"APK 閉包缺 {required}"
+    assert "lua/phah_taibun_filter.lua" in names
+    assert "lua/liu_w2c_sorter.lua" in names, "F2 全包必須含嘸蝦米 lua"
+    rime_lua = (dest / "rime.lua").read_text(encoding="utf-8")
+    assert rime_lua.count("rime-liur) registrations appended") == 1, "liur 註冊只附加一次"
+
+    for overlay_only in ("INSTALL-Trime.md", "trime.custom.yaml", "default.custom.yaml"):
+        assert overlay_only not in names, f"{overlay_only} 不進 APK assets"
+    assert "THIRD-PARTY-NOTICES.txt" in names
+    assert "licenses/LGPL-3.0.txt" in names
+    assert "LIUR-PROVENANCE.txt" in names
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+@pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
+def test_cli_apk_assets_mode_exits_zero(tmp_path: Path) -> None:
+    """--apk-assets 走 CLI 也通: 產出目錄存在且無 zip 副產物."""
+    sys.path.insert(0, str(SCRIPTS))
+    import build_trime_package as btp
+
+    dest = tmp_path / "assets-shared"
+    rc = btp.main(
+        [
+            "--with-liur",
+            "--apk-assets",
+            str(dest),
+            "--liur-dir",
+            str(LIUR_DIR),
+            "--rime-data-dir",
+            str(RIME_DATA),
+        ]
+    )
+    assert rc == 0
+    assert (dest / "phah_taibun.schema.yaml").is_file()
+    assert (dest / "rime.lua").is_file()
 
 
 @pytest.mark.skipif(shutil.which("rime_deployer") is None, reason="需要系統 rime_deployer")
