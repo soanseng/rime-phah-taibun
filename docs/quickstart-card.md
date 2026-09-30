@@ -15,7 +15,7 @@
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 | Android | 下載 Releases 的 `PhahTaiBun-Trime.zip`（拍台文＋注音；要嘸蝦米改抓 `PhahTaiBun-Trime-liur.zip`）解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
-裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者windows-安裝包macos-指令)。
+裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者：windows-安裝包／macos-指令)。
 
 進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。Windows 這行指令是互動式的：可選裝拍台文、嘸蝦米（`rime-liur`）或兩者；改設定前會先做時間戳備份，並詢問要保留哪些既有輸入法（含注音）。
 
@@ -65,7 +65,7 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | 斜 | `zhiahv` | 斜 [tshia̍h] |
 | 食飯 | `ziahv pngw` | 食飯 |
 
-數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按（`x` 可顯式標示）。歷史與鍵位理由見[完整使用說明](user-guide.md#進階拍台文telex-調鍵輸入)。
+數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按（`x` 可顯式標示）。歷史與鍵位理由見[完整使用說明](user-guide.md#進階：拍台文telex-調鍵輸入)。
 
 ---
 
@@ -154,4 +154,4 @@ tsiah png → 食飯
 | `` `e `` Emoji 分類沒反應（但 `` ` `` 符號選單正常） | 多半是安裝版本較舊或部署未更新：確認 Rime 使用者資料夾有 `lua/phah_taibun_emoji_menu.lua`，重跑安裝器並重新部署 |
 | 英文候選沒有出現 | 未內建英文字典；請按 `Ctrl+Space` 切英文模式。Emoji 已內建，可按 `` `e `` 瀏覽（方案選單可關） |
 
-完整排錯看[使用說明的疑難排解](user-guide.md#十五疑難排解)。
+完整排錯看[使用說明的疑難排解](user-guide.md#十五、疑難排解)。
