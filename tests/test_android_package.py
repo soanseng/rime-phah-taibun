@@ -27,6 +27,7 @@ RIME_DATA = Path("/usr/share/rime-data")
 REQUIRED_PHAH = [
     "phah_taibun.schema.yaml",
     "phah_taibun_telex.schema.yaml",
+    "phah_taibun_fluency.schema.yaml",
     "phah_taibun.dict.yaml",
     "hanlo_rules.yaml",
     "hoabun_map.txt",
@@ -472,14 +473,30 @@ def test_third_party_notices_and_license_texts_are_bundled(tmp_path: Path) -> No
 
 
 def test_schemas_use_express_editor_for_direct_commit() -> None:
-    """A-d 釘住: 選字（含點擊候選）涵蓋全部輸入必須直接上屏.
+    """A-d 釘住: 選字(含點擊候選)涵蓋全部輸入必須直接上屏.
 
     librime ConcreteEngine::OnSelect (engine.cc) 只在 _auto_commit 開啟時 commit,
-    而 _auto_commit 由 Editor 建構子設定: fluency_editor=false（點候選只進組字,
-    需再按空白）、express_editor=true。上游 luna_pinyin（逐詞）= express_editor。
-    真機重現與修復見 rime-trime-taigi fix(schema) commit（Solana Seeker 驗證）。
+    而 _auto_commit 由 Editor 建構子設定: fluency_editor=false(點候選只進組字,
+    需再按空白)、express_editor=true。上游 luna_pinyin(逐詞)= express_editor。
+    真機重現與修復見 rime-trime-taigi fix(schema) commit(Solana Seeker 驗證)。
     """
     for name in ("phah_taibun.schema.yaml", "phah_taibun_telex.schema.yaml"):
         processors = yaml.safe_load((REPO / "schema" / name).read_text(encoding="utf-8"))["engine"]["processors"]
-        assert "express_editor" in processors, f"{name} 缺 express_editor — 點候選不會直接上屏（A-d）"
-        assert "fluency_editor" not in processors, f"{name} 殘留 fluency_editor — 點候選只進組字（A-d）"
+        assert "express_editor" in processors, f"{name} 缺 express_editor — 點候選不會直接上屏(A-d)"
+        assert "fluency_editor" not in processors, f"{name} 殘留 fluency_editor — 點候選只進組字(A-d)"
+
+
+def test_fluency_variant_keeps_continuous_composition() -> None:
+    """桌面連打保留: phah_taibun_fluency 變體必須用 fluency_editor.
+
+    整句連打逐詞選字(選字確認進組字累積、Enter/空白整句上屏)= fluency_editor
+    語意; 主案兩個 schema 用 express_editor(A-d 直接上屏), 連打工作流由本
+    變體延續(上游 luna_pinyin vs luna_pinyin_fluency 同款分工)。
+    """
+    processors = yaml.safe_load((REPO / "schema" / "phah_taibun_fluency.schema.yaml").read_text(encoding="utf-8"))[
+        "engine"
+    ]["processors"]
+    assert "fluency_editor" in processors, "phah_taibun_fluency 缺 fluency_editor — 連打選字語意消失"
+    assert "express_editor" not in processors, "phah_taibun_fluency 不應是 express_editor — 那就與主案重複"
+    fluency = yaml.safe_load((REPO / "schema" / "phah_taibun_fluency.schema.yaml").read_text(encoding="utf-8"))
+    assert fluency["__include"].startswith("phah_taibun.schema.yaml"), "變體必須繼承主案(其餘設定不重複)"

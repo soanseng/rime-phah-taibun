@@ -7,6 +7,8 @@ patch:
     schema: phah_taibun
   schema_list/@next 1:
     schema: phah_taibun_telex
+  schema_list/@next 2:
+    schema: phah_taibun_fluency
   switcher/save_options/@before 0: poj_mode
   switcher/save_options/@next: full_romanization
   switcher/save_options/@next 1: hanlo_manual

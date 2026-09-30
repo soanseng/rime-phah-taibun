@@ -265,7 +265,7 @@ installer_keep_which_prompt() {
             continue
         fi
         case "$id" in
-            phah_taibun|phah_taibun_telex) if [ "$INSTALL_PHAH" = true ]; then continue; fi ;;
+            phah_taibun|phah_taibun_telex|phah_taibun_fluency) if [ "$INSTALL_PHAH" = true ]; then continue; fi ;;
             liur) if [ "$INSTALL_LIUR" = true ]; then continue; fi ;;
         esac
         drop+=("$id")
@@ -614,6 +614,7 @@ mkdir -p "$RIME_DIR"
 SCHEMA_FILES=(
     "phah_taibun.schema.yaml"
     "phah_taibun_telex.schema.yaml"
+    "phah_taibun_fluency.schema.yaml"
     "phah_taibun.dict.yaml"
     "hanlo_rules.yaml"
     "lighttone_rules.json"
@@ -769,6 +770,16 @@ if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'phah_taibun_telex' "$RIM
         printf '\n  schema_list/@next 1:\n    schema: phah_taibun_telex\n' >> "$RIME_DIR/default.custom.yaml"
     fi
     echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun_telex 追加到 default.custom.yaml（保留現有方案）"
+fi
+
+# ============================================================
+# Step 2.56: 舊安裝補註冊 連打變體 phah_taibun_fluency（整句連打逐詞選字；
+# 主案已改 express_editor 逐詞直接上屏＝A-d，連打工作流由本變體保留）
+# ============================================================
+if [ -f "$RIME_DIR/default.custom.yaml" ] && ! grep -q 'phah_taibun_fluency' "$RIME_DIR/default.custom.yaml"; then
+    cp -f "$RIME_DIR/default.custom.yaml" "$RIME_DIR/default.custom.yaml.bak"
+    installer_register_schema phah_taibun_fluency
+    echo -e "  ${GREEN}[ok]${NC} 已將 phah_taibun_fluency 追加到 default.custom.yaml（保留現有方案）"
 fi
 
 # ============================================================

@@ -1,0 +1,32 @@
+# Rime schema
+# encoding: utf-8
+#
+# 拍台文・連打 — 整句連打逐詞選字（桌面長文用）
+#
+# 繼承 phah_taibun（__include 根，其餘鍵深度合併），只把 engine/processors
+# 的選字編輯器換回 fluency_editor：選字「確認進組字」累積成句，Enter／空白
+# 整句上屏（librime engine.cc OnSelect 只在 _auto_commit 開啟時 commit，而
+# _auto_commit 由 Editor 建構子依種類設定＝fluency_editor false／
+# express_editor true，editor.cc:43）。主案 phah_taibun 用 express_editor：
+# 點候選涵蓋全部輸入即直接上屏（A-d，行動端預設）。
+# 上游同款分工：luna_pinyin（express）vs luna_pinyin_fluency（fluency）。
+
+__include: phah_taibun.schema.yaml:/
+
+schema:
+  schema_id: phah_taibun_fluency
+  name: 拍台文・連打
+  version: "1.0"
+
+engine:
+  processors:
+    - lua_processor@*phah_taibun_input
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - lua_processor@*phah_taibun_commit
+    - punctuator
+    - selector
+    - navigator
+    - fluency_editor

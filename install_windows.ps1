@@ -687,6 +687,32 @@ if ($INSTALL_PHAH -and (Test-Path $defaultCustom) -and -not (Select-String -Path
 }
 
 # ============================================================
+# Step 2.55b: 舊安裝補註冊 連打變體 phah_taibun_fluency（整句連打逐詞選字；
+# 主案已改 express_editor 逐詞直接上屏＝A-d，連打工作流由本變體保留）
+# ============================================================
+if ($INSTALL_PHAH -and (Test-Path $defaultCustom) -and -not (Select-String -Path $defaultCustom -Pattern "phah_taibun_fluency" -Quiet)) {
+    Copy-Item -Force $defaultCustom "$RIME_DIR\default.custom.yaml.bak"
+
+    $content = Read-RimeText $defaultCustom
+    if ($content -match '(?m)^\s*- schema: phah_taibun_telex\s*$') {
+        $lines = @(Get-RimeLines $defaultCustom)
+        $lastIdx = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^\s*- schema: phah_taibun_telex\s*$') { $lastIdx = $i }
+        }
+        $indent = $lines[$lastIdx] -replace '- schema:.*', ''
+        $newLine = "${indent}- schema: phah_taibun_fluency"
+        $newLines = @($lines[0..$lastIdx] + $newLine + (Get-RimeTail -Lines $lines -AfterIndex $lastIdx))
+        Write-RimeText -Path $defaultCustom -Text (($newLines -join "`n") + "`n")
+    } elseif ((Get-RimeLines $defaultCustom | Select-Object -First 1) -match '^__patch:') {
+        Add-RimeText -Path $defaultCustom -Text "  - patch/+:`n      schema_list/@next 2:`n        schema: phah_taibun_fluency"
+    } else {
+        Add-RimeText -Path $defaultCustom -Text "  schema_list/@next 2:`n    schema: phah_taibun_fluency"
+    }
+    Write-Host "  已將 phah_taibun_fluency 追加到 default.custom.yaml（保留既有方案，不會因此取代）" -ForegroundColor Green
+}
+
+# ============================================================
 # Step 2.5: save_options — 記住 F4 選過的 TL/POJ、漢羅/全羅
 # ============================================================
 if ($INSTALL_PHAH -and (Test-Path $defaultCustom)) {
@@ -743,7 +769,7 @@ if ($INTERACTIVE) {
             }
             # 剛安裝的方案不可被剪掉，否則會變成「裝了卻沒註冊」。
             $protectedIds = @()
-            if ($INSTALL_PHAH) { $protectedIds += @("phah_taibun", "phah_taibun_telex") }
+            if ($INSTALL_PHAH) { $protectedIds += @("phah_taibun", "phah_taibun_telex", "phah_taibun_fluency") }
             if ($INSTALL_LIUR) { $protectedIds += "liur" }
 
             $dropIds = @($currentSchemaIds | Where-Object { $keepIds -notcontains $_ -and $protectedIds -notcontains $_ })

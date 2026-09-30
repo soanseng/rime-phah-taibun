@@ -42,6 +42,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 PHAH_SCHEMA_FILES = [
     "phah_taibun.schema.yaml",
     "phah_taibun_telex.schema.yaml",
+    "phah_taibun_fluency.schema.yaml",
     "phah_taibun.dict.yaml",
     "hanlo_rules.yaml",
     "hoabun_map.txt",

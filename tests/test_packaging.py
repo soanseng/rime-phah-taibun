@@ -253,6 +253,25 @@ def test_installers_ship_and_register_the_telex_schema():
     assert "已將 phah_taibun_telex 追加到 default.custom.yaml" in windows
 
 
+def test_installers_ship_and_register_the_fluency_variant():
+    """連打變體 phah_taibun_fluency 隨三平台安裝器出貨並補註冊(桌面整句連打保留).
+
+    主案換 express_editor(A-d 點候選直接上屏)後, 連打工作流由變體保留;
+    既有安裝的 default.custom.yaml 需靠各安裝器的補註冊步驟(Step 2.56/2.55b)
+    才看得到新方案。
+    """
+    linux = read("scripts/install_linux.sh")
+    macos = read("scripts/install_macos.sh")
+    windows = read("install_windows.ps1")
+
+    assert '"phah_taibun_fluency.schema.yaml"' in linux
+    assert '"phah_taibun_fluency.schema.yaml"' in macos
+    # Windows ships every schema/*.yaml via glob; assert registration instead.
+    assert "已將 phah_taibun_fluency 追加到 default.custom.yaml" in linux
+    assert "已將 phah_taibun_fluency 追加到 default.custom.yaml" in macos
+    assert "已將 phah_taibun_fluency 追加到 default.custom.yaml" in windows
+
+
 def test_release_version_is_consistent_across_runtime_and_packaging_metadata():
     version = "0.9.4"
 
@@ -423,7 +442,7 @@ def test_windows_installer_never_prunes_the_schemas_it_installs():
     installer = read("install_windows.ps1")
 
     assert "$protectedIds" in installer
-    assert '$protectedIds += @("phah_taibun", "phah_taibun_telex")' in installer
+    assert '$protectedIds += @("phah_taibun", "phah_taibun_telex", "phah_taibun_fluency")' in installer
     assert '$protectedIds += "liur"' in installer
 
 
