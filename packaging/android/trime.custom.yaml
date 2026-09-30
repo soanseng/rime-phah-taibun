@@ -41,17 +41,6 @@ patch:
   # ── 退格鍵面（倒退箭頭） ──
   preset_keys/BackSpace/label: "←"
 
-  # ── 「…」擴充面板固定列：保留上游全部＋加「設定」入口（開 App 設定，
-  #    拍台文說明頁在內）——整列覆寫（烘焙器不支援清單運算） ──
-  liquid_keyboard/fixed_key_bar/keys:
-    - liquid_keyboard_exit
-    - space1
-    - BackSpace
-    - Return2
-    - clipboard_window
-    - liquid_keyboard_switch
-    - Settings
-
   # ── 拍台文專用鍵（行為定義在 lua/ 與 schema key_binder） ──
   preset_keys/Taigi_Tab: {label: 選字, send: Tab} #桌面 Tab: 整句連打逐詞選字 (asdf…)
   preset_keys/Taigi_Roman: {label: 羅, send: backslash} #桌面 \: 手動漢羅標記羅馬字
