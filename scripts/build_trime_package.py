@@ -38,6 +38,11 @@ import zipfile
 from pathlib import Path
 
 import yaml
+from ruamel.yaml import YAML as _RuamelYAML
+
+_yaml_rt = _RuamelYAML(typ="rt")
+_yaml_rt.preserve_quotes = True
+_yaml_rt.width = 4096
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -386,7 +391,10 @@ def _bake_trime_theme(dest: Path) -> None:
     讀 prebuilt 成品即為完整主題。patch 僅允許「純量/映射深設定」—
     出現清單運算 (@next/=/ 等) 即報錯, 避免與 librime 語義漂移。
     """
-    base = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM).read_text(encoding="utf-8"))
+    # ruamel round-trip: 保留上游 0xRRGGBB 顏色 scalars 的原始寫法與註解 —
+    # PyYAML 重射會把 hex int 十進位化, Trime ColorUtils.parseColor 只認
+    # "0x…"/"#…" 寫法 (真機 crash: IllegalArgumentException Unknown color)。
+    base = _yaml_rt.load((REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM).read_text(encoding="utf-8"))
     patch = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_PATCH).read_text(encoding="utf-8"))["patch"]
     for key in patch:
         if any(op in key for op in ("/@", "@next", "@before", "@after", "@last", "/=", "/+")):
@@ -403,10 +411,10 @@ def _bake_trime_theme(dest: Path) -> None:
 
     for dotted, value in patch.items():
         deep_set(base, dotted, value)
-    baked = yaml.dump(base, allow_unicode=True, sort_keys=False, width=4096)
-    (dest / "trime.yaml").write_text(baked, encoding="utf-8")
+    with (dest / "trime.yaml").open("w", encoding="utf-8") as f:
+        _yaml_rt.dump(base, f)
     (dest / "build").mkdir(exist_ok=True)
-    (dest / "build" / "trime.yaml").write_text(baked, encoding="utf-8")
+    shutil.copyfile(dest / "trime.yaml", dest / "build" / "trime.yaml")
 
 
 def build_apk_assets(
