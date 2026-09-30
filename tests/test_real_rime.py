@@ -267,7 +267,7 @@ def test_help_descriptions_are_not_rewritten_as_romanization(real_rime_states):
     assert candidates
     assert all("TL:" not in candidate["comment"] for candidate in candidates)
     help_by_key = {candidate["text"]: candidate["comment"] for candidate in candidates}
-    assert help_by_key["[ / ]"] == "以詞定字\uff1a選首字 / 尾字"
+    assert help_by_key["[ / ]"] == "翻頁\uff1a上一頁 / 下一頁"
 
 
 def test_known_hyphenated_phrase_still_matches_dictionary(real_rime_states):
@@ -1092,6 +1092,16 @@ def test_bracket_pages_special_menus_from_first_page(real_rime_states):
     assert cat25_p1 and cat25_p2 and cat25_p1 != cat25_p2, (cat25_p1[:2], cat25_p2[:2])
 
 
-def test_bracket_keeps_word_last_char_selection(real_rime_states):
-    """`]` on a normal dictionary menu still takes the candidate's last char."""
-    assert real_rime_states["select_char_last"]["commit"] == "灣"
+def test_bracket_pages_dictionary_menu_from_first_page(real_rime_states):
+    """`]` on a page-1 dictionary menu pages down instead of taking a char.
+
+    以詞定字 removed: brackets are pure paging keys, also on romanization
+    candidates (the case select_char used to swallow).
+    """
+    p1 = [c["text"] for c in real_rime_states["dict_menu_p1"]["candidates"]]
+    p2 = [c["text"] for c in real_rime_states["dict_menu_p2"]["candidates"]]
+    back = [c["text"] for c in real_rime_states["dict_menu_back"]["candidates"]]
+    assert p1 and p2 and p1 != p2, (p1[:2], p2[:2])
+    assert "commit" not in real_rime_states["dict_menu_p2"], "paging must not commit"
+    assert p1 == back, back[:2]
+    assert "uan" in real_rime_states["dict_menu_p2"]["preedit"]  # composition survives

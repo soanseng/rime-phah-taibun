@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dict Entries](https://img.shields.io/badge/dict-218K%20entries-green?style=flat-square)](#)
-[![Lua Modules](https://img.shields.io/badge/lua-22%20modules-orange?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-21%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://taigi.anatomind.com/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
@@ -145,7 +145,7 @@ Telex 源自越南文在電傳打字機上用字母標調的做法；拍台文�
 - **萬用查字**：拼音不確定？用 `?` 代替，先選音節再選字（二段式）
 - **同音選字**：輸入後按 `'` 查同音字
 - **造詞模式**：按 `;` + 拼音直接查字典選字
-- **以詞定字**：按 `[` 取首字、`]` 取尾字，從詞組精準選字
+- **翻頁**：`[`／`]` 在任何候選選單一律翻頁（含詞典候選第 1 頁）
 - **長詞優先**：自動提升多字詞排序，減少逐字選字
 - **逐音節組字**：字典查無的詞組（如 `kio-tiann`）與短句可整串輸入，候選自動逐音節組合；用 `-` 明確斷音節，逐字選出想要的字——選字即選調
 - **個人化學習**：記住你選過的字詞，常用的自動排前面；不會自動把輸入歷史存成新詞（使用者字典只學你選過的）。選錯想忘記時，多數前端可在反白該候選時按 `Shift+Delete` 移除
@@ -503,8 +503,8 @@ Font="Iansui 12"
 | `vvh` | 按鍵說明 | 在候選區顯示所有快捷鍵 |
 | `vvjit` | 台語日期 | 輸出今天日期（漢字/羅馬字/ISO） |
 | `vvsp` | 簡拼對照 | 顯示聲母縮寫對照表 |
-| `[` | 以詞定字（首字） | 選取候選詞的第一個字 |
-| `]` | 以詞定字（尾字） | 選取候選詞的最後一個字 |
+| `[` | 翻頁（上一頁） | 所有候選選單一律翻頁 |
+| `]` | 翻頁（下一頁） | 所有候選選單一律翻頁 |
 | `\` | 切換輸出 | 漢羅模式→輸出全羅；全羅模式→輸出漢羅 |
 | `Enter` | 直接送出輸入音 | 全羅模式下照目前 TL/POJ 拼音送出，保留 `-` / `--` |
 | `Ctrl+Backspace` | 刪除音節 | 刪除前一個音節 |
@@ -524,7 +524,7 @@ Font="Iansui 12"
 ```bash
 ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
 ```
-應該要有 22 個 `phah_taibun_*.lua` 檔案。
+應該要有 21 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
@@ -574,14 +574,13 @@ schema/                        Rime 方案檔（安裝到 Rime 使用者目錄�
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
   default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組(22 個)
+lua/                           Lua 擴充模組(21 個)
   phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換 + 調符顯示
   phah_taibun_input.lua           大寫攔截 + Tab 選字模式
   phah_taibun_commit.lua          全羅輸出處理器 + \ 強制羅馬字
   phah_taibun_data.lua            漢羅規則載入器 + MOE 700字 + 聲調調符轉換 + 共用工具
   phah_taibun_lookup.lua          TL+POJ 雙標註
   phah_taibun_recommend.lua       推薦用字標記（◆ 漢字 / ★ 羅馬字）
-  phah_taibun_select_char.lua     以詞定字（[ 首字、] 尾字）
   phah_taibun_long_word.lua       長詞優先排序
   phah_taibun_learn.lua           學習排序：常用詞提升（飽和 + 時間衰減）
   phah_taibun_lighttone.lua       輕聲候選產生
@@ -657,7 +656,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
 | [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，開發時用於驗證調符顯示與輸出效果 |
 | [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
-| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（以詞定字、長詞優先） |
+| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（長詞優先） |
 | [rime-emoji](https://github.com/rime/rime-emoji) | Emoji 候選資料（opencc 詞庫，LGPL-3.0） |
 
 ## 致謝
@@ -669,7 +668,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫與詞頻資料
 - [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
 - [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
-- [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 以詞定字、長詞優先等 UX 功能參考
+- [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 長詞優先等 UX 功能參考
 
 ## 與其他台語輸入法的比較
 
@@ -688,7 +687,6 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **語料庫詞頻** | 7 語料庫加權 | 無 | 基本頻率 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **萬用查字** | ?（二段式） | 無 | 無 |
-| **以詞定字** | [ 首字 ] 尾字 | 無 | 無 |
 | **同音選字** | ' 鍵 | 無 | 無 |
 | **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：詞語附加候選＋分類瀏覽（含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |

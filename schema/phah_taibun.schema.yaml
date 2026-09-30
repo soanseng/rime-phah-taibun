@@ -40,7 +40,6 @@ engine:
   processors:
     - lua_processor@*phah_taibun_input
     - ascii_composer
-    - lua_processor@*phah_taibun_select_char
     - recognizer
     - key_binder
     - speller
@@ -166,8 +165,8 @@ punctuator:
   # 完整定義（非 import_preset）：librime 1.13 對 import_preset + 本地
   # half_shape 的合併會失敗（failed to merge tree），故比照 rime-liur
   # liu_pinyin 整段定義。內容＝rime 預設 punctuation.yaml，加上自動上屏
-  # 覆寫：( ) / _ < > 直接 commit。`'`（同音選字）、`[` `]`（以詞定字）、
-  # `~` `?` `;` `` ` ``（反查/萬用/造詞/符號）由 recognizer/lua 先攔，
+  # 覆寫：( ) / _ < > 直接 commit。`'`（同音選字）、`[` `]`（翻頁）、
+  # `~` `?` `;` `` ` ``（反查/萬用/造詞/符號）由 recognizer/lua/key_binder 先攔，
   # 這裡的映射僅為與預設行為完全相同的鍵盤層後備。
   half_shape:
     ",": { commit: "，" }
@@ -243,8 +242,8 @@ key_binder:
     - { when: always, accept: Control+space, toggle: ascii_mode }
     - { when: composing, accept: Tab, send: Shift+Right }
     - { when: composing, accept: Shift+Tab, send: Shift+Left }
-    # 翻頁：`]`／`[` 在任何選單（含 `e emoji、`NN 符號、第 1 頁）即翻頁；
-    # 一般拼音組字的 `[`/`]` 先由 select_char 以詞定字攔走，不衝突。
+    # 翻頁：`]`／`[` 在任何選單即翻頁（含詞典候選第 1 頁、`e emoji、`NN 符號）；
+    # 以詞定字已移除，[ ] 不再被攔截。
     - { when: has_menu, accept: bracketleft, send: Page_Up }
     - { when: has_menu, accept: bracketright, send: Page_Down }
     # 逐字標點（移植 rime-liur）：選單開啟時 `,` `.` 維持標點鍵，不翻頁。
@@ -261,10 +260,6 @@ recognizer:
     symbols: "^`(e[1-9]?|[0-9]{0,2})`?$"   # ` 開啟目錄; `NN 直達分類 (尾端 ` 容錯)
     wildcard: "^[a-z]*\\?[a-z0-9]*$"
     phrase: "^;[a-z0-9]*$"
-
-phah_taibun_select_char:
-  first_key: bracketleft
-  last_key: bracketright
 
 phah_taibun_long_word:
   count: 2

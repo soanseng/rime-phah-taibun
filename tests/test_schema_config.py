@@ -179,6 +179,22 @@ def test_f_means_hyphen_never_ph_fuzzy():
     assert "`f` 模糊拼寫只在" not in guide
 
 
+def test_brackets_page_everywhere_select_char_removed():
+    """`[`/`]` 在所有選單一律翻頁; 以詞定字 (select_char) 已整體移除.
+
+    select_char 曾攔在 key_binder 之前, 把字典候選第 1 頁的 [ ] 拿去
+    以詞定字, 造成翻頁只在 ` 選單與第 2 頁生效 (使用者觀察: 只有 Emoji
+    能翻). 移除模組後 [ ] 由 key_binder 的 has_menu 綁定統一翻頁.
+    """
+    for schema_path in ("schema/phah_taibun.schema.yaml", "schema/phah_taibun_telex.schema.yaml"):
+        schema = yaml.safe_load(Path(schema_path).read_text(encoding="utf-8"))
+        assert "lua_processor@*phah_taibun_select_char" not in schema["engine"]["processors"], schema_path
+        assert "phah_taibun_select_char" not in schema, schema_path  # config block too
+        bindings = "\n".join(str(b) for b in schema["key_binder"]["bindings"])
+        assert "'accept': 'bracketleft', 'send': 'Page_Up'" in bindings, schema_path
+        assert "'accept': 'bracketright', 'send': 'Page_Down'" in bindings, schema_path
+
+
 def test_telex_schema_is_registered_alongside_the_main_schema():
     """Fresh installs get both schemas from default.custom.yaml and rime.lua."""
     custom = yaml.safe_load(Path("schema/default.custom.yaml").read_text(encoding="utf-8"))
