@@ -39,10 +39,11 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# phah_taibun_fluency(連打變體)為桌面限定 — 由各平台安裝器出貨並註冊,
+# 不進 Trime 打包(_default_custom_yaml/DataManager 未註冊=打包了也選不到)。
 PHAH_SCHEMA_FILES = [
     "phah_taibun.schema.yaml",
     "phah_taibun_telex.schema.yaml",
-    "phah_taibun_fluency.schema.yaml",
     "phah_taibun.dict.yaml",
     "hanlo_rules.yaml",
     "hoabun_map.txt",

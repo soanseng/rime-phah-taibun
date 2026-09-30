@@ -27,7 +27,6 @@ RIME_DATA = Path("/usr/share/rime-data")
 REQUIRED_PHAH = [
     "phah_taibun.schema.yaml",
     "phah_taibun_telex.schema.yaml",
-    "phah_taibun_fluency.schema.yaml",
     "phah_taibun.dict.yaml",
     "hanlo_rules.yaml",
     "hoabun_map.txt",
