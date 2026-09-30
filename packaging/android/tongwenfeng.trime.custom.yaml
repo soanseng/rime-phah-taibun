@@ -12,10 +12,21 @@
 # 鍵盤/面板定義與 trime.custom.yaml 相同（兩主題各自自帶 preset_keys，
 # 引用的上游鍵名兩邊皆有）。
 patch:
-  config_version: "3.3.12-ptaibun3"
-  name: 標準
+  config_version: "3.3.12-ptaibun5"
+  name: 拍台文·精簡
 
   preset_color_schemes/default/name: 標準配色！
+
+
+  # ── 長按鍵面繁體化（上游 tongwenfeng 為簡體） ──
+  preset_keys/select_all/label: 全選
+  preset_keys/cut/label: 剪下
+  preset_keys/copy/label: 複製
+  preset_keys/paste/label: 貼上
+  preset_keys/Hide/label: 隱藏
+  preset_keys/CommitComment/label: 編碼
+  preset_keys/Page_Up/label: 上頁
+  preset_keys/Page_Down/label: 下頁
 
   preset_keys/BackSpace/label: "←"
 
@@ -34,14 +45,14 @@ patch:
     height: 44
     lock: false
     keys:
-      - {click: Taigi_Tab, width: 14}
-      - {click: Taigi_Roman, width: 10}
-      - {click: Page_Up, width: 12}
-      - {click: Page_Down, width: 12}
-      - {click: Taigi_Poj, width: 16}
-      - {click: Taigi_Hanlo, width: 16}
-      - {click: Taigi_Menu, width: 10}
-      - {click: Taigi_Back, width: 10}
+    - {click: Taigi_Tab, width: 14}
+    - {click: Taigi_Roman, width: 10}
+    - {click: Page_Up, width: 12}
+    - {click: Page_Down, width: 12}
+    - {click: Taigi_Poj, width: 16}
+    - {click: Taigi_Hanlo, width: 16}
+    - {click: Taigi_Menu, width: 10}
+    - {click: Taigi_Back, width: 10}
 
   preset_keyboards/phah_taibun:
     name: 拍台文26鍵

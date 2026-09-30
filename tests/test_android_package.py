@@ -291,7 +291,8 @@ def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
 
     for kb in ("phah_taibun", "phah_taibun_telex"):
         keys = patch[f"preset_keyboards/{kb}"]["keys"]
-        assert len(keys) == 37, f"{kb} 應為上游 26 鍵版面 (37 keys)"
+        assert len(keys) == 47, f"{kb} 應為上游 40 鍵版面含數字列 (47 keys)"
+        assert any(k.get("click") == "1" for k in keys), f"{kb} 需數字列"
         mode = [k for k in keys if k.get("click") == "Mode_switch"]
         assert mode and mode[0]["long_click"] == "Taigi_Panel", f"{kb} 中文鍵長按應開拍台文面板"
 
@@ -344,7 +345,13 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
         dest / "trime.yaml"
     ).read_text(encoding="utf-8"), "prebuilt fallback (shared/build) 須與主題同步"
     twf = yaml.safe_load((dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8"))
-    assert twf["name"] == "標準", "標準主題名繁體化"
+    assert twf["name"] == "拍台文·精簡", "標準主題名=拍台文·精簡(26鍵)"
+    trime_patch = yaml.safe_load(
+        (REPO / "packaging" / "android" / "trime.custom.yaml").read_text(encoding="utf-8")
+    )["patch"]
+    assert trime_patch["name"] == "拍台文·數字列", "預設主題名=拍台文·數字列(40鍵含數字列)"
+    kb40 = trime_patch["preset_keyboards/phah_taibun"]["keys"]
+    assert any(k.get("click") == "1" for k in kb40), "預設主題鍵盤含數字列"
     twf_text = (dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8")
     assert "标准" not in twf_text.split("patch")[0], "不得殘留簡體主題名"
     assert twf["preset_keyboards"]["phah_taibun"]["keys"], "標準主題也需拍台文鍵盤 (schema-id 配對)"
