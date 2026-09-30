@@ -313,10 +313,10 @@ def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
 def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Path) -> None:
     """--apk-assets 產 Trime 客製 APK 的 assets/shared 內容樹 (F2: 台語+注音+嘸蝦米全包).
 
-    主題=上游基座複本 (trime.yaml) + trime.custom.yaml, 由 Trime 部署期
-    (librime deployRimeConfigFile) 合併 — fork 的 trime.yaml 保持純上游複本;
-    方案註冊由 fork 的 DataManager (SCHEMA_LIST_CUSTOM_PATCH) 提供;
-    授權標示 (THIRD-PARTY-NOTICES / licenses / LIUR-PROVENANCE) 仍須隨包.
+    主題=基座+patch 的確定性烘焙成品 (runtime 部署競態不可靠, 見
+    _bake_trime_theme); trime.custom.yaml 本身不進 assets; 方案註冊由
+    fork 的 DataManager (SCHEMA_LIST_CUSTOM_PATCH) 提供; 授權標示
+    (THIRD-PARTY-NOTICES / licenses / LIUR-PROVENANCE) 仍須隨包.
     """
     sys.path.insert(0, str(SCRIPTS))
     import build_trime_package as btp
@@ -331,12 +331,13 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     rime_lua = (dest / "rime.lua").read_text(encoding="utf-8")
     assert rime_lua.count("rime-liur) registrations appended") == 1, "liur 註冊只附加一次"
 
-    for overlay_only in ("INSTALL-Trime.md", "default.custom.yaml"):
+    for overlay_only in ("INSTALL-Trime.md", "trime.custom.yaml", "default.custom.yaml"):
         assert overlay_only not in names, f"{overlay_only} 不進 APK assets"
-    assert "trime.custom.yaml" in names, "客製 patch 隨 APK assets (部署期合併)"
-    assert (dest / "trime.yaml").read_bytes() == (
-        REPO / "packaging" / "android" / "trime.upstream.yaml"
-    ).read_bytes(), "trime.yaml 必須是釘住上游基座的位元組複本"
+    theme = yaml.safe_load((dest / "trime.yaml").read_text(encoding="utf-8"))
+    assert theme["config_version"] != "3.0", "烘焙主題需帶 bump 過的 config_version"
+    assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含拍台文鍵盤"
+    assert theme["preset_keys"]["BackSpace"]["label"] == "<-"
+    assert theme["preset_keys"]["Menu"]["send"] == "MENU", "上游 Menu preset 不動"
     assert "THIRD-PARTY-NOTICES.txt" in names
     assert "licenses/LGPL-3.0.txt" in names
     assert "LIUR-PROVENANCE.txt" in names

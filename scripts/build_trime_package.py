@@ -37,6 +37,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # phah_taibun_fluency(連打變體)為桌面限定 — 由各平台安裝器出貨並註冊,
@@ -148,8 +150,8 @@ RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
 TRIME_UPSTREAM = "trime.upstream.yaml" #上游基座 (osfans/trime v3.3.12, 釘住)
+APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-APK_ASSET_EXCLUDED = (INSTALL_DOC, "default.custom.yaml")
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -373,6 +375,38 @@ def build_tree(
     return dest
 
 
+def _bake_trime_theme(dest: Path) -> None:
+    """上游基座 + trime.custom.yaml patch → 合併版 assets/shared/trime.yaml.
+
+    確定性烘焙 (不走 Trime runtime patch): 實測 ThemeManager 首次部署有啟動
+    競態 (librime deployer 模組晚於主題初始化註冊) 且 ConfigFileUpdate 的
+    版本判準會跳過重編, runtime 合併不可靠; 直接出完整主題, 裝置 fallback
+    讀 shared/trime.yaml 即為成品。patch 僅允許「純量/映射深設定」—
+    出現清單運算 (@next/=/ 等) 即報錯, 避免與 librime 語義漂移。
+    """
+    base = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM).read_text(encoding="utf-8"))
+    patch = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_PATCH).read_text(encoding="utf-8"))["patch"]
+    for key in patch:
+        if any(op in key for op in ("/@", "@next", "@before", "@after", "@last", "/=", "/+")):
+            raise SystemExit(f"錯誤: trime.custom.yaml 使用清單運算 {key!r} — 烘焙器不支援, 請改整段定義")
+
+    def deep_set(node: dict, dotted: str, value: object) -> None:
+        parts = dotted.split("/")
+        for part in parts[:-1]:
+            nxt = node.setdefault(part, {})
+            if not isinstance(nxt, dict):
+                raise SystemExit(f"錯誤: patch 路徑 {dotted!r} 穿過非映射節點 {part!r}")
+            node = nxt
+        node[parts[-1]] = value
+
+    for dotted, value in patch.items():
+        deep_set(base, dotted, value)
+    (dest / "trime.yaml").write_text(
+        yaml.dump(base, allow_unicode=True, sort_keys=False, width=4096),
+        encoding="utf-8",
+    )
+
+
 def build_apk_assets(
     dest: Path,
     *,
@@ -382,10 +416,10 @@ def build_apk_assets(
 ) -> Path:
     """產出 Trime 客製 APK 的 assets/shared 內容樹 (台語+注音+嘸蝦米全包).
 
-    與 zip overlay 的差異: 不含 INSTALL 文件與 default.custom.yaml (方案註冊
-    由 fork 的 DataManager 提供). 主題=上游基座 (trime.upstream.yaml, 釘住
-    版本) + trime.custom.yaml — Trime 部署期由 librime 合併 (ThemeManager
-    呼叫 deployRimeConfigFile), fork 的 trime.yaml 因此保持純上游複本.
+    與 zip overlay 的差異: 不含 INSTALL 文件、trime.custom.yaml 與
+    default.custom.yaml (方案註冊由 fork 的 DataManager 提供)。
+    主題=上游基座 (trime.upstream.yaml, 釘住) 與 trime.custom.yaml 的
+    確定性烘焙成品 (_bake_trime_theme)。
     """
     tree = build_tree(
         dest,
@@ -395,7 +429,7 @@ def build_apk_assets(
     )
     for name in APK_ASSET_EXCLUDED:
         (tree / name).unlink(missing_ok=True)
-    _copy_file(REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM, tree / "trime.yaml")
+    _bake_trime_theme(tree)
     return tree
 
 
