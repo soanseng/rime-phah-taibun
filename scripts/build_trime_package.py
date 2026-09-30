@@ -376,12 +376,14 @@ def build_tree(
 
 
 def _bake_trime_theme(dest: Path) -> None:
-    """上游基座 + trime.custom.yaml patch → 合併版 assets/shared/trime.yaml.
+    """上游基座 + trime.custom.yaml patch → 合併版主題, 寫兩處:
+    shared/trime.yaml (部署源頭) 與 shared/build/trime.yaml (prebuilt fallback).
 
-    確定性烘焙 (不走 Trime runtime patch): 實測 ThemeManager 首次部署有啟動
-    競態 (librime deployer 模組晚於主題初始化註冊) 且 ConfigFileUpdate 的
-    版本判準會跳過重編, runtime 合併不可靠; 直接出完整主題, 裝置 fallback
-    讀 shared/trime.yaml 即為成品。patch 僅允許「純量/映射深設定」—
+    確定性烘焙 (不走 Trime runtime patch): 實測首次主題部署有啟動競態
+    (librime deployer 模組晚於主題初始化註冊, "unknown deployment task")
+    且 ConfigFileUpdate 可能跳過重編; DataManager.resolveDeployedResourcePath
+    的 fallback 是 shared/build/<id>.yaml (prebuiltDataDir), 首裝部署失敗時
+    讀 prebuilt 成品即為完整主題。patch 僅允許「純量/映射深設定」—
     出現清單運算 (@next/=/ 等) 即報錯, 避免與 librime 語義漂移。
     """
     base = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM).read_text(encoding="utf-8"))
@@ -401,10 +403,10 @@ def _bake_trime_theme(dest: Path) -> None:
 
     for dotted, value in patch.items():
         deep_set(base, dotted, value)
-    (dest / "trime.yaml").write_text(
-        yaml.dump(base, allow_unicode=True, sort_keys=False, width=4096),
-        encoding="utf-8",
-    )
+    baked = yaml.dump(base, allow_unicode=True, sort_keys=False, width=4096)
+    (dest / "trime.yaml").write_text(baked, encoding="utf-8")
+    (dest / "build").mkdir(exist_ok=True)
+    (dest / "build" / "trime.yaml").write_text(baked, encoding="utf-8")
 
 
 def build_apk_assets(

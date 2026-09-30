@@ -338,6 +338,9 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含拍台文鍵盤"
     assert theme["preset_keys"]["BackSpace"]["label"] == "<-"
     assert theme["preset_keys"]["Menu"]["send"] == "MENU", "上游 Menu preset 不動"
+    assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (
+        dest / "trime.yaml"
+    ).read_text(encoding="utf-8"), "prebuilt fallback (shared/build) 須與主題同步"
     assert "THIRD-PARTY-NOTICES.txt" in names
     assert "licenses/LGPL-3.0.txt" in names
     assert "LIUR-PROVENANCE.txt" in names
