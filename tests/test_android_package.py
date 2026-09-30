@@ -341,6 +341,15 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (
         dest / "trime.yaml"
     ).read_text(encoding="utf-8"), "prebuilt fallback (shared/build) 須與主題同步"
+    twf = yaml.safe_load((dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8"))
+    assert twf["name"] == "標準", "標準主題名繁體化"
+    twf_text = (dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8")
+    assert "标准" not in twf_text.split("patch")[0], "不得殘留簡體主題名"
+    assert twf["preset_keyboards"]["phah_taibun"]["keys"], "標準主題也需拍台文鍵盤 (schema-id 配對)"
+    assert twf["preset_keys"]["BackSpace"]["label"] == "←"
+    assert (dest / "build" / "tongwenfeng.trime.yaml").read_text(encoding="utf-8") == (
+        dest / "tongwenfeng.trime.yaml"
+    ).read_text(encoding="utf-8"), "標準主題 prebuilt fallback 同步"
     assert "THIRD-PARTY-NOTICES.txt" in names
     assert "licenses/LGPL-3.0.txt" in names
     assert "LIUR-PROVENANCE.txt" in names

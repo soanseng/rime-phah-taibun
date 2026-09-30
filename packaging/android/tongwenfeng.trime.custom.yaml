@@ -1,0 +1,134 @@
+# tongwenfeng.custom.yaml — 拍台文對「標準」主題的特化
+#
+# 由 build_apk_assets() 與 tongwenfeng.upstream.yaml 烘焙成 fork 的
+# assets/shared/tongwenfeng.trime.yaml（不隨 zip overlay——原版 Trime
+# 使用者主題自帶）。
+#
+# 目的（2026-10-01 使用者回饋）：
+#   1. 主題名/配色名簡體→繁體（标准→標準）
+#   2. 切到「標準」主題也保有拍台文 26 鍵＋中文鍵長按面板（拍台文
+#      方案以 schema-id 配對同名鍵盤，鍵盤 preset 需存在於每個主題）
+#
+# 鍵盤/面板定義與 trime.custom.yaml 相同（兩主題各自自帶 preset_keys，
+# 引用的上游鍵名兩邊皆有）。
+patch:
+  config_version: "3.3.12-ptaibun2"
+  name: 標準
+
+  preset_color_schemes/default/name: 標準配色！
+
+  preset_keys/BackSpace/label: "←"
+
+  preset_keys/Taigi_Tab: {label: 選字, send: Tab}
+  preset_keys/Taigi_Roman: {label: 羅, send: backslash}
+  preset_keys/Taigi_Poj: {label: TL/POJ, send: SWITCH_CHARSET, toggle: poj_mode, states: [TL, POJ]}
+  preset_keys/Taigi_Hanlo: {label: 漢/全, send: SWITCH_CHARSET, toggle: full_romanization, states: [漢羅, 全羅]}
+  preset_keys/Taigi_Menu: {label: 方案, send: MENU}
+  preset_keys/Taigi_Back: {label: 返回, send: Eisu_toggle, select: .default}
+  preset_keys/Taigi_Panel: {label: 台文, send: Eisu_toggle, select: taigi_panel}
+
+  preset_keyboards/taigi_panel:
+    name: 拍台文
+    ascii_mode: 0
+    width: 10
+    height: 44
+    lock: false
+    keys:
+      - {click: Taigi_Tab, width: 20}
+      - {click: Taigi_Roman, width: 20}
+      - {click: Taigi_Poj, width: 20}
+      - {click: Taigi_Hanlo, width: 20}
+      - {click: Taigi_Menu, width: 10}
+      - {click: Taigi_Back, width: 10}
+
+  preset_keyboards/phah_taibun:
+    name: 拍台文26鍵
+    ascii_mode: 0
+    columns: 10
+    width: 10
+    height: 55
+    lock: true
+    keys:
+    - {click: 'q', long_click: '!', swipe_up: 1}
+    - {click: 'w', long_click: '@', swipe_up: 2}
+    - {click: 'e', long_click: '#', swipe_up: 3}
+    - {click: 'r', long_click: '$', swipe_up: 4}
+    - {click: 't', long_click: '%', swipe_up: 5}
+    - {click: 'y', long_click: '^', swipe_up: 6}
+    - {click: 'u', long_click: '&', swipe_up: 7}
+    - {click: 'i', long_click: '*', swipe_up: 8}
+    - {click: 'o', long_click: '(){Left}', swipe_up: 9}
+    - {click: 'p', long_click: 'Hide', swipe_up: 0}
+    - {width: 5}
+    - {click: 'a', long_click: select_all, swipe_left: Left, swipe_right: Right, swipe_up: Up, swipe_down: Down}
+    - {click: 's', long_click: '~', swipe_left: Home, swipe_right: End, swipe_up: Page_Up, swipe_down: Page_Down}
+    - {click: 'd', long_click: '-', swipe_down: '_'}
+    - {click: 'f', long_click: '+', swipe_down: '='}
+    - {click: 'g', long_click: '\', swipe_down: '|'}
+    - {click: 'h', long_click: '[]{Left}', swipe_left: '[', swipe_right: ']'}
+    - {click: 'j', long_click: '{}{Left}', swipe_left: '{', swipe_right: '}'}
+    - {click: 'k', long_click: ':'}
+    - {click: 'l', long_click: ';'}
+    - {width: 5}
+    - {click: Shift_L, send_bindings: false, width: 15}
+    - {click: 'z', long_click: '`'}
+    - {click: 'x', long_click: cut}
+    - {click: 'c', long_click: copy}
+    - {click: 'v', long_click: paste}
+    - {click: 'b', long_click: Time, swipe_up: Date}
+    - {click: 'n', long_click: '"'}
+    - {click: 'm', long_click: "'"}
+    - {click: BackSpace, swipe_left: Escape, width: 15}
+    - {click: Mode_switch, long_click: Taigi_Panel, width: 15}
+    - {click: Keyboard_symbols, long_click: Keyboard_number}
+    - {click: ',', long_click: '<'}
+    - {click: space, width: 30}
+    - {click: '.', long_click: '>'}
+    - {click: '/', long_click: '?'}
+    - {click: Return, composing: Return1, long_click: CommitComment, width: 15}
+
+  preset_keyboards/phah_taibun_telex:
+    name: 拍台文Telex26鍵
+    ascii_mode: 0
+    columns: 10
+    width: 10
+    height: 55
+    lock: true
+    keys:
+    - {click: 'q', long_click: '!', swipe_up: 1}
+    - {click: 'w', long_click: '@', swipe_up: 2}
+    - {click: 'e', long_click: '#', swipe_up: 3}
+    - {click: 'r', long_click: '$', swipe_up: 4}
+    - {click: 't', long_click: '%', swipe_up: 5}
+    - {click: 'y', long_click: '^', swipe_up: 6}
+    - {click: 'u', long_click: '&', swipe_up: 7}
+    - {click: 'i', long_click: '*', swipe_up: 8}
+    - {click: 'o', long_click: '(){Left}', swipe_up: 9}
+    - {click: 'p', long_click: 'Hide', swipe_up: 0}
+    - {width: 5}
+    - {click: 'a', long_click: select_all, swipe_left: Left, swipe_right: Right, swipe_up: Up, swipe_down: Down}
+    - {click: 's', long_click: '~', swipe_left: Home, swipe_right: End, swipe_up: Page_Up, swipe_down: Page_Down}
+    - {click: 'd', long_click: '-', swipe_down: '_'}
+    - {click: 'f', long_click: '+', swipe_down: '='}
+    - {click: 'g', long_click: '\', swipe_down: '|'}
+    - {click: 'h', long_click: '[]{Left}', swipe_left: '[', swipe_right: ']'}
+    - {click: 'j', long_click: '{}{Left}', swipe_left: '{', swipe_right: '}'}
+    - {click: 'k', long_click: ':'}
+    - {click: 'l', long_click: ';'}
+    - {width: 5}
+    - {click: Shift_L, send_bindings: false, width: 15}
+    - {click: 'z', long_click: '`'}
+    - {click: 'x', long_click: cut}
+    - {click: 'c', long_click: copy}
+    - {click: 'v', long_click: paste}
+    - {click: 'b', long_click: Time, swipe_up: Date}
+    - {click: 'n', long_click: '"'}
+    - {click: 'm', long_click: "'"}
+    - {click: BackSpace, swipe_left: Escape, width: 15}
+    - {click: Mode_switch, long_click: Taigi_Panel, width: 15}
+    - {click: Keyboard_symbols, long_click: Keyboard_number}
+    - {click: ',', long_click: '<'}
+    - {click: space, width: 30}
+    - {click: '.', long_click: '>'}
+    - {click: '/', long_click: '?'}
+    - {click: Return, composing: Return1, long_click: CommitComment, width: 15}

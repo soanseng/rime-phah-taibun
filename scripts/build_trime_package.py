@@ -155,6 +155,8 @@ RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
 TRIME_UPSTREAM = "trime.upstream.yaml" #上游基座 (osfans/trime v3.3.12, 釘住)
+TONGWENFENG_UPSTREAM = "tongwenfeng.upstream.yaml" #標準主題基座 (上游 v3.3.12, 釘住)
+TONGWENFENG_PATCH = "tongwenfeng.trime.custom.yaml" #標準主題特化 patch (theme id=tongwenfeng.trime)
 APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
@@ -380,9 +382,9 @@ def build_tree(
     return dest
 
 
-def _bake_trime_theme(dest: Path) -> None:
-    """上游基座 + trime.custom.yaml patch → 合併版主題, 寫兩處:
-    shared/trime.yaml (部署源頭) 與 shared/build/trime.yaml (prebuilt fallback).
+def _bake_theme(dest: Path, base_file: str, patch_file: str, out_name: str) -> None:
+    """上游基座 + patch → 合併版主題, 寫兩處: shared/<out> (部署源頭) 與
+    shared/build/<out> (prebuilt fallback).
 
     確定性烘焙 (不走 Trime runtime patch): 實測首次主題部署有啟動競態
     (librime deployer 模組晚於主題初始化註冊, "unknown deployment task")
@@ -390,15 +392,16 @@ def _bake_trime_theme(dest: Path) -> None:
     的 fallback 是 shared/build/<id>.yaml (prebuiltDataDir), 首裝部署失敗時
     讀 prebuilt 成品即為完整主題。patch 僅允許「純量/映射深設定」—
     出現清單運算 (@next/=/ 等) 即報錯, 避免與 librime 語義漂移。
+
+    ruamel round-trip: 保留上游 0xRRGGBB 顏色 scalars 的原始寫法與註解 —
+    PyYAML 重射會把 hex int 十進位化, Trime ColorUtils.parseColor 只認
+    "0x…"/"#…" 寫法 (真機 crash: IllegalArgumentException Unknown color)。
     """
-    # ruamel round-trip: 保留上游 0xRRGGBB 顏色 scalars 的原始寫法與註解 —
-    # PyYAML 重射會把 hex int 十進位化, Trime ColorUtils.parseColor 只認
-    # "0x…"/"#…" 寫法 (真機 crash: IllegalArgumentException Unknown color)。
-    base = _yaml_rt.load((REPO_ROOT / "packaging" / "android" / TRIME_UPSTREAM).read_text(encoding="utf-8"))
-    patch = yaml.safe_load((REPO_ROOT / "packaging" / "android" / TRIME_PATCH).read_text(encoding="utf-8"))["patch"]
+    base = _yaml_rt.load((REPO_ROOT / "packaging" / "android" / base_file).read_text(encoding="utf-8"))
+    patch = yaml.safe_load((REPO_ROOT / "packaging" / "android" / patch_file).read_text(encoding="utf-8"))["patch"]
     for key in patch:
         if any(op in key for op in ("/@", "@next", "@before", "@after", "@last", "/=", "/+")):
-            raise SystemExit(f"錯誤: trime.custom.yaml 使用清單運算 {key!r} — 烘焙器不支援, 請改整段定義")
+            raise SystemExit(f"錯誤: {patch_file} 使用清單運算 {key!r} — 烘焙器不支援, 請改整段定義")
 
     def deep_set(node: dict, dotted: str, value: object) -> None:
         parts = dotted.split("/")
@@ -411,10 +414,20 @@ def _bake_trime_theme(dest: Path) -> None:
 
     for dotted, value in patch.items():
         deep_set(base, dotted, value)
-    with (dest / "trime.yaml").open("w", encoding="utf-8") as f:
+    with (dest / out_name).open("w", encoding="utf-8") as f:
         _yaml_rt.dump(base, f)
     (dest / "build").mkdir(exist_ok=True)
-    shutil.copyfile(dest / "trime.yaml", dest / "build" / "trime.yaml")
+    shutil.copyfile(dest / out_name, dest / "build" / out_name)
+
+
+def _bake_trime_themes(dest: Path) -> None:
+    """烘焙 fork 兩個主題: trime.yaml(預設) 與 tongwenfeng.trime.yaml(標準)。
+
+    標準主題同帶拍台文鍵盤/面板 (schema-id 配對需要 preset 存在於每個主題),
+    並把簡體主題名/配色名繁體化 (2026-10-01 使用者回饋)。
+    """
+    _bake_theme(dest, TRIME_UPSTREAM, TRIME_PATCH, "trime.yaml")
+    _bake_theme(dest, TONGWENFENG_UPSTREAM, TONGWENFENG_PATCH, "tongwenfeng.trime.yaml")
 
 
 def build_apk_assets(
@@ -439,7 +452,7 @@ def build_apk_assets(
     )
     for name in APK_ASSET_EXCLUDED:
         (tree / name).unlink(missing_ok=True)
-    _bake_trime_theme(tree)
+    _bake_trime_themes(tree)
     return tree
 
 
