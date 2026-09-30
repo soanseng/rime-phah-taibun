@@ -305,7 +305,17 @@ def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
         "Taigi_Back",
     ], "面板=選字/羅/TL-POJ/漢全羅/方案選單/返回"
     assert sum(k["width"] for k in panel) == 100, "面板寬度和須為 100 (自成一列)"
-    assert patch["preset_keys/BackSpace/label"] == "<-", "退格鍵面改 <-"
+    assert patch["preset_keys/BackSpace/label"] == "←", "退格鍵面=倒退箭頭"
+    fixbar = patch["liquid_keyboard/fixed_key_bar/keys"]
+    assert fixbar[-1] == "Settings", "「…」面板固定列加設定入口"
+    assert fixbar[:6] == [
+        "liquid_keyboard_exit",
+        "space1",
+        "BackSpace",
+        "Return2",
+        "clipboard_window",
+        "liquid_keyboard_switch",
+    ], "上游固定列鍵全數保留"
 
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
@@ -336,7 +346,8 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     theme = yaml.safe_load((dest / "trime.yaml").read_text(encoding="utf-8"))
     assert theme["config_version"] != "3.0", "烘焙主題需帶 bump 過的 config_version"
     assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含拍台文鍵盤"
-    assert theme["preset_keys"]["BackSpace"]["label"] == "<-"
+    assert theme["preset_keys"]["BackSpace"]["label"] == "←"
+    assert "Settings" in theme["liquid_keyboard"]["fixed_key_bar"]["keys"], "…面板含設定入口"
     assert theme["preset_keys"]["Menu"]["send"] == "MENU", "上游 Menu preset 不動"
     assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (
         dest / "trime.yaml"
