@@ -469,3 +469,17 @@ def test_third_party_notices_and_license_texts_are_bundled(tmp_path: Path) -> No
     assert "Version 3, 29 June 2007" in lgpl
     assert "GNU GENERAL PUBLIC LICENSE" in gpl
     assert "MIT License" in project_license
+
+
+def test_schemas_use_express_editor_for_direct_commit() -> None:
+    """A-d 釘住: 選字（含點擊候選）涵蓋全部輸入必須直接上屏.
+
+    librime ConcreteEngine::OnSelect (engine.cc) 只在 _auto_commit 開啟時 commit,
+    而 _auto_commit 由 Editor 建構子設定: fluency_editor=false（點候選只進組字,
+    需再按空白）、express_editor=true。上游 luna_pinyin（逐詞）= express_editor。
+    真機重現與修復見 rime-trime-taigi fix(schema) commit（Solana Seeker 驗證）。
+    """
+    for name in ("phah_taibun.schema.yaml", "phah_taibun_telex.schema.yaml"):
+        processors = yaml.safe_load((REPO / "schema" / name).read_text(encoding="utf-8"))["engine"]["processors"]
+        assert "express_editor" in processors, f"{name} 缺 express_editor — 點候選不會直接上屏（A-d）"
+        assert "fluency_editor" not in processors, f"{name} 殘留 fluency_editor — 點候選只進組字（A-d）"
