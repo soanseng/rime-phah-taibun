@@ -1,8 +1,8 @@
 # Android 部署（同文 / fcitx5-android）
 
-拍台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows 有安裝包；macOS／Linux 用指令或複製檔案；Android **沒有 APK**。把發行包裡的方案檔放進現成的 Rime 前端，再在 App 裡重新部署。
+拍台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows 有安裝包；macOS／Linux 用指令或複製檔案；Android 有**兩條路**：裝客製 APK「拍台文 Trime」（最省事，見下），或把發行包裡的方案檔放進現成的 Rime 前端再重新部署。
 
-最快的方式是下載 Releases 的 **`PhahTaiBun-Trime.zip` 一鍵包**（拍台文＋注音，含 `~` 反查依賴），解壓到 Rime 使用者資料夾後重新部署；想逐檔自己控制就往下看「最快路徑」。
+要留在官方 Trime／fcitx5-android 的話：下載 Releases 的 **`PhahTaiBun-Trime.zip` 一鍵包**（拍台文＋注音，含 `~` 反查依賴），解壓到 Rime 使用者資料夾後重新部署；想逐檔自己控制就往下看「最快路徑」。
 
 兩個前端都內建 **librime-lua**（拼音註解、漢羅、Telex 都靠它）：
 
@@ -12,6 +12,47 @@
 | [fcitx5-android](https://github.com/fcitx5-android/fcitx5-android) + **RIME 外掛** | 小企鵝輸入法 5，Rime 是外掛 | 主程式與 `org.fcitx.fcitx5.android.plugin.rime` 都要裝；[說明](https://fcitx5-android.github.io/faq/) |
 
 社群手動部署，不是官方支援等級。第一次部署會編譯約 5 MB 主字典，可能要數分鐘，不要把 App 滑掉。
+
+---
+
+## 客製 APK：拍台文 Trime（最省事）
+
+[soanseng/rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 是同文（Trime）的客製版：**拍台文＋注音＋嘸蝦米全部預裝**，裝完即用——不必找檔案、不必重新部署。介面繁體台灣化；**點候選直接上屏**；長按中文（方案）鍵彈出**拍台文面板**（選字、上頁／下頁、羅、TL/POJ、漢羅/全羅、方案選單）；兩種主題——「拍台文·數字列」（40 鍵，數字列直打聲調）與「拍台文·精簡」（26 鍵，長按符號、上滑數字）。
+
+只發佈在 **GitHub Releases**——F-Droid、Google Play 都**沒有**上架。
+
+### 下載安裝（手動）
+
+1. 到 [Releases](https://github.com/soanseng/rime-trime-taigi/releases) 下載對應手機架構的 APK——大多數手機是 `arm64-v8a`，電腦模擬器用 `x86_64`。
+2. 點開 APK → 系統要求允許「安裝未知應用程式」→ 允許後安裝。
+3. 系統設定 → 語言與輸入法 → 啟用 **拍台文 Trime**，並把預設輸入法切成它。
+4. 直接打 `gua beh khi tshit tho` →「我 beh 去 tshit-thô」。方案已預選；模式切換用長按中文鍵的拍台文面板。
+
+與官方同文**可並存**（套件名不同：`com.soanseng.phahtaibun`），兩個都裝也行。使用者資料夾在 `Android/data/com.soanseng.phahtaibun/files/rime`。
+
+### Obtainium（自動追蹤更新）
+
+[Obtainium](https://github.com/ImranR98/Obtainium) 專門追蹤「只發 GitHub Releases」的 App，本 APK 就是這種：
+
+1. 先裝 Obtainium（它本身在 [F-Droid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/)）。
+2. 右下 ＋ → App Source URL 填 `https://github.com/soanseng/rime-trime-taigi` → Add。
+3. 一個 Release 有 4 個架構的 APK：保持 **Filter APKs by CPU Architecture** 開啟（預設）會自動挑對，或用 Additional settings 的 APK filter regexp（如 `arm64-v8a`）固定。
+4. 之後有新 Release，Obtainium 會自動提醒更新。
+
+### 更新
+
+手動：下載新版 APK 直接覆蓋安裝（設定與詞庫保留）。Obtainium：列表點更新即可。
+
+### 自行 build
+
+```bash
+git clone https://github.com/soanseng/rime-trime-taigi.git
+cd rime-trime-taigi
+git submodule update --init --recursive
+./gradlew assembleDebug
+```
+
+需要 Android SDK＋NDK；上游 lua patch 會自動套用。產出在 `app/build/outputs/apk/`（debug 可直接安裝；release 要自備簽章設定）。
 
 ---
 
@@ -30,7 +71,7 @@
 
 - `default.custom.yaml` 以 `@next` 追加方案，不動前端內建清單（嘸蝦米版多註冊 `liur`／`easy_en`）
 - `THIRD-PARTY-NOTICES.txt`＋`licenses/`（LGPL-3.0／GPL-3.0 全文）＋`LICENSE-PhahTaiBun.txt`：terra_pinyin 與 bopomofo 為 LGPL-3.0，隨包附授權全文與逐檔來源
-- `trime.custom.yaml`（**預設生效**：候選拼音註解＋鍵盤功能列）與 `INSTALL-Trime.md` 逐步說明
+- `trime.custom.yaml`（**預設生效**：候選拼音註解＋拍台文鍵盤與長按面板）與 `INSTALL-Trime.md` 逐步說明
 
 **不含**字體與使用者詞庫。
 
@@ -148,7 +189,15 @@ patch:
 
 ## Android 按鍵與排版
 
-桌面快捷鍵在手機上不存在，但功能都在：一鍵包的 `trime.custom.yaml` 會在鍵盤底部加一列**拍台文功能列**——`選字`（＝桌面 `Tab`：整句連打逐詞選字，選完用 `asdfghjkl;` 挑候選）、`上頁`／`下頁`（＝`[`／`]` 翻頁）、`羅`（＝`\`：手動漢羅下把該詞輸出成羅馬字）、`TL/POJ` 與 `漢羅/全羅`（一鍵切換模式，鍵面顯示現況，狀態跨 session 記憶）。不想用功能列就刪掉 `trime.custom.yaml` 裡 `preset_keyboards/…/keys/@next` 各行再重新部署。其他入口照舊：`?`（萬用查字）＝長按 `/`，`~`（**華語注音反查**）＝長按 `b`，`` ` ``（符號選單）＝長按 `z`；`;`、`'`（上屏後同音選字）、`,`、`.` 是直鍵；`Ctrl+Enter`、`Ctrl+Backspace` 在 Trime 有現成預設鍵（`CommitRawInput`、`BackToPreviousSyllable`）可放上鍵盤。完整對照表見一鍵包內的 `INSTALL-Trime.md`。
+桌面快捷鍵在手機上不存在，但功能都在。拍台文方案（主方案與 Telex）配的是**上游版面＋長按面板**：
+
+- **長按中文（方案）鍵** → 拍台文面板一列 8 鍵：`選字`（＝桌面 `Tab`：整句連打逐詞選字，接著用 `asdfghjkl;` 挑候選）、`上頁`／`下頁`（＝`[`／`]`）、`羅`（＝`\`：手動漢羅下把該詞輸出成羅馬字）、`TL/POJ`、`漢羅/全羅`（模式切換，跨 session 記憶）、方案選單、返回。
+- **兩種主題**：「拍台文·數字列」40 鍵（數字列直打聲調 1–8）、「拍台文·精簡」26 鍵（長按符號、上滑數字）。切換主題不會失去面板。
+- **點候選直接上屏**，不必再多按一次空白；`a` 長按＝全選；「…」面板可開設定（拍台文說明頁）。
+- 翻頁以**面板的上頁／下頁**為準（候選列滑動在手機上不可靠，實測如此）。
+- 其他方案（嘸蝦米、注音）完全用上游鍵盤，零改動。
+
+其他入口照舊：`?`（萬用查字）＝長按 `/`，`~`（**華語注音反查**）＝長按 `b`，`` ` ``（符號選單）＝長按 `z`；`;`、`'`（上屏後同音選字）、`,`、`.` 是直鍵。完整對照表見一鍵包內的 `INSTALL-Trime.md`。
 
 候選註解（拼音＋推薦標記）預設開啟：右側註解 13sp、候選列高 30（對齊桌面版「漢字＋拼音」）。窄螢幕想改註解置頂整列（`comment_position: top`）：`candidate_view_height` 要同時容納 22sp 候選字與註解列，**48 只是保守起點、非保證**（預設數值是 right 模式的，搭 top 幾乎一定不足），改完上機確認沒有裁切再重新部署。
 
@@ -156,7 +205,7 @@ patch:
 
 ## 更新
 
-沒有 Android 安裝器。每次發新版：
+**客製 APK**：從 [rime-trime-taigi Releases](https://github.com/soanseng/rime-trime-taigi/releases) 下載新版 APK 覆蓋安裝，或用 Obtainium 自動更新（見上）。**一鍵包／逐檔**：每次發新版：
 
 1. 下載最新 `PhahTaiBun-Trime.zip`（一鍵包）覆蓋，或再下載 `PhahTaiBun-source.zip` 逐檔更新。
 2. 覆蓋正式的 `phah_taibun*` schema、主字典、規則檔與 `lua/phah_taibun_*.lua`；嘸蝦米是你自己裝的，一鍵包不會動它。
@@ -167,8 +216,8 @@ patch:
 
 ## 限制
 
-- **沒有官方 APK。** 系統層選同文或小企鵝，再在 Rime 方案清單選拍台文。
-- **虛擬鍵盤 ≠ 桌面快捷鍵。** 點候選；方案在 App 選單切。fcitx5-android 鍵盤目前不能自訂佈局。
+- **主專案不出 APK**；客製 APK 由姊妹 repo [rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 發佈（見開頭）。裝一鍵包的場合：系統層選同文或小企鵝，再在 Rime 方案清單選拍台文。
+- **虛擬鍵盤 ≠ 桌面快捷鍵。** 點候選直接上屏；方案與模式在長按面板切。fcitx5-android 鍵盤目前不能自訂佈局。
 - **Lua 必須在。** 候選沒拼音註解、漢羅沒轉：先看 `lua/phah_taibun_*.lua` 是否在 `lua/`，再部署。
 - 同文芫荽字體可放使用者資料夾 `fonts/`，再於主題指定：[iansui](https://github.com/ButTaiwan/iansui)。
 - 依公開文件整理，**未做官方真機簽核**。路徑以 App 內顯示為準。

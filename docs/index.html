@@ -127,7 +127,7 @@
                 "name": "這是手機輸入法嗎？",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "官方安裝包只有 Windows。macOS 用指令安裝，Linux 用 ./install.sh。同一套 Rime 方案可以手動裝進 Android 的同文（Trime）或 fcitx5-android 的 Rime 外掛，沒有 APK。"
+                  "text": "Android 有客製 APK「拍台文 Trime」，只發佈在 GitHub Releases（F-Droid／Google Play 未上架），拍台文＋注音＋嘸蝦米全部預裝；也可用 Obtainium 自動追蹤更新。或者把方案一鍵包手動裝進官方同文（Trime）或 fcitx5-android 的 Rime 外掛。Windows 有安裝包，macOS 用指令安裝，Linux 用 ./install.sh。"
                 }
               },
               {
@@ -736,48 +736,42 @@ cd rime-phah-taibun
 ./install.sh</code></pre>
             </div>
             <div class="tab-panel" id="panel-android" role="tabpanel" hidden>
-              <h3>Android：先裝同文 Trime，閣放拍台文入去（無 APK）</h3>
+              <h3>Android：拍台文 Trime APK（干焦佇 GitHub）抑是官方同文＋一鍵包</h3>
               <ol>
                 <li>
-                  <strong>先裝輸入法 App</strong>：F-Droid 裝
-                  <a href="https://f-droid.org/packages/com.osfans.trime"
-                    >com.osfans.trime</a
-                  >（上省事）抑是對<a
-                    href="https://github.com/osfans/trime/releases"
-                    >Trime Releases</a
+                  <strong>上省事：裝客製 APK</strong>——對
+                  <a href="https://github.com/soanseng/rime-trime-taigi/releases"
+                    >rime-trime-taigi Releases</a
                   >
-                  載 APK；替代：小企鵝輸入法 5 ＋ RIME 外掛。
+                  載 <code>arm64-v8a</code> 版（大多數手機；模擬器用
+                  <code>x86_64</code>），允許「安裝未知應用程式」了後裝起來。拍台文＋注音＋嘸蝦米攏預裝、介面繁體化、點候選直接上屏，長按中文鍵有拍台文面板，免閣部署。
                 </li>
                 <li>
-                  對<a
-                    href="https://github.com/soanseng/rime-phah-taibun/releases"
-                    >本專案 Releases</a
-                  >
-                  載一鍵包：<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）抑是
-                  <code>PhahTaiBun-Trime-liur.zip</code>（閣加嘸蝦米，約 20
-                  MB），解壓入
-                  <code>Android/data/com.osfans.trime/files/rime</code>（Android
-                  11+ 檔案總管入無去，請用電腦 USB／MTP
-                  抑是同文內建檔案管理）；<code>default.custom.yaml</code> 已用
-                  <code>@next</code> 追加好，免家己改。
+                  <strong>愛自動更新：用 Obtainium</strong>——<a
+                    href="https://f-droid.org/packages/dev.imranr.obtainium.fdroid/"
+                    >F-Droid 裝 Obtainium</a
+                  >，加 app source
+                  <code>https://github.com/soanseng/rime-trime-taigi</code>，開「Filter
+                  APKs by CPU Architecture」（預設）就會揀著正確的架構，將來自動揣新版。
                 </li>
                 <li>
-                  同文選單 →
-                  <strong>重新部署</strong>（頭一擺編譯字典幾分鐘，毋通共 App
-                  滑掉）。
-                </li>
-                <li>
-                  方案清單選「拍台文(台)」就會拍字；漢羅↔全羅、TL↔POJ 佇 App
-                  開關面板切。長按：<code>[</code>/<code>]</code>＝長按
-                  <code>u</code>/<code>i</code>、<code>?</code>＝長按
-                  <code>/</code>、<code>~</code>＝長按
-                  <code>b</code>、符號選單＝長按 <code>z</code>。
+                  <strong>啟用「拍台文 Trime」輸入法</strong>，方案已預選，直接拍
+                  <code>gua beh khi tshit tho</code> →「我 beh 去
+                  tshit-thô」。漢羅↔全羅、TL↔POJ 長按中文鍵開面板切。
                 </li>
               </ol>
               <p>
-                <a href="guide.html#/android"
-                  >完整 Android 步驟、路徑佮按鍵對照</a
+                <strong>替代：官方同文＋一鍵包</strong>——F-Droid 裝
+                <a href="https://f-droid.org/packages/com.osfans.trime"
+                  >com.osfans.trime</a
+                >，對<a
+                  href="https://github.com/soanseng/rime-phah-taibun/releases"
+                  >本專案 Releases</a
                 >
+                載 <code>PhahTaiBun-Trime.zip</code>（抑是加嘸蝦米的
+                <code>-liur</code> 版）解壓入
+                <code>Android/data/com.osfans.trime/files/rime</code>，重新部署了後揀「拍台文(台)」。
+                <a href="guide.html#/android">完整步驟、路徑佮按鍵對照</a>。
               </p>
             </div>
           </div>
@@ -917,12 +911,14 @@ cd rime-phah-taibun
               <p>
                 官方安裝包干焦
                 Windows（<code>PhahTaiBunSetup.exe</code>）。macOS
-                用指令安裝，Linux 用 <code>./install.sh</code>。Android 無
-                APK：先家己裝同文 Trime 抑是小企鵝 5 ＋ RIME 外掛，閣對本專案
-                Releases
-                揀一个包——<code>PhahTaiBun-Trime.zip</code>（拍台文＋注音）抑是
-                <code>PhahTaiBun-Trime-liur.zip</code>（閣加嘸蝦米）——放入 Rime
-                使用者資料夾重新部署；完整步驟見
+                用指令安裝，Linux 用 <code>./install.sh</code>。Android
+                有客製 APK「拍台文 Trime」，干焦佇 <a
+                href="https://github.com/soanseng/rime-trime-taigi/releases"
+                >GitHub Releases</a
+                >（F-Droid／Google Play 攏無上架），拍台文＋注音＋嘸蝦米攏預裝、免部署，嘛會當用
+                Obtainium 自動追新版；抑是裝官方同文 Trime／小企鵝 5 ＋ RIME
+                外掛，閣對本專案 Releases 揀
+                <code>PhahTaiBun-Trime.zip</code> 一鍵包放入去重新部署。完整步驟見
                 <a href="guide.html#/android">Android 部署</a>。
               </p>
             </details>
