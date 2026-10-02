@@ -44,6 +44,12 @@ CASES = [
     ("axi", "a1i"),
     ("ax-", "a1-"),
     ("tai5x", "tai5x"),
+    # ff = -- (手動輕聲連字): f 在完整音節後成 -, 接在任何 - 之後繼續成 -
+    # (與主方案字面 - 連打不限次數一致); 如 suivffah → sui2--ah「Súi--ah!」
+    ("taidffgiv", "tai5--gi2"),
+    ("taid-fgiv", "tai5--gi2"),
+    ("taid--fgiv", "tai5---gi2"),
+    ("suivffah", "sui2--ah"),
 ]
 
 

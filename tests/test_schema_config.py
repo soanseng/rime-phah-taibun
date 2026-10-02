@@ -179,6 +179,19 @@ def test_f_means_hyphen_never_ph_fuzzy():
     assert "`f` 模糊拼寫只在" not in guide
 
 
+def test_hyphen_is_composable_for_manual_light_tone():
+    """-- 可直接鍵入手動輕聲連字: 兩個方案的 speller 都收 -.
+
+    主方案沒有 Telex processor 代打連字符, 使用者要打「Súi--ah!」的
+    手動輕聲就得連按兩個 -; alphabet 不含 - 的話 -- 根本進不了組字列.
+    Telex 方案另由 f/-- 正規化覆蓋 (tests/test_telex_parser.py 的 ff 案例).
+    """
+    for schema_path in ("schema/phah_taibun.schema.yaml", "schema/phah_taibun_telex.schema.yaml"):
+        speller = yaml.safe_load(Path(schema_path).read_text(encoding="utf-8"))["speller"]
+        assert "-" in speller["alphabet"], schema_path
+        assert "-" in speller["delimiter"], schema_path
+
+
 def test_brackets_page_everywhere_select_char_removed():
     """`[`/`]` 在所有選單一律翻頁; 以詞定字 (select_char) 已整體移除.
 

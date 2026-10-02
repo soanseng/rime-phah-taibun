@@ -11,7 +11,8 @@
 --   q = tone 9
 --   z / zh stay 1:1 in composition; prism derive/^ts/z/ and derive/^tsh/zh/
 --   map them onto the shared TL dictionary
---   f  → syllable hyphen after a complete syllable
+--   f  → syllable hyphen after a complete syllable; ff = -- (manual
+--        light-tone liân-jī marker)
 
 local M = {}
 
@@ -190,7 +191,9 @@ function M.normalize(input)
     elseif input:sub(i, i) == "-" or input:sub(i, i) == " " or input:sub(i, i) == "'" then
       emit(input:sub(i, i), "delim")
       i = i + 1
-    elseif input:sub(i, i) == "f" and last_kind == "syl" then
+    elseif input:sub(i, i) == "f" and (last_kind == "syl" or (out[#out] or ""):match("%-$")) then
+      -- 音節後 f 成 -；接在任何連字號之後繼續成 -（ff = -- 手動輕聲連字；
+      -- 不限次數，與字面 - 連打行為一致）
       emit("-", "delim")
       i = i + 1
     else
