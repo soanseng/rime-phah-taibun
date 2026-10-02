@@ -19,7 +19,7 @@
 
 [soanseng/rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 是同文（Trime）的客製版：**拍台文＋注音＋嘸蝦米全部預裝**，裝完即用——不必找檔案、不必重新部署。介面繁體台灣化；**點候選直接上屏**；長按中文（方案）鍵彈出**拍台文面板**（選字、上頁／下頁、羅、TL/POJ、漢羅/全羅、方案選單）；兩種主題——「拍台文·數字列」（40 鍵，數字列直打聲調）與「拍台文·精簡」（26 鍵，長按符號、上滑數字）。
 
-只發佈在 **GitHub Releases**——F-Droid、Google Play 都**沒有**上架。
+只發佈在 **GitHub Releases**——沒有官方 APK：F-Droid、Google Play 都沒有上架，只有這個客製版。
 
 ### 下載安裝（手動）
 
