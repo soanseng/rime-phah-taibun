@@ -2,7 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=20";
+} from "../dict.js?v=21";
+import { formatRomanization, stripTones } from "../roman.js?v=21";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -14,13 +15,12 @@ const dictLink = (word, label = "教典") =>
     .attr("rel", "noopener")
     .text(label);
 
-export function initConverter(dict, hints, grammarCheck) {
+export function initConverter(dict, hints, grammarCheck, revIn = null) {
   // 延伸詞層：hint 照字典實際內容顯示——無 src 詞就毋通講一个
   // 永遠出袂來的橘虛線標記（公開包這馬有延伸詞，會顯示）。
   const hasExt = Object.values(dict).some((e) => e.src);
   const hintH2R = () => "點漢字換讀音；⟨?⟩ 表示詞典揣無。"
-    + (hasExt ? "虛線橘字＝延伸詞（讀音出自拍台文字典，指頭懸看教典收錄狀態）。" : "");
-  const rev = buildReverseIndex(dict);
+  const rev = revIn ?? buildReverseIndex(dict);
   let lm = null;        // bigram LM（羅→漢用）
   let lmPromise = null; // single-flight：避免重複 fetch
   const ensureLM = () => {
@@ -82,26 +82,54 @@ export function initConverter(dict, hints, grammarCheck) {
         gi++;
       }
     }
-    renderHints(String($("#cv-in").val() ?? ""));
+  };
+  // r2h：結果狀態＋詞卡點選循環同音候選（手動改正同音歧義）
+  const r2h = { pieces: [], overrides: new Map() };
+  const r2hPieces = (r) => {
+    // han 內底照詞序揣位置，拆做 [分隔段] × [詞段]——覆寫用
+    const pieces = [];
+    let cur = 0;
+    for (const w of r.words ?? []) {
+      const at = r.han.indexOf(w.word, cur);
+      if (at < 0) continue;
+      if (at > cur) pieces.push({ s: r.han.slice(cur, at) });
+      pieces.push({ w: w.word, reading: w.reading });
+      cur = at + w.word.length;
+    }
+    pieces.push({ s: r.han.slice(cur) });
+    return pieces;
   };
   const paintR2H = () => {
     const input = String($("#cv-in").val() ?? "");
-    // bigram lattice 解碼（LM lazy-load；載入前 fallback greedy）
     const r = lm ? decodeTlToHan(input, rev, lm) : tlToHan(input, rev);
     if (!lm) ensureLM().then((m) => { if (m && dir === "r2h") paint(); });
+    r2h.pieces = r2hPieces(r);
+    r2h.overrides.clear();
     $("#cv-h1").text("漢字（實驗）");
     $("#cv-h2").text("詞對照");
-    $("#cv-tl").text(r.han || "—");
+    const hanText = () => r2h.pieces.map((p) => p.w ? (r2h.overrides.get(p) ?? p.w) : p.s).join("");
+    const $out = $("#cv-tl").text(r.han || "—");
     const $list = $("#cv-poj").empty().removeClass("roman");
     if (r.words?.length) {
-      for (const w of r.words.slice(0, 80)) {
-        const tl = formatRomanization(w.reading.replace(/0(?=[a-z])/g, ""));
-        $list.append(
-          $("<span class='wchip'></span>")
-            .append($("<b></b>").text(w.word))
-            .append($("<span class='wchip-tl'></span>").text(tl))
-            .append(dictLink(w.word)),
-        );
+      for (const p of r2h.pieces) {
+        if (!p.w) continue;
+        const tl = formatRomanization(p.reading.replace(/0(?=[a-z])/g, ""));
+        const alts = rev.get(stripTones(p.reading)) ?? [];
+        const $chip = $("<button type='button' class='wchip'></button>")
+          .attr("title", alts.length > 1
+            ? `點換同音詞（${alts.length} 候選）：${alts.slice(0, 8).map((a) => a.word).join("・")}`
+            : "同音詞")
+          .append($("<b></b>").text(p.w))
+          .append($("<span class='wchip-tl'></span>").text(tl));
+        $chip.on("click", () => {
+          if (alts.length < 2) return;
+          const cur = r2h.overrides.get(p) ?? p.w;
+          const i = (alts.findIndex((a) => a.word === cur) + 1) % alts.length;
+          r2h.overrides.set(p, alts[i].word);
+          $chip.find("b").text(alts[i].word);
+          $out.text(hanText());
+        });
+        $list.append($chip, " ");
       }
     } else {
       $list.text("—");

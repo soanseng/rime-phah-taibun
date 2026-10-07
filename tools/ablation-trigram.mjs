@@ -1,6 +1,6 @@
 // A/B：trigram 開vs關（同 bundle、同解碼參數）——四語料 char-sim
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=20";
-import { toNumeric } from "../js/roman.js?v=20";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=21";
+import { toNumeric } from "../js/roman.js?v=21";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 

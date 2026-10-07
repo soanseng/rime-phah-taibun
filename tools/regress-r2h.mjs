@@ -1,6 +1,6 @@
 // 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=20";
-import { segment, render } from "../js/dict.js?v=20";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=21";
+import { segment, render } from "../js/dict.js?v=21";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
@@ -21,7 +21,7 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=20");
+const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=21");
 // 上游 rime-phah-taibun v0.9.4 parity：Python tl_to_poj 內嵌 poj_fix_diacritics
 // （音節尾 oa/oe 標 o、ui 標 u；大小寫攏支援；空白嘛是音節邊界）
 ok("tlToPoj oa 修正", nfc(tlToPoj("gua\u0304")) === nfc("go\u0304a"));
@@ -40,6 +40,19 @@ ok("的 選中", r2.han.includes("的"));
 const keep = decodeTlToHan("Guá kin-á-ji̍t beh khì Tâi-pak.\nLí kám ē? xyz!", rev, lm);
 ok("換行保留", keep.han.includes("\n"));
 ok("未命中原字", keep.han.includes("xyz"));
+// 隱性調號（v21）：有標調句內無調符音節＝1/4 聲；規句無調／--輕聲／mih 例外
+// （句界佇標點重置——tsit 愛佮標調詞仝句才推斷著）
+const r3 = decodeTlToHan("Goá khòaⁿ tsit ê ang--á", rev, lm);
+ok("tsit→這（同句推斷 tone4）", r3.han.includes("這")
+  && r3.words.find((x) => x.word === "這")?.reading === "tsit4");
+const r5 = decodeTlToHan("li khi tai-pak", rev, lm); // 規句免調：mode 照舊
+ok("tsi̍t→一", decodeTlToHan("Tsi̍t ê lâng khì Tâi-pak.", rev, lm).han.includes("一"));
+const r4 = decodeTlToHan("Án-ne tsiah ē tsi̍t ê êng-ióng-sòo.", rev, lm);
+ok("tsiah→才", r4.han.includes("才"));
+ok("siánn-mih→啥物（mih 例外）", decodeTlToHan("Siánn-mih?", rev, lm).han.includes("啥物"));
+ok("舊式 o·＝oo", decodeTlToHan("Tô·-su-kóan ū chheh.", rev, lm).han.includes("圖書館"));
+ok("--輕聲維持免調", decodeTlToHan("Suà--lo̍h-lâi!", rev, lm).han.includes("紲落"));
+ok("規句無調＝免調模式", r5.words.every((x) => !/[1-9]/.test(x.reading)));
 // 句內變調：句尾本調、跨行 flush
 const segs = segment("我今仔日欲去台北。\n伊教我唱歌。", dict);
 const lt = new Map(JSON.parse(readFileSync(join(bundle, "hints.json"), "utf8")).lighttone.map((x) => [x.han, x.reading]));

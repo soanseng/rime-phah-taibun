@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=20";
+} from "./roman.js?v=21";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -248,6 +248,7 @@ export function buildLM(lmJson) {
     uni, total,
     bigrams: new Map(Object.entries(lmJson.bigrams)),
     trigrams: new Map(Object.entries(lmJson.trigrams ?? {})),
+    runi: new Map(Object.entries(lmJson.runi ?? {})),
     tonefreq: lmJson.tonefreq ?? {},
   };
 }
@@ -269,8 +270,9 @@ function splitLiterals(text, runs) {
 // 輸入切做 [羅馬字段] × [分隔符]（標點、空白、斷行原樣保留）
 function tlRuns(tlText) {
   // 羅馬字段含字母/數字/結合調符/o͘/連字號（-、-- 輕聲、– — dash）；
+  // 舊式 o·（U+00B7）佮 o͘ 仝款是 oo 音——入羅馬字段，toNumeric 正規化；
   // 分隔符只有標點、空白、斷行——原樣保留。
-  const re = /[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u207F\u2013\u2014-]+/g;
+  const re = /[A-Za-z0-9\u00C0-\u024F\u0300-\u036f\u0358\u00B7\u207F\u2013\u2014-]+/g;
   const runs = [];
   let last = 0, m;
   while ((m = re.exec(tlText))) {
@@ -287,15 +289,17 @@ const isHanTok = (tok) => [...tok].some((ch) => {
   return (o >= 0x3400 && o <= 0x9FFF) || (o >= 0x20000 && o <= 0x3FFFF);
 });
 
-// 羅馬字段 → { bare: 去調 TL 音節鍵, raws: 原字音節, tones: 每音節調號 }
+// 羅馬字段 → { bare: 去調 TL 音節鍵, raws: 原字音節, tones: 每音節調號,
+//              neutral: `--` 後壁的輕聲音節 }
 function romToSylls(rom) {
   const raws = rom.split(/[-\s]+/).filter(Boolean);
   const nums = toNumeric(rom).split(/[-\s]+/).filter(Boolean);
-  if (raws.length !== nums.length) return { bare: [rom], raws: [rom], tones: ["0"] };
+  if (raws.length !== nums.length) return { bare: [rom], raws: [rom], tones: ["0"], neutral: [true] };
   return {
     bare: nums.map((s) => pojToTl(s).replace(/[0-9]/g, "")),
     raws,
     tones: nums.map((s) => s.match(/[1-9]$/)?.[0] ?? "0"),
+    neutral: [...rom.matchAll(/(-*)[^-\s]+/g)].map((m) => m[1].length >= 2),
   };
 }
 
@@ -333,7 +337,9 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
   };
   // bigram→trigram backoff：有 (a,b,w) 就用 P(w|a,b)，無就退 P(w|b)
   const wordScore = (prev2, prev, c, tones, i, L, key, hasExact) => {
-    const w_uni = lm.uni.get(c.word) ?? 0;
+    // 讀音條件化：runi＝(字,去調音節) 實計數，佮 uni 平滑（runi 稀讀
+    // 袂當歸零——強 uni 詞猶保有基本質量，unknown 袂偷走）。
+    const w_uni = (lm.runi.get(`${c.word}\t${key}`) || 0) + 0.1 * (lm.uni.get(c.word) || 0);
     let pCtx = 0;
     if (prev) {
       const c123 = prev2 ? (lm.trigrams.get(`${prev2}\t${prev}\t${c.word}`) ?? 0) : 0;
@@ -347,7 +353,10 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
       }
     }
     const p = interp * pCtx + (1 - interp) * pUni(w_uni);
-    return Math.log(p + 1e-12) + (c.gloss ? glossBonus : 0)
+    // 紅利＝主詞典域詞（有釋義抑非 rime 延伸）。注：!src 毋是「教典收錄」
+    // 的證明（build.py 干焦共 rime 延伸詞標 src）——是「非延伸詞」訊號；
+    // gloss 是教典釋義覆蓋率的偏誤代理（𪜶/抑 無 h），合用實測 +0.4～0.7。
+    return Math.log(p + 1e-12) + (c.gloss || !c.rime ? glossBonus : 0)
       - (c.sane ? 0 : insaneCost) + toneScore(c, tones, i, L, key, hasExact);
   };
   const parts = [];
@@ -356,23 +365,32 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
 
   const decodeSentence = (items) => {
 
-    const bare = [], raws = [], tones = [], runEnd = [];
+    const bare = [], raws = [], tones = [], neutral = [], runEnd = [];
     const sepAt = new Map(); // 音節 index → 該欄位前的分隔符（空白）
     let pendingSep = "";
     let started = false;
     for (const it of items) {
       if (it.sep !== undefined) { pendingSep += it.sep; continue; }
-      const { bare: b, raws: r, tones: tn } = romToSylls(it.rom);
+      const { bare: b, raws: r, tones: tn, neutral: nt } = romToSylls(it.rom);
       if (!b.length) { pendingSep += it.rom; continue; }
       if (started) sepAt.set(bare.length, pendingSep);
       pendingSep = "";
       started = true;
       for (let k = 0; k < b.length; k++) {
-        bare.push(b[k]); raws.push(r[k]); tones.push(tn[k]);
+        bare.push(b[k]); raws.push(r[k]); tones.push(tn[k]); neutral.push(nt[k]);
         runEnd.push(k === b.length - 1);
       }
     }
     const tailSep = pendingSep;
+    // 正字法：有標調的句，無調符音節是 1 聲（舒聲）抑是 4 聲（-p/-t/-k/-h 入聲）。
+    // 教典例句驗證：可判定的無調符音節 98.2% 是 1/4 聲。規句無調＝免調輸入，
+    // 維持 "0"；`--` 後輕聲維持 "0"；mih 除外（啥物 siánn-mih 正字法特例，
+    // 教典 103 擺無調符、本調 mih8）。
+    if (tones.some((t) => t !== "0")) {
+      for (let k = 0; k < tones.length; k++)
+        if (tones[k] === "0" && !neutral[k] && bare[k] !== "mih")
+          tones[k] = /[ptkh]$/i.test(bare[k]) ? "4" : "1";
+    }
     const N = bare.length;
     total += N;
     if (!N) { parts.push(tailSep); return; }
@@ -414,6 +432,34 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
     // backtrace
     const toks = [];
     for (let n = best.node; n; n = n.prev) toks.unshift(n);
+    // 逐字文讀 fallback：≥2 連續未知音節（外來／華語域詞，親像 抗原、
+    // 腸內）若逐音節攏有單漢字詞候選，就選一字（教典域優先、uni 次之，
+    // 有調號優先全對）組起來；組袂完整就照原樣留羅馬字。
+    for (let a = 0; a < toks.length; ) {
+      if (isHanTok(toks[a].tok) || toks[a].syl !== 1) { a++; continue; }
+      let b = a;
+      while (b < toks.length && !isHanTok(toks[b].tok) && toks[b].syl === 1) b++;
+      if (b - a >= 2) {
+        const chars = [];
+        let ok = true;
+        for (let k = a; k < b && ok; k++) {
+          const key = bare[toks[k].pos];
+          const list = (rev.get(key) ?? []).filter((c) =>
+            [...c.word].length === 1 && isHan(c.word));
+          if (!list.length) { ok = false; break; }
+          const inT = tones[toks[k].pos];
+          list.sort((x, y) => ((y.toned === inT) - (x.toned === inT))
+            || ((y.gloss || !y.rime) - (x.gloss || !x.rime))
+            || (lm.uni.get(y.word) ?? 0) - (lm.uni.get(x.word) ?? 0));
+          chars.push(list[0].word);
+        }
+        if (ok) for (let k = a; k < b; k++) {
+          toks[k].tok = chars[k - a];
+          toks[k].charFallback = true;
+        }
+      }
+      a = b;
+    }
     let out = "";
     for (const t of toks) {
       const s = sepAt.get(t.pos);
@@ -422,7 +468,7 @@ export function decodeTlToHan(tlText, rev, lm, opts = {}) {
       if (isHanTok(t.tok)) {
         matched += t.syl;
         const num = bare.slice(t.pos, t.pos + t.syl)
-          .map((b, k) => b + (tones[t.pos + k] === "0" ? "" : tones[t.pos + k])).join(" ");
+          .map((b2, k) => b2 + (tones[t.pos + k] === "0" ? "" : tones[t.pos + k])).join(" ");
         words.push({ word: t.tok, reading: num });
       }
     }

@@ -102,7 +102,11 @@ function diacriticsToNumbers(text) {
         else chars.push(ch);
       }
       let base = chars.join("").normalize("NFC").replace(/\u0131/g, "i").toLowerCase();
-      if (tone && !/[1-9]$/.test(base)) base += tone;
+      if (tone && !/[1-9]$/.test(base)) {
+        // 調號數字愛黏音節：尾隨標點（"ê,"→"e5,"）先剝起，綴尾閣接轉去。
+        const tail = base.match(/[^\p{L}\p{M}]*$/u)[0];
+        base = base.slice(0, base.length - tail.length) + tone + tail;
+      }
       return base;
     })
     .join("");
@@ -118,7 +122,8 @@ const COMBINING_TONE_TO_NUMBER = {
 export function toNumeric(text) {
   if (!text) return text;
   return diacriticsToNumbers(
-    text.replace(/\u207f/g, "nn").replace(/o\u0358/g, "oo"),
+    text.replace(/\u207f/g, "nn").replace(/o\u0358/g, "oo")
+      .replace(/([oO\u00F2-\u00F6\u00D2-\u00D6\u014D\u014E][\u0300-\u036f]?)·/g, "$1o"),
   );
 }
 

@@ -2,3 +2,6 @@
 data/
 node_modules/
 __pycache__/
+# 十項管見全文（1925，台灣著作權至 2033）——測試語料袂入版控；
+# tools/wikisource-r2h.mjs 會自動下載（SOURCE.md 有來源說明）
+tools/wikisource/*.wiki
