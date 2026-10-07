@@ -1,69 +1,250 @@
-<!DOCTYPE html>
-<html lang="nan-Hant-TW">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>寫台文 — 網頁試拍（免安裝台語輸入法）</title>
-<meta name="description" content="免安裝，佇瀏覽器直接試拍寫台文 RIME 台語輸入法：POJ／TL 混拍、聲調會當省略、漢羅／全羅輸出，嘛有 Telex 調鍵方案。">
-<link rel="canonical" href="https://taigi.anatomind.com/try/">
-<link rel="icon" href="../favicon.png">
-<style>
-  :root { --fg:#24292f; --muted:#656d76; --border:#d0d7de; --surface:#f6f8fa; --accent:#1f6feb; --bg:#fff; }
-  @media (prefers-color-scheme: dark) {
-    :root { --fg:#e6edf3; --muted:#8b949e; --border:#30363d; --surface:#161b22; --accent:#4493f8; --bg:#0d1117; }
-  }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family:"Noto Sans TC","Iansui","PingFang TC","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--fg); }
-  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
-  h1 { font-size: 1.4rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
-  .sub a { color: var(--accent); }
-  #status { padding: 10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface); font-size:.9rem; margin-bottom:16px; }
-  #status.err { border-color:#cf222e; color:#cf222e; }
-  .hidden { display:none !important; }
-  #editor { border:2px solid var(--accent); border-radius:10px; padding:14px 16px; min-height:140px; cursor:text; }
-  #out { font-size:1.5rem; line-height:1.7; min-height:2.6em; white-space:pre-wrap; word-break:break-all; }
-  #preedit { color:var(--accent); font-size:1.5rem; white-space:pre-wrap; }
-  #preedit .sel { text-decoration: underline; text-underline-offset:6px; }
-  #cands { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
-  .cand { border:1px solid var(--border); border-radius:8px; padding:6px 10px; background:var(--bg); cursor:pointer; font-size:1.05rem; }
-  .cand .t { font-size:1.2rem; }
-  .cand .c { color:var(--muted); font-size:.8rem; margin-left:6px; }
-  .cand.hl { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
-  #modes { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
-  .mode { border:1px solid var(--border); background:var(--surface); color:var(--fg); border-radius:999px; padding:6px 14px; cursor:pointer; font-size:.9rem; }
-  .mode.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
-  #hint { font-size:.85rem; color:var(--muted); margin-top:10px; line-height:1.8; }
-  kbd { border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; padding:0 5px; font-size:.8rem; background:var(--surface); }
-  footer { margin-top:28px; font-size:.78rem; color:var(--muted); line-height:1.7; }
-</style>
-</head>
-<body>
-<main>
-  <h1>寫台文 · 網頁試拍</h1>
-  <p class="sub">免安裝，直接佇網頁用台語羅馬字拍字（TL／POJ 攏會使、聲調會當省略）。引擎佮 Lua 模組佮安裝版仝款，字典是網頁精簡版（約 4.5 萬詞＋常用單字）；完整字典（22 萬詞）、注音反查、Emoji 請<a href="../#install">安裝寫台文</a>。回<a href="../">首頁</a>．<a href="../guide.html">使用說明</a>。</p>
-
-  <div id="status">正在載入輸入法引擎…</div>
-
-  <div id="app" class="hidden">
-    <div id="modes">
-      <button class="mode" id="m-scheme">方案：寫台文</button>
-      <button class="mode" id="m-full_romanization">輸出：漢羅</button>
-      <button class="mode" id="m-poj_mode">拼音：TL</button>
-    </div>
-    <div id="editor" tabindex="0" aria-label="打字區">
-      <div id="out"></div><div id="preedit"></div>
-    </div>
-    <div id="cands"></div>
-    <p id="hint">點打字區了後直接拍羅馬字，例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出首選；<kbd>Tab</kbd> 進選字模式，用 <kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>… 揀字，抑是直接點候選；<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<button class="mode" id="clear">清空</button></p>
-  </div>
-
-  <footer>
-    引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，AGPL-3.0-or-later；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
-    輸入法方案：<a href="https://github.com/soanseng/rime-phah-taibun" rel="noopener">寫台文 rime-phah-taibun</a>（MIT）；網頁字典取自<a href="https://thak.anatomind.com/">讀台文</a>公開版詞庫（iTaigi CC0、台華線頂對照典 CC BY-SA 4.0、教育部地名 CC BY 3.0 TW、學科術語、iCorpus CC BY 4.0）。
-    第一擺載入需要編譯字典，了後瀏覽器會快取。
-  </footer>
-</main>
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>網頁試拍｜免安裝台語輸入法，瀏覽器直接拍台文 · 寫台文 Siá Tâi-bûn</title>
+    <meta
+      name="description"
+      content="免安裝，佇瀏覽器直接試拍寫台文 RIME 台語輸入法：白話字 POJ／台羅 TL 混拍、聲調會當省略、漢羅／全羅輸出，嘛有 Telex 調鍵方案。拍的字攏佇瀏覽器內處理。"
+    />
+    <meta
+      name="keywords"
+      content="台語輸入法線上,台語線上打字,台語輸入法免安裝,線上台語輸入,台羅線上輸入,白話字線上輸入,POJ 線上打字,台語打字練習,RIME 網頁版,寫台文,Siá Tâi-bûn"
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://taigi.anatomind.com/try/" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="../icon.png" />
+    <link rel="apple-touch-icon" href="../icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:site_name" content="寫台文 Siá Tâi-bûn" />
+    <meta property="og:title" content="網頁試拍｜免安裝，瀏覽器直接拍台文 · 寫台文" />
+    <meta
+      property="og:description"
+      content="免安裝的台語輸入法：POJ／TL 混拍、聲調會當省略、漢羅／全羅輸出。佮安裝版仝一个 Rime 引擎。"
+    />
+    <meta property="og:url" content="https://taigi.anatomind.com/try/" />
+    <meta property="og:image" content="https://taigi.anatomind.com/icon.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="網頁試拍｜免安裝，瀏覽器直接拍台文 · 寫台文" />
+    <meta
+      name="twitter:description"
+      content="免安裝的台語輸入法：POJ／TL 混拍、聲調會當省略、漢羅／全羅輸出。"
+    />
+    <meta name="theme-color" content="#0b6f55" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "https://taigi.anatomind.com/try/",
+            "url": "https://taigi.anatomind.com/try/",
+            "name": "網頁試拍｜寫台文 Siá Tâi-bûn",
+            "inLanguage": "zh-Hant-TW",
+            "description": "免安裝，佇瀏覽器直接試拍寫台文 RIME 台語輸入法：POJ／TL 混拍、聲調會當省略、漢羅／全羅輸出。",
+            "isPartOf": { "@id": "https://taigi.anatomind.com/#website" },
+            "about": { "@id": "https://taigi.anatomind.com/#software" },
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "寫台文", "item": "https://taigi.anatomind.com/" },
+                { "@type": "ListItem", "position": 2, "name": "網頁試拍", "item": "https://taigi.anatomind.com/try/" }
+              ]
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://taigi.anatomind.com/try/#app",
+            "url": "https://taigi.anatomind.com/try/",
+            "name": "寫台文 網頁試拍",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any (web browser)",
+            "browserRequirements": "Requires JavaScript and WebAssembly",
+            "isAccessibleForFree": true,
+            "inLanguage": "nan",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TWD" },
+            "isBasedOn": { "@id": "https://taigi.anatomind.com/#software" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://taigi.anatomind.com/try/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "網頁試拍佮安裝版有啥物無仝？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "引擎佮 Lua 模組攏仝款；網頁版用精簡字典（約 4.5 萬詞＋常用單字），無注音反查、Emoji 佮造詞。欲用完整 22 萬詞字典，請安裝寫台文。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "我拍的字會傳去伺服器無？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "袂。輸入法引擎編譯做 WebAssembly，攏佇你的瀏覽器內底行；字典第一擺下載了後囥佇瀏覽器快取。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "手機會使試拍無？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "網頁試拍需要實體鍵盤。手機請用 Android 版「寫台文 Trime」。"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="../assets/css/base.css" />
+    <link rel="stylesheet" href="../assets/css/layout.css" />
+    <link rel="stylesheet" href="../assets/css/components.css" />
+    <link rel="stylesheet" href="../assets/css/landing.css" />
+    <style>
+      .try-hero { padding: 40px 0 0; }
+      .try-hero h1 { margin: 6px 0 10px; max-width: none; font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.25; }
+      .try-hero .lead { max-width: 760px; }
+      .try-app-section { padding-top: 20px; }
+      .try-app > * { max-width: 920px; }
+      .hidden { display: none !important; }
+      #status { padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface-alt); margin: 8px 0 16px; }
+      #status.err { border-color: var(--color-red); color: var(--color-red); }
+      #modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
+      .mode { border: 1px solid var(--color-line); background: var(--color-surface-alt); color: var(--color-ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .9rem; }
+      .mode.on { border-color: var(--color-green); color: var(--color-green); font-weight: 600; }
+      #editor { border: 2px solid var(--color-green); border-radius: var(--radius); padding: 16px 18px; min-height: 150px; cursor: text; background: var(--color-surface); box-shadow: 0 8px 24px var(--color-shadow); }
+      #editor:focus { outline: 3px solid rgba(11, 111, 85, .25); outline-offset: 2px; }
+      #out { font-size: 1.5rem; line-height: 1.7; min-height: 2.6em; white-space: pre-wrap; word-break: break-all; }
+      #preedit { color: var(--color-green); font-size: 1.5rem; white-space: pre-wrap; }
+      #preedit .sel { text-decoration: underline; text-underline-offset: 6px; }
+      #cands { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+      .cand { border: 1px solid var(--color-line); border-radius: 10px; padding: 6px 10px; background: var(--color-surface); cursor: pointer; }
+      .cand .t { font-size: 1.2rem; }
+      .cand .c { color: var(--color-muted); font-size: .8rem; margin-left: 6px; }
+      .cand.hl { border-color: var(--color-green); box-shadow: 0 0 0 1px var(--color-green); }
+      #hint { font-size: .9rem; color: var(--color-muted); margin-top: 12px; }
+      #hint kbd { border: 1px solid var(--color-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .8rem; background: var(--color-surface-alt); }
+      .try-credits { font-size: .82rem; color: var(--color-muted); }
+      .try-credits a { color: var(--color-green); }
+    </style>
+    <script defer src="https://umami.anatomind.com/script.js" data-website-id="42feef16-dddc-4003-b155-19cba296c797"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要內容</a>
+    <header class="site-header" data-elevate>
+      <div class="container header-grid">
+        <a class="brand" href="../" aria-label="寫台文首頁"
+          ><img src="../icon.png" alt="" width="44" height="44" /><span
+            ><strong>寫台文</strong><small>Siá Tâi-bûn</small></span
+          ></a
+        ><button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+        >
+          <span></span><span></span><span></span
+          ><span class="sr-only">開啟選單</span>
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="主要導覽">
+          <a href="../#features">特色</a><a href="../#typing-schemes">拼音</a
+          ><a href="../#compare">比較</a><a href="../#install">安裝</a
+          ><a href="../poj.html">白話字 POJ</a
+          ><a href="./" aria-current="page">網頁試拍</a><a href="../guide.html">使用說明</a
+          ><a href="https://thak.anatomind.com/">讀台文 ↗</a
+          ><a
+            class="nav-cta"
+            href="https://github.com/soanseng/rime-phah-taibun/releases"
+            >下載</a
+          >
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="try-hero">
+        <div class="container">
+          <p class="eyebrow">網頁試拍 · 免安裝</p>
+          <h1>佇瀏覽器直接拍台文。</h1>
+          <p class="lead">
+            免安裝，直接佇網頁用台語羅馬字拍字：TL／POJ 攏會使、聲調會當省略。引擎佮 Lua
+            模組佮安裝版仝款，字典是網頁精簡版（約 4.5 萬詞＋常用單字）；完整字典（22 萬詞）、注音反查、Emoji
+            請<a href="../#install">安裝寫台文</a>。
+          </p>
+        </div>
+      </section>
+      <section class="section try-app-section">
+        <div class="container try-app">
+          <div id="status">正在載入輸入法引擎…</div>
+          <div id="app" class="hidden">
+            <div id="modes">
+              <button class="mode" id="m-scheme">方案：寫台文</button>
+              <button class="mode" id="m-full_romanization">輸出：漢羅</button>
+              <button class="mode" id="m-poj_mode">拼音：TL</button>
+            </div>
+            <div id="editor" tabindex="0" aria-label="打字區">
+              <div id="out"></div><div id="preedit"></div>
+            </div>
+            <div id="cands"></div>
+            <p id="hint">點打字區了後直接拍羅馬字，例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出首選；<kbd>Tab</kbd> 進選字模式，用 <kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>… 揀字，抑是直接點候選；<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<button class="mode" id="clear">清空</button></p>
+          </div>
+          <p class="try-credits">
+            引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，<a href="LICENSE-my-rime.txt">AGPL-3.0-or-later</a>；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
+            輸入法方案：<a href="https://github.com/soanseng/rime-phah-taibun" rel="noopener">寫台文 rime-phah-taibun</a>（MIT）。
+            網頁字典取自<a href="https://thak.anatomind.com/">讀台文</a>公開版詞庫（iTaigi CC0、台華線頂對照典佮台灣植物名彙 CC BY-SA 4.0、教育部臺灣地名 CC BY 3.0 TW、教育部學科術語、900 例句、LKK 用字表〔非商用〕、寫台文主字典詞層〔混合授權，含非商用來源〕），用 iCorpus 臺華平行新聞語料（CC BY 4.0）佮楊允言 2009 詞頻排序；逐來源授權見 <a href="https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE" rel="noopener">LICENSE</a>。
+            第一擺載入需要編譯字典，了後瀏覽器會快取；拍的字攏佇你的瀏覽器內底處理，無傳去伺服器。
+          </p>
+        </div>
+      </section>
+      <section class="section faq-section" id="faq">
+        <div class="container">
+          <div class="section-heading narrow">
+            <p class="eyebrow">常見問題</p>
+            <h2>
+              試拍進前，先看這。<span class="pojo" lang="nan-Latn-tailo">Būn-tê</span>
+            </h2>
+          </div>
+          <div class="faq-list">
+            <details open>
+              <summary>網頁試拍佮安裝版有啥物無仝？</summary>
+              <p>
+                引擎佮 Lua 模組攏仝款；網頁版用精簡字典（約 4.5 萬詞＋常用單字），無注音反查、Emoji
+                佮造詞。欲用完整 22 萬詞字典，請<a href="../#install">安裝寫台文</a>。
+              </p>
+            </details>
+            <details>
+              <summary>我拍的字會傳去伺服器無？</summary>
+              <p>
+                袂。輸入法引擎編譯做 WebAssembly，攏佇你的瀏覽器內底行；字典第一擺下載了後囥佇瀏覽器快取。
+              </p>
+            </details>
+            <details>
+              <summary>手機會使試拍無？</summary>
+              <p>
+                網頁試拍需要實體鍵盤。手機請用 Android 版「寫台文 Trime」，見<a href="../#install">安裝</a>的
+                Android 分頁。
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <p>寫台文 Siá Tâi-bûn · RIME 台語輸入法方案</p>
+        <nav aria-label="頁尾連結">
+          <a href="../">首頁</a><a href="../guide.html">使用說明</a
+          ><a href="../guide.html#/quickstart-card">快速上手</a
+          ><a href="https://thak.anatomind.com/">讀台文 Tha̍k Tâi-bûn ↗</a
+          ><a href="../sitemap.xml">Sitemap</a
+          ><a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
+        </nav>
+      </div>
+    </footer>
 <script type="module">
 const $ = (id) => document.getElementById(id);
 const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
@@ -267,5 +448,7 @@ async function boot() {
 }
 boot().catch((e) => { status.className = 'err'; status.textContent = '啟動失敗：' + e.message; console.error(e); });
 </script>
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js" defer></script>
+    <script src="../assets/js/landing.js" defer></script>
 </body>
 </html>

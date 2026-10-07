@@ -124,7 +124,7 @@ rime-phah-taibun/
 | iCorpus 臺華平行新聞語料 | Taiwanese-Corpus/icorpus_ka1_han3-ji7 | CC BY 4.0（README 明載） |
 | NMTL 台語文學 2,169 篇 | Taiwanese-Corpus/nmtl_2006_dadwt | 待確認 |
 | 白話字文獻館 | Taiwanese-Corpus/Khin-hoan_2010_pojbh | 待確認 |
-| 楊允言詞頻 (2009) | Taiwanese-Corpus/Ungian_2009_KIPsupin | 待確認 |
+| 楊允言詞頻 (2009) | Taiwanese-Corpus/Ungian_2009_KIPsupin | 專案維護者確認可用，含網頁試拍字典選詞（2026-10-07）；需註明出處 |
 | LKK 用字表 | 李江却基金會 Google Sheets | 已確認可用，需註明出處 |
 | rime-liur Lua 模組 | ryanwuson/rime-liur | 已確認可使用，需註明出處（PLAN §8） |
 | KeSi POJ↔TL | i3thuan5/KeSi | MIT |
