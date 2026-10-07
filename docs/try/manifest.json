@@ -1,5 +1,6 @@
 {
  "version": "7a4996420ff4986a",
+ "dir": "pack",
  "files": [
   "default.yaml",
   "hanlo_rules.yaml",

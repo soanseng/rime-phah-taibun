@@ -230,7 +230,7 @@ function onDeployStatus(state) {
 }
 
 async function boot() {
-  const { version, files } = await (await fetch('./manifest.json', { cache: 'no-cache' })).json();
+  const { version, dir, files } = await (await fetch('./manifest.json', { cache: 'no-cache' })).json();
   // 版本（全部資料內容雜湊）無仝 → 清掉 IndexedDB 裡的舊 /rime 再重建
   const old = await FS('readFile', '/rime/.webversion').then(
     (b) => new TextDecoder().decode(b), () => null);
@@ -242,7 +242,12 @@ async function boot() {
     for (const f of files) { const d = f.split('/').slice(0, -1).join('/'); if (d) dirs.add(d); }
     for (const d of dirs) await FS('mkdir', '/rime/' + d).catch(() => {});
     for (const f of files) {
-      const buf = new Uint8Array(await (await fetch('./data/' + encodeURIComponent(f).replace(/%2F/g, '/'))).arrayBuffer());
+      const res = await fetch(`./${dir}/` + encodeURIComponent(f).replace(/%2F/g, '/'));
+      // 靜態站揣無檔案時會回首頁 HTML (200)；寫入引擎前先擋，免得靜靜部署歹去
+      if (!res.ok || (res.headers.get('content-type') || '').startsWith('text/html')) {
+        throw new Error(`方案檔案載入失敗：${f}`);
+      }
+      const buf = new Uint8Array(await res.arrayBuffer());
       await FS('writeFile', '/rime/' + f, buf);
     }
     await FS('writeFile', '/rime/.webversion', version);

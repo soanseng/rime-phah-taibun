@@ -6,7 +6,7 @@ librime-lua compiled to WebAssembly. Its dist files are vendored once into
 docs/try/ (``--my-rime-dist``); worker.js is patched only to load rime.js from
 the same origin instead of jsDelivr.
 
-Data (docs/try/data/, listed in docs/try/manifest.json):
+Data (docs/try/<PACK_DIR>/, listed in docs/try/manifest.json):
 - schema/lua/rule files from this repo for phah_taibun and phah_taibun_telex,
   minus desktop-only closures (注音反查 terra_pinyin/bopomofo, emoji opencc,
   rime.lua - the wasm librime-lua supports ``@*`` module loading)
@@ -47,6 +47,8 @@ except ModuleNotFoundError:
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO_ROOT / "docs" / "try"
+# 唔通叫 data: .gitignore 的 data/ 規則會共伊食去, 正式站 (Git 部署) 就無檔案
+PACK_DIR = "pack"
 DEFAULT_PUBLIC_DICT = REPO_ROOT.parent / "tl-poj-convert" / "data-public" / "dict.json"
 
 WORD_LIMIT = 45000
@@ -198,7 +200,7 @@ def build(out: Path, public_dict: Path, my_rime_dist: Path | None, corpus_freq: 
         if not (out / name).is_file():
             raise SystemExit(f"錯誤, {out / name} 不存在; 第一次請加 --my-rime-dist")
 
-    data = out / "data"
+    data = out / PACK_DIR
     if data.exists():
         shutil.rmtree(data)
     (data / "lua").mkdir(parents=True)
@@ -229,7 +231,7 @@ def build(out: Path, public_dict: Path, my_rime_dist: Path | None, corpus_freq: 
     digest = hashlib.sha256()
     for name in files:
         digest.update(name.encode() + b"\0" + (data / name).read_bytes() + b"\0")
-    manifest = {"version": digest.hexdigest()[:16], "files": files}
+    manifest = {"version": digest.hexdigest()[:16], "dir": PACK_DIR, "files": files}
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return files
 
@@ -248,7 +250,7 @@ def main(argv: list[str] | None = None) -> int:
         if not path.is_file():
             raise SystemExit(f"錯誤, 找不到詞頻 {path} (先跑 scripts/build_all.py)")
     files = build(args.output, args.public_dict, args.my_rime_dist, corpus_freq)
-    size = sum((args.output / "data" / f).stat().st_size for f in files)
+    size = sum((args.output / PACK_DIR / f).stat().st_size for f in files)
     print(f"{args.output}: {len(files)} data files, {size // 1024} KiB")
     return 0
 

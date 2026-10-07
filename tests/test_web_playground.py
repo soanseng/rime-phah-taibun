@@ -13,6 +13,7 @@ from pathlib import Path
 import yaml
 
 from scripts.build_web_playground import (
+    PACK_DIR,
     SCHEMAS,
     WEB_DROP,
     public_pairs,
@@ -114,3 +115,17 @@ def test_bundle_ships_every_data_file_the_lua_modules_open():
         opened |= set(re.findall(r'"/?([a-z_0-9]+\.(?:yaml|json|txt|wordlist|tsv))"', lua.read_text(encoding="utf-8")))
     shipped = set(json.loads((ROOT / "docs" / "try" / "manifest.json").read_text(encoding="utf-8"))["files"])
     assert opened - shipped - set(WEB_OMITTED_DATA) == set()
+
+
+def test_bundle_files_are_not_gitignored():
+    """manifest 列的檔案攏愛會使 commit: Cloudflare 對 git 部署,
+    被 .gitignore 食去的檔案佇正式站會變做首頁 HTML 回退 (曾因 data/ 規則整包消失)。"""
+    import json
+    import subprocess
+
+    manifest = json.loads((ROOT / "docs" / "try" / "manifest.json").read_text(encoding="utf-8"))
+    paths = [f"docs/try/{PACK_DIR}/{name}" for name in manifest["files"]]
+    result = subprocess.run(
+        ["git", "check-ignore", "--no-index", *paths], cwd=ROOT, capture_output=True, text=True, check=False
+    )
+    assert result.stdout.split() == []

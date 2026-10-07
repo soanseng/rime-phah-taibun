@@ -1,0 +1,303 @@
+# Rime schema — 寫台文 Siá Tâi-bûn（舊名：拍台文）
+# Taiwanese Hokkien input method with mixed Han-Lo output
+
+schema:
+  schema_id: phah_taibun
+  name: "寫台文(台)"
+  version: "0.10.0"
+  author:
+    - "寫台文開發團隊"
+  dependencies:
+    - bopomofo_tw
+  description: |
+    台語輸入法方案 — 漢羅混寫輸出
+    支援 POJ/TL 雙拼音系統、聲調可省略
+    候選區顯示拼音註解
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 台文, ABC ]
+  - name: full_shape
+    states: [ 半形, 全形 ]
+  - name: full_romanization
+    states: [ 漢羅, 全羅 ]
+  - name: poj_mode
+    states: [ TL, POJ ]
+  - name: hanlo_manual
+    states: [ 自動漢羅, 手動漢羅 ]
+  - name: emoji_conversion
+    reset: 1
+    states: [ "🈚︎", "🈶︎" ]
+
+ascii_composer:
+  switch_key:
+    Shift_L: noop
+    Shift_R: noop
+    Caps_Lock: clear
+
+engine:
+  processors:
+    - lua_processor@*phah_taibun_input
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - lua_processor@*phah_taibun_commit
+    - punctuator
+    - selector
+    - navigator
+    - express_editor #選字涵蓋全部輸入即上屏；fluency_editor＝整句連打，點候選只進組字（A-d）
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - echo_translator
+    - punct_translator
+    - script_translator
+    - reverse_lookup_translator
+    - table_translator@custom_phrase
+    - lua_translator@*phah_taibun_help
+    - lua_translator@*phah_taibun_date
+    - lua_translator@*phah_taibun_symbols
+    - lua_translator@*phah_taibun_emoji_menu
+    - lua_translator@*phah_taibun_wildcard
+    - lua_translator@*phah_taibun_phrase
+    - lua_translator@*phah_taibun_speedup
+  filters:
+    - lua_filter@*phah_taibun_lighttone
+    - lua_filter@*phah_taibun_toneless
+    - lua_filter@*phah_taibun_filter
+    - lua_filter@*phah_taibun_lookup
+    - lua_filter@*phah_taibun_recommend
+    - lua_filter@*phah_taibun_synonym
+    - lua_filter@*phah_taibun_learn
+    - lua_filter@*phah_taibun_long_word
+    - reverse_lookup_filter@phah_taibun_reverse_lookup
+    - lua_filter@*phah_taibun_reverse_format
+    - simplifier@emoji_conversion
+    - lua_filter@*phah_taibun_origin
+    - uniquifier
+
+speller:
+  alphabet: "zyxwvutsrqponmlkjihgfedcba1234567890-"
+  initials: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '-"
+  algebra:
+    # === 聲調完全可省略 ===
+    - abbrev/^([a-z]+)[1-9]$/$1/
+    # 第1聲在字典中已標為 "to1"（非 "to"），由 build pipeline 處理
+
+    # === POJ → TL 對應 ===
+    - derive/^ts/ch/
+    - derive/^tsh/chh/
+    - derive/ing/eng/
+    - derive/ik/ek/
+    - derive/ua/oa/
+    - derive/ue/oe/
+    - derive/oo/ou/
+
+    # === POJ 無調拼式（與 TL 無調輸入對齊） ===
+    # 單規則直接自原碼 derive「無調 POJ」。ts/ch 家族免調 POJ 輸入若只能
+    # 靠兩層規則組合，會被可行的雙音節切分壓過（chhia→chhi a、chat→cha t）。
+    - derive/^ts([a-z]*)ua([a-z]*)[1-9]$/ch$1oa$2/
+    - derive/^ts([a-z]*)ue([a-z]*)[1-9]$/ch$1oe$2/
+    - derive/^ts([a-z]*)ing[1-9]$/ch$1eng/
+    - derive/^ts([a-z]*)ik[1-9]$/ch$1ek/
+    - derive/^ts([a-z]*)oo([a-z]*)[1-9]$/ch$1ou$2/
+    - derive/^ts([a-z]+)[1-9]$/ch$1/
+    - derive/^([a-z]*)ing[1-9]$/$1eng/
+    - derive/^([a-z]*)ik[1-9]$/$1ek/
+    - derive/^([a-z]*)ua([a-z]*)[1-9]$/$1oa$2/
+    - derive/^([a-z]*)ue([a-z]*)[1-9]$/$1oe$2/
+    - derive/^([a-z]*)oo([a-z]*)[1-9]$/$1ou$2/
+
+    # === 進一步模糊 ===
+    # 泉腔等來源可能以 l 對應 j；這是腔口模糊，不是 POJ/TL 差異
+    # 不加 derive/ph/f/：台語 ph 讀如英文 p（非 f），f 保留給 Telex 當連字符
+    - derive/^j/l/
+    - derive/nng/ng/
+    - derive/h$//
+
+    # === 簡拼 ===
+    - abbrev/^([ptkmnbglsjhiuc]g?s?h?h?).*/$1/
+
+translator:
+  dictionary: phah_taibun
+  prism: phah_taibun
+  # 個人化學習：記住使用者選過的字詞，下次排前面。
+  enable_user_dict: true
+  # 但不從輸入歷史造新詞（encoder 關閉：使用者字典只記你選過的詞，不累積臨時詞）。
+  # enable_sentence 維持 true：librime ≥1.6 的 script_translator 對「查無整詞、
+  # ≥2 音節」一律自動組句（與此旗標無關），此值僅表明立場，並讓未來會讀取
+  # 此旗標的引擎/翻譯器維持組句。逐音節選字的行為由 tests/test_real_rime.py
+  # 以真引擎釘住（kio-tiann → 橋鼎）。
+  enable_encoder: false
+  enable_sentence: true
+  spelling_hints: 5
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
+
+reverse_lookup:
+  dictionary: terra_pinyin
+  prism: bopomofo_tw
+  prefix: "~"
+  suffix: "'"
+  tips: "〔注音反查〕"
+
+custom_phrase:
+  dictionary: ""
+  user_dict: phah_taibun_custom
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+menu:
+  page_size: 10
+  alternative_select_keys: "asdfghjkl;"
+
+punctuator:
+  # 完整定義（非 import_preset）：librime 1.13 對 import_preset + 本地
+  # half_shape 的合併會失敗（failed to merge tree），故比照 rime-liur
+  # liu_pinyin 整段定義。內容＝rime 預設 punctuation.yaml，加上自動上屏
+  # 覆寫：( ) / _ < > 直接 commit。`'`（同音選字）、`[` `]`（翻頁）、
+  # `~` `?` `;` `` ` ``（反查/萬用/造詞/符號）由 recognizer/lua/key_binder 先攔，
+  # 這裡的映射僅為與預設行為完全相同的鍵盤層後備。
+  half_shape:
+    ",": { commit: "，" }
+    ".": { commit: "。" }
+    "<": { commit: "《" }
+    ">": { commit: "》" }
+    "/": { commit: "、" }
+    "?": { commit: "？" }
+    ";": { commit: "；" }
+    ":": { commit: "：" }
+    "'": { pair: ["‘", "’"] }
+    "\"": { pair: ["“", "”"] }
+    "\\": ["、", "\\", "＼" ]
+    "|": ["·", "|", "｜", "§", "¦"]
+    "`": "`"
+    "~": ["~", "～"]
+    "!": { commit: "！" }
+    "@": "@"
+    "#": "#"
+    "%": ["%", "％", "°", "℃"]
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "^": { commit: "……" }
+    "&": "&"
+    "*": ["*", "＊", "·", "・", "×", "※", "❂"]
+    "(": { commit: "（" }
+    ")": { commit: "）" }
+    "-": "-"
+    "_": { commit: "——" }
+    "+": "+"
+    "=": "="
+    "[": ["「", "【", "〔", "［"]
+    "]": ["」", "】", "〕", "］"]
+    "{": ["『", "〖", "｛"]
+    "}": ["』", "〗", "｝"]
+  full_shape:
+    " ": { commit: "　" }
+    ",": { commit: "，" }
+    ".": { commit: "。" }
+    "<": { commit: "《" }
+    ">": { commit: "》" }
+    "/": { commit: "／" }
+    "?": { commit: "？" }
+    ";": { commit: "；" }
+    ":": { commit: "：" }
+    "'": { pair: ["‘", "’"] }
+    "\"": { pair: ["“", "”"] }
+    "\\": ["、", "＼"]
+    "|": ["·", "｜", "§", "¦"]
+    "`": "｀"
+    "~": "～"
+    "!": { commit: "！" }
+    "@": ["＠", "☯"]
+    "#": ["＃", "⌘"]
+    "%": ["％", "°", "℃"]
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "^": { commit: "……" }
+    "&": "＆"
+    "*": ["＊", "·", "・", "×", "※", "❂"]
+    "(": { commit: "（" }
+    ")": { commit: "）" }
+    "-": "－"
+    "_": { commit: "——" }
+    "+": "＋"
+    "=": "＝"
+    "[": ["「", "【", "〔", "［"]
+    "]": ["」", "】", "〕", "］"]
+    "{": ["『", "〖", "｛"]
+    "}": ["』", "〗", "｝"]
+
+key_binder:
+  import_preset: default
+  bindings:
+    - { when: always, accept: Control+space, toggle: ascii_mode }
+    - { when: composing, accept: Tab, send: Shift+Right }
+    - { when: composing, accept: Shift+Tab, send: Shift+Left }
+    # 翻頁：`]`／`[` 在任何選單即翻頁（含詞典候選第 1 頁、`e emoji、`NN 符號）；
+    # 以詞定字已移除，[ ] 不再被攔截。
+    - { when: has_menu, accept: bracketleft, send: Page_Up }
+    - { when: has_menu, accept: bracketright, send: Page_Down }
+    # 逐字標點（移植 rime-liur）：選單開啟時 `,` `.` 維持標點鍵，不翻頁。
+    # 預設 preset（paging_with_comma_period）在 has_menu 時把 period 送出
+    # Page_Down、在 paging 時把 comma 送出 Page_Up；以同名 send 中和之，
+    # 翻頁改用 [ ] - = PageUp PageDown。
+    - { when: has_menu, accept: period, send: period }
+    - { when: has_menu, accept: comma, send: comma }
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "~[a-z0-9,./;\\-]*'?$"
+    symbols: "^`(e[1-9]?|[0-9]{0,2})`?$"   # ` 開啟目錄; `NN 直達分類 (尾端 ` 容錯)
+    wildcard: "^[a-z]*\\?[a-z0-9]*$"
+    phrase: "^;[a-z0-9]*$"
+
+phah_taibun_long_word:
+  count: 2
+  idx: 4
+
+phah_taibun_recommend:
+  enabled: true
+
+phah_taibun_origin:
+  enabled: true
+
+# Emoji 候選（rime-emoji, LGPL-3.0；資料在 opencc/，F4 選單可開關）
+emoji_conversion:
+  opencc_config: emoji.json
+  option_name: emoji_conversion
+  tips: none
+  inherit_comment: false
+
+melt_eng:
+  dictionary: melt_eng
+  enable_sentence: false
+  enable_user_dict: false
+  enable_completion: true
+  initial_quality: 0.5
+  comment_format:
+    - xform/.*//
+
+phah_taibun_reverse_lookup:
+  tags: [ reverse_lookup ]
+  overwrite_comment: true
+  dictionary: phah_taibun
+  comment_format:
+    - "xform/^(.*)$/ [$1]/"
+
+editor:
+  bindings:
+    space: confirm
+    Return: commit_composition
+    Control+Return: commit_raw_input
+    BackSpace: revert
+    Control+BackSpace: back_syllable
+    Escape: cancel
