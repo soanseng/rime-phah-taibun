@@ -126,4 +126,4 @@ Android **不是**桌面的 `F4`，也不要用桌面快捷鍵。
 - `terra_pinyin`／`bopomofo`／`zhuyin`：LGPL-3.0，來自 [rime/rime-terra-pinyin](https://github.com/rime/rime-terra-pinyin)、[rime/rime-bopomofo](https://github.com/rime/rime-bopomofo)，著作權人 GONG Chen、Kunki Chiu。本包附 `licenses/LGPL-3.0.txt`、`licenses/GPL-3.0.txt` 全文與 `THIRD-PARTY-NOTICES.txt`（逐檔來源、版本與 sha256）。
 - 嘸蝦米：僅 `-liur` 版內含；上游無具名授權檔，依其 README「基於開源授權發佈」宣告散布，來源標示見 `LIUR-PROVENANCE.txt` 與上節。
 
-打字方式見[快速上手小卡](https://soanseng.github.io/rime-phah-taibun/quickstart-card.html)與[完整使用說明](https://soanseng.github.io/rime-phah-taibun/guide.html)。
+打字方式見[快速上手小卡](https://taigi.anatomind.com/guide.html#/quickstart-card)與[完整使用說明](https://taigi.anatomind.com/guide.html)。

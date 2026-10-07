@@ -134,6 +134,13 @@ def test_thak_page_is_served_under_main_site():
         data = json.loads(block)
         nodes.extend(data.get("@graph", [data]))
     assert any(n["@type"] == "WebApplication" and n.get("url") == canonical for n in nodes)
+    # 主站是 taigi.anatomind.com: 分享卡佮結構化資料攏掛佇「寫台文」網站下
+    assert head.meta["og:site_name"] == "寫台文 Siá Tâi-bûn"
+    assert head.meta.get("og:image", "").startswith(SITE)
+    page = next(n for n in nodes if n["@type"] == "WebPage")
+    assert page["@id"] == canonical and page["isPartOf"] == {"@id": SITE + "#website"}
+    crumbs = [i["item"] for i in page["breadcrumb"]["itemListElement"]]
+    assert crumbs == [SITE, canonical]
     assert f"<loc>{canonical}</loc>" in (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
     for page in PAGES:
         assert "thak.anatomind.com" not in (ROOT / page).read_text(encoding="utf-8"), page

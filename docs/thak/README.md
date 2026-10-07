@@ -12,7 +12,7 @@
 - **詞彙查詢**：台語詞／華語釋義查詢，附 TL、POJ、華語對照。
 - **學習提示（輸入區文法檢查佮教學，建議性質）**：① 用字建議——華台對照表比對（上長片語優先、span 袂重複列），有筆記的會使點「看文法」② 輕聲標記建議 ③ **可能用著的文法點** chip：照筆記觸發詞（漢字子字串／臺羅詞界／疊字正規）掃，點了跳去文法頁彼篇。純規則比對、毋是語法解析：攏是「建議檢查／可參考」，毋是判對毋著。
 - **教典連結**：詞條直接連去[教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/und-hani/)。
-- **Landing／SEO**：頂蒂例句卡（教典真實句，點一句直接看變調讀音＋POJ）；canonical／og:url／JSON-LD（WebApplication）／robots.txt／sitemap.xml 攏指向 https://thak.anatomind.com/ 。
+- **Landing／SEO**：頂蒂例句卡（教典真實句，點一句直接看變調讀音＋POJ）；主站是 https://taigi.anatomind.com/ ——canonical／og:url 指 https://taigi.anatomind.com/thak/，JSON-LD（WebPage＋BreadcrumbList＋WebApplication）掛佇寫台文網站下，sitemap／robots 用全站的。
 - **性能**：詞典 6.8MB 佇 worker 解析＋反查索引、分段 ack 傳轉主線程（主線程無 long task）；句庫／詞彙例句拍到分頁才載；字體 `display=optional`＋非同步 CSS（CLS 0）；jQuery defer。Lighthouse（本機 headless-shell，2026-10-07）：SEO／A11y／Best-Practices **100/100/100**，Performance mobile 69／desktop 73——行動版 TBT 大頭是 jQuery 佇節流環境的評估時間（~3s），家己的載入鏈已無 long task。
 
 手機、平板、桌機攏好用（RWD），字型用 [芫荽 Iansui](https://fonts.google.com/specimen/Iansui)（支援 𠢕、𤆬、𨑨迌 等台語推薦用字）。
@@ -82,12 +82,9 @@ python3 -m http.server 8765 --directory docs
 
 依賴：Python 3.10+（建置）、jQuery 4.0（CDN）、芫荽字型（Google Fonts）。無建置步驟——純靜態檔案。
 
-## 部署（Cloudflare Pages）
+## 部署
 
-1. Fork/clone 本 repo，推去 GitHub。
-2. Cloudflare Pages → Create project → Connect to Git → 選本 repo。
-3. Build settings：**Framework preset** `None`、**Build command** 留空、**Build output directory** `/`（根目錄）。
-4. Deploy。`data-public/dict.json` 已在版控內，無需要額外建置。
+併入 rime-phah-taibun 了後，`docs/` 歸个由 Cloudflare（`wrangler.jsonc`，assets＝`./docs`）部署：push 去 `main` 就自動上線，網址 https://taigi.anatomind.com/thak/ 。`data-public/` 已在版控內，無需要額外建置。舊網域 thak.anatomind.com 301 轉來遮。
 
 ## Roadmap（v2）
 
