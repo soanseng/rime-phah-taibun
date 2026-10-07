@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=22";
-import { formatRomanization, stripTones } from "../roman.js?v=22";
+} from "../dict.js?v=23";
+import { formatRomanization, stripTones } from "../roman.js?v=23";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,7 +17,7 @@ const dictLink = (word, label = "教典") =>
     .attr("rel", "noopener")
     .text(label);
 
-export function initConverter(dict, hints, grammarCheck, revIn = null) {
+export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn = null) {
   // 延伸詞層：hint 照字典實際內容顯示——無 src 詞就毋通講一个
   // 永遠出袂來的橘虛線標記（公開包這馬有延伸詞，會顯示）。
   const hasExt = Object.values(dict).some((e) => e.src);
@@ -153,21 +153,29 @@ export function initConverter(dict, hints, grammarCheck, revIn = null) {
   };
   $("#cv-sandhi").on("change", paint);
 
+  const applyDir = (d) => {
+    dir = d;
+    $("#panel-convert h2").text(d === "h2r" ? "漢羅 → TL／POJ" : "羅馬字 → 漢字");
+    $("#cv-in").attr(
+      "placeholder",
+      d === "h2r"
+        ? "貼漢羅文章，親像：我今仔日欲去台北。"
+        : "貼台羅／POJ，親像：Goá kin-á-ji̍t beh khì Tâi-pak.",
+    );
+    $("#cv-hint").text(d === "h2r" ? hintH2R() : "實驗功能：同音詞真濟，可能選錯詞義。點詞卡換同音詞，點「教典」查辭典；輸出僅供輔助對照。");
+  };
   $(".seg-btn[data-dir]").on("click", (ev) => {
     const $b = $(ev.currentTarget);
     if ($b.hasClass("is-active")) return;
     $(".seg-btn[data-dir]").removeClass("is-active");
-    dir = $b.data("dir");
-    $("#panel-convert h2").text(dir === "h2r" ? "漢羅 → TL／POJ" : "羅馬字 → 漢字");
-    $("#cv-in").attr(
-      "placeholder",
-      dir === "h2r"
-        ? "貼漢羅文章，親像：我今仔日欲去台北。"
-        : "貼台羅／POJ，親像：Goá kin-á-ji̍t beh khì Tâi-pak.",
-    );
-    $("#cv-hint").text(dir === "h2r" ? hintH2R() : "實驗功能：同音詞真濟，可能選錯詞義。點詞卡換同音詞，點「教典」查辭典；輸出僅供輔助對照。");
+    $b.addClass("is-active");
+    applyDir($b.data("dir"));
     run();
   });
+  // 詞典載入中就點方向鈕（main.js 的 .preinit handler 已記方向、
+  // 鈕仔視覺嘛有動）：init 了照用，並且收掉 preinit handler 避免雙重綁。
+  $(".seg-btn[data-dir]").off("click.preinit");
+  if (preDirIn && preDirIn !== "h2r") applyDir(preDirIn);
 
   $("#cv-run").on("click", run);
   $("#cv-hint").text(hintH2R()); // 初始載入就照 hasExt 顯示，毋免等方向切換

@@ -3,13 +3,13 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { buildReverseIndex } from "./dict.js?v=22";
-import { loadDict } from "./dict.js?v=22";
-import { initConverter } from "./ui/converter.js?v=22";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=22";
-import { initVocab } from "./ui/vocab.js?v=22";
-import { initGrammar } from "./ui/grammar.js?v=22";
-import { initGrammarCheck } from "./ui/grammarcheck.js?v=22";
+import { buildReverseIndex } from "./dict.js?v=23";
+import { loadDict } from "./dict.js?v=23";
+import { initConverter } from "./ui/converter.js?v=23";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=23";
+import { initVocab } from "./ui/vocab.js?v=23";
+import { initGrammar } from "./ui/grammar.js?v=23";
+import { initGrammarCheck } from "./ui/grammarcheck.js?v=23";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {
@@ -18,6 +18,15 @@ const ready = async () => {
     return;
   }
   initGrammar(); // 獨立載入：文法索引失敗嘛袂拖累其他分頁
+  // 詞典載入中（5–10 秒）方向鈕就先會動：記方向＋鈕仔視覺切換，
+  // initConverter 了照用（off click.preinit 收掉，避免雙重綁）。
+  let preDir = null;
+  $(".seg-btn[data-dir]").on("click.preinit", (ev) => {
+    const $b = $(ev.currentTarget);
+    preDir = $b.data("dir");
+    $(".seg-btn[data-dir]").removeClass("is-active");
+    $b.addClass("is-active");
+  });
   try {
     // worker：fetch＋parse＋反查索引攏佇背景，閣分段傳——主線程逐段
     // yield，無 half長 long task（fallback：直接載，較簡但會阻塞）
@@ -27,7 +36,7 @@ const ready = async () => {
     const loadViaWorker = () => new Promise((resolve, reject) => {
       const dict = {};
       const revEntries = [];
-      const w = new Worker("./js/dict-worker.js?v=22", { type: "module" });
+      const w = new Worker("./js/dict-worker.js?v=23", { type: "module" });
       const raf = () => new Promise(requestAnimationFrame);
       let ready = Promise.resolve();
       w.onmessage = (ev) => {
@@ -53,7 +62,7 @@ const ready = async () => {
       })));
     const rev = new Map(revEntries);
     $("#load-state").remove();
-    initConverter(dict, hints, initGrammarCheck(hints), rev);
+    initConverter(dict, hints, initGrammarCheck(hints), rev, preDir);
     initPractice(dict);
     // 句庫 973KB——練習分頁頭一擺開才載（landing/轉換無愛等伊）
     let sentReady = false;
