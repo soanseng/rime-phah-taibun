@@ -1,20 +1,18 @@
-// 詞彙分頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
+// 詞彙頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
 
-import { lookup, sutianUrl } from "../dict.js?v=24";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=24";
+import { lookup, sutianUrl } from "../dict.js?v=26";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=26";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export function initVocab(dict) {
   const $tb = $("#vb-tbl tbody");
-  // 例句 300KB——詞彙分頁頭一擺開才載（轉換/landing 無愛等伊）
+  // 例句 300KB：詞典載好才載（詞彙頁網址 ?q= 會當直接查）
   let examples = null;
-  $("#tab-vocab").one("click", () => {
-    fetch("./data-public/examples.json") // 照頁面網址（/thak/）解析
-      .then((r) => (r.ok ? r.json() : {}))
-      .catch(() => ({}))
-      .then((j) => { examples = j; if ($("#vb-in").val()) run(); });
-  });
+  fetch(new URL("../../data-public/examples.json", import.meta.url))
+    .then((r) => (r.ok ? r.json() : {}))
+    .catch(() => ({}))
+    .then((j) => { examples = j; if ($("#vb-in").val()) run(); });
   const exHtml = (han) =>
     ((examples ?? {})[han] ?? [])
       .map(([h, t]) => `<div class="ex">${esc(h)}<br><span class="roman">${esc(t)}</span></div>`)
@@ -49,4 +47,7 @@ export function initVocab(dict) {
   };
 
   $("#vb-in").on("input", run);
+  const q = new URLSearchParams(location.search).get("q");
+  if (q) $("#vb-in").val(q);
+  if ($("#vb-in").val()) run();
 }

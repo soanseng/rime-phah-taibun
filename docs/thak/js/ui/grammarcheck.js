@@ -5,7 +5,7 @@
 //    chip 點了 revealNote 跳去文法頁看彼篇。
 // 子字串比對天然會拄著（親像「的」佇教典詞內底）——一律「建議檢查／可參考」口氣。
 
-import { revealNote } from "./grammar.js?v=24";
+import { revealNote } from "./grammar.js?v=26";
 
 const deaccent = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
@@ -19,7 +19,7 @@ const isRoman = (s) => /^[\x21-\x7E]+$/.test(s);
 export function initGrammarCheck(hints) {
   let notes = null; // grammar-notes.json（非同步載入；載好前 chips 段靜靜無出現）
   let lastText = null; // fetch 未轉好就拍字的 race：轉好補 render
-  fetch("./data-public/grammar-notes.json")
+  fetch(new URL("../../data-public/grammar-notes.json", import.meta.url))
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => {
       notes = j ? j.notes : [];

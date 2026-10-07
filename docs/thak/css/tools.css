@@ -1,0 +1,141 @@
+/* 寫台文網頁工具（/convert/ /vocab/ /grammar/）：用全站 base/layout/components 的
+   色彩佮字型；本檔只對應 widgets.css 用著的變數，加工具頁版面。 */
+:root {
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-muted);
+  --line: var(--color-line);
+  --card: var(--color-surface);
+  --bg: var(--color-surface-alt);
+  --accent: var(--color-green);
+  --accent-deep: var(--color-green-dark);
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(11, 111, 85, 0.08);
+  --good: var(--color-green);
+  --bad: var(--color-red);
+  --miss: var(--color-red);
+  --radius-sm: 10px;
+  --shadow: 0 8px 24px var(--color-shadow);
+}
+
+.tool-hero {
+  padding: 40px 0 0;
+}
+
+.tool-hero h1 {
+  margin: 6px 0 10px;
+  max-width: none;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.25;
+}
+
+.tool-hero .lead {
+  max-width: 760px;
+}
+
+.tool-section {
+  padding-top: 20px;
+}
+
+/* 台語推薦用字（𠢕、𤆬、𨑨迌）：工具輸出用芫荽字型 */
+.tool-app {
+  font-family: "Iansui", var(--font-body);
+}
+
+.tool-app button,
+.tool-app input,
+.tool-app textarea,
+.tool-app select {
+  font: inherit;
+  color: inherit;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem;
+  margin-bottom: 1.3rem;
+}
+
+.panel h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.demo-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 0.6rem;
+}
+
+.demo-card {
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.demo-card:hover,
+.demo-card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.demo-han {
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.demo-tl {
+  color: var(--accent-deep);
+}
+
+.demo-hoa {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.demo-note {
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.tool-credits {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  margin-top: 1.5rem;
+}
+
+.tool-credits a {
+  color: var(--color-green);
+}
+
+/* fixed：載入收掉了毋會振動版面（CLS） */
+.load-state {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0.8rem;
+  text-align: center;
+  color: var(--accent-deep);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  .demo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .panel {
+    padding: 1.5rem 1.6rem;
+  }
+}

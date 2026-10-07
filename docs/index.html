@@ -184,8 +184,15 @@
         <nav class="site-nav" id="site-nav" aria-label="主要導覽">
           <a href="#features">特色</a><a href="#typing-schemes">拼音</a
           ><a href="#compare">比較</a><a href="#install">安裝</a
-          ><a href="poj.html">白話字 POJ</a><a href="try/">網頁試拍</a><a href="guide.html">使用說明</a
-          ><a href="thak/">讀台文</a
+          ><a href="poj.html">白話字 POJ</a
+          ><div class="nav-group"
+            ><button class="nav-group-btn" type="button" aria-expanded="false" aria-controls="nav-tools">工具</button
+            ><div class="nav-menu" id="nav-tools"
+              ><a href="try/">網頁試拍</a><a href="try/#practice">練習・考試</a
+              ><a href="convert/">漢羅⇄羅馬字轉換</a><a href="vocab/">詞彙查詢</a
+              ><a href="grammar/">文法筆記</a></div
+            ></div
+          ><a href="guide.html">使用說明</a
           ><a
             class="nav-cta"
             href="https://github.com/soanseng/rime-phah-taibun/releases"
@@ -258,7 +265,10 @@
           ><a href="#typing-schemes">我要用台羅 TL 打字</a
           ><a href="#telex">我想用 Telex 調鍵（可選）</a
           ><a href="#reverse">我只知道華語想查台語</a
-          ><a href="#install">我要在 Android 打台文</a>
+          ><a href="#install">我要在 Android 打台文</a
+          ><a href="try/#practice">我想練習拍台文</a
+          ><a href="convert/">我想共漢羅轉做羅馬字</a
+          ><a href="vocab/">我想查台語詞</a>
         </div>
       </section>
       <section class="section" id="features">
@@ -328,6 +338,52 @@
             </li>
             <li><code>Ctrl+標點</code> 臨時翻轉標點寬度</li>
           </ul>
+        </div>
+      </section>
+      <section class="section" id="tools">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">網站功能</p>
+            <h2>
+              一套詞典，拍、練、讀、查攏佇遮。<span class="pojo" lang="nan-Latn-tailo">Kang-kū</span>
+            </h2>
+            <p>
+              寫台文毋但是輸入法：仝一个網站閣有免安裝的網頁試拍、練習考試、漢羅⇄羅馬字轉換、詞彙查詢佮文法筆記。
+              逐个功能攏用仝一套詞典佮轉換核心——你佇轉換頁看著的讀音，就是輸入法候選看著的讀音。
+            </p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="marker marker-green">拍</span>
+              <h3><a href="#install">安裝輸入法</a></h3>
+              <p>Windows、macOS、Linux、Android 攏有，裝好佇任何軟體拍台文。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-blue">試</span>
+              <h3><a href="try/">網頁試拍</a></h3>
+              <p>免安裝，瀏覽器內就是真的 Rime 引擎，先試看覓合毋合你。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-red">練</span>
+              <h3><a href="try/#practice">練習・考試</a></h3>
+              <p>看讀音拍、逐字標對錯；題目用例句、詞語、維基百科／維基文庫抑是家己的文章，記錄存佇你的瀏覽器。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-yellow">讀</span>
+              <h3><a href="convert/">漢羅⇄羅馬字轉換</a></h3>
+              <p>漢羅文章轉台羅 TL 佮白話字 POJ（連讀變調、輕聲），POJ／TL 嘛會當倒轉漢字。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-green">查</span>
+              <h3><a href="vocab/">詞彙查詢</a></h3>
+              <p>拍台語詞抑是華語意思，揣出 TL、POJ 佮教典例句。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-blue">學</span>
+              <h3><a href="grammar/">文法筆記</a></h3>
+              <p>本站整理的台語文法筆記，佮轉換頁的用字、文法提示連做伙。</p>
+            </article>
+          </div>
         </div>
       </section>
       <section class="section stats-section" id="data">
@@ -873,10 +929,10 @@ cd rime-phah-taibun
               本底我攏用嘸蝦米，用甲真慣勢；Linux、Windows、Mac
               嘛用 Rime 用真濟冬。10 外年以前，我猶真菜的時陣，捌掠準講家己會曉寫一个台語輸入法——hit
               陣失敗矣。這馬有 AI，資源嘛一年一年閣較濟，我就寫一个家己會用的：家己拍字的艱苦、學習過程的艱苦，攏囥佇這个輸入法內底，一邊開發、一邊重學。所以這个方案是照我的環境做的：嘸蝦米佮寫台文做伙用，主要
-              Linux 佮 Android，Windows 有時仔爾爾。後來閣用這套字典做姊妹站<a
-                href="thak/"
-                >讀台文 Tha̍k Tâi-bûn</a
-              >：漢羅、TL、POJ 對照，會使查單字、讀文法筆記。
+              Linux 佮 Android，Windows 有時仔爾爾。
+            </p>
+            <p>
+              另外一爿，真濟台語文學冊誠讚：漢羅看有，拼音煞袂曉——想學，著愛一字一字查；顛倒來看 POJ、TL 的時，閣想欲緊知影意思。所以我共輸入法的字典提來，閣做幾个網頁工具：<a href="convert/">漢羅⇄羅馬字轉換</a>、<a href="vocab/">詞彙查詢</a>、<a href="grammar/">文法筆記</a>，佮會當練習、考試的<a href="try/">網頁試拍</a>。橫直，遮攏是我任性、做予我一个人用的。
             </p>
             <figure class="creator-art">
               <img
@@ -973,7 +1029,7 @@ cd rime-phah-taibun
         <nav aria-label="頁尾連結">
           <a href="poj.html">白話字 POJ</a><a href="guide.html">使用說明</a
           ><a href="guide.html#/quickstart-card">快速上手</a
-          ><a href="thak/">讀台文 Tha̍k Tâi-bûn</a
+          ><a href="try/">網頁試拍</a><a href="convert/">轉換</a><a href="vocab/">詞彙</a><a href="grammar/">文法</a
           ><a href="sitemap.xml">Sitemap</a
           ><a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
         </nav>

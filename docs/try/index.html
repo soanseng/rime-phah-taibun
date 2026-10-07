@@ -233,8 +233,14 @@
           <a href="../#features">特色</a><a href="../#typing-schemes">拼音</a
           ><a href="../#compare">比較</a><a href="../#install">安裝</a
           ><a href="../poj.html">白話字 POJ</a
-          ><a href="./" aria-current="page">網頁試拍</a><a href="../guide.html">使用說明</a
-          ><a href="../thak/">讀台文</a
+          ><div class="nav-group"
+            ><button class="nav-group-btn" type="button" aria-expanded="false" aria-controls="nav-tools">工具</button
+            ><div class="nav-menu" id="nav-tools"
+              ><a href="./" aria-current="page">網頁試拍</a><a href="#practice">練習・考試</a
+              ><a href="../convert/">漢羅⇄羅馬字轉換</a><a href="../vocab/">詞彙查詢</a
+              ><a href="../grammar/">文法筆記</a></div
+            ></div
+          ><a href="../guide.html">使用說明</a
           ><a
             class="nav-cta"
             href="https://github.com/soanseng/rime-phah-taibun/releases"
@@ -257,6 +263,13 @@
       </section>
       <section class="section try-app-section">
         <div class="container try-app">
+          <nav class="tool-nav" aria-label="寫台文工具">
+            <a href="./" aria-current="page">網頁試拍</a>
+            <a href="#practice">練習・考試</a>
+            <a href="../convert/">漢羅⇄羅馬字轉換</a>
+            <a href="../vocab/">詞彙查詢</a>
+            <a href="../grammar/">文法筆記</a>
+          </nav>
           <div id="status">正在載入輸入法引擎…</div>
           <div id="app" class="hidden">
             <div id="try-tabs" role="tablist" aria-label="試拍模式">
@@ -275,6 +288,7 @@
                 <label>題目
                   <select id="pr-source">
                     <option value="bank">例句庫（教典／900 例句）</option>
+                    <option value="words">詞語（2–4 字，看漢字＋讀音）</option>
                     <option value="wp-random">維基百科・隨機媠氣文章</option>
                     <option value="wp-article">維基百科／維基文庫・指定文章</option>
                     <option value="ws-book">維基文庫・揀冊</option>
@@ -349,7 +363,7 @@
           <p class="try-credits">
             引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，<a href="LICENSE-my-rime.txt">AGPL-3.0-or-later</a>；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
             輸入法方案：<a href="https://github.com/soanseng/rime-phah-taibun" rel="noopener">寫台文 rime-phah-taibun</a>（MIT）。
-            網頁字典取自<a href="../thak/">讀台文</a>公開版詞庫（iTaigi CC0、台華線頂對照典佮台灣植物名彙 CC BY-SA 4.0、教育部臺灣地名 CC BY 3.0 TW、教育部學科術語、900 例句、LKK 用字表〔非商用〕、寫台文主字典詞層〔混合授權，含非商用來源〕），用 iCorpus 臺華平行新聞語料（CC BY 4.0）佮楊允言 2009 詞頻排序；逐來源授權見 <a href="https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE" rel="noopener">LICENSE</a>。
+            網頁字典取自本站<a href="../convert/">轉換工具</a>的公開版詞庫（iTaigi CC0、台華線頂對照典佮台灣植物名彙 CC BY-SA 4.0、教育部臺灣地名 CC BY 3.0 TW、教育部學科術語、900 例句、LKK 用字表〔非商用〕、寫台文主字典詞層〔混合授權，含非商用來源〕），用 iCorpus 臺華平行新聞語料（CC BY 4.0）佮楊允言 2009 詞頻排序；逐來源授權見 <a href="https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE" rel="noopener">LICENSE</a>。
             第一擺載入需要編譯字典，了後瀏覽器會快取；拍的字攏佇你的瀏覽器內底處理，無傳去伺服器。
           </p>
         </div>
@@ -401,7 +415,7 @@
         <nav aria-label="頁尾連結">
           <a href="../">首頁</a><a href="../guide.html">使用說明</a
           ><a href="../guide.html#/quickstart-card">快速上手</a
-          ><a href="../thak/">讀台文 Tha̍k Tâi-bûn</a
+          ><a href="./">網頁試拍</a><a href="../convert/">轉換</a><a href="../vocab/">詞彙</a><a href="../grammar/">文法</a
           ><a href="../sitemap.xml">Sitemap</a
           ><a href="https://github.com/soanseng/rime-phah-taibun">GitHub</a>
         </nav>
@@ -409,7 +423,7 @@
     </footer>
 <script type="module">
 // 正式站 JS 快取 186 工（Cloudflare）：練習模組改了愛共 ?v= 數字加一（practice*.js 內底嘛愛仝款）
-import { initPractice } from './practice.js?v=1';
+import { initPractice } from './practice.js?v=2';
 const $ = (id) => document.getElementById(id);
 const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
 

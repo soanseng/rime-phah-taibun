@@ -1,9 +1,9 @@
-// 練習題目來源：例句庫（讀台文 sentences.json）、維基百科／維基文庫（閩南語，POJ，
+// 練習題目來源：例句庫（轉換工具的 sentences.json）、詞語、維基百科／維基文庫（閩南語，POJ，
 // 瀏覽器即時讀，無存檔）、自訂文章（漢羅或羅馬字）。
 // 每个來源回 {title, url, license, kind, key, items}；item = {text, slots, gloss?}。
-import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from "./practice-core.js?v=1";
-import { loadDict, segment, buildReverseIndex, buildLM, decodeTlToHan } from "../thak/js/dict.js?v=24";
-import { pojToTl, formatRomanization } from "../thak/js/roman.js?v=24";
+import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from "./practice-core.js?v=2";
+import { loadDict, segment, buildReverseIndex, buildLM, decodeTlToHan, practicePool } from "../thak/js/dict.js?v=26";
+import { pojToTl, formatRomanization } from "../thak/js/roman.js?v=26";
 
 const THAK_DATA = "../thak/data-public/";
 export const WP_HOST = "zh-min-nan.wikipedia.org";
@@ -29,7 +29,7 @@ export function loadBank() {
   return bankPromise;
 }
 
-// ---- 讀台文詞典（自訂文章、維基用；需要才載）----
+// ---- 轉換工具的詞典（詞語、自訂文章、維基用；需要才載）----
 let dictPromise = null;
 export function loadDictBundle() {
   dictPromise ??= loadDict(THAK_DATA + "dict.json").then((dict) => ({
@@ -53,9 +53,29 @@ export async function refHanFor(text) {
   return decodeTlToHan(pojToTl(text), rev, lm).han;
 }
 
+// ---- 詞語（2–4 字、有華語釋義的詞；看漢字＋讀音拍，愛仝字）----
+let wordsPromise = null;
+export function loadWords() {
+  wordsPromise ??= loadDictBundle().then(({ dict }) => {
+    const items = [];
+    for (const { han, r, h } of practicePool(dict)) {
+      const chars = [...han];
+      const syls = r[0].split(" ").filter(Boolean);
+      if (syls.length !== chars.length || /[A-Za-z]/.test(han)) continue;
+      items.push({
+        text: han, gloss: h,
+        slots: chars.map((c, i) => ({ h: c, k: sylKey(syls[i]), src: formatRomanization(syls[i]) })),
+      });
+    }
+    return { kind: "words", key: null, title: "詞語（2–4 字）", url: null, license: "本站轉換詞典（來源見轉換頁）", items };
+  });
+  wordsPromise.catch(() => { wordsPromise = null; });
+  return wordsPromise;
+}
+
 const fromRomanText = (text) => splitSentences(text).map((s) => ({ text: s, slots: romanSlots(s), roman: true }));
 
-// 漢羅句 → 格：讀台文詞典斷詞，詞的頭一个讀音逐字對位（自動標音，可能有誤）
+// 漢羅句 → 格：轉換工具的詞典斷詞，詞的頭一个讀音逐字對位（自動標音，可能有誤）
 function hanloSlots(sentence, dict, rev) {
   const slots = [];
   for (const seg of segment(sentence, dict, rev)) {

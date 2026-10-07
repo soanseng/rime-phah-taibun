@@ -21,6 +21,13 @@
 - 白話字 o͘ 拍 `oo`；ⁿ 拍 `nn`
 - 符號選單 `` ` ``、Emoji 分類 `` `e ``、萬用查字 `?`、輕聲 `--`
 
+## 網頁工具（仝一个網站，免安裝）
+
+- 網頁試拍：瀏覽器內真 Rime 引擎拍台文；練習（看讀音拍、逐字標對錯）、考試（看漢羅拍，10 句算分）、題目會當用例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；練習記錄存佇瀏覽器
+- 漢羅⇄羅馬字轉換：漢羅轉台羅 TL／白話字 POJ（連讀變調、輕聲、點字換讀音），POJ／TL 倒轉漢字
+- 詞彙查詢：台語詞抑是華語釋義揣台語詞，附教典例句
+- 文法筆記：本站整理的台語文法筆記，佮 TGGL 語法點索引
+
 ## 安裝
 
 - Windows：Releases 載 `PhahTaiBunSetup.exe`（電腦上無小狼毫 Weasel 時，安裝包會自動安裝小狼毫 0.17.4，需跳一次系統管理員權限 UAC 確認），或先裝小狼毫再用 PowerShell `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`
@@ -34,7 +41,9 @@
 - 首頁：https://taigi.anatomind.com/
 - 白話字 POJ 專頁：https://taigi.anatomind.com/poj
 - 網頁試拍：https://taigi.anatomind.com/try/
-- 讀台文（漢羅⇄台羅／白話字轉換、練習）：https://taigi.anatomind.com/thak/
+- 漢羅⇄台羅／白話字轉換：https://taigi.anatomind.com/convert/
+- 台語詞彙查詢：https://taigi.anatomind.com/vocab/
+- 台語文法筆記：https://taigi.anatomind.com/grammar/
 - 使用說明：https://taigi.anatomind.com/guide
 - 原始碼：https://github.com/soanseng/rime-phah-taibun
 - 下載：https://github.com/soanseng/rime-phah-taibun/releases

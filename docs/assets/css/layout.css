@@ -94,6 +94,91 @@
   color: white;
 }
 
+/* 「工具」下拉：網頁試拍、練習、轉換、詞彙、文法——仝一个網站的功能 */
+.nav-group {
+  position: relative;
+}
+
+.nav-group-btn {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+}
+
+.nav-group-btn::after {
+  content: " ▾";
+  font-size: 0.8em;
+}
+
+.nav-group-btn:hover,
+.nav-group-btn:focus-visible,
+.nav-group.is-current .nav-group-btn {
+  background: var(--color-surface-alt);
+  color: var(--color-ink);
+}
+
+.nav-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  min-width: 13rem;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.4rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px var(--color-shadow-lg);
+}
+
+.nav-group:hover .nav-menu,
+.nav-group:focus-within .nav-menu,
+.nav-group.is-open .nav-menu {
+  display: flex;
+}
+
+.site-nav .nav-menu a {
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+}
+
+/* 工具頁頂懸的工具列（網頁試拍／練習／轉換／詞彙／文法） */
+.tool-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 18px;
+}
+
+.tool-nav a {
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: var(--color-ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--color-surface);
+}
+
+.tool-nav a:hover {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.tool-nav a[aria-current="page"] {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: #fff;
+}
+
 .nav-toggle {
   display: none;
   justify-self: end;
@@ -182,6 +267,29 @@
 
   .site-nav a {
     padding: 0.75rem 0.9rem;
+  }
+
+  /* 手機選單：工具下拉直接展開，做一組縮排 */
+  .nav-group-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 0.9rem;
+    cursor: default;
+  }
+
+  .nav-group-btn::after {
+    content: "";
+  }
+
+  .nav-menu {
+    display: flex;
+    position: static;
+    min-width: 0;
+    padding: 0 0 0 1rem;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
   }
 
   .footer-grid {

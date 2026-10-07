@@ -1,8 +1,8 @@
-# 讀台文 Tha̍k Tâi-bûn
+# 寫台文網頁工具：轉換、詞彙、文法（舊名讀台文）
 
-漢羅 ⇄ 台羅 TL／白話字 POJ 一頁式網頁：貼漢羅文章即時轉出台羅（TL）佮白話字（POJ）雙軌對照，點漢字換讀音，做拼音練習、查詞彙——攏免安裝、免後端。
+寫台文網站的網頁工具共用程式佮資料：[漢羅⇄羅馬字轉換](https://taigi.anatomind.com/convert/)、[詞彙查詢](https://taigi.anatomind.com/vocab/)、[文法筆記](https://taigi.anatomind.com/grammar/)。練習已經併入[網頁試拍](https://taigi.anatomind.com/try/#practice)，用真的輸入法拍。
 
-讀台文是 [寫台文 Siá Tâi-bûn](https://taigi.anatomind.com/)（[rime-phah-taibun](https://github.com/soanseng/rime-phah-taibun)，RIME 台語輸入法，舊名拍台文）的姊妹品，共用仝一个轉換核心：寫台文予你**寫**台文，讀台文予你**讀**台文。
+本目錄原本是獨立網站「讀台文 Tha̍k Tâi-bûn」（soanseng/thak-tai-bun），2026-10 併入寫台文；頁面佇 `docs/convert/`、`docs/vocab/`、`docs/grammar/`，本目錄干焦留 `js/`、`css/`、`data-public/`。
 
 ## 功能
 
@@ -12,7 +12,7 @@
 - **詞彙查詢**：台語詞／華語釋義查詢，附 TL、POJ、華語對照。
 - **學習提示（輸入區文法檢查佮教學，建議性質）**：① 用字建議——華台對照表比對（上長片語優先、span 袂重複列），有筆記的會使點「看文法」② 輕聲標記建議 ③ **可能用著的文法點** chip：照筆記觸發詞（漢字子字串／臺羅詞界／疊字正規）掃，點了跳去文法頁彼篇。純規則比對、毋是語法解析：攏是「建議檢查／可參考」，毋是判對毋著。
 - **教典連結**：詞條直接連去[教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/und-hani/)。
-- **Landing／SEO**：頂蒂例句卡（教典真實句，點一句直接看變調讀音＋POJ）；主站是 https://taigi.anatomind.com/ ——canonical／og:url 指 https://taigi.anatomind.com/thak/，JSON-LD（WebPage＋BreadcrumbList＋WebApplication）掛佇寫台文網站下，sitemap／robots 用全站的。
+- **SEO**：逐頁獨立（/convert/、/vocab/、/grammar/），canonical／og:url 指家己，JSON-LD（WebPage＋BreadcrumbList＋WebApplication）掛佇寫台文網站下，sitemap／robots 用全站的。舊 /thak/ 由 `docs/_redirects` 301 去 /convert/。
 - **性能**：詞典 6.8MB 佇 worker 解析＋反查索引、分段 ack 傳轉主線程（主線程無 long task）；句庫／詞彙例句拍到分頁才載；字體 `display=optional`＋非同步 CSS（CLS 0）；jQuery defer。Lighthouse（本機 headless-shell，2026-10-07）：SEO／A11y／Best-Practices **100/100/100**，Performance mobile 69／desktop 73——行動版 TBT 大頭是 jQuery 佇節流環境的評估時間（~3s），家己的載入鏈已無 long task。
 
 手機、平板、桌機攏好用（RWD），字型用 [芫荽 Iansui](https://fonts.google.com/specimen/Iansui)（支援 𠢕、𤆬、𨑨迌 等台語推薦用字）。
@@ -77,14 +77,14 @@ node scripts/thak/fetch-grammar.mjs
 
 # 本機起 web server
 python3 -m http.server 8765 --directory docs
-# 打開 http://127.0.0.1:8765/thak/
+# 打開 http://127.0.0.1:8765/convert/
 ```
 
 依賴：Python 3.10+（建置）、jQuery 4.0（CDN）、芫荽字型（Google Fonts）。無建置步驟——純靜態檔案。
 
 ## 部署
 
-併入 rime-phah-taibun 了後，`docs/` 歸个由 Cloudflare（`wrangler.jsonc`，assets＝`./docs`）部署：push 去 `main` 就自動上線，網址 https://taigi.anatomind.com/thak/ 。`data-public/` 已在版控內，無需要額外建置。舊網域 thak.anatomind.com 301 轉來遮。
+併入 rime-phah-taibun 了後，`docs/` 歸个由 Cloudflare（`wrangler.jsonc`，assets＝`./docs`）部署：push 去 `main` 就自動上線。`data-public/` 已在版控內，無需要額外建置。舊網域 thak.anatomind.com 301 轉去 https://taigi.anatomind.com/convert/ 。
 
 ## Roadmap（v2）
 

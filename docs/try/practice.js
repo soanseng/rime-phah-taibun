@@ -1,11 +1,14 @@
 // 網頁試拍「練習／考試／記錄」畫面。引擎頁（index.html）送出的文字逐擺交予 update()，
 // 遮負責出題、逐格標對錯、記錄。外部文字（維基、自訂）一律用 textContent，無 innerHTML。
-import { grade, readingOf } from "./practice-core.js?v=1";
-import { createRecords } from "./practice-records.js?v=1";
+import { grade, readingOf } from "./practice-core.js?v=2";
+import { createRecords } from "./practice-records.js?v=2";
 import {
-  loadBank, loadDictBundle, refHanFor, fromCustom, CUSTOM_KEY, randomWikipediaFeatured, wikiArticle,
+  loadBank, loadWords, loadDictBundle, refHanFor, fromCustom, CUSTOM_KEY, randomWikipediaFeatured, wikiArticle,
   wikisourceBooks, wikisourceChildren, wikisourcePage, wikisourceChapter,
-} from "./practice-sources.js?v=1";
+} from "./practice-sources.js?v=2";
+
+// 例句庫、詞語：隨機出題、無進度；其他來源照順序、記讀到佗
+const isRandom = (s) => s.kind === "bank" || s.kind === "words";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => {
@@ -156,12 +159,12 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     src = s;
     sessionId = null;
     idx = 0;
-    if (s.kind === "bank") idx = Math.floor(Math.random() * s.items.length);
+    if (isRandom(s)) idx = Math.floor(Math.random() * s.items.length);
     else if (resume && s.key) {
       const p = records.getProgress(s.key);
       if (p && p.i < s.items.length) idx = p.i;
     }
-    $("pr-restart").classList.toggle("hidden", !(s.kind !== "bank" && idx > 0));
+    $("pr-restart").classList.toggle("hidden", !(!isRandom(s) && idx > 0));
     if (!s.items.length) msg("這篇揣無通練習的句。");
     else msg("");
     goTo(idx);
@@ -179,7 +182,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
 
   function nextItem() {
     if (!src) return;
-    if (src.kind === "bank") goTo(Math.floor(Math.random() * src.items.length));
+    if (isRandom(src)) goTo(Math.floor(Math.random() * src.items.length));
     else if (idx + 1 < src.items.length) goTo(idx + 1);
     else {
       msg("這篇練了矣！揀別篇抑是「從頭開始」。");
@@ -192,7 +195,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     if (!it) return;
     if (!sessionId) sessionId = records.startSession("practice", { kind: src.kind, title: src.title, url: src.url });
     records.addSentence(sessionId, { slots: it.slots.length, correct: g.correct, ms: tStart ? Date.now() - tStart : 0 });
-    if (src.key && src.kind !== "bank") records.setProgress(src.key, idx + 1, src.items.length);
+    if (src.key && !isRandom(src)) records.setProgress(src.key, idx + 1, src.items.length);
   }
 
   function update(text) {
@@ -257,6 +260,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   function chooseSource(kind) {
     for (const id of ["pr-wiki-box", "pr-book-box", "pr-custom-box", "pr-again"]) $(id).classList.add("hidden");
     if (kind === "bank") withLoading("例句庫載入中…", loadBank);
+    else if (kind === "words") withLoading("詞典載入中…（第一擺約 8 MB）", loadWords);
     else if (kind === "wp-random") {
       $("pr-again").classList.remove("hidden");
       withLoading("維基百科揣文章中…", async () => { await needDict(); return randomWikipediaFeatured(); });
@@ -424,7 +428,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   }
 
   // ---- 記錄 ----
-  const KIND = { bank: "例句庫", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂" };
+  const KIND = { bank: "例句庫", words: "詞語", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂" };
   function paintRecords() {
     const s = records.summary();
     $("rec-summary").textContent = s.sessions

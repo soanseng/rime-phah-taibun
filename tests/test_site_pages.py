@@ -1,8 +1,9 @@
-"""Static site pages (docs/): shared header navigation.
+"""Static site pages (docs/): shared header navigation and per-page SEO.
 
-The landing page, POJ page and browser playground are hand-written HTML with
-a copied header. Drift is invisible until a visitor on one page cannot reach
-another, so the nav targets are pinned to be identical on every page.
+The landing page, POJ page, browser playground and the web tools (轉換、詞彙、
+文法) are hand-written HTML with a copied header. Drift is invisible until a
+visitor on one page cannot reach another, so the nav targets are pinned to be
+identical on every page.
 """
 
 from __future__ import annotations
@@ -18,8 +19,11 @@ PAGES = {
     "docs/index.html": SITE,
     "docs/poj.html": SITE + "poj.html",
     "docs/try/index.html": SITE + "try/",
-    "docs/thak/index.html": SITE + "thak/",
+    "docs/convert/index.html": SITE + "convert/",
+    "docs/vocab/index.html": SITE + "vocab/",
+    "docs/grammar/index.html": SITE + "grammar/",
 }
+TOOL_PAGES = ["convert", "vocab", "grammar"]
 
 
 class _NavLinks(HTMLParser):
@@ -59,10 +63,11 @@ def nav_targets(page: str) -> list[tuple[str, str]]:
 
 
 def test_header_nav_is_identical_on_every_page():
-    """首頁、POJ 頁、網頁試拍頂懸的導覽愛仝款 (目標網址佮文字攏仝)。"""
+    """逐頁頂懸的導覽愛仝款 (目標網址佮文字攏仝), 工具下拉愛連會著逐个功能。"""
     expected = nav_targets("docs/index.html")
-    assert any(url == SITE + "try/" for url, _ in expected), "首頁導覽愛有網頁試拍"
-    assert any(url == SITE + "thak/" for url, _ in expected), "首頁導覽愛有讀台文 (/thak/)"
+    urls = {url for url, _ in expected}
+    for path in ["try/", "try/#practice", *(f"{t}/" for t in TOOL_PAGES)]:
+        assert SITE + path in urls, f"首頁導覽愛有 {path}"
     for page in PAGES:
         assert nav_targets(page) == expected, page
 
@@ -119,28 +124,38 @@ def test_try_page_has_search_and_share_metadata_like_other_pages():
     assert f"<loc>{canonical}</loc>" in (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
 
 
-def test_thak_page_is_served_under_main_site():
-    """讀台文併入全站: canonical/og/JSON-LD 指 /thak/, sitemap 有, 舊網域無閣出現佇任何頁。"""
+def test_tool_pages_are_part_of_the_main_site():
+    """轉換、詞彙、文法逐頁: canonical/og/JSON-LD 指家己, 掛佇「寫台文」網站下, sitemap 有。"""
     import json
 
-    head = _Head()
-    head.feed((ROOT / "docs/thak/index.html").read_text(encoding="utf-8"))
-    canonical = SITE + "thak/"
-    assert head.links["canonical"] == canonical
-    assert head.meta["og:url"] == canonical
-    assert head.h1 == 1
-    nodes = []
-    for block in head.jsonld:
-        data = json.loads(block)
-        nodes.extend(data.get("@graph", [data]))
-    assert any(n["@type"] == "WebApplication" and n.get("url") == canonical for n in nodes)
-    # 主站是 taigi.anatomind.com: 分享卡佮結構化資料攏掛佇「寫台文」網站下
-    assert head.meta["og:site_name"] == "寫台文 Siá Tâi-bûn"
-    assert head.meta.get("og:image", "").startswith(SITE)
-    page = next(n for n in nodes if n["@type"] == "WebPage")
-    assert page["@id"] == canonical and page["isPartOf"] == {"@id": SITE + "#website"}
-    crumbs = [i["item"] for i in page["breadcrumb"]["itemListElement"]]
-    assert crumbs == [SITE, canonical]
-    assert f"<loc>{canonical}</loc>" in (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
+    sitemap = (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
+    for tool in TOOL_PAGES:
+        head = _Head()
+        head.feed((ROOT / f"docs/{tool}/index.html").read_text(encoding="utf-8"))
+        canonical = SITE + f"{tool}/"
+        assert head.links["canonical"] == canonical, tool
+        assert head.meta["og:url"] == canonical, tool
+        assert head.meta["og:site_name"] == "寫台文 Siá Tâi-bûn", tool
+        assert head.meta.get("og:image", "").startswith(SITE), tool
+        assert head.h1 == 1, tool
+        graph = [node for block in head.jsonld for node in json.loads(block)["@graph"]]
+        page = next(n for n in graph if n["@type"] == "WebPage")
+        assert page["@id"] == canonical and page["isPartOf"] == {"@id": SITE + "#website"}, tool
+        assert [i["item"] for i in page["breadcrumb"]["itemListElement"]] == [SITE, canonical], tool
+        assert any(n["@type"] == "WebApplication" and n["url"] == canonical for n in graph), tool
+        assert f"<loc>{canonical}</loc>" in sitemap, tool
+    assert "/thak/</loc>" not in sitemap, "舊入口 /thak/ 已經轉址, sitemap 毋通閣列"
+
+
+def test_old_thak_entry_redirects_to_converter():
+    """舊讀台文入口 (/thak/、thak.anatomind.com 轉來的) 愛 301 去轉換頁, 舊連結袂斷。"""
+    rules = {
+        tuple(line.split()[:3])
+        for line in (ROOT / "docs/_redirects").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+    for src in ("/thak", "/thak/", "/thak/index.html"):
+        assert (src, "/convert/", "301") in rules, src
+    assert not (ROOT / "docs/thak/index.html").exists(), "舊頁留咧會佮轉址衝突"
     for page in PAGES:
         assert "thak.anatomind.com" not in (ROOT / page).read_text(encoding="utf-8"), page

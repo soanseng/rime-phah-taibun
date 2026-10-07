@@ -2,8 +2,8 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=24";
-import { formatRomanization, stripTones } from "../roman.js?v=24";
+} from "../dict.js?v=26";
+import { formatRomanization, stripTones } from "../roman.js?v=26";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -28,7 +28,7 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
   const ensureLM = () => {
     if (lm) return Promise.resolve(lm);
     if (!lmPromise) {
-      lmPromise = fetch("./data-public/bigrams.json")
+      lmPromise = fetch(new URL("../../data-public/bigrams.json", import.meta.url))
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
         .then((j) => { lm = buildLM(j); return lm; })
         .catch(() => { lm = false; return false; });
@@ -84,6 +84,8 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
         gi++;
       }
     }
+    // ab9c5d2 重構時漏掉這行，文法檢查區就攏無出現
+    renderHints(String($("#cv-in").val() ?? ""));
   };
   // r2h：結果狀態＋詞卡點選循環同音候選（手動改正同音歧義）
   const r2h = { pieces: [], overrides: new Map() };

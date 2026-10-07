@@ -1,9 +1,9 @@
 // 網頁試拍「練習／考試」的純函式核心（無 DOM）：目標文字切做對位格、
 // 使用者送出的文字逐格評分。TL／POJ、有調／免調、漢字／羅馬字攏當做仝音。
-// 拼音轉換用讀台文（../thak）的核心，import 指定字串愛佮讀台文內底仝款（?v=24），
+// 拼音轉換用轉換工具（../thak/js）的核心，import 指定字串愛佮工具頁內底仝款（?v=26），
 // 模組才袂載兩擺。
-import { pojToTl, stripTones, formatRomanization, tlToPoj, pojFixDiacritics } from "../thak/js/roman.js?v=24";
-import { isHan } from "../thak/js/dict.js?v=24";
+import { pojToTl, stripTones, formatRomanization, tlToPoj, pojFixDiacritics } from "../thak/js/roman.js?v=26";
+import { isHan } from "../thak/js/dict.js?v=26";
 
 // 一个音節的去調 TL 鍵：POJ 先轉 TL（pojToTl 對 TL 本身無影響），閣除調號。
 // 舊式 o· 中點佮無點 ı（維基文庫 1920 年代文本）先正規化。
@@ -52,7 +52,7 @@ export function alignSentence(han, tl) {
 export const romanSlots = (text) =>
   tokenize(text).map((t) => (t.h ? { h: t.h, k: null, src: t.h } : { h: null, k: t.k, src: t.src }));
 
-// 讀台文詞典 {詞: {r: ["tsit8 lui2 hue1", …]}} → 漢字 → 去調讀音集合；
+// 轉換工具詞典 {詞: {r: ["tsit8 lui2 hue1", …]}} → 漢字 → 去調讀音集合；
 // 只收字數＝音節數的讀音（逐字對位才準）。
 export function buildCharKeys(dict) {
   const map = new Map();

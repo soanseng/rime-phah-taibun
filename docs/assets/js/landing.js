@@ -22,6 +22,23 @@ $(function () {
     $navToggle.attr('aria-expanded', 'false');
   });
 
+  // 「工具」下拉：點擊／鍵盤開關（滑鼠 hover 由 CSS 處理），外面點一下抑是 Esc 收起來
+  const $groups = $('.nav-group');
+  const closeGroups = () => $groups.removeClass('is-open').find('.nav-group-btn').attr('aria-expanded', 'false');
+  $groups.each(function () {
+    const $g = $(this);
+    $g.toggleClass('is-current', $g.find('[aria-current="page"]').length > 0);
+    $g.find('.nav-group-btn').on('click', function (ev) {
+      ev.stopPropagation();
+      const open = !$g.hasClass('is-open');
+      closeGroups();
+      $g.toggleClass('is-open', open);
+      $(this).attr('aria-expanded', String(open));
+    });
+  });
+  $(document).on('click', closeGroups);
+  $(document).on('keydown', (ev) => { if (ev.key === 'Escape') closeGroups(); });
+
   $('[data-tabs]').each(function () {
     const $tabs = $(this);
     const $buttons = $tabs.find('[role="tab"]');

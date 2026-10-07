@@ -20,7 +20,7 @@ let notesReady = Promise.resolve(); // initNotes 的 promise：revealNote 愛等
 async function initNotes() {
   let data;
   try {
-    data = await fetchJson("./data-public/grammar-notes.json");
+    data = await fetchJson(new URL("../../data-public/grammar-notes.json", import.meta.url));
   } catch {
     $("#gr-notes").html('<p class="hint">文法筆記載入失敗（grammar-notes.json）</p>');
     return;
@@ -85,7 +85,7 @@ async function initNotes() {
 async function initIndex() {
   let data;
   try {
-    data = await fetchJson("./data-public/grammars.json");
+    data = await fetchJson(new URL("../../data-public/grammars.json", import.meta.url));
   } catch {
     $("#gr-count").text("文法索引載入失敗（grammars.json）");
     return;
@@ -148,9 +148,13 @@ async function initIndex() {
   );
 }
 
-// 予文法檢查 chip 點了跳過來看：切去文法頁、重頭顯示全部、滾去彼篇閃一下
+// 予文法檢查 chip 點了跳過來看：文法頁就重頭顯示全部、滾去彼篇閃一下；
+// 別頁（轉換）就連去文法頁 #note-<id>，由 initGrammar 接手
 export async function revealNote(id) {
-  if (!$("#tab-grammar").hasClass("is-active")) $("#tab-grammar").trigger("click");
+  if (!document.getElementById("gr-notes")) {
+    location.href = `../grammar/#note-${encodeURIComponent(id)}`;
+    return;
+  }
   await notesReady;
   $("#gr-note-cats .seg-btn").first().trigger("click");
   const el = document.getElementById(`note-${id}`);
@@ -165,4 +169,6 @@ export async function revealNote(id) {
 export function initGrammar() {
   notesReady = initNotes(); // 各自 catch：一篇失敗嘛袂拖累另外一篇
   initIndex();
+  const m = location.hash.match(/^#note-(.+)$/);
+  if (m) revealNote(decodeURIComponent(m[1]));
 }

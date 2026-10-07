@@ -97,13 +97,15 @@ rime-phah-taibun/
 │   ├── download_resources.sh      # 18+ 外部資源下載
 │   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
 │   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
-│   ├── thak/                      # 讀台文工具（vendored，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
+│   ├── thak/                      # 網頁工具資料管線（vendored 自舊讀台文，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
 ├── docs/                          # 網站（Cloudflare wrangler 部署 taigi.anatomind.com）+ 使用文件
 │   ├── try/                       # 網頁試拍：引擎＋pack（build_web_playground.py 產生）、練習/考試/記錄（practice*.js）
-│   └── thak/                      # 讀台文（2026-10 由 soanseng/thak-tai-bun 以 git subtree 併入，保留歷史）
+│   ├── convert/ vocab/ grammar/   # 網頁工具頁：漢羅⇄羅馬字轉換、詞彙查詢、文法筆記（共用 docs/thak/js/main.js）
+│   ├── thak/                      # 工具共用 JS/CSS/data-public（2026-10 由 soanseng/thak-tai-bun subtree 併入；舊 /thak/ 由 _redirects 301 去 /convert/）
+│   └── _redirects                 # Cloudflare 靜態資產轉址
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）
 ├── install.sh / install_windows.ps1
 └── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
@@ -111,8 +113,8 @@ rime-phah-taibun/
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
     ├── test_try_practice.py       # node --test tests/js/：練習比對（TL/POJ 等價、對位、評分）、來源、本機記錄
-    ├── test_thak_tools.py         # bun 跑讀台文羅→漢回歸斷言
-    ├── test_site_pages.py         # 全站導覽一致、/try/ /thak/ SEO 掛佇主站
+    ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
+    ├── test_site_pages.py         # 全站導覽一致、工具頁 SEO 掛佇主站、舊 /thak/ 轉址
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
     └── rime_smoke.cpp             # C++ smoke

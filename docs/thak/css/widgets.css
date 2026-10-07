@@ -17,28 +17,8 @@
   color: var(--accent-deep);
 }
 
-.about h3 {
-  margin: 1.2rem 0 0.4rem;
-  font-size: 1.02rem;
-  color: var(--accent-deep);
-}
-
-.about p,
-.about li {
-  font-size: 0.95rem;
-  line-height: 1.8;
-}
-
-.about code {
-  background: var(--accent-soft);
-  color: var(--accent-deep);
-  padding: 0.05em 0.4em;
-  border-radius: 6px;
-}
-
 textarea,
 #vb-in,
-#pr-in,
 #gr-in {
   width: 100%;
   padding: 0.75rem 0.9rem;
@@ -54,7 +34,6 @@ textarea {
 }
 
 #vb-in,
-#pr-in,
 #gr-in {
   min-height: 0;
   max-width: 32rem;
@@ -62,7 +41,6 @@ textarea {
 
 textarea:focus,
 #vb-in:focus,
-#pr-in:focus,
 #gr-in:focus {
   outline: none;
   border-color: var(--accent);
@@ -368,53 +346,6 @@ textarea:focus,
 .anno.miss {
   color: var(--miss);
   font-weight: 700;
-}
-
-.prac-card {
-  display: grid;
-  gap: 0.65rem;
-  justify-items: center;
-  text-align: center;
-  padding: 1.2rem 0.6rem 0.4rem;
-}
-
-.prac-score {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-}
-
-.prac-han {
-  font-size: clamp(2rem, 6vw, 2.8rem);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.prac-gloss {
-  color: var(--ink-soft);
-}
-
-.prac-fb {
-  min-height: 2.4em;
-  font-size: 1.05rem;
-  overflow-wrap: anywhere;
-  font-weight: 600;
-}
-
-.prac-fb.good {
-  color: var(--good);
-}
-
-.prac-fb.bad {
-  color: var(--bad);
-}
-
-.prac-fb .w-ok {
-  color: var(--good);
-}
-
-.prac-fb .w-bad {
-  color: var(--bad);
-  text-decoration: line-through;
 }
 
 .ex-cell .ex {
