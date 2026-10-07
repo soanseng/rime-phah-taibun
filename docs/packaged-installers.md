@@ -36,7 +36,7 @@ Android 用一鍵包，**兩種自己選**：`PhahTaiBun-Trime.zip`（寫台文�
 Windows 安裝器使用 Inno Setup：
 
 ```powershell
-$env:PHAH_TAIBUN_VERSION = "0.9.4"
+$env:PHAH_TAIBUN_VERSION = "0.10.0"
 iscc packaging/windows/phah-taibun.iss
 ```
 

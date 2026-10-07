@@ -2,7 +2,7 @@
 #define MyAppPublisher "寫台文開發團隊"
 #define MyAppVersion GetEnv("PHAH_TAIBUN_VERSION")
 #if MyAppVersion == ""
-#define MyAppVersion "0.9.4"
+#define MyAppVersion "0.10.0"
 #endif
 ; Bundled unmodified Weasel (GPL-3.0). CI downloads and SHA-256-verifies it
 ; into packaging/windows/vendor (release.yml WEASEL_VERSION must match).

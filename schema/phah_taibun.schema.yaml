@@ -4,7 +4,7 @@
 schema:
   schema_id: phah_taibun
   name: "寫台文(台)"
-  version: "0.9.4"
+  version: "0.10.0"
   author:
     - "寫台文開發團隊"
   dependencies:
