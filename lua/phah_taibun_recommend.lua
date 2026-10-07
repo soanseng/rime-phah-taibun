@@ -30,7 +30,12 @@ local NUDGE_LKK = 3
 local NUDGE_MOE = 1
 
 function M.func(input, env)
-  local all = {}
+  -- 待放出的候選, 依 (slot, order) 排序。徽章最多前進 NUDGE_LKK 格,
+  -- 故後續候選 (order >= 現序+1) 的 slot 恆 >= 現序+1-NUDGE_LKK
+  -- (錨定只會把 slot 往後推)。slot <= 該下界的候選位置已定, 立即 yield:
+  -- librime 只取第一頁時不必把上游數千補全候選全部拉完 (wasm 網頁版
+  -- 短前綴從每鍵 1.4 秒降到毫秒級), 輸出順序與全收集排序逐項相同。
+  local pending = {}
   local order = 0
   -- Sentence anchor: script_translator 的整句組字候選 (type="sentence")
   -- 是引擎斷詞結論, 徽章不得越過 (v0.9.2 CI: ◆短詞蓋過整句讓全羅
@@ -38,27 +43,42 @@ function M.func(input, env)
   -- 之後的半格帶 (S+0.5) 內前進, 不失「推薦強化」效果。
   local anchor_floor = nil
 
+  local function before(a, b)
+    if a.slot ~= b.slot then
+      return a.slot < b.slot
+    end
+    return a.order < b.order
+  end
+
+  local function release(bound)
+    while pending[1] and pending[1].slot <= bound do
+      yield(table.remove(pending, 1).cand)
+    end
+  end
 
   local function collect(cand, new_cand, nudge)
     order = order + 1
+    local slot
     if cand.type == "sentence" then
       -- 錨必須是「真組字句」: 輕聲變體（文字含 --）複製母詞的 type 與
       -- preedit, 本身不是引擎斷詞結論, 不得作為位移邊界。
       if not anchor_floor and not cand.text:find("--", 1, true) then
         anchor_floor = order
       end
-      all[#all + 1] = { cand = new_cand or cand, slot = order, order = order }
-      return
+      slot = order
+    else
+      slot = order - (nudge or 0)
+      if anchor_floor and order > anchor_floor and slot <= anchor_floor then
+        slot = anchor_floor + 0.5
+      end
     end
-    local slot = order - (nudge or 0)
-    if anchor_floor and order > anchor_floor and slot <= anchor_floor then
-      slot = anchor_floor + 0.5
+    local entry = { cand = new_cand or cand, slot = slot, order = order }
+    local i = #pending
+    while i > 0 and before(entry, pending[i]) do
+      i = i - 1
     end
-    all[#all + 1] = {
-      cand = new_cand or cand,
-      slot = slot,
-      order = order,
-    }
+    table.insert(pending, i + 1, entry)
+    release(order + 1 - NUDGE_LKK)
   end
 
   for cand in input:iter() do
@@ -124,19 +144,7 @@ function M.func(input, env)
     ::continue::
   end
 
-  -- Bounded displacement: slot = original position - nudge, stable by
-  -- (slot, original order). A badge moves a candidate forward at most
-  -- NUDGE_LKK slots — it can never flood the window.
-  table.sort(all, function(a, b)
-    if a.slot ~= b.slot then
-      return a.slot < b.slot
-    end
-    return a.order < b.order
-  end)
-
-  for _, entry in ipairs(all) do
-    yield(entry.cand)
-  end
+  release(math.huge)
 end
 
 return M

@@ -1456,6 +1456,123 @@ def test_recommend_badge_cannot_cross_beyond_nudge_window():
     assert run_lua(script).splitlines() == ["甲", "乙", "伊", "丙", "丁"]
 
 
+def _recommend_harness(body: str) -> str:
+    """recommend 共用 stub: 單字「伊」= LKK、「醫」= moe700, 其餘無徽章。"""
+    return textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        function Candidate(type, start, end_pos, text, comment)
+          return { type = type, start = start, _end = end_pos, text = text, comment = comment }
+        end
+        package.loaded["phah_taibun_data"] = {
+          check_lkk_recommend = function(text)
+            if text:find("伊", 1, true) then return true, false end
+            return false, false
+          end,
+          check_moe700 = function(text) return text:find("醫", 1, true) ~= nil end,
+        }
+        local filter = require("phah_taibun_recommend")
+        local env = {
+          name_space = "",
+          engine = { schema = { config = { get_bool = function() return true end } } },
+        }
+        filter.init(env)
+        """
+    ) + textwrap.dedent(body)
+
+
+def test_recommend_streams_first_page_without_draining_input():
+    """短前綴補全有成千候選: librime 只取第一頁, filter 袂使先食了規串才吐。
+
+    徽章最濟往前挪 NUDGE_LKK(3) 格, 所以排序鍵細過「下一个序號 - 3」的
+    候選已經定位, 會使隨時 yield。舊版 table.sort 規串: 每鍵從上游拉 1000
+    个候選(wasm 網頁版一鍵 1.4 秒)。這測試照 librime 用 coroutine 跑 filter,
+    消費者取 10 个就停, 上游被拉的數量愛有上限。
+    """
+    script = _recommend_harness(
+        r"""
+        local pulled = 0
+        local input = { iter = function()
+          return function()
+            if pulled >= 1000 then return nil end
+            pulled = pulled + 1
+            local text = (pulled % 7 == 0) and "伊" or ("字" .. pulled)
+            return Candidate("table", 0, 1, text, " [x]")
+          end
+        end }
+        function yield(cand) coroutine.yield(cand) end
+        local co = coroutine.wrap(function() filter.func(input, env) end)
+        for _ = 1, 10 do co() end
+        print(pulled)
+        """
+    )
+    assert int(run_lua(script).strip()) <= 10 + 3 + 1
+
+
+def test_recommend_streaming_order_matches_full_sort_reference():
+    """流式輸出愛佮「全收集 → 依 (slot, order) 排序」逐項相仝。
+
+    隨機串流混 LKK(nudge 3)、moe700(nudge 1)、sentence 錨、-- 輕聲變體、
+    無括號候選; 參考實作是舊版演算法原樣。任何放出邊界差一格就會錯排。
+    """
+    script = _recommend_harness(
+        r"""
+        local function reference(items)
+          local all, order, anchor = {}, 0, nil
+          for _, c in ipairs(items) do
+            order = order + 1
+            local nudge = 0
+            local t = c.text
+            if c.type == "sentence" then
+              if not anchor and not t:find("--", 1, true) then anchor = order end
+              all[#all + 1] = { t = t, slot = order, order = order }
+            else
+              if c.comment:find("[", 1, true) and not t:find("--", 1, true) then
+                if t:find("伊", 1, true) then nudge = 3 elseif t:find("醫", 1, true) then nudge = 1 end
+              end
+              local slot = order - nudge
+              if anchor and order > anchor and slot <= anchor then slot = anchor + 0.5 end
+              all[#all + 1] = { t = t, slot = slot, order = order }
+            end
+          end
+          table.sort(all, function(a, b)
+            if a.slot ~= b.slot then return a.slot < b.slot end
+            return a.order < b.order
+          end)
+          local out = {}
+          for i, e in ipairs(all) do out[i] = e.t end
+          return table.concat(out, ",")
+        end
+
+        math.randomseed(20261007)
+        local kinds = { "伊", "醫", "伊--仔", "句", "字", "字", "字", "字" }
+        for trial = 1, 400 do
+          local items = {}
+          local n = math.random(0, 25)
+          for i = 1, n do
+            local k = kinds[math.random(#kinds)]
+            local typ = (math.random(8) == 1) and "sentence" or "table"
+            local comment = (math.random(10) == 1) and "" or " [x]"
+            items[i] = Candidate(typ, 0, 1, k .. i, comment)
+          end
+          local got = {}
+          function yield(cand) got[#got + 1] = cand.text end
+          local pos = 0
+          filter.func({ iter = function()
+            return function() pos = pos + 1; return items[pos] end
+          end }, env)
+          local want = reference(items)
+          if table.concat(got, ",") ~= want then
+            print("MISMATCH trial " .. trial .. "\n got " .. table.concat(got, ",") .. "\nwant " .. want)
+            return
+          end
+        end
+        print("OK")
+        """
+    )
+    assert run_lua(script).strip() == "OK"
+
+
 def test_lighttone_precomposed_rule_suffix_matches_numeric_comment(tmp_path):
     """Identical lookup key: NFC rule suffix "--lâng" must generate the
     variant for a numeric candidate " [u7 lang5]" exactly like its ASCII

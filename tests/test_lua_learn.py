@@ -490,3 +490,30 @@ def test_learn_single_observe_does_not_displace(tmp_path):
         """
     )
     assert run_lua(script).strip() == "OK"
+
+
+def test_learn_streams_first_page_without_draining_input(tmp_path):
+    """學過詞了後 filter 袂使先食了規串候選才吐 (提交了每鍵慢 10 倍)。
+
+    位移上限 3 格: 排序鍵細過「下一个序號 - 3」的候選已經定位, 會使隨時
+    yield。照 librime 用 coroutine 跑, 消費者取 10 个就停, 上游拉的數量愛有上限。
+    """
+    script = learn_harness(tmp_path) + textwrap.dedent(
+        r"""
+        for _ = 1, 40 do learn.observe(Candidate("table", 0, 1, "重", " [tāng]")) end
+        local pulled = 0
+        local input = { iter = function()
+          return function()
+            if pulled >= 1000 then return nil end
+            pulled = pulled + 1
+            if pulled % 7 == 0 then return Candidate("table", 0, 1, "重", " [tāng]") end
+            return Candidate("table", 0, 1, "字" .. pulled, " [ji7]")
+          end
+        end }
+        yield = function(c) coroutine.yield(c) end
+        local co = coroutine.wrap(function() learn.func(input, {}) end)
+        for _ = 1, 10 do co() end
+        print(pulled)
+        """
+    )
+    assert int(run_lua(script).strip()) <= 10 + 3 + 1

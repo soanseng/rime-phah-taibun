@@ -173,10 +173,15 @@ function M.init(env)
   ensure_loaded()
 end
 
--- 有界位移：字典順序為主，已學習的候選往前挪至多 3 格（格數 =
+-- 有界位移：字典順序為主，已學習的候選往前挪至多 MAX_NUDGE 格（格數 =
 -- floor(B)，飽和時 B=2.0 → 2 格…上限 3）。詞典候選的 quality 實務上
 -- 全是 nil，任何加法排序都會退化成「學習全置頂」而淹沒候選區；位移
 -- 保證單次學習只往前一格、不會越過多個更常見的詞。
+-- 串流放出：後續候選 slot 恆 >= 下一序號 - MAX_NUDGE，slot 不超過此下界
+-- 的候選位置已定、立即 yield——librime 只取第一頁時不必拉完上游數千補全
+-- 候選（wasm 網頁版提交後每鍵 1.7 秒 → 毫秒級），順序與全收集排序相同。
+local MAX_NUDGE = 3
+
 function M.func(input, env)
   ensure_loaded()
   if _disabled or not _store or next(_store) == nil then
@@ -186,7 +191,7 @@ function M.func(input, env)
     return
   end
 
-  local all = {}
+  local pending = {} -- 依 (slot, pos) 排序
   local pos = 0
   for cand in input:iter() do
     pos = pos + 1
@@ -199,23 +204,22 @@ function M.func(input, env)
     local nudge = 0
     if e then
       local b = M.boost(e.commits, e.last)
-      nudge = math.min(3, math.floor(b))
+      nudge = math.min(MAX_NUDGE, math.floor(b))
     end
-    table.insert(all, {
-      cand = cand,
-      pos = pos,
-      slot = pos - nudge,
-    })
+    local slot = pos - nudge
+    -- 同 slot：保持原有相對順序（新項 pos 最大，排在同 slot 之後）
+    local i = #pending
+    while i > 0 and pending[i].slot > slot do
+      i = i - 1
+    end
+    table.insert(pending, i + 1, { cand = cand, slot = slot })
+    local bound = pos + 1 - MAX_NUDGE
+    while pending[1] and pending[1].slot <= bound do
+      yield(table.remove(pending, 1).cand)
+    end
   end
 
-  table.sort(all, function(a, b)
-    if a.slot ~= b.slot then
-      return a.slot < b.slot
-    end
-    return a.pos < b.pos -- 同 slot：保持原有相對順序
-  end)
-
-  for _, item in ipairs(all) do
+  for _, item in ipairs(pending) do
     yield(item.cand)
   end
 end
