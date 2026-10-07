@@ -18,6 +18,7 @@ PAGES = {
     "docs/index.html": SITE,
     "docs/poj.html": SITE + "poj.html",
     "docs/try/index.html": SITE + "try/",
+    "docs/thak/index.html": SITE + "thak/",
 }
 
 
@@ -61,6 +62,7 @@ def test_header_nav_is_identical_on_every_page():
     """首頁、POJ 頁、網頁試拍頂懸的導覽愛仝款 (目標網址佮文字攏仝)。"""
     expected = nav_targets("docs/index.html")
     assert any(url == SITE + "try/" for url, _ in expected), "首頁導覽愛有網頁試拍"
+    assert any(url == SITE + "thak/" for url, _ in expected), "首頁導覽愛有讀台文 (/thak/)"
     for page in PAGES:
         assert nav_targets(page) == expected, page
 
@@ -115,3 +117,23 @@ def test_try_page_has_search_and_share_metadata_like_other_pages():
     assert page["@id"] == canonical and page["url"] == canonical
     assert any(n["@type"] == "WebApplication" and n["url"] == canonical for n in graph)
     assert f"<loc>{canonical}</loc>" in (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
+
+
+def test_thak_page_is_served_under_main_site():
+    """讀台文併入全站: canonical/og/JSON-LD 指 /thak/, sitemap 有, 舊網域無閣出現佇任何頁。"""
+    import json
+
+    head = _Head()
+    head.feed((ROOT / "docs/thak/index.html").read_text(encoding="utf-8"))
+    canonical = SITE + "thak/"
+    assert head.links["canonical"] == canonical
+    assert head.meta["og:url"] == canonical
+    assert head.h1 == 1
+    nodes = []
+    for block in head.jsonld:
+        data = json.loads(block)
+        nodes.extend(data.get("@graph", [data]))
+    assert any(n["@type"] == "WebApplication" and n.get("url") == canonical for n in nodes)
+    assert f"<loc>{canonical}</loc>" in (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
+    for page in PAGES:
+        assert "thak.anatomind.com" not in (ROOT / page).read_text(encoding="utf-8"), page

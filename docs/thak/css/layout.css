@@ -7,6 +7,7 @@
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: 0.01em;
+  max-width: none; /* 全站 base.css 的 h1 16ch 限寬毋適用 */
 }
 
 .site-head h1 .accent {

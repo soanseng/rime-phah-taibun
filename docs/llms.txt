@@ -34,6 +34,7 @@
 - 首頁：https://taigi.anatomind.com/
 - 白話字 POJ 專頁：https://taigi.anatomind.com/poj
 - 網頁試拍：https://taigi.anatomind.com/try/
+- 讀台文（漢羅⇄台羅／白話字轉換、練習）：https://taigi.anatomind.com/thak/
 - 使用說明：https://taigi.anatomind.com/guide
 - 原始碼：https://github.com/soanseng/rime-phah-taibun
 - 下載：https://github.com/soanseng/rime-phah-taibun/releases
