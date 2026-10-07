@@ -66,13 +66,13 @@ tai uan                ->  臺灣 / 台灣
 
 Prefer staying on the letter keys for tones? Switch to the optional `寫台文(Telex)` schema (`F4`) and type `taidfgiv` for 臺語, `ziahv` for 食 — details in the [Chinese section](#中文說明).
 
-For full documentation, see the [project website](https://taigi.anatomind.com/), [online guide](https://taigi.anatomind.com/guide.html), and [quickstart card](docs/quickstart-card.md).
+For full documentation, see the [project website](https://taigi.anatomind.com/), [online guide](https://taigi.anatomind.com/guide.html), and [quickstart card](docs/quickstart-card.md). Want to try before installing? The [browser playground](https://taigi.anatomind.com/try/) runs the same Rime engine and Lua modules in WebAssembly with a concise ~45K-word dictionary (both schemas; no reverse lookup or emoji).
 
 ## 中文說明
 
 Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
 
-> **快速入口**：[專案首頁](https://taigi.anatomind.com/) · [線上使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
+> **快速入口**：[專案首頁](https://taigi.anatomind.com/) · [網頁試拍（免安裝）](https://taigi.anatomind.com/try/) · [線上使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
 
 專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
 

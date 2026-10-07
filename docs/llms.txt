@@ -27,11 +27,13 @@
 - macOS：裝鼠鬚管 → `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`
 - Linux：`git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh`
 - Android：裝同文 Trime → Releases 載 `PhahTaiBun-Trime.zip` 解壓入 `Android/data/com.osfans.trime/files/rime` → 重新部署
+- 免安裝試拍：https://taigi.anatomind.com/try/ （瀏覽器內真 Rime 引擎 WebAssembly；精簡字典約 4.5 萬詞，含寫台文佮 Telex 方案）
 
 ## 連結
 
 - 首頁：https://taigi.anatomind.com/
 - 白話字 POJ 專頁：https://taigi.anatomind.com/poj
+- 網頁試拍：https://taigi.anatomind.com/try/
 - 使用說明：https://taigi.anatomind.com/guide
 - 原始碼：https://github.com/soanseng/rime-phah-taibun
 - 下載：https://github.com/soanseng/rime-phah-taibun/releases

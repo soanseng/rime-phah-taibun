@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="nan-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>寫台文 — 網頁試拍（免安裝台語輸入法）</title>
+<meta name="description" content="免安裝，佇瀏覽器直接試拍寫台文 RIME 台語輸入法：POJ／TL 混拍、聲調會當省略、漢羅／全羅輸出，嘛有 Telex 調鍵方案。">
+<link rel="canonical" href="https://taigi.anatomind.com/try/">
+<link rel="icon" href="../favicon.png">
+<style>
+  :root { --fg:#24292f; --muted:#656d76; --border:#d0d7de; --surface:#f6f8fa; --accent:#1f6feb; --bg:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e6edf3; --muted:#8b949e; --border:#30363d; --surface:#161b22; --accent:#4493f8; --bg:#0d1117; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Noto Sans TC","Iansui","PingFang TC","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
+  .sub a { color: var(--accent); }
+  #status { padding: 10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface); font-size:.9rem; margin-bottom:16px; }
+  #status.err { border-color:#cf222e; color:#cf222e; }
+  .hidden { display:none !important; }
+  #editor { border:2px solid var(--accent); border-radius:10px; padding:14px 16px; min-height:140px; cursor:text; }
+  #out { font-size:1.5rem; line-height:1.7; min-height:2.6em; white-space:pre-wrap; word-break:break-all; }
+  #preedit { color:var(--accent); font-size:1.5rem; white-space:pre-wrap; }
+  #preedit .sel { text-decoration: underline; text-underline-offset:6px; }
+  #cands { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+  .cand { border:1px solid var(--border); border-radius:8px; padding:6px 10px; background:var(--bg); cursor:pointer; font-size:1.05rem; }
+  .cand .t { font-size:1.2rem; }
+  .cand .c { color:var(--muted); font-size:.8rem; margin-left:6px; }
+  .cand.hl { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  #modes { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
+  .mode { border:1px solid var(--border); background:var(--surface); color:var(--fg); border-radius:999px; padding:6px 14px; cursor:pointer; font-size:.9rem; }
+  .mode.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  #hint { font-size:.85rem; color:var(--muted); margin-top:10px; line-height:1.8; }
+  kbd { border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; padding:0 5px; font-size:.8rem; background:var(--surface); }
+  footer { margin-top:28px; font-size:.78rem; color:var(--muted); line-height:1.7; }
+</style>
+</head>
+<body>
+<main>
+  <h1>寫台文 · 網頁試拍</h1>
+  <p class="sub">免安裝，直接佇網頁用台語羅馬字拍字（TL／POJ 攏會使、聲調會當省略）。引擎佮 Lua 模組佮安裝版仝款，字典是網頁精簡版（約 4.5 萬詞＋常用單字）；完整字典（22 萬詞）、注音反查、Emoji 請<a href="../#install">安裝寫台文</a>。回<a href="../">首頁</a>．<a href="../guide.html">使用說明</a>。</p>
+
+  <div id="status">正在載入輸入法引擎…</div>
+
+  <div id="app" class="hidden">
+    <div id="modes">
+      <button class="mode" id="m-scheme">方案：寫台文</button>
+      <button class="mode" id="m-full_romanization">輸出：漢羅</button>
+      <button class="mode" id="m-poj_mode">拼音：TL</button>
+    </div>
+    <div id="editor" tabindex="0" aria-label="打字區">
+      <div id="out"></div><div id="preedit"></div>
+    </div>
+    <div id="cands"></div>
+    <p id="hint">點打字區了後直接拍羅馬字，例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出首選；<kbd>Tab</kbd> 進選字模式，用 <kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>… 揀字，抑是直接點候選；<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<button class="mode" id="clear">清空</button></p>
+  </div>
+
+  <footer>
+    引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，AGPL-3.0-or-later；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
+    輸入法方案：<a href="https://github.com/soanseng/rime-phah-taibun" rel="noopener">寫台文 rime-phah-taibun</a>（MIT）；網頁字典取自<a href="https://thak.anatomind.com/">讀台文</a>公開版詞庫（iTaigi CC0、台華線頂對照典 CC BY-SA 4.0、教育部地名 CC BY 3.0 TW、學科術語、iCorpus CC BY 4.0）。
+    第一擺載入需要編譯字典，了後瀏覽器會快取。
+  </footer>
+</main>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
+
+// ---- worker RPC ----
+const worker = new Worker('./worker.js');
+// worker 回應無帶 id，而且 process 內底有 await（syncfs），並行會亂序 →
+// 一擺只送一个請求，前一个回應了才送下一个。transferableIndices 必給（worker 直接 .includes）。
+let current = null;
+worker.onmessage = (e) => {
+  const m = e.data;
+  if (m.type === 'control') {
+    if (m.name === 'deployStatus') onDeployStatus(m.args[0]);
+    return;
+  }
+  const p = current;
+  current = null;
+  if (!p) return;
+  m.type === 'success' ? p.resolve(m.result) : p.reject(new Error(m.error?.message || m.error?.name));
+};
+let queue = Promise.resolve();
+function call(name, ...args) {
+  const run = () => new Promise((resolve, reject) => {
+    current = { resolve, reject };
+    worker.postMessage({ name, args, transferableIndices: [] });
+  });
+  const result = queue.then(run);
+  queue = result.catch(() => {});
+  return result;
+}
+const FS = (op, ...args) => call('fsOperate', op, ...args);
+
+// ---- key map (同 my-rime 前端) ----
+const SPECIAL = { Escape:'Escape', F4:'F4', Backspace:'BackSpace', Delete:'Delete', Tab:'Tab',
+  Enter:'Return', Home:'Home', End:'End', PageUp:'Page_Up', PageDown:'Page_Down',
+  ArrowUp:'Up', ArrowRight:'Right', ArrowDown:'Down', ArrowLeft:'Left' };
+const SYMBOL = { '~':'asciitilde','`':'quoteleft','!':'exclam','@':'at','#':'numbersign','$':'dollar',
+  '%':'percent','^':'asciicircum','&':'ampersand','*':'asterisk','(':'parenleft',')':'parenright',
+  '-':'minus','_':'underscore','+':'plus','=':'equal','{':'braceleft','[':'bracketleft','}':'braceright',
+  ']':'bracketright',':':'colon',';':'semicolon','"':'quotedbl',"'":'apostrophe','|':'bar','\\':'backslash',
+  '<':'less',',':'comma','>':'greater','.':'period','?':'question','/':'slash',' ':'space' };
+// simulate_key_sequence：英數字直接送；其餘按鍵名愛用 {} 包（無包會變做逐字母輸入）
+const keyName = (ev) => {
+  if (ev.metaKey || ev.altKey) return null;
+  if (ev.ctrlKey) {
+    // 方案有用著的 Ctrl 組合：Ctrl+Enter 送出轉換後文字、Ctrl+Backspace 刪音節
+    const ctrl = { Enter: 'Control+Return', Backspace: 'Control+BackSpace' }[ev.key];
+    return ctrl ? `{${ctrl}}` : null;
+  }
+  if (/^[a-zA-Z0-9]$/.test(ev.key)) return ev.key;
+  const name = ev.key.length === 1 ? SYMBOL[ev.key] : SPECIAL[ev.key];
+  if (!name) return null;
+  return ev.shiftKey && ev.key.length > 1 ? `{Shift+${name}}` : `{${name}}`;
+};
+
+// ---- state ----
+const UNHANDLED = 3; // api.cpp: COMMITTED, ACCEPTED, REJECTED, UNHANDLED
+
+function render(r) {
+  if (typeof r === 'string') r = JSON.parse(r); // selectCandidateOnCurrentPage 回傳未 parse 的 JSON
+  if ('committed' in r) out.textContent += r.committed;
+  if (r.candidates) {
+    const h = document.createElement('span'); h.textContent = r.head || '';
+    const b = document.createElement('span'); b.className = 'sel'; b.textContent = r.body || '';
+    const t = document.createElement('span'); t.textContent = r.tail || '';
+    preedit.replaceChildren(h, b, t);
+    candsEl.replaceChildren(...r.candidates.map((c, i) => {
+      const el = document.createElement('div');
+      el.className = 'cand' + (i === r.highlighted ? ' hl' : '');
+      const t2 = document.createElement('span'); t2.className = 't'; t2.textContent = c.text;
+      el.append(t2);
+      if (c.comment) { const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = c.comment; el.append(cc); }
+      el.onclick = () => { call('selectCandidateOnCurrentPage', i).then(render, console.error); $('editor').focus(); };
+      return el;
+    }));
+  } else {
+    preedit.replaceChildren();
+    candsEl.replaceChildren();
+  }
+  return r;
+}
+
+// 引擎無處理的鍵（無組字時的 Backspace／Enter／字元）＝一般編輯
+function editPlain(ev) {
+  if (ev.key === 'Backspace') out.textContent = [...out.textContent].slice(0, -1).join('');
+  else if (ev.key === 'Enter') out.textContent += '\n';
+  else if (ev.key.length === 1) out.textContent += ev.key;
+}
+
+// 連續英數字鍵：引擎無閒時先囥緩衝，閒了才合併做一批送（每批只行一擺 Lua filter，快拍袂積延遲）。
+// 特殊鍵：先共緩衝排入佇列（保持按鍵順序），才單獨送，UNHANDLED 才對會著是佗一鍵。
+let keyBuf = '';
+let inflight = 0;
+function send(keys, onUnhandled) {
+  inflight++;
+  call('process', keys)
+    .then((r) => { if (render(r).state === UNHANDLED) onUnhandled(); }, console.error)
+    .finally(() => { inflight--; if (inflight === 0) sendBuf(); });
+}
+function sendBuf() {
+  if (!keyBuf) return;
+  const keys = keyBuf;
+  keyBuf = '';
+  send(keys, () => { out.textContent += keys; });
+}
+$('editor').addEventListener('keydown', (ev) => {
+  const name = keyName(ev);
+  if (name === null) return;
+  ev.preventDefault();
+  if (name.length === 1) {
+    keyBuf += name;
+    if (inflight === 0) sendBuf();
+    return;
+  }
+  sendBuf();
+  send(name, () => editPlain(ev));
+});
+$('clear').onclick = () => { out.textContent = ''; $('editor').focus(); };
+
+// ---- mode switches ----
+const modes = {
+  full_romanization: { btn: $('m-full_romanization'), on: 0, labels: ['輸出：漢羅', '輸出：全羅'] },
+  poj_mode: { btn: $('m-poj_mode'), on: 0, labels: ['拼音：TL', '拼音：POJ'] },
+};
+for (const [name, m] of Object.entries(modes)) {
+  m.refresh = () => { m.btn.textContent = m.labels[m.on]; m.btn.classList.toggle('on', m.on === 1); };
+  m.btn.onclick = async () => { m.on = m.on ? 0 : 1; await call('setOption', name, m.on); m.refresh(); $('editor').focus(); };
+  m.refresh();
+}
+
+// ---- 方案：寫台文（數字調）／Telex（字母調鍵）----
+const SCHEMES = {
+  phah_taibun: {
+    label: '方案：寫台文',
+    examples: '<code>goasitaioanlang</code>、<code>chiahpng</code>、<code>chhit-tho</code>（數字是聲調：<code>tsiah8</code>）',
+  },
+  phah_taibun_telex: {
+    label: '方案：Telex',
+    examples: '<code>ziahvpngw</code>＝食飯、<code>guavsiwtaidoandlangd</code>＝我是台灣人（<code>x</code>=1/4 <code>v</code>=2/8 <code>y</code>=3 <code>d</code>=5 <code>w</code>=7 <code>q</code>=9，<code>z</code>=ts）',
+  },
+};
+let scheme = 'phah_taibun';
+async function selectScheme(id) {
+  scheme = id;
+  await call('setIME', id);
+  // 換方案會重設開關：照目前按鈕狀態再設一擺
+  for (const [name, m] of Object.entries(modes)) await call('setOption', name, m.on);
+  render({ state: UNHANDLED });
+  $('m-scheme').textContent = SCHEMES[id].label;
+  $('m-scheme').classList.toggle('on', id !== 'phah_taibun');
+  $('examples').innerHTML = SCHEMES[id].examples;
+}
+$('m-scheme').onclick = async () => {
+  await selectScheme(scheme === 'phah_taibun' ? 'phah_taibun_telex' : 'phah_taibun');
+  $('editor').focus();
+};
+
+// ---- boot ----
+let deployResolve, deployReject;
+const deployPromise = new Promise((res, rej) => { deployResolve = res; deployReject = rej; });
+function onDeployStatus(state) {
+  if (state === 'success') deployResolve();
+  else if (state === 'failure') deployReject(new Error('字典部署失敗'));
+}
+
+async function boot() {
+  const { version, files } = await (await fetch('./manifest.json', { cache: 'no-cache' })).json();
+  // 版本（全部資料內容雜湊）無仝 → 清掉 IndexedDB 裡的舊 /rime 再重建
+  const old = await FS('readFile', '/rime/.webversion').then(
+    (b) => new TextDecoder().decode(b), () => null);
+  const fresh = old !== version;
+  if (fresh) {
+    await call('resetUserDirectory'); // 清掉 IndexedDB 殘留（舊版或半途中斷）
+    status.textContent = `正在寫入方案檔案（${files.length} 個）…`;
+    const dirs = new Set();
+    for (const f of files) { const d = f.split('/').slice(0, -1).join('/'); if (d) dirs.add(d); }
+    for (const d of dirs) await FS('mkdir', '/rime/' + d).catch(() => {});
+    for (const f of files) {
+      const buf = new Uint8Array(await (await fetch('./data/' + encodeURIComponent(f).replace(/%2F/g, '/'))).arrayBuffer());
+      await FS('writeFile', '/rime/' + f, buf);
+    }
+    await FS('writeFile', '/rime/.webversion', version);
+    status.textContent = '正在編譯字典（第一次約需數十秒，之後會快取）…';
+  } else {
+    status.textContent = '正在啟動（使用快取）…';
+  }
+  const t1 = performance.now();
+  // 每次攏 deploy：worker 未 deploy 過時 setIME 會去 CDN 揣內建方案；已有 build 時 librime 只做增量檢查
+  await call('deploy');
+  await deployPromise;
+  await selectScheme(scheme);
+  status.classList.add('hidden');
+  app.classList.remove('hidden');
+  $('editor').focus();
+  console.log(`boot: ${fresh ? 'fresh' : 'cached'} deploy+ime ${((performance.now()-t1)/1000).toFixed(1)}s`);
+}
+boot().catch((e) => { status.className = 'err'; status.textContent = '啟動失敗：' + e.message; console.error(e); });
+</script>
+</body>
+</html>

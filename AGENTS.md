@@ -96,15 +96,17 @@ rime-phah-taibun/
 │   ├── validate_dict.py           # 字典品質檢查
 │   ├── download_resources.sh      # 18+ 外部資源下載
 │   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
+│   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
-├── docs/                          # GitHub Pages 網站 + 使用文件
+├── docs/                          # GitHub Pages 網站 + 使用文件（try/ = 網頁試拍，build_web_playground.py 產生）
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）
 ├── install.sh / install_windows.ps1
 └── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
+    ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
     └── rime_smoke.cpp             # C++ smoke
@@ -188,11 +190,16 @@ uv sync                                # 安裝所有依賴
 
 uv run pytest                          # 日常全套（addopts 自動跳過 real_rime 真引擎 84 條, 約 1 分鐘）
 uv run pytest -m real_rime             # 干焦真 librime 整合測試 84 條（g++ 編譯+部署 220K 字典, 15+ 分鐘）
-uv run pytest -o addopts=''            # 全部 665 條（日常 580 + real_rime 84; release 前跑）
+uv run pytest -o addopts=''            # 全部 716 條（日常 632 + real_rime 84; release 前跑）
 uv run pytest tests/test_xxx.py -x     # 單檔，遇錯即停
 uv run pytest --cov=scripts --cov-report=term-missing
 uv run ruff check scripts/ tests/      # lint
 uv run ruff format scripts/ tests/     # format
+
+# === 網頁試拍（docs/try/；改 schema/lua/字典後重跑再 commit）===
+uv run python scripts/build_web_playground.py   # 需 ../tl-poj-convert/data-public/dict.json 與 data/*_freq.tsv
+#   第一次加 --my-rime-dist <@libreservice/my-rime 0.10.9 的 dist/>（引擎檔 vendor 進 docs/try/）
+python3 -m http.server 8000 --directory docs    # 開 http://localhost:8000/try/ 實測
 
 # === 資料前處理（首次需先下載資源）===
 chmod +x scripts/download_resources.sh && ./scripts/download_resources.sh

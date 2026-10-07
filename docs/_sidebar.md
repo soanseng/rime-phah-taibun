@@ -1,4 +1,5 @@
 - [首頁](https://taigi.anatomind.com/)
+- [網頁試拍（免安裝）](https://taigi.anatomind.com/try/)
 - [快速上手小卡](quickstart-card.md)
 - [完整使用說明](user-guide.md)
 - [Windows 安裝包](packaged-installers.md)
