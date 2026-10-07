@@ -202,6 +202,13 @@
         <h2>讀台文是按怎做的</h2>
         <p>讀台文是一个純靜態網頁：詞典佮語料模型隨頁面載入，一切計算攏在你的瀏覽器內底，無後端。</p>
 
+        <h3>名詞：漢羅、TL、POJ</h3>
+        <ul>
+          <li><strong>漢羅（Hàn-lô）</strong>：漢字佮羅馬字混合書寫的台文書寫方式——是一个「用啥物字寫」的慣例，毋是一套拼音系統，也無官方標準。本站做的正是「文字層（漢羅）⇄ 拼音層（TL／POJ）」的轉換。</li>
+          <li><strong>TL＝臺羅</strong>：教育部《臺灣台語羅馬字拼音方案》，民國 95 年（2006）公告，原名《臺灣閩南語羅馬字拼音方案》，113 年（2024）8 月 26 日函修正改今名；整合台灣語言音標方案（TLPA）、白話字佮國際音標，日常簡稱「臺羅／台羅、TL」。</li>
+          <li><strong>POJ＝白話字（Pe̍h-ōe-jī）</strong>：19 世紀傳教士制定的教會羅馬字，學術文獻嘛叫「教會羅馬字（教羅）」；台語文學上百年累積的文章大多數用伊寫。本站的 POJ 輸出用正式字形（o͘、ⁿ）。</li>
+        </ul>
+
         <h3>漢羅 → 台羅 TL／白話字 POJ</h3>
         <p>用 82,000 外詞的詞典做<a href="https://github.com/soanseng/rime-phah-taibun" target="_blank" rel="noopener">最長匹配斷詞</a>：每一冬漢字對著一組讀音，<strong>點漢字會使循環切換讀音</strong>（方言變體攏接收）；詞典揣無的字顯示 ⟨?⟩。逐音節的調符定位（oo 標頭一个 o、iu/ui 標第二母音……）是對寫台文輸入法的 Lua 核心 1:1 移植。全羅 POJ 閣進一步用<strong>正式字形</strong>：oo→o͘、鼻化 nn→ⁿ、ts→ch、tsh→chh、ing→eng、ua→oa、ue→oe，調符照 POJ 慣例重新定位（gōa、hōe、chúi；有韻尾照舊標 a／e：koán、goe̍h）——佮寫台文的全羅 POJ 輸出仝款。</p>
 
@@ -259,6 +266,6 @@
     <div id="load-state" class="load-state" role="status">載入詞典中…</div>
 
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-    <script type="module" src="js/main.js?v=23"></script>
+    <script type="module" src="js/main.js?v=24"></script>
   </body>
 </html>
