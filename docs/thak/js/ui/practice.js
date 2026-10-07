@@ -71,7 +71,7 @@ const sentWords = (tl) =>
 export async function initSentencePractice() {
   let sents = [];
   try {
-    const r = await fetch("../data-public/sentences.json");
+    const r = await fetch("./data-public/sentences.json"); // fetch 照頁面網址解析（/thak/），毋是模組位置
     sents = (await r.json()).s ?? [];
   } catch { /* 載入失敗：句模式無題庫 */ }
   if (!sents.length) {

@@ -10,7 +10,7 @@ export function initVocab(dict) {
   // 例句 300KB——詞彙分頁頭一擺開才載（轉換/landing 無愛等伊）
   let examples = null;
   $("#tab-vocab").one("click", () => {
-    fetch("../data-public/examples.json")
+    fetch("./data-public/examples.json") // 照頁面網址（/thak/）解析
       .then((r) => (r.ok ? r.json() : {}))
       .catch(() => ({}))
       .then((j) => { examples = j; if ($("#vb-in").val()) run(); });

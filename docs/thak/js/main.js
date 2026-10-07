@@ -6,8 +6,8 @@
 import { buildReverseIndex } from "./dict.js?v=24";
 import { loadDict } from "./dict.js?v=24";
 import { initConverter } from "./ui/converter.js?v=24";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=24";
-import { initVocab } from "./ui/vocab.js?v=24";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=25";
+import { initVocab } from "./ui/vocab.js?v=25";
 import { initGrammar } from "./ui/grammar.js?v=24";
 import { initGrammarCheck } from "./ui/grammarcheck.js?v=24";
 
