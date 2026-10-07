@@ -109,11 +109,27 @@ jobs:
   package-windows:
     needs: verify
     runs-on: windows-latest
+    env:
+      # Bundled unmodified Weasel (GPL-3.0); bump both together with the
+      # WeaselVersion define in packaging/windows/phah-taibun.iss.
+      WEASEL_VERSION: "0.17.4"
+      WEASEL_SHA256: "CF509534A8F5F8AF9C98ED7CBB8F135439F145A8CBE7E50EDE42BB5B5AB45C29"
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Inno Setup
         run: choco install innosetup -y
+
+      - name: Download pinned Weasel installer
+        shell: pwsh
+        run: |
+          $vendor = "packaging/windows/vendor"
+          New-Item -ItemType Directory -Force -Path $vendor | Out-Null
+          $exe = Join-Path $vendor "weasel-$env:WEASEL_VERSION.0-installer.exe"
+          Invoke-WebRequest -Uri "https://github.com/rime/weasel/releases/download/$env:WEASEL_VERSION/weasel-$env:WEASEL_VERSION.0-installer.exe" -OutFile $exe
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $exe).Hash
+          if ($hash -ne $env:WEASEL_SHA256) { throw "Weasel installer SHA256 mismatch: $hash" }
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/rime/weasel/$env:WEASEL_VERSION/LICENSE.txt" -OutFile (Join-Path $vendor "weasel-LICENSE.txt")
 
       - name: Build Windows installer
         shell: pwsh

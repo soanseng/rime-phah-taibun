@@ -18,6 +18,7 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).parent.parent
@@ -410,8 +411,10 @@ def test_observe_skips_origin_and_readingless_candidates(tmp_path):
     assert run_lua(script).strip() == "OK"
 
 
-def test_schema_registers_learn_filter_between_synonym_and_long_word():
-    schema = yaml.safe_load((ROOT / "schema" / "phah_taibun.schema.yaml").read_text(encoding="utf-8"))
+@pytest.mark.parametrize("schema_file", ["phah_taibun.schema.yaml", "phah_taibun_telex.schema.yaml"])
+def test_schema_registers_learn_filter_between_synonym_and_long_word(schema_file):
+    """Both schemas learn from picks; the user guide promises it in every mode."""
+    schema = yaml.safe_load((ROOT / "schema" / schema_file).read_text(encoding="utf-8"))
     filters = schema["engine"]["filters"]
     learn = "lua_filter@*phah_taibun_learn"
     assert learn in filters, "learn filter must be registered in the engine"

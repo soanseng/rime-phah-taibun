@@ -99,7 +99,6 @@ speller:
     - derive/ua/oa/
     - derive/ue/oe/
     - derive/oo/ou/
-    - derive/nn/ⁿ/
 
     # === POJ 無調拼式（與 TL 無調輸入對齊） ===
     # 單規則直接自原碼 derive「無調 POJ」。ts/ch 家族免調 POJ 輸入若只能

@@ -150,16 +150,79 @@ def strip_tone_numbers(kip_input: str, delimiter: str = "-") -> str:
     return delimiter.join(stripped)
 
 
-def clean_kip_input(kip_input: str) -> list[str]:
+HAN_WORD_RE = re.compile(r"[\u3400-\u9fff\uf900-\ufaff\U00020000-\U0003ffff]+")
+TL_INITIAL_RE = re.compile(r"(tsh|ts|ph|th|kh|ng|[pbmtnlkghsj])?")
+
+
+def _syllable_count(kip: str) -> int:
+    return len([s for s in re.split(r"[-\s]+", kip) if s])
+
+
+def _expand_slash_chunk(chunk: str) -> list[str] | None:
+    """Expand one whitespace-delimited chunk whose slash alternates only part
+    of the reading (`mue5-a2-ke/kue` → `mue5-a2-kue`). A shorter alternative
+    borrows the missing syllables (with their separators) from a full-length
+    one; it must keep the initial of every syllable it replaces (ke/kue,
+    guan/gun, bue/be), otherwise the slash is a whole-reading alternative
+    and None is returned. Dialect/editorial labels `(漳)` also return None."""
+    if "/" not in chunk:
+        return [chunk]
+    parts = [p for p in chunk.split("/") if p]
+    if not parts or any(re.search(r"[()\uff08\uff09]", p) for p in parts):
+        return None
+    tokens = [re.split(r"(-+)", p) for p in parts]
+    counts = [(len(t) + 1) // 2 for t in tokens]
+    full = max(counts)
+    longest = tokens[counts.index(full)]
+    expanded = []
+    for idx, (toks, n) in enumerate(zip(tokens, counts, strict=True)):
+        if n == full:
+            expanded.append("".join(toks))
+            continue
+        if idx == 0:
+            ref = longest
+            new = toks + ref[2 * n - 1 :]
+            replaced = range(n)
+        else:
+            ref = tokens[0] if counts[0] == full else longest
+            new = ref[: 2 * (full - n)] + toks
+            replaced = range(full - n, full)
+        for pos in replaced:
+            if TL_INITIAL_RE.match(new[2 * pos].lower())[0] != TL_INITIAL_RE.match(ref[2 * pos].lower())[0]:
+                return None
+        expanded.append("".join(new))
+    return list(dict.fromkeys(expanded))
+
+
+def _expand_syllable_local_slashes(text: str) -> list[str] | None:
+    """Cartesian product of per-chunk expansions (measured ≤10 combinations
+    across all ChhoeTaigi CSVs), or None when any chunk is not
+    syllable-local."""
+    combos = [""]
+    for chunk in text.split():
+        options = _expand_slash_chunk(chunk)
+        if options is None:
+            return None
+        combos = [f"{c} {o}".strip() for c in combos for o in options]
+    return combos
+
+
+def clean_kip_input(kip_input: str, hanlo: str | None = None) -> list[str]:
     """Clean and split KipInput into individual pronunciation variants.
 
     Handles:
     - (替) marker removal
     - Slash-separated multiple readings split into separate entries
+    - Syllable-local slashes (iTaigi `mue5-a2-ke/kue` for 梅子雞): when the
+      whole-reading split contradicts a pure-Hanzi word's character count
+      and the syllable-local expansion matches it, the expansion wins.
+      Anything the Hanzi count cannot confirm keeps the whole-reading split
+      (contractions like 今仔日 kiann9 jit8 never reach this path: no slash).
     - Empty/whitespace inputs
 
     Args:
         kip_input: Raw KipInput string from ChhoeTaigi CSV
+        hanlo: The row's Han-Lo text, used only to confirm slash expansion
 
     Returns:
         List of cleaned KipInput strings (may be multiple for slash-separated)
@@ -169,11 +232,29 @@ def clean_kip_input(kip_input: str) -> list[str]:
         return []
     # Remove (替) marker
     text = re.sub(r"\(替\)", "", text)
+
+    def _normalize(raw: list[str]) -> list[str]:
+        result = []
+        for variant in (unicode_tones_to_numeric(v.strip()) for v in raw if v.strip()):
+            if is_valid_kip_input(variant) and variant not in result:
+                result.append(variant)
+        return result
+
     # Split on "/" for multiple readings
-    variants = []
-    for variant in (unicode_tones_to_numeric(v.strip()) for v in text.split("/") if v.strip()):
-        if is_valid_kip_input(variant):
-            variants.append(variant)
+    variants = _normalize(text.split("/"))
+    # Only a single clean Han word gives a trustworthy syllable target: a
+    # slashed headword (馬仔英九/馬英九), spaces, punctuation or Latin text
+    # pair whole readings with whole spellings instead.
+    if "/" not in text or not hanlo or not HAN_WORD_RE.fullmatch(hanlo):
+        return variants
+    target = len(hanlo)
+    if not target or all(_syllable_count(v) == target for v in variants):
+        return variants
+    expanded = _expand_syllable_local_slashes(text)
+    if expanded:
+        confirmed = _normalize(expanded)
+        if confirmed and len(confirmed) == len(expanded) and all(_syllable_count(v) == target for v in confirmed):
+            return confirmed
     return variants
 
 
@@ -194,7 +275,7 @@ def parse_itaigi_csv(csvfile: TextIO) -> list[dict]:
         hoabun = row.get("HoaBun", "").strip()
         if not kip_raw or not hanlo:
             continue
-        for kip in clean_kip_input(kip_raw):
+        for kip in clean_kip_input(kip_raw, hanlo=hanlo):
             entries.append(
                 {
                     "hanlo": hanlo,
@@ -229,7 +310,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
             continue
         # Process main KipInput
         if kip_raw:
-            for kip in clean_kip_input(kip_raw):
+            for kip in clean_kip_input(kip_raw, hanlo=hanlo):
                 entries.append(
                     {
                         "hanlo": hanlo,
@@ -241,7 +322,7 @@ def parse_taihoa_csv(csvfile: TextIO) -> list[dict]:
                 )
         # Process Others variants
         if kip_others:
-            for kip in clean_kip_input(kip_others):
+            for kip in clean_kip_input(kip_others, hanlo=hanlo):
                 entries.append(
                     {
                         "hanlo": hanlo,
@@ -297,7 +378,7 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
         description = row.get("KaisoehHanLoKip", "") or row.get("KaisoehHanLoPoj", "")
         if "本辭典使用" in description:
             entry_source = "moe_variant"
-        for kip in clean_kip_input(kip_raw):
+        for kip in clean_kip_input(kip_raw, hanlo=hanlo):
             if is_poj_input:
                 kip = poj_to_tl(kip)
             entries.append(

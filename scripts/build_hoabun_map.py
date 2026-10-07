@@ -14,9 +14,11 @@ import sys
 from pathlib import Path
 
 try:
+    from scripts.convert_chhoetaigi import clean_kip_input as expand_kip_variants
     from scripts.convert_chhoetaigi import is_valid_kip_input, unicode_tones_to_numeric
     from scripts.tl_poj_convert import poj_to_tl
 except ModuleNotFoundError:
+    from convert_chhoetaigi import clean_kip_input as expand_kip_variants
     from convert_chhoetaigi import is_valid_kip_input, unicode_tones_to_numeric
     from tl_poj_convert import poj_to_tl
 
@@ -47,16 +49,20 @@ def cjk_len(text: str) -> int:
     return len(text)
 
 
-def clean_kip_input(kip_input: str) -> str | None:
-    """Clean KipInput: remove markers, take first variant."""
+def clean_kip_input(kip_input: str, hanlo: str | None = None) -> str | None:
+    """Clean KipInput: remove markers, take first variant.
+
+    Slash variants go through the dictionary converter's expansion so a
+    syllable-local slash (阮兜 `guan2/gun2-tau`) yields `guan2-tau`, not the
+    bare first segment `guan2`."""
     text = kip_input.strip()
     if not text:
         return None
     # Remove common markers: (替), (白), (文), (俗), (雅)
     text = re.sub(r"\([替白文俗雅]\)", "", text).strip()
-    # Take first variant if slash-separated
     if "/" in text:
-        text = text.split("/")[0].strip()
+        variants = expand_kip_variants(text, hanlo=hanlo)
+        return variants[0] if variants else None
     if not text:
         return None
     text = unicode_tones_to_numeric(text)
@@ -138,14 +144,14 @@ def _read_csv_rows(data_dir: Path) -> list[tuple[str, str, int, str]]:
                 if not kip_raw:
                     kip_raw = row.get("PojInput", "").strip()
                     is_poj_input = True
-                kip = clean_kip_input(kip_raw)
+                hanlo = row.get("HanLoTaibunKip", "").strip()
+                if not hanlo:
+                    hanlo = row.get("HanLoTaibunPoj", "").strip()
+                kip = clean_kip_input(kip_raw, hanlo=hanlo)
                 if not kip:
                     continue
                 if is_poj_input:
                     kip = poj_to_tl(kip)
-                hanlo = row.get("HanLoTaibunKip", "").strip()
-                if not hanlo:
-                    hanlo = row.get("HanLoTaibunPoj", "").strip()
                 rows.append((hoabun, kip, priority, hanlo))
     return rows
 

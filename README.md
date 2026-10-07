@@ -6,7 +6,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Dict Entries](https://img.shields.io/badge/dict-218K%20entries-green?style=flat-square)](#)
+[![Dict Entries](https://img.shields.io/badge/dict-228K%20entries-green?style=flat-square)](#)
 [![Lua Modules](https://img.shields.io/badge/lua-21%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://taigi.anatomind.com/)
@@ -28,8 +28,8 @@ Download the latest release for your platform:
 
 | Platform | Install | Requires |
 |----------|---------|----------|
-| Windows | Download `PhahTaiBunSetup.exe` and run the installer, or `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` | Weasel |
-| macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | Squirrel |
+| Windows | Download `PhahTaiBunSetup.exe` and run the installer (it installs Weasel 0.17.4 for you when missing — one UAC prompt), or `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` (Weasel must already be installed) | — |
+| macOS (best-effort, not tested on real hardware by the maintainer) | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
 | Android | Download a bundle from Releases — `PhahTaiBun-Trime.zip` (phah_taibun + bopomofo) or `PhahTaiBun-Trime-liur.zip` (adds boshiamy) — and extract it into the Rime user folder of Trime or fcitx5-android, then redeploy. See [Android 部署](docs/android.md) | Trime, or Fcitx5 for Android + RIME plugin |
 
@@ -84,8 +84,8 @@ Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲
 
 | 系統 | 一般使用者 | 需要先有 |
 |------|------------|----------|
-| Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
-| macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
+| Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝（沒有小狼毫會自動一起裝，跳一次系統管理員權限確認） | — |
+| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
 | Android | 下載 Releases 的一鍵包——`PhahTaiBun-Trime.zip`（拍台文＋注音）或 `PhahTaiBun-Trime-liur.zip`（再加嘸蝦米）——解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
@@ -151,7 +151,7 @@ Telex 源自越南文在電傳打字機上用字母標調的做法；拍台文�
 - **個人化學習**：記住你選過的字詞，常用的自動排前面；不會自動把輸入歷史存成新詞（使用者字典只學你選過的）。選錯想忘記時，多數前端可在反白該候選時按 `Shift+Delete` 移除
 - **推薦用字標記**：候選區顯示 ◆（推薦漢字）和 ★（推薦羅馬字），依 LKK 規範及教育部700字標示
 - **輕聲自動辨識**：自動產生輕聲候選（如「轉--來」「食--飽」），29K+ 輕聲詞條 + 即時輕聲建議
-- **206,346 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
+- **228,763 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
 - **人工詞庫增補**：build pipeline 可納入建中的教育部臺灣台語輸入法詞庫增補檔，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞
 
 ## 使用範例
@@ -376,8 +376,8 @@ vvjit  → 2026年3月15 拜六
 
 | 系統 | 方式 | 說明 |
 |------|------|------|
-| Windows | `PhahTaiBunSetup.exe` | 雙擊安裝。若尚未安裝小狼毫，安裝器會提示先安裝 Weasel。 |
-| macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 先裝鼠鬚管。也可 `git clone` 後 `./install.sh`，或複製 `schema/`、`lua/`、`rime.lua` 到 `~/Library/Rime/`。 |
+| Windows | `PhahTaiBunSetup.exe` | 雙擊安裝。尚未安裝小狼毫時，安裝包會自動安裝小狼毫 0.17.4（跳一次系統管理員權限確認）。失敗時看 `%LOCALAPPDATA%\Phah Tai-bun\install.log`。 |
+| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 先裝鼠鬚管。也可 `git clone` 後 `./install.sh`，或複製 `schema/`、`lua/`、`rime.lua` 到 `~/Library/Rime/`。 |
 
 Windows 安裝包會保留既有 Rime 輸入法、自訂詞庫和 `rime.lua`。使用者仍在系統輸入法選單選小狼毫/鼠鬚管，再在 Rime 方案清單選「拍台文(台)」。
 
@@ -569,7 +569,7 @@ cd rime-phah-taibun
 schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
   phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
   phah_taibun_telex.schema.yaml  進階 Telex 調鍵方案（共用主字典）
-  phah_taibun.dict.yaml           主字典（206,346 條目）
+  phah_taibun.dict.yaml           主字典（228,763 條目）
   hanlo_rules.yaml                LKK 漢羅分類規則
   lighttone_rules.json            輕聲規則
   moe700.yaml                     教育部推薦700字台語漢字
@@ -683,7 +683,7 @@ uv run ruff format scripts/ tests/                     # 格式化
 | **拼音系統** | TL + POJ 雙系統 | TL + POJ | TL（自動轉換 POJ） |
 | **聲調** | 完全可省略 | 需輸入 | 需輸入 |
 | **漢羅混寫輸出** | 自動（LKK 規範） | 有 | 無（只有純漢字或純羅馬字） |
-| **字典規模** | 206,346 條目 | 未公開 | ~24K 條目 |
+| **字典規模** | 228,763 條目 | 未公開 | ~24K 條目 |
 | **語料庫詞頻** | 7 語料庫加權 | 無 | 基本頻率 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **萬用查字** | ?（二段式） | 無 | 無 |

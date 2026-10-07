@@ -25,8 +25,8 @@ Windows 從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 
 | 系統 | 方式 | 說明 |
 |------|------|------|
-| Windows | `PhahTaiBunSetup.exe` | 雙擊安裝。若尚未安裝小狼毫，安裝器會提示先安裝 Weasel。 |
-| macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 先裝鼠鬚管。也可 `git clone` 後 `./install.sh`，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。 |
+| Windows | `PhahTaiBunSetup.exe` | 雙擊安裝。尚未安裝小狼毫時，安裝包會自動安裝小狼毫 0.17.4（跳一次系統管理員權限確認）。失敗時看 `%LOCALAPPDATA%\Phah Tai-bun\install.log`。 |
+| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 先裝鼠鬚管。也可 `git clone` 後 `./install.sh`，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。 |
 
 Windows 安裝包仍使用 Rime 作為輸入法核心，不用手動複製檔案。安裝器會保留既有 Rime 輸入法、自訂詞庫和 `rime.lua`。
 

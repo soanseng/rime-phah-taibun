@@ -426,15 +426,15 @@ function M.poj_fix_diacritics(text)
   -- oa + diacritic at end of syllable: before -, ⁿ (U+207F), or end of string
   -- NOT when followed by consonant coda (n, t, k, h)
   -- ⁿ is nasalization (not a coda), so oa+ⁿ is still open syllable
-  text = text:gsub("oa(\204[\128-\191])%-", "o%1a-")
-  text = text:gsub("oa(\204[\128-\191])(\226\129\191)", "o%1a%2")  -- before ⁿ
-  text = text:gsub("oa(\204[\128-\191])$", "o%1a")
+  text = text:gsub("([oO])a(\204[\128-\191])%-", "%1%2a-")
+  text = text:gsub("([oO])a(\204[\128-\191])(\226\129\191)", "%1%2a%3")  -- before ⁿ
+  text = text:gsub("([oO])a(\204[\128-\191])$", "%1%2a")
   -- oe + diacritic at end of syllable
-  text = text:gsub("oe(\204[\128-\191])%-", "o%1e-")
-  text = text:gsub("oe(\204[\128-\191])(\226\129\191)", "o%1e%2")  -- before ⁿ
-  text = text:gsub("oe(\204[\128-\191])$", "o%1e")
+  text = text:gsub("([oO])e(\204[\128-\191])%-", "%1%2e-")
+  text = text:gsub("([oO])e(\204[\128-\191])(\226\129\191)", "%1%2e%3")  -- before ⁿ
+  text = text:gsub("([oO])e(\204[\128-\191])$", "%1%2e")
   -- ui: move diacritic from i (second) to u (first)
-  text = text:gsub("ui(\204[\128-\191])", "u%1i")
+  text = text:gsub("([uU])i(\204[\128-\191])", "%1%2i")
   -- iu: both TL and POJ mark u (second vowel), no conversion needed
   return text
 end
@@ -502,26 +502,54 @@ end
 -- Shared commit utilities
 -- ============================================================
 
--- TL → POJ conversion
+-- Tone-marked i before ng/k (í→é …): hanlo candidate text arrives with
+-- precomposed (NFC) diacritics, so ing/ik must also match marked i.
+local MARKED_I_TO_E = {
+  { "\195\173", "\195\169" }, { "\195\172", "\195\168" }, { "\195\174", "\195\170" },  -- í ì î
+  { "\196\171", "\196\147" }, { "\196\173", "\196\149" },                            -- ī ĭ
+  { "\195\141", "\195\137" }, { "\195\140", "\195\136" }, { "\195\142", "\195\138" },  -- Í Ì Î
+  { "\196\170", "\196\146" }, { "\196\172", "\196\148" },                            -- Ī Ĭ
+  { "i", "e" }, { "I", "E" },
+}
+
+local function i_to_e_before_ng_k(text)
+  for _, pair in ipairs(MARKED_I_TO_E) do
+    local from, to = pair[1], pair[2]
+    -- i + combining mark (U+0300–U+033F), e.g. i̍ (i + U+030D)
+    text = text:gsub(from .. "(\204[\128-\191])ng([^a-z])", to .. "%1ng%2")
+    text = text:gsub(from .. "(\204[\128-\191])ng$", to .. "%1ng")
+    text = text:gsub(from .. "(\204[\128-\191])k([^a-z])", to .. "%1k%2")
+    text = text:gsub(from .. "(\204[\128-\191])k$", to .. "%1k")
+    -- bare or precomposed i
+    text = text:gsub(from .. "ng([^a-z])", to .. "ng%1")
+    text = text:gsub(from .. "ng$", to .. "ng")
+    text = text:gsub(from .. "k([^a-z])", to .. "k%1")
+    text = text:gsub(from .. "k$", to .. "k")
+  end
+  return text
+end
+
+-- TL → POJ conversion (case-preserving for a capitalized first letter)
 function M.tl_to_poj(tl_text)
   if not tl_text or tl_text == "" then
     return tl_text
   end
   local result = tl_text
+  result = result:gsub("Tsh", "Chh")
   result = result:gsub("tsh", "chh")
+  result = result:gsub("Ts", "Ch")
   result = result:gsub("ts", "ch")
-  result = result:gsub("ing([^a-z])", "eng%1")
-  result = result:gsub("ing$", "eng")
-  result = result:gsub("ik([^a-z])", "ek%1")
-  result = result:gsub("ik$", "ek")
+  result = i_to_e_before_ng_k(result)
   -- POJ special characters
   -- nn → ⁿ only when NOT followed by g or combining diacritics
   -- (nng is syllabic nasal; combining marks \xCC/\xCD mean the n carries a tone)
   result = result:gsub("nn([^g\204\205])", "\226\129\191%1")    -- nn → ⁿ (U+207F) before non-g
   result = result:gsub("nn$", "\226\129\191")                    -- nn → ⁿ at end of string
-  result = result:gsub("o(\204[\128-\191])o", "o%1\205\152")    -- ó+o → ó͘ (with tone diacritic)
-  result = result:gsub("oo", "o\205\152")                       -- oo → o͘ (U+0358)
+  result = result:gsub("([oO])(\204[\128-\191])o", "%1%2\205\152")  -- ó+o → ó͘ (with tone diacritic)
+  result = result:gsub("([oO])o", "%1\205\152")                 -- oo → o͘ (U+0358)
+  result = result:gsub("Ua", "Oa")
   result = result:gsub("ua", "oa")
+  result = result:gsub("Ue", "Oe")
   result = result:gsub("ue", "oe")
   return result
 end

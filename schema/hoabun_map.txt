@@ -4935,7 +4935,7 @@ tu2枴杖	thuh kuai2 a2
 人瑞	jin5 sui7
 人生	jin5 sing
 人生哲學	jin5 sing tiat hak8
-人生地不熟	te7 thau5 tshenn
+人生地不熟	te7 thau5 tshenn soo
 人生地疏	lang5 thau5 tshenn
 人生如夢	jin5 sing ju5 bang7
 人生如寄	jin5 sing tshin tshiunn7 tso3 lang5 kheh
@@ -11608,7 +11608,7 @@ tu2枴杖	thuh kuai2 a2
 劃火柴	khiat hue2
 劃界	keh kai3
 劃破皮	thai5 phua3 phue5
-劃策	uih8
+劃策	uih8 tshik
 劃線	kai3 suann3
 劃花紋	lio5 hue
 劇	kiok8
@@ -32519,7 +32519,7 @@ tu2枴杖	thuh kuai2 a2
 我是誰	gua2 si7 siang2
 我是香港人	gua2 si7 hiong kang2 lang5
 我會	gua2 e7 hiau2
-我會念	guan2
+我會念	guan2 e7 hiau2 liam7
 我會怕	gua2 e7 kiann
 我會說	gua2 e7 hiau2 kong2
 我本人	gua2 pun2 lang5
@@ -48071,7 +48071,7 @@ tu2枴杖	thuh kuai2 a2
 洗清	se2 thua7
 洗清關係	se2 sin li7
 洗滌	se2 tng7
-洗潔精	sue2
+洗潔精	sue2 kiat tsing
 洗澡	hu2 looh
 洗澡池	se2 ik8 ti5
 洗澡盆	se2 ik8 ti5
@@ -67400,7 +67400,7 @@ tu2枴杖	thuh kuai2 a2
 自娛	tsu7 gu5
 自婊	tsu7 khau
 自學	tsu7 hak8
-自家	ka ki7
+自家	guan2 tau
 自家人	tsu7 ka lang5
 自家用	tsu7 ka iong7
 自家轎車	tsu7 ka iong7  e5
@@ -67943,7 +67943,7 @@ tu2枴杖	thuh kuai2 a2
 與民爭利	i2 bin5 tsing li7
 與生俱來	i2 sing ku7 lai5
 與眾不同	i2 tsiong3 put tong5
-與肩同寬	kah king kah thau5 penn5
+與肩同寬	kah king kah thau5 penn5 khuah
 與賽	u2 sai3
 與風浪博鬥	tsian3 hong ing2
 興	hing
@@ -79475,7 +79475,7 @@ tu2枴杖	thuh kuai2 a2
 遊樂區	iu5 lok8 khu
 遊樂園	iu5 lok8 hng5
 遊樂場	iu5 lok8 tiunn5
-遊樂設施	tshit tho5
+遊樂設施	tshit tho5 siat si
 遊歷	kiann5 iu5
 遊歷世界	iu5 lik8 se3 kai3
 遊民	iu5 bin5

@@ -27,6 +27,7 @@ LKK*.html
 
 # Installer build artifacts
 packaging/windows/Output/
+packaging/windows/vendor/
 packaging/macos/build/
 
 # Claude Code（AI 開發指令，不進公開 repo）

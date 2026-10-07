@@ -98,6 +98,18 @@ class TestTlToPojCapitalized:
     def test_capitalized_ua(self):
         assert tl_to_poj("Uan-á") == "Oan-á"
 
+    def test_toned_ing_becomes_eng(self):
+        # Hanlo candidate text is already tone-marked: sīng酒 → sēng酒
+        assert tl_to_poj("sīng酒") == "sēng酒"
+        assert tl_to_poj("pîng") == "pêng"
+
+    def test_toned_ik_becomes_ek(self):
+        assert tl_to_poj("li̍k") == "le̍k"
+        assert tl_to_poj("Ík") == "Ék"
+
+    def test_toned_ing_needs_syllable_boundary(self):
+        assert tl_to_poj("sīnga") == "sīnga"
+
 class TestTlToPojDiacriticPlacement:
     """Diacritic input must land on the modern-POJ mark position, matching
     lua/phah_taibun_data.lua poj_fix_diacritics (狗公會曉學台語 §21 /

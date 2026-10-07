@@ -63,6 +63,13 @@ def tl_to_poj(tl_text: str) -> str:
     # Order matters: longer patterns first to avoid partial matches
     result = _replace_pair(result, "tsh", "chh")
     result = _replace_pair(result, "ts", "ch")
+    # Tone-marked i before ng/k (sīng → sēng, li̍k → le̍k): hanlo candidate
+    # text is already marked; NFD leaves the mark as a combining char.
+    result = re.sub(
+        r"([iI])([\u0300-\u036f]+)(ng|k)(?=[^a-z]|$)",
+        lambda m: ("E" if m[1] == "I" else "e") + m[2] + m[3],
+        result,
+    )
     result = _sub_pair(result, "ing", "eng")
     result = _sub_pair(result, "ik", "ek")
     # POJ special characters (lua tl_to_poj): nn → ⁿ unless followed by g

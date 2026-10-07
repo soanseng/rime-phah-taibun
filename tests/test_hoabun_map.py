@@ -31,6 +31,22 @@ def test_unicode_tone_kip_input_is_normalized(tmp_path):
     assert mappings["妳好"][0] == "li2 ho2"
 
 
+def test_syllable_local_slash_maps_to_full_reading(tmp_path):
+    """iTaigi 阮兜 `guan2/gun2-tau`: the reverse-lookup reading must be the
+    whole word, not the bare first segment `guan2`."""
+    data_dir = tmp_path / "ChhoeTaigiDatabase"
+    data_dir.mkdir()
+    csv_path = data_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
+    csv_path.write_text(
+        "KipInput,HanLoTaibunKip,HoaBun\nguan2/gun2-tau,阮兜,我們家\n",
+        encoding="utf-8",
+    )
+
+    mappings = extract_hoabun_mappings(data_dir)
+
+    assert mappings["我們家"][0] == "guan2 tau"
+
+
 def test_extra_tsv_adds_moe_source_mappings(tmp_path):
     """STTI/placename TSVs (華語\t漢字\tcode) feed the reverse-lookup map."""
     data_dir = tmp_path / "ChhoeTaigiDatabase"

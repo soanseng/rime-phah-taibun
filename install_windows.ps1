@@ -357,9 +357,10 @@ Write-Host ""
 # ============================================================
 # Step 0: 偵測小狼毫
 # ============================================================
+# 只認小狼毫安裝目錄（與 Step 4 找 WeaselDeployer.exe 一致）；%APPDATA%\Rime
+# 可能是解除安裝後的殘留或其他 Rime 前端留下的，不代表小狼毫可用。
 $weaselExists = (Get-Item $WEASEL_DIR -ErrorAction SilentlyContinue) -or
-                (Get-Item $WEASEL_DIR_ALT -ErrorAction SilentlyContinue) -or
-                (Test-Path $RIME_DIR)
+                (Get-Item $WEASEL_DIR_ALT -ErrorAction SilentlyContinue)
 if (-not $weaselExists) {
     Write-Host "錯誤：找不到小狼毫 (Weasel) 安裝" -ForegroundColor Red
     Write-Host ""

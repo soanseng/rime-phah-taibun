@@ -76,6 +76,7 @@ engine:
     - lua_filter@*phah_taibun_lookup
     - lua_filter@*phah_taibun_recommend
     - lua_filter@*phah_taibun_synonym
+    - lua_filter@*phah_taibun_learn
     - lua_filter@*phah_taibun_long_word
     - reverse_lookup_filter@phah_taibun_reverse_lookup
     - lua_filter@*phah_taibun_reverse_format
@@ -99,7 +100,6 @@ speller:
     - derive/ua/oa/
     - derive/ue/oe/
     - derive/oo/ou/
-    - derive/nn/ⁿ/
 
     # === POJ 無調拼式（與主方案對齊；直接 derive 避免雙音節切分壓過） ===
     - derive/^ts([a-z]*)ua([a-z]*)[1-9]$/ch$1oa$2/

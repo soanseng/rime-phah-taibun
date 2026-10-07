@@ -78,6 +78,60 @@ class TestCleanKipInput:
         assert clean_kip_input("ho\u0358") == ["hoo"]
 
 
+class TestSyllableLocalSlash:
+    """ChhoeTaigi slashes are sometimes syllable-local (iTaigi 梅子雞
+    `mue5-a2-ke/kue`), sometimes whole-reading alternatives (Embree
+    `ah-tshui3-hong5/ah-tshui3-pue-hong5`). Splitting the former as whole
+    readings ships `梅子雞 kue1`, so typing `kue` pops up 梅子雞. The Hanzi
+    count decides; anything it can't confirm keeps the whole-reading split."""
+
+    def test_tail_alternation_borrows_leading_syllables(self):
+        assert clean_kip_input("mue5-a2-ke/kue", hanlo="梅子雞") == ["mue5-a2-ke", "mue5-a2-kue"]
+
+    def test_head_alternation_borrows_trailing_syllables(self):
+        assert clean_kip_input("guan2/gun2-tau", hanlo="阮兜") == ["guan2-tau", "gun2-tau"]
+
+    def test_light_tone_separator_is_borrowed_with_its_syllable(self):
+        assert clean_kip_input("tsiah8-pa2--bue7/be7", hanlo="食飽未") == [
+            "tsiah8-pa2--bue7",
+            "tsiah8-pa2--be7",
+        ]
+
+    def test_space_separated_chunks_expand_independently(self):
+        got = clean_kip_input("Gua2 teh-beh/teh-bueh be7-hu3/bue7-hu3--ah", hanlo="我咧欲袂赴矣")
+        assert got == [
+            "gua2-teh-beh-be7-hu3--ah",
+            "gua2-teh-beh-bue7-hu3--ah",
+            "gua2-teh-bueh-be7-hu3--ah",
+            "gua2-teh-bueh-bue7-hu3--ah",
+        ]
+
+    def test_whole_reading_alternatives_are_preserved(self):
+        # Both readings already match the Hanzi count: nothing to borrow.
+        assert clean_kip_input("hai2-ti/hai2-tu", hanlo="海豬") == ["hai2-ti", "hai2-tu"]
+        # Single-character words with alternative readings stay as they are.
+        assert clean_kip_input("tsiah8/sit8", hanlo="食") == ["tsiah8", "sit8"]
+
+    def test_unconfirmed_lengths_keep_whole_reading_split(self):
+        # Different-length whole readings (Embree): the Hanzi count can't
+        # confirm a borrowed form, so the existing split stands.
+        assert clean_kip_input("ah-tshui3-hong5/ah-tshui3-pue-hong5", hanlo="Ah-tshuì-hông") == [
+            "ah-tshui3-hong5",
+            "ah-tshui3-pue-hong5",
+        ]
+        assert clean_kip_input("huan-na2-iu5/tsioh8-iu5", hanlo="番仔油") == ["huan-na2-iu5", "tsioh8-iu5"]
+
+    def test_dialect_labels_never_trigger_borrowing(self):
+        assert clean_kip_input("tsing2-thau5-bu2/bo2(漳)", hanlo="指頭拇") == ["tsing2-thau5-bu2"]
+
+    def test_slashed_headword_keeps_whole_reading_split(self):
+        # iTaigi row: headword and reading both list two whole forms.
+        assert clean_kip_input("Be2-a2 Ing-kau2/ Ma2 Ing-kau2", hanlo="馬仔英九/馬英九") == [
+            "be2-a2-ing-kau2",
+            "ma2-ing-kau2",
+        ]
+
+
 class TestParseItaigiCsv:
     """Parse iTaigi CSV into list of dict entries."""
 

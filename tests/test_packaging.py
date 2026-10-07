@@ -1,3 +1,4 @@
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -89,6 +90,51 @@ def test_windows_packaged_installer_hides_powershell_and_survives_deploy_fail():
     assert "install_windows.ps1" in windows_panel
     assert "irm " in windows_panel
     assert "| iex" in windows_panel
+
+
+def test_windows_setup_ships_emoji_data_for_local_payload():
+    """The exe runs install_windows.ps1 in local-payload mode, which copies
+    {app}\\opencc; without it `e and emoji candidates silently vanish."""
+    iss = read("packaging/windows/phah-taibun.iss")
+    assert 'Source: "opencc\\*"; DestDir: "{app}\\opencc"' in iss
+
+
+def test_windows_setup_installs_pinned_verified_weasel_when_missing():
+    """New users get Weasel in the same setup run; the bundled binary is the
+    exact SHA-256-verified upstream release, with its GPL notice shipped."""
+    iss = read("packaging/windows/phah-taibun.iss")
+    workflow = read(".github/workflows/release.yml")
+
+    iss_version = re.search(r'#define WeaselVersion "([\d.]+)"', iss).group(1)
+    ci_version = re.search(r'WEASEL_VERSION: "([\d.]+)"', workflow).group(1)
+    assert iss_version == ci_version
+    assert f'#define WeaselInstaller "weasel-{iss_version}.0-installer.exe"' in iss
+    assert "Get-FileHash -Algorithm SHA256" in workflow
+    assert "$env:WEASEL_SHA256" in workflow
+    assert "RegKeyExists(HKLM32, 'SOFTWARE\\Rime\\Weasel')" in iss
+    assert "ShellExec('runas'" in iss and "'/S /T'" in iss
+    # Weasel first, then the 拍台文 payload that needs WeaselDeployer.
+    post = iss.split("ssPostInstall", 1)[1]
+    assert post.index("InstallWeaselIfMissing();") < post.index("RunPhahTaiBunInstaller();")
+    assert "WEASEL-SOURCE.txt" in iss and "weasel-LICENSE.txt" in iss
+    assert iss_version in read("packaging/windows/WEASEL-SOURCE.txt")
+
+
+def test_windows_setup_failure_points_to_install_log():
+    """PowerShell runs hidden, so its remediation text must land in a log the
+    error dialog names."""
+    iss = read("packaging/windows/phah-taibun.iss")
+    assert "Start-Transcript -Path (Join-Path $app ''install.log'')" in iss
+    assert "ExpandConstant('{app}\\install.log')" in iss
+
+
+def test_windows_weasel_detection_ignores_leftover_rime_user_dir():
+    """%APPDATA%\\Rime alone (leftover or another front-end) must not pass the
+    Weasel check, or the failure surfaces only at the deploy step."""
+    installer = read("install_windows.ps1")
+    step0 = installer.split("# Step 0: 偵測小狼毫", 1)[1].split("if (-not $weaselExists)", 1)[0]
+    assert "Test-Path $RIME_DIR" not in step0
+    assert "$WEASEL_DIR" in step0 and "$WEASEL_DIR_ALT" in step0
 
 
 def test_windows_installer_is_bom_free_and_iex_safe():

@@ -40,6 +40,7 @@ SOFTWARE.
 | （Android 一鍵包內附）bopomofo*.schema.yaml、zhuyin.yaml | rime/rime-bopomofo | LGPL-3.0 |
 | opencc/emoji.json、emoji_word.txt、emoji_category.txt（Emoji 候選） | rime/rime-emoji | LGPL-3.0 |
 | lua/phah_taibun_emoji_menu.lua（Emoji 分類選單，由 emoji-test.txt 產生） | Unicode.org emoji-test 15.1 | Unicode License |
+| （Windows 安裝包內附）小狼毫 Weasel 0.17.4 安裝程式（未修改；原始碼：https://github.com/rime/weasel/tree/0.17.4） | rime/weasel | GPL-3.0 |
 
 > **非商用注意事項**：主字典與 wordlist 含四個 CC BY-NC-SA 3.0 TW 來源
 > （台日大辭典、Maryknoll、Embree、甘字典）的詞條，依上游授權**不得用於商業用途**。

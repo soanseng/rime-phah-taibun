@@ -104,3 +104,33 @@ def test_poj_diphthong_tone_mark_repositioning():
         )
     )
     assert out == "OK"
+
+
+def test_tl_to_poj_converts_toned_ing_ik_and_capitals():
+    """Hanlo/Latin candidate text arrives already tone-marked (sīng酒) and
+    sometimes capitalized (Tsu-ná-mih); POJ mode must still spell eng/ek,
+    ch/chh, oa/oe and o͘ — otherwise POJ users see TL spellings."""
+    out = run_lua(
+        PREAMBLE
+        + textwrap.dedent(
+            r"""
+        eq("precomposed ī+ng", data.tl_to_poj("s\u{012B}ng酒"), "s\u{0113}ng酒")
+        eq("í+ng inside hanlo", data.tl_to_poj("尾ts\u{00ED}ng指"), "尾ch\u{00E9}ng指")
+        eq("î+ng at end", data.tl_to_poj("p\u{00EE}ng"), "p\u{00EA}ng")
+        eq("i+U+030D+k", data.tl_to_poj("li\u{030D}k"), "le\u{030D}k")
+        eq("ì+k before hyphen", data.tl_to_poj("s\u{00EC}k-tsu\u{00ED}"), "s\u{00E8}k-chu\u{00ED}")
+        eq("capital Ts", data.tl_to_poj("Tsu-n\u{00E1}-mih"), "Chu-n\u{00E1}-mih")
+        eq("capital Tsh", data.tl_to_poj("Tshit-ni\u{00FB}-m\u{00E1}"), "Chhit-ni\u{00FB}-m\u{00E1}")
+        eq("capital Ua", data.tl_to_poj("Ua-tsu\u{00ED}"), "Oa-chu\u{00ED}")
+        eq("capital Ing", data.tl_to_poj("Ing-ko"), "Eng-ko")
+        eq("capital Í+k", data.tl_to_poj("\u{00CD}k"), "\u{00C9}k")
+        eq("capital Oo", data.tl_to_poj("Oo"), "O\u{0358}")
+        eq("tiong unchanged", data.tl_to_poj("tiong"), "tiong")
+        eq("ingenious boundary", data.tl_to_poj("s\u{012B}nga"), "s\u{012B}nga")
+        eq("capital Oé → Óe", data.poj_fix_diacritics("Oe\u{0301}"), "O\u{0301}e")
+        eq("capital Uí → Úi", data.poj_fix_diacritics("Ui\u{0301}"), "U\u{0301}i")
+        print("OK")
+        """
+        )
+    )
+    assert out == "OK"

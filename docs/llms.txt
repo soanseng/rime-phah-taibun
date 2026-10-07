@@ -8,7 +8,7 @@
 - 版本：0.9.4（2026-09-29）
 - 授權：開源，程式碼佮詞庫授權見 LICENSE（per-source 標示）
 - 平台：Windows（小狼毫 Weasel）、macOS（鼠鬚管 Squirrel）、Linux（fcitx5-rime／ibus-rime）、Android（同文 Trime、fcitx5-android；無官方 APK，提供 Trime 一鍵包）
-- 詞庫：227,360 詞條；9 本開源辭典（ChhoeTaigi）＋ 7 個語料庫詞頻（iCorpus、NMTL、楊允言 2009 等）＋教育部輸入法詞庫增補、學科術語、臺灣地名
+- 詞庫：228,763 詞條；9 本開源辭典（ChhoeTaigi）＋ 7 個語料庫詞頻（iCorpus、NMTL、楊允言 2009 等）＋教育部輸入法詞庫增補、學科術語、臺灣地名
 - 費用：免費（price 0）
 
 ## 核心功能
@@ -23,7 +23,7 @@
 
 ## 安裝
 
-- Windows：裝小狼毫 → Releases 載 `PhahTaiBunSetup.exe`，或 PowerShell `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`
+- Windows：Releases 載 `PhahTaiBunSetup.exe`（無小狼毫會自動一起裝），或先裝小狼毫再用 PowerShell `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`
 - macOS：裝鼠鬚管 → `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`
 - Linux：`git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh`
 - Android：裝同文 Trime → Releases 載 `PhahTaiBun-Trime.zip` 解壓入 `Android/data/com.osfans.trime/files/rime` → 重新部署
