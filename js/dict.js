@@ -1,7 +1,7 @@
 import {
   formatRomanization, tlToPoj, pojFixDiacritics, toNumeric, pojToTl,
   addImplicitTones, stripTones, sandhiNumeric, sandhiWordAll,
-} from "./roman.js?v=21";
+} from "./roman.js?v=22";
 
 const MAX_WORD = 8; // longest dictionary key (chars) considered per match
 
@@ -215,12 +215,15 @@ export function buildReverseIndex(dict) {
   return rev;
 }
 
+// 免 LM 的貪婪反查 baseline：LM 載入前／失敗時嘛有詞卡（words 格式佮
+// decodeTlToHan 仝款：word＋數字調 reading，chip 才會當掠著 rev 同音候選）。
 export function tlToHan(tlText, rev) {
   const parts = [];
+  const words = [];
   let matched = 0, total = 0;
   for (const run of splitLiterals(tlText, tlRuns)) {
     if (run.type === "sep" || run.type === "lit") { parts.push(run.s); continue; }
-    const { bare, raws } = romToSylls(run.s);
+    const { bare, raws, tones } = romToSylls(run.s);
     if (!bare.length) { parts.push(run.s); continue; }
     total += bare.length;
     const out = [];
@@ -231,12 +234,19 @@ export function tlToHan(tlText, rev) {
         const list = rev.get(bare.slice(i, i + L).join(" "));
         if (list) { hit = list[0].word; hitLen = L; break; }
       }
-      if (hit) { out.push(hit); matched += hitLen; i += hitLen; }
-      else { out.push(raws[i]); i++; }
+      if (hit) {
+        out.push(hit);
+        words.push({
+          word: hit,
+          reading: bare.slice(i, i + hitLen)
+            .map((s, k) => s + (tones[i + k] === "0" ? "" : tones[i + k])).join(" "),
+        });
+        matched += hitLen; i += hitLen;
+      } else { out.push(raws[i]); i++; }
     }
     parts.push(out.join(""));
   }
-  return { han: parts.join(""), matched, total };
+  return { han: parts.join(""), matched, total, words };
 }
 
 // ---------- bigram LM（identity 語料漢字詞）→ 羅→漢 beam 解碼 ----------

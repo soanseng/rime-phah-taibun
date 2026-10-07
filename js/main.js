@@ -3,13 +3,13 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { buildReverseIndex } from "./dict.js?v=21";
-import { loadDict } from "./dict.js?v=21";
-import { initConverter } from "./ui/converter.js?v=21";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=21";
-import { initVocab } from "./ui/vocab.js?v=21";
-import { initGrammar } from "./ui/grammar.js?v=21";
-import { initGrammarCheck } from "./ui/grammarcheck.js?v=21";
+import { buildReverseIndex } from "./dict.js?v=22";
+import { loadDict } from "./dict.js?v=22";
+import { initConverter } from "./ui/converter.js?v=22";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=22";
+import { initVocab } from "./ui/vocab.js?v=22";
+import { initGrammar } from "./ui/grammar.js?v=22";
+import { initGrammarCheck } from "./ui/grammarcheck.js?v=22";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {
@@ -27,7 +27,7 @@ const ready = async () => {
     const loadViaWorker = () => new Promise((resolve, reject) => {
       const dict = {};
       const revEntries = [];
-      const w = new Worker("./js/dict-worker.js?v=21", { type: "module" });
+      const w = new Worker("./js/dict-worker.js?v=22", { type: "module" });
       const raf = () => new Promise(requestAnimationFrame);
       let ready = Promise.resolve();
       w.onmessage = (ev) => {

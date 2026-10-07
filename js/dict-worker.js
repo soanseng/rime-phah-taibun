@@ -4,7 +4,7 @@
 // （requestAnimationFrame）才閣傳，主線程逐段攏細段、會當喘氣。
 // 協定：main→{url}；worker→{type:"chunk", kind, entries}↔main→{type:"ack"}；
 // 收煞→{type:"done", nDict, nRev}。
-import { buildReverseIndex } from "./dict.js?v=21";
+import { buildReverseIndex } from "./dict.js?v=22";
 
 const CHUNK = 6000;
 const waitAck = () => new Promise((r) => { self.onmessage = r; });

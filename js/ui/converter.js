@@ -2,12 +2,14 @@
 
 import {
   segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
-} from "../dict.js?v=21";
-import { formatRomanization, stripTones } from "../roman.js?v=21";
+} from "../dict.js?v=22";
+import { formatRomanization, stripTones } from "../roman.js?v=22";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+// 循環候選干焦換漢字詞——純羅馬字詞（guā＝若干）佇「羅→漢」的輸出底無意義
+const HAN = /[\u3400-\u9FFF\uF000-\uFAFF]/;
 const dictLink = (word, label = "教典") =>
   $("<a class='dict-link'></a>")
     .attr("href", sutianUrl(word))
@@ -114,7 +116,8 @@ export function initConverter(dict, hints, grammarCheck, revIn = null) {
       for (const p of r2h.pieces) {
         if (!p.w) continue;
         const tl = formatRomanization(p.reading.replace(/0(?=[a-z])/g, ""));
-        const alts = rev.get(stripTones(p.reading)) ?? [];
+        const alts = (rev.get(stripTones(p.reading)) ?? []).filter((a) => HAN.test(a.word));
+        const $link = dictLink(p.w);
         const $chip = $("<button type='button' class='wchip'></button>")
           .attr("title", alts.length > 1
             ? `點換同音詞（${alts.length} 候選）：${alts.slice(0, 8).map((a) => a.word).join("・")}`
@@ -127,9 +130,10 @@ export function initConverter(dict, hints, grammarCheck, revIn = null) {
           const i = (alts.findIndex((a) => a.word === cur) + 1) % alts.length;
           r2h.overrides.set(p, alts[i].word);
           $chip.find("b").text(alts[i].word);
+          $link.attr("href", sutianUrl(alts[i].word));
           $out.text(hanText());
         });
-        $list.append($chip, " ");
+        $list.append($chip, $link, " ");
       }
     } else {
       $list.text("—");
@@ -161,7 +165,7 @@ export function initConverter(dict, hints, grammarCheck, revIn = null) {
         ? "貼漢羅文章，親像：我今仔日欲去台北。"
         : "貼台羅／POJ，親像：Goá kin-á-ji̍t beh khì Tâi-pak.",
     );
-    $("#cv-hint").text(dir === "h2r" ? hintH2R() : "實驗功能：同音詞真濟，可能選錯詞義，輸出僅供輔助對照，毋是可靠翻譯。");
+    $("#cv-hint").text(dir === "h2r" ? hintH2R() : "實驗功能：同音詞真濟，可能選錯詞義。點詞卡換同音詞，點「教典」查辭典；輸出僅供輔助對照。");
     run();
   });
 
@@ -177,4 +181,8 @@ export function initConverter(dict, hints, grammarCheck, revIn = null) {
     $b.text("已複製");
     setTimeout(() => $b.text(old), 900);
   });
+
+  // 詞典載入中使用者就拍好字／點過轉換（hit 陣 handler 攏未縛、事件落空）：
+  // 初始化了若 input 已有字自動補跑一擺，毋免閣點一擺。
+  if (String($("#cv-in").val() ?? "").trim()) run();
 }
