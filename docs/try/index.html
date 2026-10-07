@@ -117,18 +117,42 @@
       #modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
       .mode { border: 1px solid var(--color-line); background: var(--color-surface-alt); color: var(--color-ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .9rem; }
       .mode.on { border-color: var(--color-green); color: var(--color-green); font-weight: 600; }
-      #editor { border: 2px solid var(--color-green); border-radius: var(--radius); padding: 16px 18px; min-height: 150px; cursor: text; background: var(--color-surface); box-shadow: 0 8px 24px var(--color-shadow); }
-      #editor:focus { outline: 3px solid rgba(11, 111, 85, .25); outline-offset: 2px; }
+      #editor { position: relative; border: 2px solid var(--color-line); border-radius: var(--radius); padding: 16px 18px; min-height: 150px; cursor: text; background: var(--color-surface); box-shadow: 0 8px 24px var(--color-shadow); transition: border-color .15s; }
+      #editor:focus { outline: none; border-color: var(--color-green); }
+      #editor.selecting { border-color: var(--color-blue); }
+      #editor.idle #out:empty::before { content: "點遮，開始拍羅馬字…"; color: var(--color-muted); }
+      #editor:not(:focus) .focus-tip { display: inline-block; }
+      .focus-tip { display: none; position: absolute; right: 12px; bottom: 10px; font-size: .78rem; color: var(--color-muted); }
       #out { font-size: 1.5rem; line-height: 1.7; min-height: 2.6em; white-space: pre-wrap; word-break: break-all; }
+      #editor:not(.idle) #out:empty { min-height: 0; }
       #preedit { color: var(--color-green); font-size: 1.5rem; white-space: pre-wrap; }
       #preedit .sel { text-decoration: underline; text-underline-offset: 6px; }
-      #cands { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-      .cand { border: 1px solid var(--color-line); border-radius: 10px; padding: 6px 10px; background: var(--color-surface); cursor: pointer; }
-      .cand .t { font-size: 1.2rem; }
-      .cand .c { color: var(--color-muted); font-size: .8rem; margin-left: 6px; }
-      .cand.hl { border-color: var(--color-green); box-shadow: 0 0 0 1px var(--color-green); }
+      #editor.selecting #preedit { color: var(--color-blue); }
+      .editor-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+      #panel { margin-top: 12px; border: 1px solid var(--color-line); border-radius: 14px; overflow: hidden; background: var(--color-surface); }
+      #panel.hidden-empty { display: none; }
+      .panel-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; background: var(--color-surface-alt); border-bottom: 1px solid var(--color-line); font-size: .88rem; color: var(--color-muted); }
+      .panel-bar .mode-label { font-weight: 700; color: var(--color-ink); }
+      .panel-bar .grow { flex: 1; }
+      #panel.selecting .panel-bar { background: var(--color-blue); color: #fff; border-bottom-color: var(--color-blue); }
+      #panel.selecting .panel-bar .mode-label { color: #fff; }
+      #panel.selecting .panel-bar kbd { color: var(--color-ink); }
+      .pager { border: 1px solid var(--color-line); background: var(--color-surface); border-radius: 8px; padding: 2px 10px; cursor: pointer; font-size: .85rem; color: var(--color-ink); }
+      .pager:disabled { opacity: .4; cursor: default; }
+      #cands { display: grid; grid-template-columns: 1fr; }
+      /* 寬螢幕：候選濟過 5 个分兩欄、先直排（a s d f g ｜ h j k l ;）；較少就一欄 */
+      @media (min-width: 760px) { #cands.two-col { grid-template-columns: 1fr 1fr; grid-auto-flow: column; grid-template-rows: repeat(var(--rows), auto); } }
+      .cand { display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-line); min-width: 0; }
+      .cand:hover { background: var(--color-surface-alt); }
+      .cand .k { flex: none; width: 1.7em; height: 1.7em; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font: 600 .85rem/1 "SFMono-Regular", Consolas, monospace; color: var(--color-muted); border: 1px solid transparent; }
+      #panel.selecting .cand .k { color: #fff; background: var(--color-blue); }
+      .cand .t { font-size: 1.25rem; white-space: nowrap; }
+      .cand .c { color: var(--color-muted); font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+      .cand.hl { background: rgba(11, 111, 85, .08); }
+      .cand.hl .k { border-color: var(--color-green); color: var(--color-green); }
+      #panel.selecting .cand.hl { background: rgba(36, 88, 184, .1); }
       #hint { font-size: .9rem; color: var(--color-muted); margin-top: 12px; }
-      #hint kbd { border: 1px solid var(--color-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .8rem; background: var(--color-surface-alt); }
+      kbd { border: 1px solid var(--color-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .8rem; background: var(--color-surface-alt); }
       .try-credits { font-size: .82rem; color: var(--color-muted); }
       .try-credits a { color: var(--color-green); }
     </style>
@@ -186,11 +210,26 @@
               <button class="mode" id="m-full_romanization">輸出：漢羅</button>
               <button class="mode" id="m-poj_mode">拼音：TL</button>
             </div>
-            <div id="editor" tabindex="0" aria-label="打字區">
-              <div id="out"></div><div id="preedit"></div>
+            <div id="editor" class="idle" tabindex="0" role="textbox" aria-multiline="true" aria-label="打字區">
+              <div id="out"></div><div id="preedit" aria-live="polite"></div>
+              <span class="focus-tip">點一下開始拍字</span>
             </div>
-            <div id="cands"></div>
-            <p id="hint">點打字區了後直接拍羅馬字，例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出首選；<kbd>Tab</kbd> 進選字模式，用 <kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>… 揀字，抑是直接點候選；<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<button class="mode" id="clear">清空</button></p>
+            <div id="panel" class="hidden-empty" aria-live="polite">
+              <div class="panel-bar">
+                <span class="mode-label" id="panel-mode">候選</span>
+                <span id="panel-tip"></span>
+                <span class="grow"></span>
+                <button class="pager" id="pg-prev" type="button" aria-label="上一頁">‹ 上頁</button>
+                <span id="pg-no"></span>
+                <button class="pager" id="pg-next" type="button" aria-label="下一頁">下頁 ›</button>
+              </div>
+              <div id="cands" role="listbox" aria-label="候選字"></div>
+            </div>
+            <div class="editor-actions">
+              <button class="mode" id="copy" type="button">複製</button>
+              <button class="mode" id="clear" type="button">清空</button>
+            </div>
+            <p id="hint">例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出反白的候選；欲揀別个，按 <kbd>Tab</kbd> 進選字模式，才按候選頭前的鍵（<kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>…），抑是直接點候選。<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。</p>
           </div>
           <p class="try-credits">
             引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，<a href="LICENSE-my-rime.txt">AGPL-3.0-or-later</a>；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
@@ -302,30 +341,61 @@ const keyName = (ev) => {
 
 // ---- state ----
 const UNHANDLED = 3; // api.cpp: COMMITTED, ACCEPTED, REJECTED, UNHANDLED
+// Tab 選字模式：phah_taibun_input.lua 共提示寫入 segment prompt（顯示佇 preedit 尾）；
+// 揀字鍵 = phah_taibun_input.lua SELECTION_KEYS（schema menu/alternative_select_keys）
+const SELECT_PROMPT = /〔選字[^〕]*〕/;
+const SELECT_KEYS = 'asdfghjkl;';
+const editor = $('editor'), panel = $('panel');
 
 function render(r) {
-  if (typeof r === 'string') r = JSON.parse(r); // selectCandidateOnCurrentPage 回傳未 parse 的 JSON
+  if (typeof r === 'string') r = JSON.parse(r); // selectCandidateOnCurrentPage/changePage 回傳未 parse 的 JSON
   if ('committed' in r) out.textContent += r.committed;
-  if (r.candidates) {
-    const h = document.createElement('span'); h.textContent = r.head || '';
-    const b = document.createElement('span'); b.className = 'sel'; b.textContent = r.body || '';
-    const t = document.createElement('span'); t.textContent = r.tail || '';
-    preedit.replaceChildren(h, b, t);
-    candsEl.replaceChildren(...r.candidates.map((c, i) => {
-      const el = document.createElement('div');
-      el.className = 'cand' + (i === r.highlighted ? ' hl' : '');
-      const t2 = document.createElement('span'); t2.className = 't'; t2.textContent = c.text;
-      el.append(t2);
-      if (c.comment) { const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = c.comment; el.append(cc); }
-      el.onclick = () => { call('selectCandidateOnCurrentPage', i).then(render, console.error); $('editor').focus(); };
-      return el;
-    }));
-  } else {
+  const composing = Boolean(r.candidates);
+  const selecting = composing && SELECT_PROMPT.test((r.head || '') + (r.body || '') + (r.tail || ''));
+  editor.classList.toggle('selecting', selecting);
+  editor.classList.toggle('idle', !composing && out.textContent === '');
+  panel.classList.toggle('selecting', selecting);
+  panel.classList.toggle('hidden-empty', !composing);
+  if (!composing) {
     preedit.replaceChildren();
     candsEl.replaceChildren();
+    return r;
   }
+  const strip = (s) => (s || '').replace(SELECT_PROMPT, '');
+  const h = document.createElement('span'); h.textContent = strip(r.head);
+  const b = document.createElement('span'); b.className = 'sel'; b.textContent = strip(r.body);
+  const t = document.createElement('span'); t.textContent = strip(r.tail);
+  preedit.replaceChildren(h, b, t);
+
+  $('panel-mode').textContent = selecting ? '選字模式' : '候選';
+  $('panel-tip').innerHTML = selecting
+    ? '按候選頭前的鍵揀字，<kbd>Esc</kbd> 退出'
+    : '<kbd>空白</kbd> 送出反白，<kbd>Tab</kbd> 揀別个';
+  const page = r.page ?? 0;
+  $('pg-no').textContent = `第 ${page + 1} 頁`;
+  $('pg-prev').disabled = page === 0;
+  $('pg-next').disabled = Boolean(r.isLastPage);
+
+  candsEl.classList.toggle('two-col', r.candidates.length > 5);
+  candsEl.style.setProperty('--rows', String(Math.ceil(r.candidates.length / 2)));
+  candsEl.replaceChildren(...r.candidates.map((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'cand' + (i === r.highlighted ? ' hl' : '');
+    el.setAttribute('role', 'option');
+    el.setAttribute('aria-selected', String(i === r.highlighted));
+    const k = document.createElement('span'); k.className = 'k';
+    // 選字模式：顯示揀字鍵；一般模式：反白的候選標「␣」（空白鍵送出）
+    k.textContent = selecting ? SELECT_KEYS[i] ?? '' : (i === r.highlighted ? '␣' : '');
+    const t2 = document.createElement('span'); t2.className = 't'; t2.textContent = c.text;
+    el.append(k, t2);
+    if (c.comment) { const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = c.comment.trim(); el.append(cc); }
+    el.onclick = () => { call('selectCandidateOnCurrentPage', i).then(render, console.error); editor.focus(); };
+    return el;
+  }));
   return r;
 }
+$('pg-prev').onclick = () => { call('changePage', true).then(render, console.error); editor.focus(); };
+$('pg-next').onclick = () => { call('changePage', false).then(render, console.error); editor.focus(); };
 
 // 引擎無處理的鍵（無組字時的 Backspace／Enter／字元）＝一般編輯
 function editPlain(ev) {
@@ -362,7 +432,18 @@ $('editor').addEventListener('keydown', (ev) => {
   sendBuf();
   send(name, () => editPlain(ev));
 });
-$('clear').onclick = () => { out.textContent = ''; $('editor').focus(); };
+$('clear').onclick = () => { out.textContent = ''; editor.classList.add('idle'); editor.focus(); };
+$('copy').onclick = async () => {
+  const btn = $('copy');
+  try {
+    await navigator.clipboard.writeText(out.textContent);
+    btn.textContent = '已複製';
+  } catch {
+    btn.textContent = '複製失敗';
+  }
+  setTimeout(() => { btn.textContent = '複製'; }, 1500);
+  editor.focus();
+};
 
 // ---- mode switches ----
 const modes = {
