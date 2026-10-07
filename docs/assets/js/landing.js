@@ -37,7 +37,12 @@ $(function () {
     });
   });
   $(document).on('click', closeGroups);
-  $(document).on('keydown', (ev) => { if (ev.key === 'Escape') closeGroups(); });
+  $(document).on('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    closeGroups();
+    // :focus-within 會共選單撐開：焦點佇下拉內底就收轉去按鈕外
+    if ($(document.activeElement).closest('.nav-group').length) document.activeElement.blur();
+  });
 
   $('[data-tabs]').each(function () {
     const $tabs = $(this);

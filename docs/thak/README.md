@@ -84,7 +84,7 @@ python3 -m http.server 8765 --directory docs
 
 ## 部署
 
-併入 rime-phah-taibun 了後，`docs/` 歸个由 Cloudflare（`wrangler.jsonc`，assets＝`./docs`）部署：push 去 `main` 就自動上線。`data-public/` 已在版控內，無需要額外建置。舊網域 thak.anatomind.com 301 轉去 https://taigi.anatomind.com/convert/ 。
+併入 rime-phah-taibun 了後，`docs/` 歸个由 Cloudflare（`wrangler.jsonc`，assets＝`./docs`）部署：push 去 `main` 就自動上線。`data-public/` 已在版控內，無需要額外建置。站內舊入口 `/thak/` 由 `docs/_redirects` 301 去 `/convert/`；舊網域 thak.anatomind.com 的轉址愛另外佇 Cloudflare 後台設（猶未設）。
 
 ## Roadmap（v2）
 

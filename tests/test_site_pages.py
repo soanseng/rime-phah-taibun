@@ -159,3 +159,28 @@ def test_old_thak_entry_redirects_to_converter():
     assert not (ROOT / "docs/thak/index.html").exists(), "舊頁留咧會佮轉址衝突"
     for page in PAGES:
         assert "thak.anatomind.com" not in (ROOT / page).read_text(encoding="utf-8"), page
+
+
+class _Assets(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.urls: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "link" and a.get("rel") == "stylesheet":
+            self.urls.append(a.get("href") or "")
+        elif tag == "script" and a.get("src"):
+            self.urls.append(a["src"])
+
+
+def test_site_css_and_js_carry_a_version_query():
+    """正式站 CSS/JS 快取 186 工: 本站資產網址無帶 ?v= 的話, 改版了後舊訪客會提著舊樣式
+    (2026-10 導覽「工具」下拉因為按呢攏排佇導覽列頂懸)。"""
+    for page in PAGES:
+        parser = _Assets()
+        parser.feed((ROOT / page).read_text(encoding="utf-8"))
+        local = [u for u in parser.urls if not u.startswith(("http:", "https:", "//"))]
+        assert local, page
+        for url in local:
+            assert "?v=" in url, f"{page}: {url}"

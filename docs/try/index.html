@@ -109,10 +109,10 @@
         ]
       }
     </script>
-    <link rel="stylesheet" href="../assets/css/base.css" />
-    <link rel="stylesheet" href="../assets/css/layout.css" />
-    <link rel="stylesheet" href="../assets/css/components.css" />
-    <link rel="stylesheet" href="../assets/css/landing.css" />
+    <link rel="stylesheet" href="../assets/css/base.css?v=2" />
+    <link rel="stylesheet" href="../assets/css/layout.css?v=2" />
+    <link rel="stylesheet" href="../assets/css/components.css?v=2" />
+    <link rel="stylesheet" href="../assets/css/landing.css?v=2" />
     <style>
       .try-hero { padding: 40px 0 0; }
       .try-hero h1 { margin: 6px 0 10px; max-width: none; font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.25; }
@@ -681,6 +681,6 @@ async function boot() {
 boot().catch((e) => { status.className = 'err'; status.textContent = '啟動失敗：' + e.message; console.error(e); });
 </script>
     <script src="https://code.jquery.com/jquery-4.0.0.min.js" defer></script>
-    <script src="../assets/js/landing.js" defer></script>
+    <script src="../assets/js/landing.js?v=2" defer></script>
 </body>
 </html>
