@@ -4,100 +4,68 @@
 
 # 寫台文 Siá Tâi-bûn
 
-台語輸入法・Rime 的台語方案
+台語輸入法・Rime 的台語方案，佮仝一个網站的網頁試拍、練習、轉換、詞彙、文法工具
 
-> 寫台文（舊名：拍台文 Phah Tai-bun）。本專案與「PhahTaigi 台語輸入法」是不同的專案。
+> 寫台文（舊名：拍台文 Phah Tâi-bûn）。本專案佮「PhahTaigi 台語輸入法」是無仝的專案。
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dict Entries](https://img.shields.io/badge/dict-228K%20entries-green?style=flat-square)](#)
 [![Lua Modules](https://img.shields.io/badge/lua-21%20modules-orange?style=flat-square)](#)
 [![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://taigi.anatomind.com/)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)](#quick-start)
+[![Website](https://img.shields.io/badge/web-taigi.anatomind.com-blue?style=flat-square)](https://taigi.anatomind.com/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android-lightgrey?style=flat-square)](#安裝)
 
-English | [繁體中文（台灣）](#中文說明)
-
-Sia Tai-bun is an open-source Rime input method for Taiwanese Hokkien. It supports Han/Roman mixed output, POJ and TL romanization, tone-optional typing, Mandarin reverse lookup, and a large public-corpus-based dictionary.
-
-It is designed for people who can speak Taiwanese but find written Taiwanese hard to type. Users do not need to choose between POJ and TL, type tone marks, or memorize Han-lo writing rules before they can start writing.
-
-## Why this matters
-
-Taiwanese Hokkien is widely spoken but difficult to type because users must navigate multiple writing systems, romanization standards, tone marks, and mixed Han/Roman output. Sia Tai-bun lowers that barrier by providing a practical, open-source Rime input method with tone-optional typing, POJ/TL support, Mandarin reverse lookup, and a large public-corpus-based dictionary.
-
-## Quick Start
-
-Download the latest release for your platform:
-
-| Platform | Install | Requires |
-|----------|---------|----------|
-| Windows | Download `PhahTaiBunSetup.exe` and run the installer (it installs Weasel 0.17.4 for you when missing — one UAC prompt), or `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` (Weasel must already be installed) | — |
-| macOS (best-effort, not tested on real hardware by the maintainer) | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | Squirrel |
-| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime or ibus-rime |
-| Android | Download a bundle from Releases — `PhahTaiBun-Trime.zip` (phah_taibun + bopomofo) or `PhahTaiBun-Trime-liur.zip` (adds boshiamy) — and extract it into the Rime user folder of Trime or fcitx5-android, then redeploy. See [Android 部署](docs/android.md) | Trime, or Fcitx5 for Android + RIME plugin |
-
-After installation, switch your system input method to Weasel (Windows) or Squirrel (macOS) first, redeploy Rime, then press `F4` (or `` Ctrl+` ``) to confirm that `寫台文(台)` is available in the schema menu. `F4` only responds while the Rime front-end (Weasel/Squirrel) is active. Android has no installer; after installing Trime or the fcitx5-android RIME plugin, extract a release bundle (`PhahTaiBun-Trime.zip`, or `PhahTaiBun-Trime-liur.zip` for boshiamy) into the Rime user folder and redeploy.
-
-The Windows PowerShell command is interactive: it asks whether to install 寫台文, 嘸蝦米 (`rime-liur`), or both; timestamps a backup of `default.custom.yaml` before touching it; and asks which existing schemas — including 注音 `bopomofo` — to keep. Unattended runs can set `PHAH_TAIBUN_SCHEMAS` (`phah` / `liur` / `both`) plus `PHAH_TAIBUN_PROJECT_ROOT` instead of answering prompts. The installer writes a clean, commented `default.custom.yaml` at the end (your own settings are preserved, and `__patch:`-style files are left untouched).
-
-`install_windows.ps1` is deliberately stored **without a BOM and without a top-level `param()` block**: a BOM survives GitHub raw and `irm`, and `iex` then glues it onto the first token, which breaks parsing (`At line:6 char:28 ... $ProjectRoot = "",`). The packaged `PhahTaiBunSetup.exe` therefore reads the script as UTF-8 and evaluates it the same way as the one-liner, passing its arguments through environment variables.
-
-### Updating
-
-Windows: rerun `PhahTaiBunSetup.exe` or the PowerShell command. macOS: rerun the `curl .../install_macos.sh | bash` command, or `git pull --ff-only && ./install.sh` in a clone. Linux: `git pull --ff-only && ./install.sh`. Android: extract the latest `PhahTaiBun-Trime.zip` over the Rime user folder (or replace the official schema/Lua files) and redeploy; see [Android 部署](docs/android.md). Updates preserve custom dictionaries and other Rime schemas.
-
-Since 0.4.0, the output mode you pick (TL/POJ, 漢羅/全羅) is remembered across sessions; existing installs get this by re-running the installer once (it adds the two mode options to `switcher/save_options` in `default.custom.yaml`) and letting it redeploy.
-Since 0.8.0, continuous typing composes whole sentences in one commit (Enter or Space), with per-word editing via Tab; every release attaches a `SHA256SUMS` covering all assets (see [docs/packaged-installers.md](docs/packaged-installers.md)), dictionary weights are identity-keyed to corpus frequencies, and builds are byte-for-byte reproducible.
-Since 0.9.0, a 手動漢羅 (manual han-lo mix) switch lets you keep whole sentences in hanzi and mark individual words as romanization with `Tab` + `\`; mid-sentence Tab selection in all-roman mode no longer breaks the sentence, and the toneless boost now works on recommendation-marked candidates.
-Since 0.9.1, Han and Han-lo output use fullwidth punctuation; the `` `e `` browser provides Unicode emoji by category, including skin tones, with 🇹🇼 available from Taiwan vocabulary.
-Since 0.9.2, ranking is protected by build-time invariants (whole-word split, bounded recommendation reorder, light-tone positioning) with a learning module that only learns words you actually select; the dictionary was rebuilt to 211,021 entries.
-Since 0.9.3, the Telex schema has an optional `x` tone key (open syllable → tone 1, checked final → tone 4), `Ctrl+punctuation` temporarily flips punctuation width in either mode, the symbol menu gained half-width bracket pairs, and MOE subject terminology and Taiwan placename entries joined the dictionary.
-
-
-You can type without tone numbers, and POJ/TL spellings can be mixed:
-
-```text
-gua beh khi tshit tho  ->  我 beh 去 tshit-thô
-tsiah png              ->  食飯
-chiah png              ->  食飯
-tai uan                ->  臺灣 / 台灣
-```
-
-Prefer staying on the letter keys for tones? Switch to the optional `寫台文(Telex)` schema (`F4`) and type `taidfgiv` for 臺語, `ziahv` for 食 — details in the [Chinese section](#中文說明).
-
-For full documentation, see the [project website](https://taigi.anatomind.com/), [online guide](https://taigi.anatomind.com/guide.html), and [quickstart card](docs/quickstart-card.md). Want to try before installing? The [browser playground](https://taigi.anatomind.com/try/) runs the same Rime engine and Lua modules in WebAssembly with a concise ~45K-word dictionary (both schemas; no reverse lookup or emoji).
-
-## 中文說明
-
-Rime 台語輸入法方案 — 漢羅混寫輸出，POJ/TL 雙拼音系統，聲調可省略。
-
-> **快速入口**：[專案首頁](https://taigi.anatomind.com/) · [網頁試拍（免安裝）](https://taigi.anatomind.com/try/) · [線上使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
-
-專為「會講台語但不太會打台文」的人設計。不需要分辨 POJ 和 TL、不需要打聲調、不需要知道漢羅規則，輸入法全部幫你處理。
+**台文** | [華文（臺灣）](#華文說明)
 
 <p align="center">
-  <a href="https://taigi.anatomind.com/demo/demo-part1.mp4" title="看示範影片：基本輸入"><img src="docs/demo/demo-part1-poster.png" alt="寫台文打字示範：基本輸入（點圖播放影片）" width="600"></a>
+  <a href="https://taigi.anatomind.com/demo/demo-part1.mp4" title="看示範影片：基本輸入"><img src="docs/demo/demo-part1-poster.png" alt="寫台文拍字示範：基本輸入（點圖播放影片）" width="600"></a>
 </p>
 
-## 3 分鐘上手
+寫台文是開源的 Rime 台語輸入法：白話字 POJ、台羅 TL 作伙混拍，聲調先免拍，預設照 LKK 用字規範輸出漢羅，候選攏看會著讀音。專門做予「會曉講台語，毋過拍台文無熟」的人——免先揀拼音系統、免記漢羅規則，就會當開始寫。
 
-### 1. 安裝
+> **緊入口**：[網站首頁](https://taigi.anatomind.com/) · [網頁試拍（免安裝）](https://taigi.anatomind.com/try/) · [練習・考試](https://taigi.anatomind.com/try/#practice) · [使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
 
-一般使用者：Windows 下載安裝包；macOS／Linux 用指令（與 rime-liur 相同）。
+## 一个網站，一套詞典
 
-| 系統 | 一般使用者 | 需要先有 |
-|------|------------|----------|
-| Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝（沒有小狼毫會自動一起裝，跳一次系統管理員權限確認） | — |
-| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
-| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
-| Android | 下載 Releases 的一鍵包——`PhahTaiBun-Trime.zip`（寫台文＋注音）或 `PhahTaiBun-Trime-liur.zip`（再加嘸蝦米）——解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
+寫台文毋但是輸入法。[taigi.anatomind.com](https://taigi.anatomind.com/) 頂懸的功能攏用仝一套詞典佮轉換核心——你佇轉換頁看著的讀音，就是輸入法候選看著的讀音。
 
-Windows 安裝包仍使用 Rime 作為輸入法核心。macOS 不提供 `.pkg`（無法驗證 Gatekeeper／notarize），請用上方指令，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。安裝後先把系統輸入法切到小狼毫／鼠鬚管，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「寫台文(台)」。
+| 功能 | 網址 | 做啥物 |
+|------|------|--------|
+| 安裝輸入法 | [#install](https://taigi.anatomind.com/#install) | Windows、macOS、Linux、Android，佇任何軟體拍台文 |
+| 網頁試拍 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器內就是真的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
+| 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音拍、逐字標對錯；考試干焦看漢羅，10 句算分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；記錄存佇你家己的瀏覽器 |
+| 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 佮白話字 POJ（連讀變調、輕聲、點字換讀音），POJ／TL 嘛會當倒轉漢字；附用字佮文法提示 |
+| 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 拍台語詞抑是華語意思，揣出 TL、POJ 佮教典例句 |
+| 文法筆記 | [/grammar/](https://taigi.anatomind.com/grammar/) | 本站整理的台語文法筆記，佮 TGGL 語法點索引 |
 
-### 2. 先打一段
+轉換、詞彙、文法原本是姊妹站「讀台文」，2026 年 10 月已經併入本專案（`docs/convert/`、`docs/vocab/`、`docs/grammar/`，共用程式佮資料佇 `docs/thak/`）。
 
-不用打聲調，TL 和 POJ 可以混著打：
+## 安裝
+
+| 系統 | 安裝 | 愛先有 |
+|------|------|--------|
+| Windows | 下載 `PhahTaiBunSetup.exe` 雙擊安裝（電腦無小狼毫的話會順紲裝小狼毫 0.17.4，跳一擺系統管理員權限確認）；抑是先裝小狼毫，閣行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` | — |
+| macOS（best-effort，維護者無實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
+| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 抑 ibus-rime |
+| Android | 對 Releases 下載一鍵包——`PhahTaiBun-Trime.zip`（寫台文＋注音）抑 `PhahTaiBun-Trime-liur.zip`（閣加嘸蝦米）——解壓縮到 Rime 使用者資料夾，重新部署，見[Android 部署](docs/android.md) | 同文 Trime，抑小企鵝 fcitx5-android＋RIME 外掛 |
+
+裝好了後，先共系統輸入法切去小狼毫／鼠鬚管，閣按 `F4`（抑 `` Ctrl+` ``）確認方案清單有「寫台文(台)」。`F4` 愛 Rime 前端當咧用的時才有反應。macOS 無提供 `.pkg`（無法度驗證 Gatekeeper／notarize），請用頂懸的指令，抑共 `schema/`、`lua/`、`rime.lua` 囥入 `~/Library/Rime/` 重新部署。
+
+Windows PowerShell 指令是互動式的：問你欲裝寫台文、嘸蝦米（`rime-liur`）抑兩項；動設定進前先共 `default.custom.yaml` 備份做 `default.custom.yaml.backup-<時間>`；問你欲留佗幾个既有方案（包括注音 `bopomofo`）。自動化執行會當用環境變數 `PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）佮 `PHAH_TAIBUN_PROJECT_ROOT`。腳本刻意**無存 BOM、無頂層 `param()`**：BOM 會綴 `irm` 入 `iex` 害解析失敗，所以 `PhahTaiBunSetup.exe` 嘛是用 UTF-8 讀檔閣 `iex`，參數用環境變數傳。
+
+### 更新寫台文
+
+- **Windows**：重新下載 `PhahTaiBunSetup.exe` 覆蓋安裝，抑重行 PowerShell 指令。
+- **macOS**：重行 `curl … install_macos.sh | bash`。
+- **Linux**：`cd rime-phah-taibun && git pull --ff-only && ./install.sh`
+- **Android**：用上新的 `PhahTaiBun-Trime.zip` 覆蓋，重新部署，見[Android 部署](docs/android.md)。
+
+更新會保留自訂詞庫、其他 Rime 方案佮設定，干焦換正式的寫台文方案、字典、規則佮 Lua 模組，上尾自動重新部署。輸出模式（TL/POJ、漢羅/全羅）會記咧，重開機嘛免重揀。
+
+## 三分鐘上手
+
+聲調免拍，TL 佮 POJ 會當混拍：
 
 ```text
 gua beh khi tshit tho  →  我 beh 去 tshit-thô
@@ -106,624 +74,263 @@ chiah png              →  食飯
 tai uan                →  臺灣 / 台灣
 ```
 
-候選區會顯示完整讀音，例如 `食飯 [tsia̍h-pn̄g]`。想更精準時，再補聲調數字：`ho2`、`tai5 uan5`。
+候選會顯示讀音，親像 `食飯 [tsia̍h-pn̄g]`。欲較準，才補聲調數字：`ho2`、`tai5 uan5`。
 
-#### 進階：寫台文(Telex)
+### 記這 8 个鍵
 
-`F4` 方案選單裡另有一個 **「寫台文(Telex)」**，給熟台羅、想連續輸入的人：聲調用字母鍵（`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9），`z`→`ts`、`zh`→`tsh`，`f` 當音節連字符。這是可選的平行方案，不是預設；新手繼續用無調／數字調即可。它與「寫台文(台)」共用詞典、詞頻、使用者詞庫與輸出模式：
+| 鍵 | 功能 |
+|----|------|
+| `Space` | 確認候選 |
+| `Tab` | 候選出來時進入 asdf 揀字；拍字中跳下一个音節 |
+| `F4` / `` Ctrl+` `` | 開 Rime 方案選單，切漢羅/全羅、TL/POJ、自動/手動漢羅 |
+| `Ctrl+Space` | 台文／英文模式 |
+| `~` | 注音反查：用注音拍華語，轉做台語候選 |
+| `?` | 萬用查字，親像 `?iah` |
+| `[` / `]` | 候選翻頁 |
+| `\` | 目前候選換另外一種輸出形式 |
+
+閣較濟鍵會當拍 `vvh` 看，抑看[快速上手小卡](docs/quickstart-card.md)。
+
+### 進階：寫台文(Telex)
+
+`F4` 選單內底閣有一个 **「寫台文(Telex)」**，予台羅熟、想欲手毋離字母鍵的人：聲調用字母鍵（`v`=2/8、`y`=3、`d`=5、`w`=7、`q`=9，`x`＝選配的 1/4 調），`z`→`ts`、`zh`→`tsh`，`f` 當音節連字號。伊佮「寫台文(台)」共用詞典、詞頻、使用者詞庫佮輸出模式：
 
 ```text
 taid      == tai5     → 臺／台 [tâi]
 taidfgiv  == tai5-gi2 → 台語 [tâi-gí]
 ziahv     == tsiah8   → 食 [tsia̍h]
-zhiahv    == tshiah8  → 斜 [tshia̍h]
 ```
 
-Telex 源自越南文在電傳打字機上用字母標調的做法；寫台文改採依詞典頻率排列的 kahiok 鍵位，第 1／4 調仍可省略（`x` 可顯式標示）。歷史、越南文對照與鍵位理由見[完整使用說明](docs/user-guide.md#進階：寫台文telex-調鍵輸入)。
+歷史、越南文對照佮鍵位理由見[完整使用說明](docs/user-guide.md#進階：寫台文telex-調鍵輸入)。
 
-### 3. 記住 8 個按鍵
+## 特色
+
+- **漢羅混寫**：照 LKK 李江却用字規範，自動輸出漢字＋羅馬字；嘛有「手動漢羅」，家己用 `Tab`＋`\` 標佗一个詞寫羅馬字
+- **POJ／TL 攏會通**：`tsiah`（TL）、`chiah`（POJ）攏揣會著「食」
+- **聲調會當省**：拍 `gua beh khi` 就揣會著「我 beh 去」
+- **整句拍、一擺送**：規句羅馬字拍了按空白鍵送出，半中途嘛會當 `Tab` 揀字
+- **候選標讀音**：邊拍邊學；◆ 推薦漢字、★ 推薦羅馬字（LKK 規範、教育部 700 字）
+- **四種輸出**：漢羅 TL、漢羅 POJ、全羅 TL、全羅 POJ，`F4` 切換
+- **注音反查（華→台）**：毋知台語按怎講？用注音拍華語，揀字了自動轉台語候選（內建 7.7 萬筆華台對照）
+- **萬用查字 `?`、同音揀字 `'`、造詞 `;`**：拼音無把握嘛揣會著字
+- **輕聲**：自動生輕聲候選（「轉--來」「食--飽」），2.9 萬外筆輕聲詞＋111 條規則；嘛會當直接拍 `--`
+- **字典外的詞**：候選上尾永遠有一个「羅馬字原文」，人名地名直接用
+- **長詞優先、逐音節組字、個人化學習**：干焦學你揀過的詞，袂共輸入歷史自動變新詞
+- **標點、符號、Emoji**：漢羅模式全形標點；`` ` `` 開 50 類符號，`` `e `` 揣 Emoji，拍「台灣」揀會著 🇹🇼
+- **228,763 詞條**：ChhoeTaigi 9 本辭典、教育部辭典詞目、TL/POJ 全羅候選、7 个語料庫詞頻加權，閣有教育部輸入法詞庫增補、學科術語、臺灣地名
+
+### 輸出模式
+
+| 模式 | 輸出 |
+|------|------|
+| 漢羅 TL | 我 beh 去 tshit-thô |
+| 漢羅 POJ | 我 beh 去 chhit-thô |
+| 全羅 TL | guá beh khì tshit-thô |
+| 全羅 POJ | góa beh khì chhit-thô |
+
+全羅模式按 `Enter` 會照你拍的音直接送出帶調符的羅馬字（保留 `-`、`--`），適合人名、地名。調符位置照[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)；POJ 照 POJ 慣例（gōa、hōe、koán、khòaⁿ）。
+
+### 全部快捷鍵
+
+| 鍵 | 功能 | 說明 |
+|----|------|------|
+| `Ctrl+Space` | 台文/英文切換 | 英文候選未內建；按 `Ctrl+Space` 切去英文模式 |
+| `Tab` | 揀字模式／跳音節 | 有候選：asdf 揀字（數字鍵留予聲調）；無：跳下一个音節 |
+| `Shift+字母` | 大寫 | 毋免切英文模式 |
+| `F4` | 方案選單 | 漢羅TL/漢羅POJ/全羅TL/全羅POJ、自動/手動漢羅 |
+| `~` | 注音反查 | 注音拍華語→台語候選 |
+| `,` `.` | 全形標點 | 漢羅：「，」「。」；全羅輸出半形 |
+| `` ` `` | 符號選單 | 50 類，`` `25 `` 直達；`` `e `` Emoji 分類 |
+| `?` | 萬用查字 | 先揀音節閣揀字 |
+| `;` | 造詞模式 | `;拼音` 查字典 |
+| `'` | 同音揀字 | 拍了按 `'` |
+| `vvh` / `vvjit` / `vvsp` | 說明／台語日期／簡拼對照 | |
+| `[` `]` | 翻頁 | 所有候選選單 |
+| `\` | 換輸出 | 漢羅↔全羅 |
+| `Enter` | 直接送出拍的音 | 全羅模式 |
+| `Ctrl+Backspace` | 刪一个音節 | |
+
+## 建議字型
+
+裝[芫荽 Iansui](https://github.com/ButTaiwan/iansui) 會當看著上好的台文（𠢕、𤆬、𨑨迌 等推薦用字）。安裝腳本會自動下載；候選區字型設定見[使用說明](docs/user-guide.md)。
+
+## 疑難排解
+
+- **揣無「寫台文」方案**：確認系統輸入法切去 Rime、已經重新部署，按 `F4` 看清單；Linux 檢查 `default.custom.yaml` 有 `phah_taibun`。
+- **候選無讀音註解**：確認 Rime 使用者資料夾的 `lua/` 有 21 个 `phah_taibun_*.lua`。
+- **注音反查 `~` 無反應**：愛有 `bopomofo_tw` 方案（Arch：`rime-bopomofo`＋`rime-terra-pinyin`；Debian/Ubuntu：`librime-data-*`）。
+- **Lua 錯誤**：看 Rime 日誌（Linux：`/tmp/rime.*.INFO`），確認 `rime.lua` 有囥佇使用者資料夾根目錄。
+- **重新安裝**：重行安裝指令，袂蓋掉你的自訂詞庫。
+
+## 佮其他台語輸入法比較
+
+| 功能 | 寫台文 | 信望愛台語輸入法 | 教育部台語輸入法 |
+|------|--------|-----------------|----------------|
+| 平台 | Linux / macOS / Windows / Android（Trime） | Windows / macOS | Windows / macOS / 手機 |
+| 開源 | MIT | 無開源 | 政府專案 |
+| 拼音 | TL＋POJ 混拍 | TL＋POJ | TL（自動轉 POJ） |
+| 聲調 | 會當攏免拍 | 愛拍 | 愛拍 |
+| 漢羅輸出 | 自動（LKK 規範）＋手動 | 有 | 無 |
+| 字典 | 228,763 條 | 無公開 | 約 2.4 萬條 |
+| 華→台反查 | 有 | 無 | 無 |
+| 網頁工具 | 試拍、練習、轉換、詞彙、文法 | 無 | 無 |
+
+## 開發
+
+```bash
+uv sync                                   # Python 依賴
+./scripts/download_resources.sh           # 外部資料（約 2GB）
+uv run python scripts/build_all.py        # 建字典
+./install.sh                              # 本機安裝
+
+uv run pytest                             # 日常測試（真 librime 整合測試另外 -m real_rime）
+uv run ruff check scripts/ tests/
+python3 -m http.server 8000 --directory docs   # 網站本機預覽
+```
+
+詳細的專案規範佇 [AGENTS.md](AGENTS.md)，技術規劃佇 [PLAN.md](PLAN.md)。
+
+### 目錄
+
+```
+schema/        Rime 方案（主方案、Telex、主字典、LKK 漢羅規則、輕聲規則、教育部 700 字）
+lua/           Lua 擴充模組（21 個）
+opencc/        Emoji 詞語候選資料（rime-emoji）
+rime.lua       Lua 模組註冊（舊版 librime 相容）
+scripts/       資料處理腳本；scripts/thak/ 是網頁工具的資料管線
+docs/          網站：首頁、try/ 試拍佮練習、convert/ vocab/ grammar/ 工具頁、使用說明
+tests/         pytest 測試（tests/js/ 是網頁練習的 node 測試）
+```
+
+## 資料來源佮致謝
+
+詞典資料逐來源標示授權，詳細見 [LICENSE](LICENSE) 佮 [AGENTS.md](AGENTS.md)。
+
+- [李江却台語文教基金會](https://www.tgb.org.tw/) — LKK 用字表，漢羅輸出的核心根據
+- [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 9 本辭典的開放資料
+- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、注音反查讀音、例句
+- [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料佮詞頻
+- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900 例句、NMTL 文學、白話字文獻
+- [luke871016/Taigi-Input-method-dictionary-supplement](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) — 教育部輸入法詞庫增補
+- [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
+- [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 長詞優先等 UX 參考
+- [rime/rime-emoji](https://github.com/rime/rime-emoji) — Emoji 候選資料（LGPL-3.0）
+- [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、KeSi POJ↔TL
+- [My RIME](https://github.com/LibreService/my_rime) — 網頁試拍的 Rime WebAssembly 引擎（AGPL-3.0-or-later）
+
+## 授權
+
+程式碼 MIT；詞典資料照各來源條款（含非商用來源），見 [LICENSE](LICENSE)。
+
+---
+
+## 華文說明
+
+[台文](#寫台文-siá-tâi-bûn) | **華文（臺灣）**
+
+寫台文是開源的 Rime 台語輸入法：白話字 POJ、台羅 TL 可以混打，聲調可以省略，預設依 LKK 用字規範輸出漢羅，候選區一律顯示讀音。專為「會說台語，但不太會打台文」的人設計——不必先選拼音系統、不必記漢羅規則，就能開始寫。
+
+> **快速入口**：[網站首頁](https://taigi.anatomind.com/) · [網頁試打（免安裝）](https://taigi.anatomind.com/try/) · [練習・考試](https://taigi.anatomind.com/try/#practice) · [使用說明](https://taigi.anatomind.com/guide.html) · [快速上手小卡](docs/quickstart-card.md)
+
+### 一個網站，一套詞典
+
+寫台文不只是輸入法。[taigi.anatomind.com](https://taigi.anatomind.com/) 上的各項功能都使用同一套詞典與轉換核心——你在轉換頁看到的讀音，就是輸入法候選裡的讀音。
+
+| 功能 | 網址 | 用途 |
+|------|------|------|
+| 安裝輸入法 | [#install](https://taigi.anatomind.com/#install) | Windows、macOS、Linux、Android，在任何軟體打台文 |
+| 網頁試打 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器裡就是真正的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
+| 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音打字、逐字標示對錯；考試只看漢羅，10 句計分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；紀錄存在你自己的瀏覽器 |
+| 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 與白話字 POJ（連讀變調、輕聲、點字換讀音），也能把 POJ／TL 轉回漢字；附用字與文法提示 |
+| 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 輸入台語詞或華語意思，查出 TL、POJ 與教典例句 |
+| 文法筆記 | [/grammar/](https://taigi.anatomind.com/grammar/) | 本站整理的台語文法筆記，以及 TGGL 語法點索引 |
+
+轉換、詞彙、文法原本是姊妹站「讀台文」，已於 2026 年 10 月併入本專案。
+
+### 安裝
+
+| 系統 | 安裝 | 需要先有 |
+|------|------|----------|
+| Windows | 下載 `PhahTaiBunSetup.exe` 雙擊安裝（沒有小狼毫會自動一起安裝 0.17.4，跳出一次系統管理員權限確認）；或先裝小狼毫，再執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 \| iex` | — |
+| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
+| Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
+| Android | 從 Releases 下載一鍵包——`PhahTaiBun-Trime.zip`（寫台文＋注音）或 `PhahTaiBun-Trime-liur.zip`（再加嘸蝦米）——解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](docs/android.md) | 同文 Trime，或小企鵝 fcitx5-android＋RIME 外掛 |
+
+安裝後先把系統輸入法切到小狼毫／鼠鬚管，再按 `F4`（或 `` Ctrl+` ``）確認方案清單中有「寫台文(台)」。macOS 不提供 `.pkg`（無法驗證 Gatekeeper／notarize），請用上方指令，或把 `schema/`、`lua/`、`rime.lua` 複製到 `~/Library/Rime/` 後重新部署。
+
+Windows PowerShell 指令為互動式：詢問要裝寫台文、嘸蝦米（`rime-liur`）或兩者；修改設定前先把 `default.custom.yaml` 備份為 `default.custom.yaml.backup-<時間戳>`；並詢問要保留哪些既有方案（含注音 `bopomofo`）。非互動執行可設環境變數 `PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）與 `PHAH_TAIBUN_PROJECT_ROOT`。
+
+### 更新寫台文
+
+- **Windows**：重新下載 `PhahTaiBunSetup.exe` 覆蓋安裝，或重新執行 PowerShell 指令。
+- **macOS**：重新執行 `curl … install_macos.sh | bash`。
+- **Linux**：`cd rime-phah-taibun && git pull --ff-only && ./install.sh`
+- **Android**：用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署，見[Android 部署](docs/android.md)。
+
+更新會保留自訂詞庫、其他 Rime 方案與設定，只更新正式的寫台文方案、字典、規則與 Lua 模組，最後自動重新部署。輸出模式（TL/POJ、漢羅/全羅）會被記住。
+
+### 三分鐘上手
+
+不用打聲調，TL 與 POJ 可以混打：
+
+```text
+gua beh khi tshit tho  →  我 beh 去 tshit-thô
+tsiah png              →  食飯
+chiah png              →  食飯
+tai uan                →  臺灣 / 台灣
+```
+
+候選區會顯示讀音，例如 `食飯 [tsia̍h-pn̄g]`。想更精準時再補聲調數字：`ho2`、`tai5 uan5`。另有可選的 **「寫台文(Telex)」** 方案（`F4` 切換），用字母鍵標調：`taidfgiv` → 台語、`ziahv` → 食。
 
 | 按鍵 | 用途 |
 |------|------|
 | `Space` | 確認候選 |
 | `Tab` | 候選出現時進入 asdf 選字；打字中跳下一音節 |
 | `F4` / `` Ctrl+` `` | 開 Rime 方案選單，切換漢羅/全羅、TL/POJ、自動/手動漢羅 |
-| `Ctrl+Space` | 台文/英文模式 |
+| `Ctrl+Space` | 台文／英文模式（英文候選未內建；按 `Ctrl+Space` 切至英文模式） |
 | `~` | 注音反查華語，再轉台語候選 |
 | `?` | 萬用查字，例如 `?iah` |
-| `[` / `]` | 候選選單翻頁 |
+| `[` / `]` | 候選翻頁 |
 | `\` | 目前候選改用另一種輸出形式 |
 
-更多按鍵可直接打 `vvh`，或看 [快速上手小卡](docs/quickstart-card.md)。
+更多按鍵可直接打 `vvh`，或看[快速上手小卡](docs/quickstart-card.md)與[完整使用說明](docs/user-guide.md)。
 
-## 特色
+### 特色
 
-- **漢羅混寫**：依 LKK 李江却用字規範，自動輸出漢字+羅馬字混寫
-- **POJ/TL 雙系統**：打 `tsiah` (TL) 或 `chiah` (POJ) 都能輸入「食」
+- **漢羅混寫**：依 LKK 李江却用字規範自動輸出漢字＋羅馬字；另有「手動漢羅」，用 `Tab`＋`\` 自行標記哪個詞寫羅馬字
+- **POJ／TL 雙系統**：`tsiah`（TL）、`chiah`（POJ）都能找到「食」
 - **聲調可省略**：打 `gua beh khi` 就能找到「我 beh 去」
-- **進階 Telex 調鍵**：`寫台文(Telex)` 方案用 `d`/`v`/`x`/`y`/`w`/`q` 補調（`x`＝選配的 1／4 調）、`z`/`zh` 簡寫聲母，與主方案共用詞典
-- **連字符輸入**：可直接輸入 `tsng-kio5`、`kio3--i` 這類連字符與輕聲標記
-- **拼音註解**：候選區永遠顯示讀音，邊打邊學
-- **多種輸出模式**：漢羅TL、漢羅POJ、全羅TL、全羅POJ 一鍵切換；另有手動漢羅開關，自己標記哪個詞寫羅馬字
-- **注音反查（華→台）**：不知道台語怎麼講？用注音打華語，選字後自動轉成台語候選
-- **萬用查字**：拼音不確定？用 `?` 代替，先選音節再選字（二段式）
-- **同音選字**：輸入後按 `'` 查同音字
-- **造詞模式**：按 `;` + 拼音直接查字典選字
-- **翻頁**：`[`／`]` 在任何候選選單一律翻頁（含詞典候選第 1 頁）
-- **長詞優先**：自動提升多字詞排序，減少逐字選字
-- **逐音節組字**：字典查無的詞組（如 `kio-tiann`）與短句可整串輸入，候選自動逐音節組合；用 `-` 明確斷音節，逐字選出想要的字——選字即選調
-- **個人化學習**：記住你選過的字詞，常用的自動排前面；不會自動把輸入歷史存成新詞（使用者字典只學你選過的）。選錯想忘記時，多數前端可在反白該候選時按 `Shift+Delete` 移除
-- **推薦用字標記**：候選區顯示 ◆（推薦漢字）和 ★（推薦羅馬字），依 LKK 規範及教育部700字標示
-- **輕聲自動辨識**：自動產生輕聲候選（如「轉--來」「食--飽」），29K+ 輕聲詞條 + 即時輕聲建議
-- **228,763 詞條**：整合 ChhoeTaigi 9 本辭典、教育部 KipSutian 詞目、TL/POJ 全羅候選與 7 語料庫頻率加權，涵蓋日常到文學用語
-- **人工詞庫增補**：build pipeline 可納入建中的教育部臺灣台語輸入法詞庫增補檔，補強政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞
-
-## 使用範例
-
-### 基本輸入
-
-```
-輸入: gua beh khi tshit tho
-候選: 我 beh 去 tshit-thô  [guá beh khì tshit-thô]
-送出: 我 beh 去 tshit-thô
-```
-
-漢羅混寫自動處理：「我」「去」輸出漢字，「beh」「tshit-thô」依 LKK 規範輸出羅馬字。
-
-<p align="center">
-  <a href="https://taigi.anatomind.com/demo/demo-part2.mp4" title="看示範影片：選字與候選"><img src="docs/demo/demo-part2-poster.png" alt="寫台文打字示範：選字與候選（點圖播放影片）" width="600"></a>
-</p>
-
-### POJ / TL 都可以打
-
-```
-TL 輸入:  tsiah png  → 食飯
-POJ 輸入: chiah png  → 食飯（同樣結果）
-
-TL 輸入:  gua ai li  → 我愛你
-POJ 輸入: goa ai li  → 我愛你（同樣結果）
-```
-
-### 聲調完全可省
-
-```
-完整拼音: gua2 beh4 khi3  → 我 beh 去
-省略聲調: gua beh khi     → 我 beh 去（同樣結果）
-
-加聲調更精準:
-to  → 多(1聲)、倒(2聲)、度(7聲)...（列出所有聲調）
-to1 → 多、刀...（只列出第1聲）
-```
-
-### 注音反查（華→台）
-
-按 `~` 進入反查模式，用注音找華語字，選字後自動轉成台語：
-
-![注音反查](docs/注音反查.png)
-
-```
-~ㄔ → 選「吃」→ 自動查到台語 tsiah8 → 出現「食」候選
-~ㄏㄠˇ → 選「好」→ 自動查到台語 ho2 → 出現「好」候選
-```
-
-即使華語字不在台語字典裡（如「吃」→台語用「食」），內建 77K 筆華→台對照表也能正確轉換。
-
-### 萬用查字 `?`（二段式）
-
-不確定聲母？用 `?` 代替，先選音節再選字：
-
-![萬用查字](docs/wildcard-lookup.png)
-
-```
-Step 1: ?iah → 列出可能的音節：
-        tsiah (18字), siah (9字), liah (12字), giah (8字)...
-Step 2: 選 tsiah → 出現所有 tsiah 的字：
-        食、炸、即、脊、隻...
-```
-
-### 同音選字 `'`
-
-輸入後按 `'` 查看同音字：
-
-![同音選字](docs/同音選字.png)
-
-```
-打 ho2 → 選「好」→ 按 ' → 顯示所有 ho2 的字
-```
-
-### 造詞模式 `;`
-
-按 `;` + 拼音直接查字典：
-
-```
-;tsiah → 食、炸、即、脊、隻... (從字典查詢)
-```
-
-### 輕聲（Light Tone）
-
-台語的輕聲會改變語意。輸入法自動辨識並提供輕聲候選：
-
-```
-輸入: au jit
-候選: 後日 [āu-ji̍t]        ← 以後、將來
-      後--日 [āu--ji̍t]     ← 後天（輕聲變體，自動產生）
-
-輸入: tng lai
-候選: 轉來 [tńg-lâi]       ← 回來
-      轉--來 [tńg--lâi]    ← 回來（輕聲）
-```
-
-**輕聲規則**：台語中某些後綴詞（如「來」「去」「起來」等）在特定語法位置會失去原調，以 `--` 標記。例如：
-
-| 原詞 | 輕聲形式 | 意思差異 |
-|------|---------|---------|
-| 後日 āu-ji̍t | 後--日 āu--ji̍t | 以後 → 後天 |
-| 轉來 tńg-lâi | 轉--來 tńg--lâi | 回來（強調動作 → 輕聲語法） |
-| 食飽 tsia̍h-pá | 食--飽 tsia̍h--pá | 吃飽（結果補語） |
-
-輕聲候選來自兩個來源：
-1. **字典內建**：29,000+ 筆輕聲詞條，從 7 個語料庫自動擷取
-2. **即時產生**：根據 111 條輕聲規則（教育部資料），動態為候選詞加上輕聲變體
-
-若你已經知道輕聲位置，也可以直接打 `--`，例如 `kio3--i`。在全羅 TL/POJ 模式中按 `Enter` 會照你輸入的音直接送出帶調符羅馬字，不會強迫選候選。
-
-### 羅馬字原文候選（字典沒有的詞）
-
-人名、地名、新詞字典裡常常沒有。這時不用切到全羅模式——候選清單**最後永遠有一個「羅馬字原文」候選**，照你打的音轉成帶調符的羅馬字，任何模式（含預設漢羅）都能直接選用：
-
-```
-輸入: tsng-kio5  → 候選最後出現： Tsng-kiô 〔羅馬字原文〕
-輸入: kio3--i    → 候選最後出現： Kiò--i  〔羅馬字原文〕   ← 保留 -- 輕聲
-POJ 模式 goa2-kio5 → 候選最後出現： Góa-kiô 〔羅馬字原文〕
-```
-
-- 支援 `-` 音節連字符與 `--` 輕聲標記，數字調自動轉成 Unicode 調符。
-- 首字母大小寫跟著你的輸入：句首或先按 `Shift` 打首字母會大寫（適合人名地名），否則維持小寫。
-- 注音反查 `~`、萬用查字 `?`、造詞 `;`、說明 `vv*` 等特殊模式下不會出現。
-- 可在方案設定關閉：`phah_taibun_origin/enabled: false`。
-
-### 輸出模式切換
-
-按 `F4` 切換：
-
-| 模式 | 輸出範例 |
-|------|---------|
-| 漢羅 TL | 我 beh 去 tshit-thô |
-| 漢羅 POJ | 我 beh 去 chhit-thô |
-| 全羅 TL | guá beh khì tshit-thô |
-| 全羅 POJ | goá beh khì chhit-thô |
-| 手動漢羅 TL（標記 beh） | 我 beh 去（`Tab`＋`\` 標記的詞輸出羅馬字，其餘漢字） |
-
-模式選擇會被記住——重新部署、重開機後不用重選；要換模式時再按 `F4` 開選單即可。
-
-全羅模式下，`Space` 仍會確認目前候選；`Enter` 可直接送出你正在輸入的羅馬字音。這適合人名、地名或字典還沒有的詞，例如輸入 `tsng-kio5` 後按 `Enter` 可直接送出 `Tsng-kiô`，也可以從候選選 `磚橋`。
-
-### 推薦用字標記
-
-候選區的註解會顯示推薦用字標記，幫助你選擇正確的書寫方式：
-
-```
-輸入: tsiah
-候選: 食 ◆ [tsiah8]     ← ◆ 推薦用漢字
-
-輸入: beh
-候選: beh ★ [beh4]      ← ★ 推薦用羅馬字
-```
-
-| 標記 | 意義 | 來源 |
-|------|------|------|
-| ◆ | 推薦用漢字 | LKK 用字規範（type: han）或教育部700字 |
-| ★ | 推薦用羅馬字 | LKK 用字規範（type: lo） |
-
-標記只出現在候選區註解，不影響輸出文字。可在方案設定中關閉：
-
-```yaml
-phah_taibun_recommend:
-  enabled: false
-```
-
-### 符號選單
-
-按 `` ` `` (反引號) 開啟符號選單，共 50 類分類，輸入兩位數字直達（如 `` `25 `` 性別、`` `46 `` 星星）；按 `` `e `` 瀏覽 Emoji 分類（`` `e1 `` 笑臉與情感…，Unicode 官方分群）：
-
-
-- 台羅調號：á à â ā a̍
-- POJ 特殊字母：o͘ ⁿ
-- 台文標點：、。「」『』
-
-### 調符位置（Tone Diacritic Placement）
-
-全羅模式輸出時，聲調符號自動標在正確的母音上，遵循[教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf)規則：
-
-**TL 規則**：`a > oo > e > o`；`i` 和 `u` 同時出現時標在後者。
-
-| 拼音 | 調符位置 | 說明 |
-|------|---------|------|
-| `gua2` | guá | 有 a → 標在 a |
-| `ue2` | ué | 有 e → 標在 e |
-| `io2` | ió | 有 o → 標在 o |
-| `ui7` | uī | i,u 同時出現 → 標在後者 i |
-| `iu5` | iû | i,u 同時出現 → 標在後者 u |
-| `oo7` | ōo | oo 標在第一個 o |
-
-**POJ 差異**：部分韻母的調符位置與 TL 不同：
-
-| 韻母 | TL | POJ | 說明 |
-|------|-----|-----|------|
-| oa 開音節 | guā | gōa | 標 o |
-| oa 有韻尾 | kuán | koán | 標 a |
-| oa + ⁿ | khuàⁿ | khòaⁿ | 鼻化視同開音節，標 o |
-| oe | hué | hōe | 標 o |
-| ui | uī | ūi | 標前者 u |
-| iu | iû | îu | 標前者 i |
-
-### 台語日期
-
-```
-vvjit  → 2026年3月15 拜六
-       → 2026 nî 3 gue̍h 15 Pài-la̍k
-       → 2026-03-15
-```
-
-## 安裝
-
-### 安裝需求
-
-- **macOS**：鼠鬚管 ([Squirrel](https://github.com/rime/squirrel/releases))
-- **Windows**：小狼毫 ([Weasel](https://github.com/rime/weasel/releases))
-- **Linux**：fcitx5-rime 或 ibus-rime
-- **Android**：同文 Trime 或 fcitx5-android + RIME 外掛；用 Releases 的 `PhahTaiBun-Trime.zip` 一鍵包，見[Android 部署](docs/android.md)
-
-### 一般使用者：Windows 安裝包／macOS 指令
-
-從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載 Windows 安裝包；macOS 用指令：
-
-| 系統 | 方式 | 說明 |
-|------|------|------|
-| Windows | `PhahTaiBunSetup.exe` | 雙擊安裝。尚未安裝小狼毫時，安裝包會自動安裝小狼毫 0.17.4（跳一次系統管理員權限確認）。失敗時看 `%LOCALAPPDATA%\Phah Tai-bun\install.log`。 |
-| macOS（best-effort，維護者未實機測試） | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 先裝鼠鬚管。也可 `git clone` 後 `./install.sh`，或複製 `schema/`、`lua/`、`rime.lua` 到 `~/Library/Rime/`。 |
-
-Windows 安裝包會保留既有 Rime 輸入法、自訂詞庫和 `rime.lua`。使用者仍在系統輸入法選單選小狼毫/鼠鬚管，再在 Rime 方案清單選「寫台文(台)」。
-
-### 進階使用者：指令安裝
-
-#### macOS
-
-打開終端機 (Terminal)，輸入以下指令：
-```bash
-curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash
-```
-
-#### Windows
-
-先安裝[小狼毫 (Weasel)](https://github.com/rime/weasel/releases)，然後打開 PowerShell，輸入以下指令：
-```powershell
-irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex
-```
-
-指令安裝是互動式的：
-
-- **選方案**：`1` 寫台文、`2` 嘸蝦米（`rime-liur`）、`3` 兩者（預設，直接按 Enter）。選到嘸蝦米時再選完整版（含英文詞庫）或基礎版。
-- **先備份**：動任何設定前，把 `default.custom.yaml` 複製成 `default.custom.yaml.backup-<時間戳>`。
-- **保留既有輸入法**：列出目前的方案清單，讓你挑要保留哪些（Enter＝全部保留）；若清單裡沒有注音 `bopomofo`，會問要不要一併留下。
-- **只追加不取代**：既有方案清單與自訂詞庫不會被蓋掉。嘸蝦米檔案即時從 [soanseng/rime-liur-arch](https://github.com/soanseng/rime-liur-arch) 下載（第三方方案，授權依原 repo）。
-- **跟最新版、不重抓**：寫台文資產自動抓 GitHub 最新 release（查詢失敗才退回腳本內建版本號）；嘸蝦米檔案已存在且大小與遠端相同會直接跳過，重跑不必重新下載幾十 MB。
-
-要非互動執行（自動化）可設環境變數：`PHAH_TAIBUN_SCHEMAS`（`phah`／`liur`／`both`）與 `PHAH_TAIBUN_PROJECT_ROOT`（指向含 `schema/`、`lua/` 的目錄）。雙擊安裝的 `PhahTaiBunSetup.exe` 以 `PHAH_TAIBUN_SCHEMAS=phah` 非互動執行。
-
-腳本刻意**不存 BOM、也不放頂層 `param()`**：BOM 會被 GitHub raw 與 `irm` 一路帶進 `iex`，黏在第一個 token 上造成解析失敗（`At line:6 char:28 ... $ProjectRoot = "",`）。打包安裝器因此改用「以 UTF-8 讀檔後 iex」的方式執行，與單行安裝同一條路徑，參數改用環境變數傳遞。
-
-#### Linux
-
-```bash
-git clone https://github.com/soanseng/rime-phah-taibun.git
-cd rime-phah-taibun
-./install.sh
-```
-
-腳本會自動偵測 fcitx5-rime 或 ibus-rime，下載方案檔案、Lua 模組、芫荽字體，並觸發 Rime 重新部署。
-
-### 更新寫台文
-
-- **Windows 安裝包**：到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 覆蓋安裝。
-- **Windows PowerShell／macOS 終端機**：重新執行上方原本的安裝指令。
-- **Linux**：在既有專案目錄更新原始碼後重跑安裝器：
-
-```bash
-cd rime-phah-taibun
-git pull --ff-only
-./install.sh
-```
-
-- **Android**：用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署（或只覆蓋正式方案檔與 `lua/phah_taibun_*.lua`），見[Android 部署](docs/android.md)。
-
-更新會保留自訂詞庫、其他 Rime 輸入方案與設定，更新正式的寫台文 schema、主字典、規則檔和 Lua 模組，最後自動重新部署 Rime。若你直接修改過正式的 `phah_taibun` 檔案，請先備份；長期自訂建議使用 Rime custom patch 或自訂詞庫。
-
-0.4.0 起，你選過的輸出模式（TL/POJ、漢羅/全羅）會被記住，重開機／重新部署後不用重選；既有安裝只需重跑一次安裝指令（會把這兩個開關加進 `default.custom.yaml` 的 `switcher/save_options`），安裝器會自動重新部署。
-
-### 手動安裝
-
-1. 從 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載 zip 並解壓
-2. 將 `schema/` 內的檔案複製到 Rime 使用者資料夾：
-   - **macOS**：`~/Library/Rime/`
-   - **Windows**：`%AppData%\Rime\`
-   - **Linux (fcitx5)**：`~/.local/share/fcitx5/rime/`
-   - **Linux (ibus)**：`~/.config/ibus/rime/`
-   - **Android**：同文或 fcitx5-android 的 Rime 使用者資料夾，見[Android 部署](docs/android.md)
-3. 將 `lua/` 內的檔案複製到 Rime 使用者資料夾的 `lua/` 子目錄
-4. 將 `rime.lua` 複製到 Rime 使用者資料夾根目錄（若已有 `rime.lua`，將內容追加合併）
-5. 重新部署 Rime
-
-### 建議字體
-
-安裝 [芫荽 iansui](https://github.com/ButTaiwan/iansui) 可獲得最佳台文顯示效果（方音符號、特殊台文漢字）。安裝腳本會自動下載；也可從 [Releases](https://github.com/ButTaiwan/iansui/releases) 手動下載 `iansui.zip`。
-
-安裝字體後，設定輸入法候選區使用 iansui：
-
-<details>
-<summary>Windows 小狼毫 weasel.custom.yaml</summary>
-
-```yaml
-patch:
-  style/font_face: "Iansui"
-  style/font_point: 14
-```
-</details>
-
-<details>
-<summary>macOS 鼠鬚管 squirrel.custom.yaml</summary>
-
-```yaml
-patch:
-  style/font_face: "Iansui"
-  style/font_point: 18
-```
-</details>
-
-<details>
-<summary>Linux fcitx5 classicui.conf</summary>
-
-在 `~/.config/fcitx5/conf/classicui.conf` 加入：
-```
-Font="Iansui 12"
-```
-</details>
-
-## 快捷鍵
-
-| 按鍵 | 功能 | 說明 |
-|------|------|------|
-| `Ctrl+Space` | 台文/英文切換 | 切換台文和英文輸入模式 |
-| `Tab` | 選字模式 / 音節跳轉 | 候選出現時：進入選字模式（asdf 選字，數字鍵保留給聲調）；否則：跳到下一個音節 |
-| `Shift+字母` | 大寫字母 | 打大寫字母（不會切換到英文模式） |
-| `F4` | 方案選單 | 切換輸出模式（漢羅TL/漢羅POJ/全羅TL/全羅POJ／自動/手動漢羅） |
-| `~` | 注音反查 | 用注音打華語→自動轉台語候選 |
-| `,` `.` | 全形標點直出 | 組字中或空白時：`,`→「，」、`.`→「。」；全羅模式輸出半形。不翻頁（翻頁用 `[` `]`） |
-| `(` `)` `/` `_` `<` `>` `"` | 自動上屏標點 | 漢羅：（ ） 、 —— 《 》；`"` 交替“ ”。全羅模式輸出半形 |
-| `` ` `` | 符號選單 | 台羅調號、台文標點 |
-| `?` | 萬用查字 | 二段式：先選音節再選字 |
-| `;` | 造詞模式 | 查字典選字（;拼音） |
-| `'` | 同音選字 | 輸入後按 ' 查同音字 |
-| `vvh` | 按鍵說明 | 在候選區顯示所有快捷鍵 |
-| `vvjit` | 台語日期 | 輸出今天日期（漢字/羅馬字/ISO） |
-| `vvsp` | 簡拼對照 | 顯示聲母縮寫對照表 |
-| `[` | 翻頁（上一頁） | 所有候選選單一律翻頁 |
-| `]` | 翻頁（下一頁） | 所有候選選單一律翻頁 |
-| `\` | 切換輸出 | 漢羅模式→輸出全羅；全羅模式→輸出漢羅 |
-| `Enter` | 直接送出輸入音 | 全羅模式下照目前 TL/POJ 拼音送出，保留 `-` / `--` |
-| `Ctrl+Backspace` | 刪除音節 | 刪除前一個音節 |
-
-## 疑難排解
-
-### 安裝後找不到「寫台文」方案
-
-1. 確認系統輸入法已切到 fcitx5-rime / ibus-rime，再點進文字欄位
-2. 確認已重新部署 Rime
-3. 按 `F4`（或 `` Ctrl+` ``）查看方案清單，確認「寫台文(台)」或「寫台文(Telex)」在列表中
-4. 檢查 `~/.local/share/fcitx5/rime/default.custom.yaml` 是否包含 `phah_taibun`
-
-### 候選區沒有顯示拼音註解
-
-確認 Lua 模組已正確安裝：
-```bash
-ls ~/.local/share/fcitx5/rime/lua/phah_taibun_*.lua
-```
-應該要有 21 個 `phah_taibun_*.lua` 檔案。
-
-### 注音反查 `~` 沒有反應
-
-反查依賴 `bopomofo_tw` 方案，確認已安裝：
-```bash
-ls /usr/share/rime-data/bopomofo_tw.schema.yaml
-```
-
-若未安裝，安裝 `librime-data` 套件：
-```bash
-# Arch Linux
-sudo pacman -S librime-data
-
-# Ubuntu/Debian
-sudo apt install librime-data-bopomofo
-```
-
-### Lua 錯誤導致候選區異常
-
-查看 Rime 日誌：
-```bash
-cat /tmp/rime.*.INFO | grep -i "lua\|error"
-```
-
-若出現 Lua 載入錯誤，確認 `rime.lua` 已安裝到 Rime 使用者目錄根：
-```bash
-cat ~/.local/share/fcitx5/rime/rime.lua | grep phah_taibun
-```
-
-### 重新安裝
-
-```bash
-cd rime-phah-taibun
-./install.sh
-```
-
-安裝腳本會更新所有檔案（不會覆蓋你的自訂詞庫）。
-
-## 目錄結構
-
-```
-schema/                        Rime 方案檔（安裝到 Rime 使用者目錄）
-  phah_taibun.schema.yaml        方案定義（speller algebra、engine 設定）
-  phah_taibun_telex.schema.yaml  進階 Telex 調鍵方案（共用主字典）
-  phah_taibun.dict.yaml           主字典（228,763 條目）
-  hanlo_rules.yaml                LKK 漢羅分類規則
-  lighttone_rules.json            輕聲規則
-  moe700.yaml                     教育部推薦700字台語漢字
-  default.custom.yaml             Rime 方案註冊
-lua/                           Lua 擴充模組(21 個)
-  phah_taibun_filter.lua          核心：漢羅轉換 + 輸出模式切換 + 調符顯示
-  phah_taibun_input.lua           大寫攔截 + Tab 選字模式
-  phah_taibun_commit.lua          全羅輸出處理器 + \ 強制羅馬字
-  phah_taibun_data.lua            漢羅規則載入器 + MOE 700字 + 聲調調符轉換 + 共用工具
-  phah_taibun_lookup.lua          TL+POJ 雙標註
-  phah_taibun_recommend.lua       推薦用字標記（◆ 漢字 / ★ 羅馬字）
-  phah_taibun_long_word.lua       長詞優先排序
-  phah_taibun_learn.lua           學習排序：常用詞提升（飽和 + 時間衰減）
-  phah_taibun_lighttone.lua       輕聲候選產生
-  phah_taibun_wildcard.lua        萬用字元 ?
-  phah_taibun_symbols.lua         符號選單
-  phah_taibun_help.lua            按鍵說明
-  phah_taibun_emoji_menu.lua     Emoji 分類瀏覽（`e）
-  phah_taibun_date.lua            台語日期
-  phah_taibun_origin.lua          字典外羅馬字原文候選
-  phah_taibun_synonym.lua         文白讀切換（尚未啟用）
-  phah_taibun_speedup.lua         簡拼對照
-  phah_taibun_reverse_format.lua  反查讀音調符格式化
-  phah_taibun_telex.lua           寫台文(Telex) 調鍵正規化
-opencc/                        Emoji 詞語候選資料（rime-emoji）
-rime.lua                       Lua 模組註冊（舊版 librime 相容）
-scripts/                       Python 資料處理腳本
-tests/                         pytest 測試
-```
-
-## 開發
-
-### 從原始資料重新建置
-
-若需要修改字典內容或更新詞頻：
-
-```bash
-# 安裝 Python 依賴
-uv sync
-
-# 下載外部資料（21 個語言資源，約 2GB）
-./scripts/download_resources.sh
-
-# 建置字典
-uv run python scripts/build_all.py
-
-# 重新安裝
-./install.sh
-```
-
-### 測試
-
-```bash
-uv run pytest                                          # 跑測試
-uv run pytest --cov=scripts --cov-report=term-missing  # 含覆蓋率
-uv run ruff check scripts/ tests/                      # Lint
-uv run ruff format scripts/ tests/                     # 格式化
-```
-
-### 新增 Lua 模組
-
-1. 建立 `lua/phah_taibun_xxx.lua`（回傳 `{init, func}` table）
-2. 在 `rime.lua` 加入 `phah_taibun_xxx = require("phah_taibun_xxx")`
-3. 在 `schema/phah_taibun.schema.yaml` 的 engine 區加入對應的 `lua_translator` 或 `lua_filter`
-4. 執行 `./install.sh` 部署
-
-## 資料來源
-
-| 資料 | 用途 |
-|------|------|
-| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（9 本辭典 CSV） |
-| [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
-| [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 主字典、TL/POJ 全羅候選、注音反查讀音、例句語料 |
-| [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 詞頻統計（57K 詞） |
-| [Ungian 2009](https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin) | 文學語料詞頻（93K 詞） |
-| [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻（1K 詞） |
-| [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙（2.8K 詞） |
-| [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料（2K+ 篇） |
-| [KipSutian 辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 例句語料 + 主字典 + 注音反查讀音 |
-| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料（POJ→TL 轉換） |
-| [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
-| [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
-| [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) | 政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞 |
-| [教育部台羅拼音方案使用手冊](https://language.moe.gov.tw/001/Upload/FileUpload/3677-15601/Documents/tshiutsheh_1081017.pdf) | 調符標記規則、羅馬字書寫規範 |
-| [台語文拍字練習](https://kiantiong.com/taigi_typing/) | 線上台語打字練習，開發時用於驗證調符顯示與輸出效果 |
-| [rime-liur](https://github.com/ryanwuson/rime-liur) | Lua 模組架構參考 |
-| [rime-ice](https://github.com/iDvel/rime-ice) | UX 功能參考（長詞優先） |
-| [rime-emoji](https://github.com/rime/rime-emoji) | Emoji 候選資料（opencc 詞庫，LGPL-3.0） |
-
-## 致謝
-
-- [李江却台語文教基金會](https://www.tgb.org.tw/) — 漢羅用字規範（LKK 用字表），為本方案的漢羅混寫輸出提供核心依據
-- [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 整合多本辭典的開放資料平台
-- [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
-- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、注音反查讀音與例句語料資料
-- [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料庫與詞頻資料
-- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900例句、NMTL 文學、白話字文獻等語料
-- [意傳科技 i3thuan5](https://github.com/i3thuan5) — 臺灣言語工具、分詞邏輯參考
-- [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 長詞優先等 UX 功能參考
-
-## 與其他台語輸入法的比較
-
-目前桌面版台語輸入法主要有三套：
+- **整句輸入**：整句羅馬字打完按空白鍵送出，中途可用 `Tab` 選字
+- **候選標示讀音**：邊打邊學；◆ 推薦漢字、★ 推薦羅馬字（LKK 規範、教育部 700 字）
+- **注音反查（華→台）**：用注音打華語，選字後自動轉成台語候選（內建 7.7 萬筆華台對照）
+- **萬用查字 `?`、同音選字 `'`、造詞 `;`**
+- **輕聲**：自動產生輕聲候選，2.9 萬筆以上輕聲詞＋111 條規則
+- **字典外的詞**：候選最後永遠有「羅馬字原文」候選
+- **標點、符號、Emoji**：漢羅模式全形標點；`` ` `` 開 50 類符號，`` `e `` 瀏覽 Emoji
+- **228,763 詞條**：ChhoeTaigi 9 本辭典、教育部辭典、7 個語料庫詞頻加權，以及教育部輸入法詞庫增補、學科術語、臺灣地名
+
+### 與其他台語輸入法比較
 
 | 功能 | 寫台文 | 信望愛台語輸入法 | 教育部台語輸入法 |
 |------|--------|-----------------|----------------|
-| **平台** | Linux / macOS / Windows | Windows / macOS | Windows / macOS / 手機 |
-| **Linux 支援** | fcitx5 + ibus | 無 | 無 |
+| **平台** | Linux / macOS / Windows / Android（Trime） | Windows / macOS | Windows / macOS / 手機 |
 | **開源** | MIT 授權 | 非開源 | 政府專案 |
-| **輸入法引擎** | Rime（可自訂） | 自有引擎 | 自有引擎 |
-| **拼音系統** | TL + POJ 雙系統 | TL + POJ | TL（自動轉換 POJ） |
+| **拼音系統** | TL＋POJ 混打 | TL＋POJ | TL（自動轉換 POJ） |
 | **聲調** | 完全可省略 | 需輸入 | 需輸入 |
-| **漢羅混寫輸出** | 自動（LKK 規範） | 有 | 無（只有純漢字或純羅馬字） |
-| **字典規模** | 228,763 條目 | 未公開 | ~24K 條目 |
-| **語料庫詞頻** | 7 語料庫加權 | 無 | 基本頻率 |
+| **漢羅混寫輸出** | 自動（LKK 規範）＋手動 | 有 | 無 |
+| **字典規模** | 228,763 條目 | 未公開 | 約 2.4 萬條目 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
-| **萬用查字** | ?（二段式） | 無 | 無 |
-| **同音選字** | ' 鍵 | 無 | 無 |
 | **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：詞語附加候選＋分類瀏覽（含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
-| **自訂擴充** | Lua 模組 | 無 | 無 |
+| **網頁工具** | 試打、練習、轉換、詞彙、文法 | 無 | 無 |
 
-### 寫台文的獨特優勢
+### 疑難排解
 
-1. **聲調可省略**：其他輸入法都要求輸入聲調數字，寫台文完全可以不打聲調
-2. **漢羅混寫自動化**：依 LKK 規範自動判斷哪些字用漢字、哪些用羅馬字，使用者不需要自己決定
-3. **華→台反查**：注音打華語字後，自動轉換成台語拼音再查台語字。內建 77K 筆對照表，即使「吃」→「食」這種不同字的轉換也能處理
-4. **語料庫加權**：整合 7 個台語語料庫的詞頻資料，常用詞排更前面
-5. **Linux 原生支援**：透過 fcitx5-rime 或 ibus-rime 使用同一套方案
-6. **完全開源可自訂**：Rime + Lua 架構，可以自己修改規則和功能
+- **找不到「寫台文」方案**：確認系統輸入法已切到 Rime、已重新部署，按 `F4` 查看清單。
+- **候選區沒有讀音註解**：Rime 使用者資料夾的 `lua/` 應有 21 個 `phah_taibun_*.lua`（Lua 擴充模組共 21 個）。
+- **注音反查 `~` 沒反應**：需要 `bopomofo_tw` 方案（Arch：`rime-bopomofo`＋`rime-terra-pinyin`；Debian/Ubuntu：`librime-data-*`）。
+- **重新安裝**：重新執行安裝指令，不會覆蓋自訂詞庫。
 
-### 適合誰用
+### 授權
 
-- **會講台語但不太會打台文**：聲調可省、漢羅自動，降低打字門檻
-- **台文寫作者**：LKK 漢羅規範、全羅模式、POJ/TL 切換
-- **台語學習者**：拼音註解、注音反查、萬用查字，邊打邊學
-- **Linux 使用者**：可透過 fcitx5-rime 或 ibus-rime 使用
-
-> 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 試試看，搭配寫台文輸入法一起使用，邊打邊熟悉台語拼音！
-
-<p align="center">
-  <a href="https://taigi.anatomind.com/demo/demo-part3.mp4" title="看示範影片：完成練習"><img src="docs/demo/demo-part3-poster.png" alt="寫台文打字示範：完成練習（點圖播放影片）" width="600"></a>
-</p>
-
-## TODO
-
-- [x] 製作 GIF 動畫教學（基本輸入、選字與候選、打字練習）
-- [ ] 製作功能特寫 GIF（輸出模式切換、注音反查、萬用查字等）
-- [ ] 文白讀切換功能（phah_taibun_synonym）
-
-## 授權
-
-詳見 [LICENSE](LICENSE)。
+程式碼採 MIT；詞典資料依各來源條款（含非商用來源），詳見 [LICENSE](LICENSE)。
