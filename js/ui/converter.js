@@ -172,16 +172,15 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
     applyDir($b.data("dir"));
     run();
   });
+  $("#cv-run").on("click", run);
+  $("#cv-hint").text(hintH2R()); // 初始載入就照 hasExt 顯示（preinit 方向佇後壁閣會覆寫）
+  $("#cv-in").on("input", () => {
+    if ($("#cv-live").prop("checked")) run();
+  });
   // 詞典載入中就點方向鈕（main.js 的 .preinit handler 已記方向、
   // 鈕仔視覺嘛有動）：init 了照用，並且收掉 preinit handler 避免雙重綁。
   $(".seg-btn[data-dir]").off("click.preinit");
   if (preDirIn && preDirIn !== "h2r") applyDir(preDirIn);
-
-  $("#cv-run").on("click", run);
-  $("#cv-hint").text(hintH2R()); // 初始載入就照 hasExt 顯示，毋免等方向切換
-  $("#cv-in").on("input", () => {
-    if ($("#cv-live").prop("checked")) run();
-  });
   $(".copy").on("click", (ev) => {
     const $b = $(ev.currentTarget);
     navigator.clipboard?.writeText($(`#${$b.data("copy")}`).text() ?? "");
