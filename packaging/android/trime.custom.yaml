@@ -1,4 +1,4 @@
-# trime.custom.yaml — 拍台文（Android / 同文 Trime 3.3.x）
+# trime.custom.yaml — 寫台文（Android / 同文 Trime 3.3.x）
 #
 # 由 scripts/build_trime_package.py 打包進 PhahTaiBun-Trime.zip；APK 路徑
 # (build_apk_assets) 同時放進本檔與上游基座 trime.upstream.yaml 複本 —
@@ -7,12 +7,12 @@
 #
 # 設計（2026-09-30 使用者定案）：
 #   1. 候選顯示「漢字＋拼音註解」（13sp；內建 10sp 太小）
-#   2. 拍台文方案（phah_taibun / phah_taibun_telex）專用鍵盤＝上游 26 鍵
+#   2. 寫台文方案（phah_taibun / phah_taibun_telex）專用鍵盤＝上游 26 鍵
 #      版面（無數字列、無功能列）：q..p 長按＝!@#$ 等符號、上滑＝數字
 #      1-0；a 長按＝全選；s 上/下滑＝上/下頁；z x c v 長按＝剪/複製/貼上
 #      （Trime 依方案 id 優先配對同名鍵盤，KeyboardWindow.smartMatchKeyboard）
 #   3. 其他方案（嘸蝦米/注音…）完全不動＝上游原版鍵盤
-#   4. 拍台文六功能改「中文(方案)鍵長按」彈出面板：
+#   4. 寫台文六功能改「中文(方案)鍵長按」彈出面板：
 #        選字(Tab)  羅(\)  TL/POJ  漢羅/全羅  方案選單  返回
 #   5. 退格鍵面改 <-
 #
@@ -31,7 +31,7 @@
 #   style/candidate_padding: 8
 patch:
   # ── 主題版本：bump 此值才會觸發 Trime 重新部署主題（升級路徑必備） ──
-  config_version: "3.3.12-ptaibun5"
+  config_version: "3.3.12-ptaibun6"
 
   # ── 候選註解（拼音）：對齊桌面版「漢字＋拼音」雙欄 ──
   style/comment_position: right
@@ -39,11 +39,11 @@ patch:
   style/candidate_view_height: 30
 
   # ── 退格鍵面（倒退箭頭） ──
-  name: 拍台文·數字列
+  name: 寫台文·數字列
 
   preset_keys/BackSpace/label: "←"
 
-  # ── 拍台文專用鍵（行為定義在 lua/ 與 schema key_binder） ──
+  # ── 寫台文專用鍵（行為定義在 lua/ 與 schema key_binder） ──
   preset_keys/Taigi_Tab: {label: 選字, send: Tab} #桌面 Tab: 整句連打逐詞選字 (asdf…)
   preset_keys/Taigi_Roman: {label: 羅, send: backslash} #桌面 \: 手動漢羅標記羅馬字
   preset_keys/Taigi_Poj: {label: TL/POJ, send: SWITCH_CHARSET, toggle: poj_mode, states: [TL, POJ]}
@@ -52,9 +52,9 @@ patch:
   preset_keys/Taigi_Back: {label: 返回, send: Eisu_toggle, select: .default}
   preset_keys/Taigi_Panel: {label: 台文, send: Eisu_toggle, select: taigi_panel}
 
-  # ── 拍台文面板（一列六鍵；寬度和 100） ──
+  # ── 寫台文面板（一列六鍵；寬度和 100） ──
   preset_keyboards/taigi_panel:
-    name: 拍台文
+    name: 寫台文
     ascii_mode: 0
     width: 10
     height: 44
@@ -69,9 +69,9 @@ patch:
     - {click: Taigi_Menu, width: 10}
     - {click: Taigi_Back, width: 10}
 
-  # ── 拍台文主鍵盤＝上游 26 鍵版面＋中文鍵長按開面板 ──
+  # ── 寫台文主鍵盤＝上游 26 鍵版面＋中文鍵長按開面板 ──
   preset_keyboards/phah_taibun:
-    name: 拍台文40鍵
+    name: 寫台文40鍵
     author: "osfans <waxaca@163.com>"
     ascii_mode: 0
     width: 10
@@ -174,7 +174,7 @@ patch:
       long_click: CommitComment
       width: 15
   preset_keyboards/phah_taibun_telex:
-    name: 拍台文Telex40鍵
+    name: 寫台文Telex40鍵
     author: "osfans <waxaca@163.com>"
     ascii_mode: 0
     width: 10

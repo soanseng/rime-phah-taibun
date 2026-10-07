@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 拍台文 Phah Tai-bun 自動安裝工具 (Linux / fcitx5 + ibus)
+# 寫台文 Siá Tâi-bûn 自動安裝工具 (Linux / fcitx5 + ibus)
 # 參考 soanseng/rime-liur-arch 的 rime_liur_installer_linux.sh
 # 從 bundle installer 呼叫時：bash install_linux.sh --project-root /path/to/staged/files
 
@@ -57,7 +57,7 @@ detect_rime() {
 # ============================================================
 echo
 echo "======================================"
-echo "  拍台文 Phah Tai-bun 自動安裝工具"
+echo "  寫台文 Siá Tâi-bûn 自動安裝工具"
 echo "  (Linux / fcitx5 + ibus)"
 echo "======================================"
 echo
@@ -104,9 +104,9 @@ installer_ask_what_to_install() {
     if [ -z "$schemas" ]; then
         if [ "$INSTALLER_IS_INTERACTIVE" = true ]; then
             echo "請選擇要安裝的輸入方案："
-            echo "  1. 拍台文（台語）"
+            echo "  1. 寫台文（台語）"
             echo "  2. 嘸蝦米（rime-liur）"
-            echo "  3. 拍台文 + 嘸蝦米（預設）"
+            echo "  3. 寫台文 + 嘸蝦米（預設）"
             printf '請輸入選項 (1/2/3，Enter=3)：'
             local choice=""
             read -r choice || true
@@ -217,7 +217,7 @@ installer_schema_ids() {
 }
 
 # 互動：列出方案清單，讓使用者挑要保留哪些（Enter=全部保留）；
-# 剛安裝的方案（拍台文／嘸蝦米）受保護，不會被剪掉。
+# 剛安裝的方案（寫台文／嘸蝦米）受保護，不會被剪掉。
 installer_keep_which_prompt() {
     [ "$INSTALLER_IS_INTERACTIVE" = true ] || return 0
     local dc="$RIME_DIR/default.custom.yaml"
@@ -347,7 +347,7 @@ installer_normalize_default_custom() {
                 if (L[i] ~ /switcher\/save_options/) hasopt = 1
                 if (L[i] ~ /^[[:space:]]*- schema:/) dash = 1
             }
-            emit("# default.custom.yaml — 拍台文安裝工具維護")
+            emit("# default.custom.yaml — 寫台文安裝工具維護")
             emit("#")
             emit("# 安裝工具只會「追加」設定，不會覆蓋內建方案與你的其他設定；")
             emit("# 原始內容在每次安裝前都會備份成 default.custom.yaml.backup-<時間戳>。")
@@ -582,7 +582,7 @@ if [ ${#EXISTING_SCHEMAS[@]} -gt 0 ]; then
         echo -e "  ${GREEN}•${NC} $s"
     done
     echo
-    echo -e "${GREEN}拍台文只會安裝 phah_taibun_* 檔案，不會覆蓋現有方案${NC}"
+    echo -e "${GREEN}寫台文只會安裝 phah_taibun_* 檔案，不會覆蓋現有方案${NC}"
 else
     echo -e "未偵測到現有方案（首次安裝）"
 fi
@@ -597,7 +597,7 @@ if [ -f "$RIME_DIR/default.custom.yaml" ]; then
         NEED_REGISTER=false
         echo -e "${GREEN}default.custom.yaml 已含 phah_taibun 方案，跳過註冊${NC}"
     else
-        echo -e "${YELLOW}偵測到現有的 default.custom.yaml，將追加拍台文方案（不會覆蓋現有設定）${NC}"
+        echo -e "${YELLOW}偵測到現有的 default.custom.yaml，將追加寫台文方案（不會覆蓋現有設定）${NC}"
     fi
 fi
 
@@ -694,7 +694,7 @@ if [ -f "$PROJ_DIR/rime.lua" ]; then
         cp -f "$RIME_DIR/rime.lua" "$RIME_DIR/rime.lua.bak"
         echo -e "  ${YELLOW}[備份]${NC} rime.lua → rime.lua.bak"
 
-        # 已有 rime.lua，追加尚未註冊的拍台文模組
+        # 已有 rime.lua，追加尚未註冊的寫台文模組
         MERGED=0
         while IFS= read -r line; do
             # 跳過空行和註解
@@ -856,7 +856,7 @@ fi
 echo
 
 if [ "$INSTALL_LIUR" = true ]; then
-    installer_install_liur || echo -e "${YELLOW}嘸蝦米安裝失敗，拍台文不受影響；可稍後重試${NC}"
+    installer_install_liur || echo -e "${YELLOW}嘸蝦米安裝失敗，寫台文不受影響；可稍後重試${NC}"
 fi
 
 # ============================================================
@@ -933,7 +933,7 @@ fi
 
 echo
 echo "======================================"
-echo -e "${GREEN}  拍台文 Phah Tai-bun 安裝完成！${NC}"
+echo -e "${GREEN}  寫台文 Siá Tâi-bûn 安裝完成！${NC}"
 echo "======================================"
 echo
 echo "Rime 框架：$RIME_FRAMEWORK"
@@ -950,7 +950,7 @@ for schema_file in "$RIME_DIR"/*.schema.yaml; do
     [ -f "$schema_file" ] || continue
     schema_name=$(basename "$schema_file" .schema.yaml)
     if [ "$schema_name" = "phah_taibun" ]; then
-        echo -e "  ${GREEN}•${NC} $schema_name（拍台文）← 新安裝"
+        echo -e "  ${GREEN}•${NC} $schema_name（寫台文）← 新安裝"
     else
         echo -e "  •  $schema_name"
     fi

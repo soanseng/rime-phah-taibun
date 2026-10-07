@@ -1,7 +1,7 @@
 # Rime schema
 # encoding: utf-8
 #
-# 拍台文・連打 — 整句連打逐詞選字（桌面長文用）
+# 寫台文・連打 — 整句連打逐詞選字（桌面長文用）
 #
 # 繼承 phah_taibun（__include 根，其餘鍵深度合併），只把 engine/processors
 # 的選字編輯器換回 fluency_editor：選字「確認進組字」累積成句，Enter／空白
@@ -15,7 +15,7 @@ __include: phah_taibun.schema.yaml:/
 
 schema:
   schema_id: phah_taibun_fluency
-  name: 拍台文・連打
+  name: 寫台文・連打
   version: "1.0"
 
 engine:

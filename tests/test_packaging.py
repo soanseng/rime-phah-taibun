@@ -20,7 +20,7 @@ def test_windows_inno_setup_runs_existing_powershell_installer():
     iss = read("packaging/windows/phah-taibun.iss")
     installer = read("install_windows.ps1")
 
-    assert "Phah Tai-bun" in iss
+    assert "寫台文 Siá Tâi-bûn" in iss
     assert "install_windows.ps1" in iss
     assert "powershell.exe" in iss
     assert "-ExecutionPolicy Bypass" in iss
@@ -113,7 +113,7 @@ def test_windows_setup_installs_pinned_verified_weasel_when_missing():
     assert "$env:WEASEL_SHA256" in workflow
     assert "RegKeyExists(HKLM32, 'SOFTWARE\\Rime\\Weasel')" in iss
     assert "ShellExec('runas'" in iss and "'/S /T'" in iss
-    # Weasel first, then the 拍台文 payload that needs WeaselDeployer.
+    # Weasel first, then the 寫台文 payload that needs WeaselDeployer.
     post = iss.split("ssPostInstall", 1)[1]
     assert post.index("InstallWeaselIfMissing();") < post.index("RunPhahTaiBunInstaller();")
     assert "WEASEL-SOURCE.txt" in iss and "weasel-LICENSE.txt" in iss
@@ -281,7 +281,7 @@ def test_shell_installers_match_windows_feature_set():
 
 
 def test_installers_ship_and_register_the_telex_schema():
-    """拍台文(Telex) must be shipped and registered like the main schema.
+    """寫台文(Telex) must be shipped and registered like the main schema.
 
     Existing users' default.custom.yaml already contains phah_taibun, so the
     main registration step skips; each installer needs its own append step for
@@ -410,7 +410,7 @@ def test_public_docs_explain_supported_update_paths_and_preservation():
     homepage = read("docs/index.html")
 
     for document in (readme, guide, quickstart, packaged, homepage):
-        assert "更新拍台文" in document
+        assert "更新寫台文" in document
     assert "git pull --ff-only" in readme
     assert "git pull --ff-only" in guide
     assert "PhahTaiBunSetup.exe" in packaged
@@ -444,7 +444,7 @@ def test_android_community_install_is_documented_without_apk():
 
 
 def test_windows_installer_offers_boshiamy_as_optional_schema_choice():
-    """irm|iex must let the user pick 拍台文 / 嘸蝦米 / both, from the public rime-liur-arch fork."""
+    """irm|iex must let the user pick 寫台文 / 嘸蝦米 / both, from the public rime-liur-arch fork."""
     installer = read("install_windows.ps1")
 
     assert "soanseng/rime-liur-arch" in installer
@@ -507,7 +507,7 @@ def test_windows_installer_normalizes_default_custom_with_comments():
 
     assert "function Convert-RimeDefaultCustom" in installer
     assert "Convert-RimeDefaultCustom -Path $defaultCustom" in installer
-    assert "拍台文安裝工具維護" in installer
+    assert "寫台文安裝工具維護" in installer
     # @next 形式必須保持 @next（不能改成明確列表，否則會蓋掉小狼毫內建注音/倉頡）  # noqa: RUF003
     assert "以 @next 附加在小狼毫內建清單之後" in installer
     assert "  schema_list/@next {0}:" in installer

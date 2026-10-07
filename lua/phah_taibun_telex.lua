@@ -1,5 +1,5 @@
 -- phah_taibun_telex.lua
--- Telex input layer for 拍台文(Telex).
+-- Telex input layer for 寫台文(Telex).
 -- Immediately normalizes Telex spellings to numeric TL keys so the shared
 -- dictionary, user dict, filters, and romanization output stay unchanged.
 --

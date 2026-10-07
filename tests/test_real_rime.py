@@ -391,7 +391,7 @@ def test_telex_multi_syllable_sentence_composes(real_rime_states):
 
 
 def test_main_schema_keeps_raw_taid_without_telex_mapping(real_rime_states):
-    """拍台文(台) must not know Telex: its preedit keeps the raw letters.
+    """寫台文(台) must not know Telex: its preedit keeps the raw letters.
 
     (The main speller still segments "tai"+"d" and may list partial-syllable
     candidates like 台 — the input layer itself is what must stay untouched.)

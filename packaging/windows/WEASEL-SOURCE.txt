@@ -1,6 +1,6 @@
 PhahTaiBunSetup.exe 內附未修改的「小狼毫 Weasel 0.17.4」安裝程式
 （weasel-0.17.4.0-installer.exe，SHA-256 cf509534a8f5f8af9c98ed7cbb8f135439f145a8cbe7e50ede42bb5b5ab45c29）。
-電腦上尚未安裝小狼毫時，拍台文安裝程式會以系統管理員權限靜默安裝它。
+電腦上尚未安裝小狼毫時，寫台文安裝程式會以系統管理員權限靜默安裝它。
 
 小狼毫以 GNU General Public License v3.0 授權，授權全文見同目錄 weasel-LICENSE.txt。
 對應原始碼（Corresponding Source）：

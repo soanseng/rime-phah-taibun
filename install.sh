@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — 拍台文 Phah Tai-bun 安裝入口
+# install.sh — 寫台文 Siá Tâi-bûn 安裝入口
 # 偵測作業系統並呼叫對應的安裝腳本
 
 set -e

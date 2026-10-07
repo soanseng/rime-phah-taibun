@@ -1,5 +1,5 @@
 -- rime.lua
--- 拍台文 Phah Tai-bun Lua 模組註冊
+-- 寫台文 Siá Tâi-bûn Lua 模組註冊
 -- 供舊版 librime-lua（不支援 @* 語法）使用
 
 phah_taibun_data     = require("phah_taibun_data")

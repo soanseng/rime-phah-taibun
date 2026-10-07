@@ -1,12 +1,12 @@
-# Rime schema — 拍台文 Phah Tâi-bûn
+# Rime schema — 寫台文 Siá Tâi-bûn（舊名：拍台文）
 # Taiwanese Hokkien input method with mixed Han-Lo output
 
 schema:
   schema_id: phah_taibun
-  name: "拍台文(台)"
+  name: "寫台文(台)"
   version: "0.9.4"
   author:
-    - "拍台文開發團隊"
+    - "寫台文開發團隊"
   dependencies:
     - bopomofo_tw
   description: |

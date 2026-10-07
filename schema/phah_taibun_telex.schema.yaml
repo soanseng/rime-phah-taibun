@@ -1,20 +1,20 @@
-# Rime schema — 拍台文(Telex) Phah Tâi-bûn Telex
+# Rime schema — 寫台文(Telex) Siá Tâi-bûn Telex
 # Advanced input layer for fluent TL/POJ typists: kahiok-style tone keys.
 # Shares the main dictionary — Telex spellings are normalized to numeric TL
 # keys by lua/phah_taibun_telex.lua before the speller sees them.
 
 schema:
   schema_id: phah_taibun_telex
-  name: "拍台文(Telex)"
+  name: "寫台文(Telex)"
   version: "0.9.4"
   author:
-    - "拍台文開發團隊"
+    - "寫台文開發團隊"
   dependencies:
     - bopomofo_tw
   description: |
     台語輸入法方案（進階）— Telex 調鍵連續輸入
     v=2/8、x=1/4、y=3、d=5、w=7、q=9；z→ts、zh→tsh；f=音節連字符、ff=--（手動輕聲連字）
-    與「拍台文(台)」共用詞典、詞頻與使用者詞庫
+    與「寫台文(台)」共用詞典、詞頻與使用者詞庫
 
 switches:
   - name: ascii_mode

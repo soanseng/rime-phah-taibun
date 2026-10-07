@@ -1,8 +1,8 @@
 # Android 部署（同文 / fcitx5-android）
 
-拍台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows 有安裝包；macOS／Linux 用指令或複製檔案；Android 有**兩條路**：裝客製 APK「拍台文 Trime」（最省事，見下），或把發行包裡的方案檔放進現成的 Rime 前端再重新部署。
+寫台文是標準 Rime 方案，**不必改 schema 或 Lua**。Windows 有安裝包；macOS／Linux 用指令或複製檔案；Android 有**兩條路**：裝客製 APK「寫台文 Trime」（最省事，見下），或把發行包裡的方案檔放進現成的 Rime 前端再重新部署。
 
-要留在官方 Trime／fcitx5-android 的話：下載 Releases 的 **`PhahTaiBun-Trime.zip` 一鍵包**（拍台文＋注音，含 `~` 反查依賴），解壓到 Rime 使用者資料夾後重新部署；想逐檔自己控制就往下看「最快路徑」。
+要留在官方 Trime／fcitx5-android 的話：下載 Releases 的 **`PhahTaiBun-Trime.zip` 一鍵包**（寫台文＋注音，含 `~` 反查依賴），解壓到 Rime 使用者資料夾後重新部署；想逐檔自己控制就往下看「最快路徑」。
 
 兩個前端都內建 **librime-lua**（拼音註解、漢羅、Telex 都靠它）：
 
@@ -15,9 +15,9 @@
 
 ---
 
-## 客製 APK：拍台文 Trime（最省事）
+## 客製 APK：寫台文 Trime（最省事）
 
-[soanseng/rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 是同文（Trime）的客製版：**拍台文＋注音＋嘸蝦米全部預裝**，裝完即用——不必找檔案、不必重新部署。介面繁體台灣化；**點候選直接上屏**；長按中文（方案）鍵彈出**拍台文面板**（選字、上頁／下頁、羅、TL/POJ、漢羅/全羅、方案選單）；兩種主題——「拍台文·數字列」（40 鍵，數字列直打聲調）與「拍台文·精簡」（26 鍵，長按符號、上滑數字）。
+[soanseng/rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 是同文（Trime）的客製版：**寫台文＋注音＋嘸蝦米全部預裝**，裝完即用——不必找檔案、不必重新部署。介面繁體台灣化；**點候選直接上屏**；長按中文（方案）鍵彈出**寫台文面板**（選字、上頁／下頁、羅、TL/POJ、漢羅/全羅、方案選單）；兩種主題——「寫台文·數字列」（40 鍵，數字列直打聲調）與「寫台文·精簡」（26 鍵，長按符號、上滑數字）。
 
 只發佈在 **GitHub Releases**——沒有官方 APK：F-Droid、Google Play 都沒有上架，只有這個客製版。
 
@@ -25,8 +25,8 @@
 
 1. 到 [Releases](https://github.com/soanseng/rime-trime-taigi/releases) 下載對應手機架構的 APK——大多數手機是 `arm64-v8a`，電腦模擬器用 `x86_64`。
 2. 點開 APK → 系統要求允許「安裝未知應用程式」→ 允許後安裝。
-3. 系統設定 → 語言與輸入法 → 啟用 **拍台文 Trime**，並把預設輸入法切成它。
-4. 直接打 `gua beh khi tshit tho` →「我 beh 去 tshit-thô」。方案已預選；模式切換用長按中文鍵的拍台文面板。
+3. 系統設定 → 語言與輸入法 → 啟用 **寫台文 Trime**，並把預設輸入法切成它。
+4. 直接打 `gua beh khi tshit tho` →「我 beh 去 tshit-thô」。方案已預選；模式切換用長按中文鍵的寫台文面板。
 
 與官方同文**可並存**（套件名不同：`com.soanseng.phahtaibun`），兩個都裝也行。使用者資料夾在 `Android/data/com.soanseng.phahtaibun/files/rime`。
 
@@ -64,14 +64,14 @@ git submodule update --init --recursive
 
 | 包 | 內容 | 大小 |
 |----|------|------|
-| `PhahTaiBun-Trime.zip` | 拍台文（漢羅＋Telex）＋注音 `bopomofo_tw`＋`~` 反查依賴 | 約 3.5 MB |
+| `PhahTaiBun-Trime.zip` | 寫台文（漢羅＋Telex）＋注音 `bopomofo_tw`＋`~` 反查依賴 | 約 3.5 MB |
 | `PhahTaiBun-Trime-liur.zip` | 再加嘸蝦米 `liur`（含 `easy_en` 英文詞庫） | 約 20 MB |
 
 共同內容：
 
 - `default.custom.yaml` 以 `@next` 追加方案，不動前端內建清單（嘸蝦米版多註冊 `liur`／`easy_en`）
 - `THIRD-PARTY-NOTICES.txt`＋`licenses/`（LGPL-3.0／GPL-3.0 全文）＋`LICENSE-PhahTaiBun.txt`：terra_pinyin 與 bopomofo 為 LGPL-3.0，隨包附授權全文與逐檔來源
-- `trime.custom.yaml`（**預設生效**：候選拼音註解＋拍台文鍵盤與長按面板）與 `INSTALL-Trime.md` 逐步說明
+- `trime.custom.yaml`（**預設生效**：候選拼音註解＋寫台文鍵盤與長按面板）與 `INSTALL-Trime.md` 逐步說明
 
 **不含**字體與使用者詞庫。
 
@@ -88,7 +88,7 @@ git submodule update --init --recursive
 3. 把 zip 裡的 `schema/` 檔案（`default.custom.yaml` 除外）、`lua/`、`rime.lua` 複製到該前端的 **Rime 使用者資料夾**（見下節）。`lua/` 維持子目錄。
 4. 註冊方案（見「註冊方案」）。不要整檔覆蓋已有的 `default.custom.yaml` / `rime.lua`。
 5. **在 App 裡重新部署**（同文選單 → 重新部署；小企鵝 Rime 設定 → Deploy）。
-6. 系統輸入法選同文或小企鵝，再**在 App 的方案清單**選「拍台文(台)」。Android **不是**按 `F4`。
+6. 系統輸入法選同文或小企鵝，再**在 App 的方案清單**選「寫台文(台)」。Android **不是**按 `F4`。
 
 測試：`gua beh khi tshit tho` →「我 beh 去 tshit-thô」。點候選即可，不必 `Tab` + `asdf`。
 
@@ -189,11 +189,11 @@ patch:
 
 ## Android 按鍵與排版
 
-桌面快捷鍵在手機上不存在，但功能都在。拍台文方案（主方案與 Telex）配的是**上游版面＋長按面板**：
+桌面快捷鍵在手機上不存在，但功能都在。寫台文方案（主方案與 Telex）配的是**上游版面＋長按面板**：
 
-- **長按中文（方案）鍵** → 拍台文面板一列 8 鍵：`選字`（＝桌面 `Tab`：整句連打逐詞選字，接著用 `asdfghjkl;` 挑候選）、`上頁`／`下頁`（＝`[`／`]`）、`羅`（＝`\`：手動漢羅下把該詞輸出成羅馬字）、`TL/POJ`、`漢羅/全羅`（模式切換，跨 session 記憶）、方案選單、返回。
-- **兩種主題**：「拍台文·數字列」40 鍵（數字列直打聲調 1–8）、「拍台文·精簡」26 鍵（長按符號、上滑數字）。切換主題不會失去面板。
-- **點候選直接上屏**，不必再多按一次空白；`a` 長按＝全選；「…」面板可開設定（拍台文說明頁）。
+- **長按中文（方案）鍵** → 寫台文面板一列 8 鍵：`選字`（＝桌面 `Tab`：整句連打逐詞選字，接著用 `asdfghjkl;` 挑候選）、`上頁`／`下頁`（＝`[`／`]`）、`羅`（＝`\`：手動漢羅下把該詞輸出成羅馬字）、`TL/POJ`、`漢羅/全羅`（模式切換，跨 session 記憶）、方案選單、返回。
+- **兩種主題**：「寫台文·數字列」40 鍵（數字列直打聲調 1–8）、「寫台文·精簡」26 鍵（長按符號、上滑數字）。切換主題不會失去面板。
+- **點候選直接上屏**，不必再多按一次空白；`a` 長按＝全選；「…」面板可開設定（寫台文說明頁）。
 - 翻頁以**面板的上頁／下頁**為準（候選列滑動在手機上不可靠，實測如此）。
 - 其他方案（嘸蝦米、注音）完全用上游鍵盤，零改動。
 
@@ -216,7 +216,7 @@ patch:
 
 ## 限制
 
-- **主專案不出 APK**；客製 APK 由姊妹 repo [rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 發佈（見開頭）。裝一鍵包的場合：系統層選同文或小企鵝，再在 Rime 方案清單選拍台文。
+- **主專案不出 APK**；客製 APK 由姊妹 repo [rime-trime-taigi](https://github.com/soanseng/rime-trime-taigi) 發佈（見開頭）。裝一鍵包的場合：系統層選同文或小企鵝，再在 Rime 方案清單選寫台文。
 - **虛擬鍵盤 ≠ 桌面快捷鍵。** 點候選直接上屏；方案與模式在長按面板切。fcitx5-android 鍵盤目前不能自訂佈局。
 - **Lua 必須在。** 候選沒拼音註解、漢羅沒轉：先看 `lua/phah_taibun_*.lua` 是否在 `lua/`，再部署。
 - 同文芫荽字體可放使用者資料夾 `fonts/`，再於主題指定：[iansui](https://github.com/ButTaiwan/iansui)。

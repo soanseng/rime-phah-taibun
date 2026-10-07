@@ -1,4 +1,4 @@
-# tongwenfeng.custom.yaml — 拍台文對「標準」主題的特化
+# tongwenfeng.custom.yaml — 寫台文對「標準」主題的特化
 #
 # 由 build_apk_assets() 與 tongwenfeng.upstream.yaml 烘焙成 fork 的
 # assets/shared/tongwenfeng.trime.yaml（不隨 zip overlay——原版 Trime
@@ -6,14 +6,14 @@
 #
 # 目的（2026-10-01 使用者回饋）：
 #   1. 主題名/配色名簡體→繁體（标准→標準）
-#   2. 切到「標準」主題也保有拍台文 26 鍵＋中文鍵長按面板（拍台文
+#   2. 切到「標準」主題也保有寫台文 26 鍵＋中文鍵長按面板（寫台文
 #      方案以 schema-id 配對同名鍵盤，鍵盤 preset 需存在於每個主題）
 #
 # 鍵盤/面板定義與 trime.custom.yaml 相同（兩主題各自自帶 preset_keys，
 # 引用的上游鍵名兩邊皆有）。
 patch:
-  config_version: "3.3.12-ptaibun5"
-  name: 拍台文·精簡
+  config_version: "3.3.12-ptaibun6"
+  name: 寫台文·精簡
 
   preset_color_schemes/default/name: 標準配色！
 
@@ -39,7 +39,7 @@ patch:
   preset_keys/Taigi_Panel: {label: 台文, send: Eisu_toggle, select: taigi_panel}
 
   preset_keyboards/taigi_panel:
-    name: 拍台文
+    name: 寫台文
     ascii_mode: 0
     width: 10
     height: 44
@@ -55,7 +55,7 @@ patch:
     - {click: Taigi_Back, width: 10}
 
   preset_keyboards/phah_taibun:
-    name: 拍台文26鍵
+    name: 寫台文26鍵
     ascii_mode: 0
     columns: 10
     width: 10
@@ -101,7 +101,7 @@ patch:
     - {click: Return, composing: Return1, long_click: CommitComment, width: 15}
 
   preset_keyboards/phah_taibun_telex:
-    name: 拍台文Telex26鍵
+    name: 寫台文Telex26鍵
     ascii_mode: 0
     columns: 10
     width: 10

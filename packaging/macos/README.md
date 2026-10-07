@@ -16,15 +16,15 @@ PHAH_TAIBUN_VERSION=0.6.2 packaging/macos/build-pkg.sh
 
 - 使用者下載 `.pkg` 後雙擊安裝。
 - 安裝包會檢查鼠鬚管 Squirrel 是否存在。
-- 安裝包會把拍台文 payload 暫存到 `/Library/Application Support/PhahTaiBun`，再以目前登入使用者身分呼叫既有 `scripts/install_macos.sh --project-root`。
+- 安裝包會把寫台文 payload 暫存到 `/Library/Application Support/PhahTaiBun`，再以目前登入使用者身分呼叫既有 `scripts/install_macos.sh --project-root`。
 - 仍使用鼠鬚管 Squirrel / Rime 作為輸入法核心。
 - 安裝過程會保留 `phah_taibun.custom.dict.yaml`、`phah_taibun.phrase.dict.yaml`，不會覆蓋使用者自訂詞庫。
-- 既有 `rime.lua` 和 `default.custom.yaml` 會先備份再合併拍台文設定。
+- 既有 `rime.lua` 和 `default.custom.yaml` 會先備份再合併寫台文設定。
 
 ## 目前限制
 
 - 未簽章、未 notarize 的 `.pkg` 可能被 Gatekeeper 擋下。
-- 系統輸入法清單仍會顯示鼠鬚管；進入鼠鬚管後選「拍台文(台)」。
+- 系統輸入法清單仍會顯示鼠鬚管；進入鼠鬚管後選「寫台文(台)」。
 - 這不是品牌版 Squirrel fork。
 
 ## 簽章方向

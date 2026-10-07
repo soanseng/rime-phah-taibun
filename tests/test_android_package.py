@@ -1,9 +1,9 @@
 """PhahTaiBun-Trime.zip: Trime overlay 打包測試.
 
 build_trime_package.py 產出兩種可下載的 overlay, 讓使用者選擇:
-  PhahTaiBun-Trime.zip      = 拍台文核心 + 注音 bopomofo_tw (兼 `~` 反查)
+  PhahTaiBun-Trime.zip      = 寫台文核心 + 注音 bopomofo_tw (兼 `~` 反查)
   PhahTaiBun-Trime-liur.zip = 再加嘸蝦米 (rime-liur-arch, 附 LIUR-PROVENANCE.txt)
-授權對照: 拍台文 MIT; terra_pinyin / bopomofo / zhuyin LGPL (rime/rime-terra-pinyin, rime/rime-bopomofo);
+授權對照: 寫台文 MIT; terra_pinyin / bopomofo / zhuyin LGPL (rime/rime-terra-pinyin, rime/rime-bopomofo);
 嘸蝦米上游無具名授權檔, 依其 README「基於開源授權發佈」宣告隨包散布並標示來源.
 """
 
@@ -102,7 +102,7 @@ def _rel_names(tree: Path) -> set[str]:
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_phah_only_overlay_carries_core_and_reverse_deps(tmp_path: Path) -> None:
-    """--no-liur 仍是自足的拍台文 overlay: 核心檔 + 反查閉包 + @next 註冊."""
+    """--no-liur 仍是自足的寫台文 overlay: 核心檔 + 反查閉包 + @next 註冊."""
     tree = _build_tree(tmp_path, liur=False)
 
     names = _rel_names(tree)
@@ -163,7 +163,7 @@ def test_liur_closure_is_complete_and_filtered(tmp_path: Path) -> None:
     lunar_tree = {p.name for p in (tree / "lua" / "lunar_calendar").iterdir() if p.is_file()}
     assert lunar_src == lunar_tree
 
-    # opencc 閉包: liur 整目錄 + 拍台文自帶 emoji 資產
+    # opencc 閉包: liur 整目錄 + 寫台文自帶 emoji 資產
     opencc_src = {p.name for p in (LIUR_DIR / "opencc").iterdir() if p.is_file()}
     opencc_tree = {p.name for p in (tree / "opencc").iterdir() if p.is_file()}
     assert opencc_src <= opencc_tree
@@ -177,7 +177,7 @@ def test_liur_closure_is_complete_and_filtered(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
 def test_merged_rime_lua_registers_both_suites_once(tmp_path: Path) -> None:
-    """rime.lua = 拍台文註冊 + liur 全檔附加; liur 區塊只出現一次 (marker 防重複)."""
+    """rime.lua = 寫台文註冊 + liur 全檔附加; liur 區塊只出現一次 (marker 防重複)."""
     tree = _build_tree(tmp_path, liur=True)
     rime_lua = (tree / "rime.lua").read_text(encoding="utf-8")
 
@@ -213,7 +213,7 @@ def test_trime_patch_ships_verbatim_and_enables_comment_annotation(tmp_path: Pat
     """trime.custom.yaml 逐字進包, 且候選註解 (拼音) 預設生效 (A-a).
 
     桌面版候選一律「漢字+拼音註解」; Trime 內建註解 10sp 太小, 0.9.0 起
-    預設放大, 不再是空 patch — 註解與功能列都是拍台文手機輸入的必要操作.
+    預設放大, 不再是空 patch — 註解與功能列都是寫台文手機輸入的必要操作.
     """
     tree = _build_tree(tmp_path, liur=False)
     patch_file = tree / "trime.custom.yaml"
@@ -273,7 +273,7 @@ def test_trime_patch_defines_taigi_function_keys(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
-    """拍台文鍵盤=上游 26 鍵版面+中文鍵長按面板; 其他方案鍵盤零改動 (2026-09-30 定案).
+    """寫台文鍵盤=上游 26 鍵版面+中文鍵長按面板; 其他方案鍵盤零改動 (2026-09-30 定案).
 
     - 無矮功能列: patch 不得用清單運算 (@next) 修改上游 qwerty/default 鍵盤
     - phah_taibun / phah_taibun_telex 專屬鍵盤 (Trime 依方案 id 配對同名鍵盤),
@@ -294,7 +294,7 @@ def test_trime_patch_defines_schema_keyboards_and_panel(tmp_path: Path) -> None:
         assert len(keys) == 47, f"{kb} 應為上游 40 鍵版面含數字列 (47 keys)"
         assert any(k.get("click") == "1" for k in keys), f"{kb} 需數字列"
         mode = [k for k in keys if k.get("click") == "Mode_switch"]
-        assert mode and mode[0]["long_click"] == "Taigi_Panel", f"{kb} 中文鍵長按應開拍台文面板"
+        assert mode and mode[0]["long_click"] == "Taigi_Panel", f"{kb} 中文鍵長按應開寫台文面板"
 
     panel = patch["preset_keyboards/taigi_panel"]["keys"]
     assert [k["click"] for k in panel] == [
@@ -338,23 +338,23 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
         assert overlay_only not in names, f"{overlay_only} 不進 APK assets"
     theme = yaml.safe_load((dest / "trime.yaml").read_text(encoding="utf-8"))
     assert theme["config_version"] != "3.0", "烘焙主題需帶 bump 過的 config_version"
-    assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含拍台文鍵盤"
+    assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含寫台文鍵盤"
     assert theme["preset_keys"]["BackSpace"]["label"] == "←"
     assert theme["preset_keys"]["Menu"]["send"] == "MENU", "上游 Menu preset 不動"
     assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (
         dest / "trime.yaml"
     ).read_text(encoding="utf-8"), "prebuilt fallback (shared/build) 須與主題同步"
     twf = yaml.safe_load((dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8"))
-    assert twf["name"] == "拍台文·精簡", "標準主題名=拍台文·精簡(26鍵)"
+    assert twf["name"] == "寫台文·精簡", "標準主題名=寫台文·精簡(26鍵)"
     trime_patch = yaml.safe_load(
         (REPO / "packaging" / "android" / "trime.custom.yaml").read_text(encoding="utf-8")
     )["patch"]
-    assert trime_patch["name"] == "拍台文·數字列", "預設主題名=拍台文·數字列(40鍵含數字列)"
+    assert trime_patch["name"] == "寫台文·數字列", "預設主題名=寫台文·數字列(40鍵含數字列)"
     kb40 = trime_patch["preset_keyboards/phah_taibun"]["keys"]
     assert any(k.get("click") == "1" for k in kb40), "預設主題鍵盤含數字列"
     twf_text = (dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8")
     assert "标准" not in twf_text.split("patch")[0], "不得殘留簡體主題名"
-    assert twf["preset_keyboards"]["phah_taibun"]["keys"], "標準主題也需拍台文鍵盤 (schema-id 配對)"
+    assert twf["preset_keyboards"]["phah_taibun"]["keys"], "標準主題也需寫台文鍵盤 (schema-id 配對)"
     assert twf["preset_keys"]["BackSpace"]["label"] == "←"
     assert (dest / "build" / "tongwenfeng.trime.yaml").read_text(encoding="utf-8") == (
         dest / "tongwenfeng.trime.yaml"
@@ -390,7 +390,7 @@ def test_cli_apk_assets_mode_exits_zero(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(shutil.which("rime_deployer") is None, reason="需要系統 rime_deployer")
 def test_deployer_smoke_builds_all_registered_schemas(tmp_path: Path) -> None:
-    """真 librime 引擎部署整個 overlay: 拍台文與注音必過; 有 liur checkout 時連嘸蝦米也驗."""
+    """真 librime 引擎部署整個 overlay: 寫台文與注音必過; 有 liur checkout 時連嘸蝦米也驗."""
     with_liur = LIUR_DIR.exists()
     tree = _build_tree(tmp_path, liur=with_liur)
     staging = tmp_path / "build"
@@ -444,7 +444,7 @@ def test_cli_default_bundle_is_the_liur_free_variant(tmp_path: Path) -> None:
     assert "liur.schema.yaml" not in names
     assert "LIUR-PROVENANCE.txt" not in names
     assert not any(name.startswith("lua/liu_") for name in names)
-    # opencc/ 現在是拍台文自帶的 Emoji 資產 (rime-emoji, LGPL-3.0),
+    # opencc/ 現在是寫台文自帶的 Emoji 資產 (rime-emoji, LGPL-3.0),
     # 預設包就要有; 嘸蝦米的 liur 變體檔案仍不在.
     assert "opencc/emoji.json" in names
     assert "opencc/emoji_word.txt" in names

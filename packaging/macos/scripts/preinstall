@@ -5,9 +5,9 @@ SQUIRREL_APP="/Library/Input Methods/Squirrel.app"
 
 if [ ! -d "$SQUIRREL_APP" ]; then
   cat <<'MSG'
-拍台文需要鼠鬚管 Squirrel / Rime 作為輸入法核心。
+寫台文需要鼠鬚管 Squirrel / Rime 作為輸入法核心。
 請先安裝鼠鬚管：https://rime.im/download/
-安裝鼠鬚管後再重新執行拍台文安裝包。
+安裝鼠鬚管後再重新執行寫台文安裝包。
 MSG
   exit 1
 fi

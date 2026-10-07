@@ -137,7 +137,7 @@ def test_output_mode_choices_persist_across_sessions_and_restarts():
 
 
 def test_telex_schema_shares_main_dictionary_and_normalizes_input():
-    """拍台文(Telex) is an input-layer variant: same dict, Telex spellings in.
+    """寫台文(Telex) is an input-layer variant: same dict, Telex spellings in.
 
     The Telex schema must reuse the main dictionary (one canonical numeric-TL
     source of truth, one user dict) and must normalize input through the
@@ -222,7 +222,7 @@ def test_telex_schema_is_registered_alongside_the_main_schema():
 
 
 def test_main_schema_does_not_load_the_telex_processor():
-    """The 拍台文(台) schema keeps its exact current input behavior."""
+    """The 寫台文(台) schema keeps its exact current input behavior."""
     schema = yaml.safe_load(Path("schema/phah_taibun.schema.yaml").read_text(encoding="utf-8"))
 
     assert all("telex" not in p for p in schema["engine"]["processors"])

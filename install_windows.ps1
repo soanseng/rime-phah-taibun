@@ -1,4 +1,4 @@
-# 拍台文 Phah Tai-bun 自動安裝工具 (Windows / 小狼毫 Weasel)
+# 寫台文 Siá Tâi-bûn 自動安裝工具 (Windows / 小狼毫 Weasel)
 # 參考 ryanwuson/rime-liur 安裝腳本架構
 # https://github.com/soanseng/rime-phah-taibun
 #
@@ -119,7 +119,7 @@ function Repair-RimeTextEncoding {
             Write-Host "  $name 曾被寫成 UTF-16，已從 .bak 還原既有方案" -ForegroundColor Yellow
         } else {
             Write-Host "錯誤：$name 編碼已壞，且沒有可用的 .bak。" -ForegroundColor Red
-            Write-Host "請先還原原本的 Rime 設定，再重跑安裝。安裝只會追加拍台文，不會取代方案清單。" -ForegroundColor Yellow
+            Write-Host "請先還原原本的 Rime 設定，再重跑安裝。安裝只會追加寫台文，不會取代方案清單。" -ForegroundColor Yellow
             exit 1
         }
     }
@@ -173,7 +173,7 @@ function Convert-RimeDefaultCustom {
     }
 
     $out = New-Object System.Collections.Generic.List[string]
-    $out.Add("# default.custom.yaml — 拍台文安裝工具維護")
+    $out.Add("# default.custom.yaml — 寫台文安裝工具維護")
     $out.Add("#")
     $out.Add("# 安裝工具只會「追加」設定，不會覆蓋小狼毫內建方案與你的其他設定；")
     $out.Add("# 每次安裝前，原始內容都會備份成 default.custom.yaml.backup-<時間戳>。")
@@ -349,7 +349,7 @@ function Copy-OrDownload {
 # ============================================================
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
-Write-Host "  拍台文 Phah Tai-bun 自動安裝工具" -ForegroundColor Cyan
+Write-Host "  寫台文 Sia Tai-bun 自動安裝工具" -ForegroundColor Cyan
 Write-Host "  (Windows / 小狼毫 Weasel)" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
@@ -364,7 +364,7 @@ $weaselExists = (Get-Item $WEASEL_DIR -ErrorAction SilentlyContinue) -or
 if (-not $weaselExists) {
     Write-Host "錯誤：找不到小狼毫 (Weasel) 安裝" -ForegroundColor Red
     Write-Host ""
-    Write-Host "拍台文需要小狼毫 Rime 輸入法引擎才能運作。" -ForegroundColor Yellow
+    Write-Host "寫台文需要小狼毫 Rime 輸入法引擎才能運作。" -ForegroundColor Yellow
     Write-Host "請先下載並安裝小狼毫，安裝完成後再執行本腳本。" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  下載頁面：https://rime.im/download/" -ForegroundColor Cyan
@@ -398,9 +398,9 @@ if ($Schemas -eq "" -or $Schemas -eq "both") {
 
 if ($INTERACTIVE) {
     Write-Host "請選擇要安裝的輸入方案：" -ForegroundColor Yellow
-    Write-Host "  1. 拍台文（台語）"
+    Write-Host "  1. 寫台文（台語）"
     Write-Host "  2. 嘸蝦米（rime-liur）"
-    Write-Host "  3. 拍台文 + 嘸蝦米（預設）"
+    Write-Host "  3. 寫台文 + 嘸蝦米（預設）"
     $schemaChoice = Read-Host "請輸入選項 (1/2/3，Enter=3)"
     if ($schemaChoice -eq "1") {
         $INSTALL_PHAH = $true
@@ -418,9 +418,9 @@ if ($INTERACTIVE) {
 Write-Host "本工具將執行以下作業："
 if ($INSTALL_PHAH) {
     if ($USE_LOCAL_PAYLOAD) {
-        Write-Host "  1. 從安裝包內建檔案安裝拍台文方案"
+        Write-Host "  1. 從安裝包內建檔案安裝寫台文方案"
     } else {
-        Write-Host "  1. 從 GitHub v$RELEASE_VERSION 下載並安裝拍台文方案"
+        Write-Host "  1. 從 GitHub v$RELEASE_VERSION 下載並安裝寫台文方案"
     }
     Write-Host "  2. 註冊輸入方案"
     Write-Host "  3. 安裝芫荽 iansui 字體"
@@ -512,7 +512,7 @@ if (-not $INSTALL_PHAH) {
     $LUA_FILES = @()
     $OPENCC_FILES = @()
     $HAS_RIME_LUA = $false
-    Write-Host "略過拍台文方案檔案（僅安裝嘸蝦米）" -ForegroundColor Yellow
+    Write-Host "略過寫台文方案檔案（僅安裝嘸蝦米）" -ForegroundColor Yellow
 }
 
 $TOTAL = $SCHEMA_FILES.Count + $LUA_FILES.Count + $OPENCC_FILES.Count + $(if ($HAS_RIME_LUA) { 1 } else { 0 })
@@ -522,7 +522,7 @@ Write-Host ""
 # ============================================================
 # Step 1: 下載方案檔案
 # ============================================================
-Write-Host "[ Step 1: 下載拍台文方案檔案 ]" -ForegroundColor Green
+Write-Host "[ Step 1: 下載寫台文方案檔案 ]" -ForegroundColor Green
 
 New-Item -ItemType Directory -Force -Path $RIME_DIR | Out-Null
 New-Item -ItemType Directory -Force -Path "$RIME_DIR\lua" | Out-Null
@@ -1043,7 +1043,7 @@ if ($INSTALL_LIUR) {
     } catch {
         Write-Host ""
         Write-Host "嘸蝦米安裝失敗：$($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "拍台文不受影響。可稍後重試，或手動參考 https://github.com/$LIUR_REPO" -ForegroundColor Yellow
+        Write-Host "寫台文不受影響。可稍後重試，或手動參考 https://github.com/$LIUR_REPO" -ForegroundColor Yellow
     }
 }
 
@@ -1095,7 +1095,7 @@ if (-not $deployer -or -not (Test-Path $deployer)) {
 # ============================================================
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
-Write-Host "  拍台文 Phah Tai-bun 安裝完成！" -ForegroundColor Cyan
+Write-Host "  寫台文 Sia Tai-bun 安裝完成！" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Rime 資料夾：$RIME_DIR"
@@ -1107,7 +1107,7 @@ Write-Host "可用的輸入方案："
 Get-ChildItem "$RIME_DIR\*.schema.yaml" -ErrorAction SilentlyContinue | ForEach-Object {
     $name = $_.BaseName -replace '\.schema$', ''
     if ($name -eq "phah_taibun") {
-        Write-Host "  * $name (拍台文)" -ForegroundColor Green
+        Write-Host "  * $name (寫台文)" -ForegroundColor Green
     } else {
         Write-Host "  * $name"
     }

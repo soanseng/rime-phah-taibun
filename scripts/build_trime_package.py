@@ -173,7 +173,7 @@ def _default_custom_yaml(include_liur: bool) -> str:
     schemas.append("bopomofo_tw")
 
     lines = [
-        "# default.custom.yaml - 拍台文 Trime 包 (scripts/build_trime_package.py 產生)",
+        "# default.custom.yaml - 寫台文 Trime 包 (scripts/build_trime_package.py 產生)",
         "# @next 附加: 保留前端內建 default.yaml 的方案清單, 不整檔覆蓋",
         "patch:",
     ]
@@ -188,7 +188,7 @@ def _default_custom_yaml(include_liur: bool) -> str:
 
 
 def _merge_rime_lua(phah_lua: str, liur_lua: str) -> str:
-    """拍台文註冊在前, liur 全檔附加在後; marker 已存在則不重複附加."""
+    """寫台文註冊在前, liur 全檔附加在後; marker 已存在則不重複附加."""
     merged = phah_lua.rstrip("\n")
     if RIME_LUA_MARKER in merged:
         return merged + "\n"
@@ -282,7 +282,7 @@ def _write_third_party_notices(dest: Path, *, rime_data_dir: Path, common_licens
         lines.append("")
 
     lines += [
-        "拍台文自己的檔案 (schema/phah_taibun*, lua/, rime.lua, default.custom.yaml,",
+        "寫台文自己的檔案 (schema/phah_taibun*, lua/, rime.lua, default.custom.yaml,",
         f"INSTALL-Trime.md) 為 MIT 授權, 見 {PROJECT_LICENSE}.",
     ]
     (dest / THIRD_PARTY_NOTICE).write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -423,7 +423,7 @@ def _bake_theme(dest: Path, base_file: str, patch_file: str, out_name: str) -> N
 def _bake_trime_themes(dest: Path) -> None:
     """烘焙 fork 兩個主題: trime.yaml(預設) 與 tongwenfeng.trime.yaml(標準)。
 
-    標準主題同帶拍台文鍵盤/面板 (schema-id 配對需要 preset 存在於每個主題),
+    標準主題同帶寫台文鍵盤/面板 (schema-id 配對需要 preset 存在於每個主題),
     並把簡體主題名/配色名繁體化 (2026-10-01 使用者回饋)。
     """
     _bake_theme(dest, TRIME_UPSTREAM, TRIME_PATCH, "trime.yaml")

@@ -18,7 +18,7 @@ ROOT = Path(__file__).parents[1]
 INDEX = ROOT / "docs" / "index.html"
 DICT = ROOT / "schema" / "phah_taibun.dict.yaml"
 
-HERO_TAGLINE = "會曉講 Tâi-gí，就會曉 phah Tâi-bûn。"  # noqa: RUF001
+HERO_TAGLINE = "會曉講台語，就會曉寫台文。"  # noqa: RUF001
 INTENT_POJ = "我欲用 Pe̍h-ōe-jī 拍字"
 
 # (visible hanzi term, dictionary TL reading with tone numbers) — every hanzi

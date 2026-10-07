@@ -22,10 +22,10 @@
 - 仍使用小狼毫 Weasel / Rime 作為輸入法核心。
 - 若使用者尚未安裝 Weasel，PowerShell 腳本會顯示下載連結與下一步。
 - 安裝過程會保留 `phah_taibun.custom.dict.yaml`、`phah_taibun.phrase.dict.yaml`，不會覆蓋使用者自訂詞庫。
-- 既有 `rime.lua` 和 `default.custom.yaml` 會先備份再合併拍台文設定。
+- 既有 `rime.lua` 和 `default.custom.yaml` 會先備份再合併寫台文設定。
 
 ## 目前限制
 
 - 未簽章的 `.exe` 可能觸發 Windows SmartScreen。
-- 系統輸入法清單仍會顯示小狼毫；進入小狼毫後選「拍台文(台)」。
+- 系統輸入法清單仍會顯示小狼毫；進入小狼毫後選「寫台文(台)」。
 - 這不是品牌版 Weasel fork。

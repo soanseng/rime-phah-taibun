@@ -1,11 +1,11 @@
-# AGENTS.md — rime-phah-taibun 拍台文 專案指引
+# AGENTS.md — rime-phah-taibun 寫台文 專案指引
 
 > 本檔是本專案**唯一的事實來源**（single source of truth）。
 > 它優先於全域預設與任何工具的習慣設定。更新專案指引時，改這裡。
 
 ## 專案概述
 
-**拍台文** (Phah Tâi-bûn) — 基於 Rime 輸入法引擎的台語（臺灣閩南語）輸入法方案，核心目標是讓「會講台語但不太會打」的人也能輕鬆書寫台文。
+**寫台文** (Siá Tâi-bûn)（舊名：拍台文）— 基於 Rime 輸入法引擎的台語（臺灣閩南語）輸入法方案，核心目標是讓「會講台語但不太會打」的人也能輕鬆書寫台文。
 
 **差異化定位**：不同於現有台語 Rime 方案與其他台語輸入法，本方案聚焦於：
 1. 漢羅混寫為預設輸出（依 LKK 李江却用字規範）
@@ -14,7 +14,7 @@
 4. 多種輸出模式切換（漢羅、全羅 × TL/POJ；Telex 調鍵平行方案）
 5. 華語反查台語讀音（注音反查）
 
-**平台**：Linux（fcitx5-rime / ibus-rime 原生）、Windows（小狼毫 Weasel + 安裝包）、macOS（鼠鬚管 Squirrel + curl 腳本）、Android（Trime / fcitx5-android；雙包並行：`PhahTaiBun-Trime.zip`＝拍台文＋注音＋反查依賴，`PhahTaiBun-Trime-liur.zip`＝再加嘸蝦米，附 `LIUR-PROVENANCE.txt` 標示來源）。
+**平台**：Linux（fcitx5-rime / ibus-rime 原生）、Windows（小狼毫 Weasel + 安裝包）、macOS（鼠鬚管 Squirrel + curl 腳本）、Android（Trime / fcitx5-android；雙包並行：`PhahTaiBun-Trime.zip`＝寫台文＋注音＋反查依賴，`PhahTaiBun-Trime-liur.zip`＝再加嘸蝦米，附 `LIUR-PROVENANCE.txt` 標示來源）。
 
 ## 技術棧
 
@@ -95,7 +95,7 @@ rime-phah-taibun/
 │   ├── tl_poj_convert.py          # TL↔POJ 轉換器
 │   ├── validate_dict.py           # 字典品質檢查
 │   ├── download_resources.sh      # 18+ 外部資源下載
-│   ├── build_trime_package.py     # ★ Trime 一鍵包：拍台文＋注音＋反查依賴（--with-liur 本機自用）
+│   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）

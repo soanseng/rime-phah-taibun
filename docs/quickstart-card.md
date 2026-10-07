@@ -1,4 +1,4 @@
-# 拍台文快速上手小卡
+# 寫台文快速上手小卡
 
 這張小卡給第一次安裝、第一次打台文的人。先照這張打得出來，再看[完整使用說明](user-guide.md)。
 
@@ -8,20 +8,20 @@
 
 一般使用者：Windows 下載安裝包；macOS／Linux 用指令。
 
-| 系統 | 安裝拍台文 | 需要先有 |
+| 系統 | 安裝寫台文 | 需要先有 |
 |------|------------|----------|
 | Windows | 下載 `PhahTaiBunSetup.exe`，雙擊安裝 | 小狼毫 Weasel |
 | macOS | `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh \| bash` | 鼠鬚管 Squirrel |
 | Linux | `git clone https://github.com/soanseng/rime-phah-taibun.git && cd rime-phah-taibun && ./install.sh` | fcitx5-rime 或 ibus-rime |
-| Android | 下載 Releases 的 `PhahTaiBun-Trime.zip`（拍台文＋注音；要嘸蝦米改抓 `PhahTaiBun-Trime-liur.zip`）解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
+| Android | 下載 Releases 的 `PhahTaiBun-Trime.zip`（寫台文＋注音；要嘸蝦米改抓 `PhahTaiBun-Trime-liur.zip`）解壓到 Rime 使用者資料夾後重新部署，見[Android 部署](android.md) | 同文 Trime，或小企鵝 + RIME 外掛 |
 
-裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「拍台文(台)」；熟台羅想用調鍵連續輸入的人可改選「拍台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者：windows-安裝包／macos-指令)。
+裝好後先把系統輸入法切到小狼毫（Windows，圖示【中】）或鼠鬚管（macOS，圖示【ㄓ】），重新部署 Rime，再按 `F4` 或 `` Ctrl+` `` 選「寫台文(台)」；熟台羅想用調鍵連續輸入的人可改選「寫台文(Telex)」。`F4` 不是系統輸入法切換鍵；還沒進入小狼毫／鼠鬚管時按了不會有反應。詳見[使用說明的安裝完成步驟](user-guide.md#一般使用者：windows-安裝包／macos-指令)。
 
-進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。Windows 這行指令是互動式的：可選裝拍台文、嘸蝦米（`rime-liur`）或兩者；改設定前會先做時間戳備份，並詢問要保留哪些既有輸入法（含注音）。
+進階使用者也可以用指令安裝：macOS 執行 `curl -fsSL https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/scripts/install_macos.sh | bash`；Windows PowerShell 執行 `irm https://raw.githubusercontent.com/soanseng/rime-phah-taibun/main/install_windows.ps1 | iex`。Windows 這行指令是互動式的：可選裝寫台文、嘸蝦米（`rime-liur`）或兩者；改設定前會先做時間戳備份，並詢問要保留哪些既有輸入法（含注音）。
 
-## 更新拍台文
+## 更新寫台文
 
-Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 覆蓋安裝。macOS 重跑 `curl .../scripts/install_macos.sh | bash`，或 clone 裡 `git pull --ff-only && ./install.sh`。Linux 在既有 clone 執行 `git pull --ff-only && ./install.sh`。Android 用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署，步驟見[Android 部署](android.md)。自訂詞庫和其他 Rime 方案會保留；詳見[完整更新說明](user-guide.md#更新拍台文)。
+Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) 下載最新版 `PhahTaiBunSetup.exe` 覆蓋安裝。macOS 重跑 `curl .../scripts/install_macos.sh | bash`，或 clone 裡 `git pull --ff-only && ./install.sh`。Linux 在既有 clone 執行 `git pull --ff-only && ./install.sh`。Android 用最新 `PhahTaiBun-Trime.zip` 覆蓋後重新部署，步驟見[Android 部署](android.md)。自訂詞庫和其他 Rime 方案會保留；詳見[完整更新說明](user-guide.md#更新寫台文)。
 
 ---
 
@@ -39,9 +39,9 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 
 不用先背聲調。想縮小候選範圍時，再補數字調：`ho2`、`tsiah8 png7`。調號口訣：**君滾棍骨、群郡滑**＝1 2 3 4、5 7 8（台灣通行腔沒有獨立第 6 調）。
 
-### 拍台文(Telex)：字母列補調（可選）
+### 寫台文(Telex)：字母列補調（可選）
 
-`F4` 選 **「拍台文(Telex)」**。主方案「拍台文(台)」不變；兩個方案詞典、輸出相同。
+`F4` 選 **「寫台文(Telex)」**。主方案「寫台文(台)」不變；兩個方案詞典、輸出相同。
 
 | 你打 | 等於 | 調／用途 |
 |------|------|----------|
@@ -65,7 +65,7 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | 斜 | `zhiahv` | 斜 [tshia̍h] |
 | 食飯 | `ziahv pngw` | 食飯 |
 
-數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按（`x` 可顯式標示）。歷史與鍵位理由見[完整使用說明](user-guide.md#進階：拍台文telex-調鍵輸入)。
+數字調在 Telex 方案同樣有效：`tai5` ≡ `taid`。第 1／4 調不必按（`x` 可顯式標示）。歷史與鍵位理由見[完整使用說明](user-guide.md#進階：寫台文telex-調鍵輸入)。
 
 ---
 
@@ -97,20 +97,20 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 | `Space` | 確認目前候選 |
 | `Tab` | 有候選時進入 asdf 選字；打拼音時跳下一音節 |
 | `a s d f g h j k l ;` | Tab 選字模式中的第 1-10 候選 |
-| `F4` / `` Ctrl+` `` | 開 Rime 方案選單：拍台文(台)／拍台文(Telex)，漢羅/全羅、TL/POJ（選過就會記住） |
+| `F4` / `` Ctrl+` `` | 開 Rime 方案選單：寫台文(台)／寫台文(Telex)，漢羅/全羅、TL/POJ（選過就會記住） |
 | `Ctrl+Space` | 台文/英文模式 |
 | `Shift+字母` | 打大寫字母，不切英文模式 |
 | `~` | 注音反查華語，再轉台語候選 |
 | `?` | 萬用查字，例如 `?iah` |
 | `` ` `` | 符號選單（50 類；`` `25 `` 直達）、`` `e `` Emoji 分類 |
 | `,` `.` `(` `/` | 漢羅全形標點直出（全羅半形） |
-| `[` / `]` | 取候選詞首字/尾字 |
+| `[` / `]` | 候選選單翻頁（上一頁／下一頁） |
 | `\` | 目前候選改用另一種輸出形式 |
 | `Enter` | 全羅模式下照目前輸入音直接送出 |
 | `vvh` | 在候選區顯示按鍵說明 |
 | `vvjit` | 台語日期 |
 
-> 拍台文的數字鍵專心用來打聲調；選字請按 `Tab` 後用 `asdfghjkl;`。這和教育部輸入法以數字選字的習慣不同。
+> 寫台文的數字鍵專心用來打聲調；選字請按 `Tab` 後用 `asdfghjkl;`。這和教育部輸入法以數字選字的習慣不同。
 
 ---
 
@@ -134,12 +134,10 @@ Windows 到 [Releases](https://github.com/soanseng/rime-phah-taibun/releases) �
 
 ### 想選單字
 
-先打詞，再用 `[` / `]` 取字：
+先打詞，按 `Tab` 進選字模式，用 `asdf` 挑字；`[` `]` 只用來翻頁：
 
 ```text
-tsiah png → 食飯
-按 [ → 食
-按 ] → 飯
+tsiah png → Tab → asdf 挑「食」（要翻頁用 [ ]）
 ```
 
 ---
@@ -148,10 +146,10 @@ tsiah png → 食飯
 
 | 狀況 | 先檢查 |
 |------|--------|
-| 找不到「拍台文(台)」／「拍台文(Telex)」／按 F4 沒反應 | 先確認系統輸入法是小狼毫或鼠鬚管，重新部署，再按 `F4` 或 `` Ctrl+` `` |
+| 找不到「寫台文(台)」／「寫台文(Telex)」／按 F4 沒反應 | 先確認系統輸入法是小狼毫或鼠鬚管，重新部署，再按 `F4` 或 `` Ctrl+` `` |
 | 沒有拼音註解 | 確認 `lua/phah_taibun_*.lua` 已安裝到 Rime 使用者資料夾 |
 | `~` 注音反查沒反應 | 確認有 `bopomofo_tw` 方案 |
 | `` `e `` Emoji 分類沒反應（但 `` ` `` 符號選單正常） | 多半是安裝版本較舊或部署未更新：確認 Rime 使用者資料夾有 `lua/phah_taibun_emoji_menu.lua`，重跑安裝器並重新部署 |
 | 英文候選沒有出現 | 未內建英文字典；請按 `Ctrl+Space` 切英文模式。Emoji 已內建，可按 `` `e `` 瀏覽（方案選單可關） |
 
-完整排錯看[使用說明的疑難排解](user-guide.md#十五、疑難排解)。
+完整排錯看[使用說明的疑難排解](user-guide.md#二十二、疑難排解)。
