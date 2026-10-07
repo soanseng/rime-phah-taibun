@@ -408,7 +408,8 @@
       </div>
     </footer>
 <script type="module">
-import { initPractice } from './practice.js';
+// 正式站 JS 快取 186 工（Cloudflare）：練習模組改了愛共 ?v= 數字加一（practice*.js 內底嘛愛仝款）
+import { initPractice } from './practice.js?v=1';
 const $ = (id) => document.getElementById(id);
 const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
 
@@ -639,7 +640,8 @@ async function boot() {
     for (const f of files) { const d = f.split('/').slice(0, -1).join('/'); if (d) dirs.add(d); }
     for (const d of dirs) await FS('mkdir', '/rime/' + d).catch(() => {});
     for (const f of files) {
-      const res = await fetch(`./${dir}/` + encodeURIComponent(f).replace(/%2F/g, '/'));
+      // no-cache：照 etag 重驗，免得瀏覽器長期快取提著舊版字典
+      const res = await fetch(`./${dir}/` + encodeURIComponent(f).replace(/%2F/g, '/'), { cache: 'no-cache' });
       // 靜態站揣無檔案時會回首頁 HTML (200)；寫入引擎前先擋，免得靜靜部署歹去
       if (!res.ok || (res.headers.get('content-type') || '').startsWith('text/html')) {
         throw new Error(`方案檔案載入失敗：${f}`);

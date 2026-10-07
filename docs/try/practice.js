@@ -1,11 +1,11 @@
 // 網頁試拍「練習／考試／記錄」畫面。引擎頁（index.html）送出的文字逐擺交予 update()，
 // 遮負責出題、逐格標對錯、記錄。外部文字（維基、自訂）一律用 textContent，無 innerHTML。
-import { grade, readingOf } from "./practice-core.js";
-import { createRecords } from "./practice-records.js";
+import { grade, readingOf } from "./practice-core.js?v=1";
+import { createRecords } from "./practice-records.js?v=1";
 import {
   loadBank, loadDictBundle, refHanFor, fromCustom, CUSTOM_KEY, randomWikipediaFeatured, wikiArticle,
   wikisourceBooks, wikisourceChildren, wikisourcePage, wikisourceChapter,
-} from "./practice-sources.js";
+} from "./practice-sources.js?v=1";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => {

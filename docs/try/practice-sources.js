@@ -1,7 +1,7 @@
 // 練習題目來源：例句庫（讀台文 sentences.json）、維基百科／維基文庫（閩南語，POJ，
 // 瀏覽器即時讀，無存檔）、自訂文章（漢羅或羅馬字）。
 // 每个來源回 {title, url, license, kind, key, items}；item = {text, slots, gloss?}。
-import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from "./practice-core.js";
+import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from "./practice-core.js?v=1";
 import { loadDict, segment, buildReverseIndex, buildLM, decodeTlToHan } from "../thak/js/dict.js?v=24";
 import { pojToTl, formatRomanization } from "../thak/js/roman.js?v=24";
 
