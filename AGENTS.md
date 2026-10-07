@@ -97,16 +97,22 @@ rime-phah-taibun/
 │   ├── download_resources.sh      # 18+ 外部資源下載
 │   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
 │   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
+│   ├── thak/                      # 讀台文工具（vendored，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
-├── docs/                          # GitHub Pages 網站 + 使用文件（try/ = 網頁試拍，build_web_playground.py 產生）
+├── docs/                          # 網站（Cloudflare wrangler 部署 taigi.anatomind.com）+ 使用文件
+│   ├── try/                       # 網頁試拍：引擎＋pack（build_web_playground.py 產生）、練習/考試/記錄（practice*.js）
+│   └── thak/                      # 讀台文（2026-10 由 soanseng/thak-tai-bun 以 git subtree 併入，保留歷史）
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）
 ├── install.sh / install_windows.ps1
 └── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
+    ├── test_try_practice.py       # node --test tests/js/：練習比對（TL/POJ 等價、對位、評分）、來源、本機記錄
+    ├── test_thak_tools.py         # bun 跑讀台文羅→漢回歸斷言
+    ├── test_site_pages.py         # 全站導覽一致、/try/ /thak/ SEO 掛佇主站
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
     └── rime_smoke.cpp             # C++ smoke
@@ -197,7 +203,7 @@ uv run ruff check scripts/ tests/      # lint
 uv run ruff format scripts/ tests/     # format
 
 # === 網頁試拍（docs/try/；改 schema/lua/字典後重跑再 commit）===
-uv run python scripts/build_web_playground.py   # 需 ../tl-poj-convert/data-public/dict.json 與 data/*_freq.tsv
+uv run python scripts/build_web_playground.py   # 需 docs/thak/data-public/dict.json 與 data/*_freq.tsv
 #   第一次加 --my-rime-dist <@libreservice/my-rime 0.10.9 的 dist/>（引擎檔 vendor 進 docs/try/）
 python3 -m http.server 8000 --directory docs    # 開 http://localhost:8000/try/ 實測
 

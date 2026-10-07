@@ -129,7 +129,10 @@ export async function randomWikipediaFeatured() {
       .catch(() => ({ title: "", text: "" }));
     const items = fromRomanText(text);
     if (items.length) {
-      return { kind: "wikipedia", key: `wikipedia:${title}`, title, url: pageUrl(WP_HOST, title), license: LIC[WP_HOST], items };
+      return {
+        kind: "wikipedia", key: `wikipedia:${title}`, title: `維基百科媠氣文章・${m} goe̍h ${day} ji̍t`,
+        url: pageUrl(WP_HOST, title), license: LIC[WP_HOST], items,
+      };
     }
   }
   throw new Error("揣無今仔日的媠氣文章");

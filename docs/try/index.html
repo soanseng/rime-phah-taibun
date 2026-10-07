@@ -95,6 +95,14 @@
                   "@type": "Answer",
                   "text": "網頁試拍需要實體鍵盤。手機請用 Android 版「寫台文 Trime」。"
                 }
+              },
+              {
+                "@type": "Question",
+                "name": "會當練習拍字無？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "會。有練習（看讀音拍、即時標對錯）、考試（干焦看漢羅，10 句算分），題目會當用例句庫、維基百科／維基文庫揀文章，抑是貼自訂文章；記錄干焦存佇你家己的瀏覽器。"
+                }
               }
             ]
           }
@@ -155,6 +163,52 @@
       kbd { border: 1px solid var(--color-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .8rem; background: var(--color-surface-alt); }
       .try-credits { font-size: .82rem; color: var(--color-muted); }
       .try-credits a { color: var(--color-green); }
+      /* 練習／考試／記錄 */
+      #try-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--color-line); }
+      #try-tabs .tab { font-size: .95rem; padding: 7px 16px; }
+      #try-tabs .tab.on { background: var(--color-green); border-color: var(--color-green); color: #fff; }
+      #practice { margin-bottom: 12px; }
+      .pr-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; font-size: .9rem; }
+      .pr-row select, .pr-row input, .pr-row textarea { font: inherit; border: 1px solid var(--color-line); border-radius: 8px; padding: 5px 8px; background: var(--color-surface); }
+      .pr-inline { display: inline-flex; gap: 6px; flex: 1; min-width: 260px; }
+      .pr-inline input { flex: 1; }
+      .pr-book, .pr-custom { flex-basis: 100%; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .pr-custom textarea { flex: 1 1 100%; resize: vertical; }
+      #pr-chapters { flex-basis: 100%; display: flex; gap: 6px; flex-wrap: wrap; }
+      .chap, .crumb { border: 1px solid var(--color-line); background: var(--color-surface-alt); border-radius: 8px; padding: 3px 10px; cursor: pointer; font-size: .85rem; }
+      .crumb::after { content: " ›"; color: var(--color-muted); }
+      .pr-meta { display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; font-size: .88rem; color: var(--color-muted); margin-bottom: 6px; }
+      .pr-meta a { color: var(--color-green); font-weight: 600; }
+      .pr-meta small { margin-left: 4px; }
+      #pr-msg button { margin-left: 6px; }
+      #pr-card { border: 1px solid var(--color-line); border-radius: var(--radius); padding: 14px 16px; background: var(--color-surface-alt); transition: background .2s, border-color .2s; }
+      #pr-card:has(#pr-target:empty) { display: none; }
+      #pr-card.flash { background: rgba(11, 111, 85, .12); border-color: var(--color-green); }
+      #pr-target { display: flex; flex-wrap: wrap; gap: 4px 2px; }
+      .cell { display: inline-flex; flex-direction: column; align-items: center; min-width: 1.6em; padding: 2px 3px 3px; border-radius: 6px; border-bottom: 2px solid transparent; }
+      .cell b { font-weight: 500; font-size: 1.4rem; line-height: 1.3; }
+      .cell i { font-style: normal; font-size: .8rem; color: var(--color-muted); line-height: 1.2; }
+      .cell.ok b { color: var(--color-green); }
+      .cell.ok { background: rgba(11, 111, 85, .08); }
+      .cell.bad b { color: var(--color-red); }
+      .cell.bad { background: rgba(215, 68, 46, .1); border-bottom-color: var(--color-red); }
+      .cell.cur { outline: 2px solid var(--color-blue); outline-offset: -2px; }
+      .cell.filled { background: rgba(36, 88, 184, .08); }
+      .cell.extra b { font-size: 1rem; }
+      #pr-gloss, #pr-ref { font-size: .85rem; color: var(--color-muted); margin-top: 6px; }
+      #pr-gloss:empty, #pr-ref:empty { display: none; }
+      .pr-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+      #practice.exam .pr-actions { display: none; }
+      #practice:not(.exam) #pr-result { display: none; }
+      #pr-result { margin-top: 12px; }
+      .res-head { font-size: 1.1rem; margin-bottom: 8px; }
+      .res-row { border-top: 1px solid var(--color-line); padding: 8px 0; }
+      .res-cells { display: flex; flex-wrap: wrap; gap: 2px; }
+      .res-reading, .res-gloss { font-size: .85rem; color: var(--color-muted); }
+      .rec-wrap { overflow-x: auto; margin-top: 10px; }
+      .rec-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+      .rec-table th, .rec-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--color-line); white-space: nowrap; }
+      .rec-table a { color: var(--color-green); }
     </style>
     <script defer src="https://umami.anatomind.com/script.js" data-website-id="42feef16-dddc-4003-b155-19cba296c797"></script>
   </head>
@@ -205,11 +259,59 @@
         <div class="container try-app">
           <div id="status">正在載入輸入法引擎…</div>
           <div id="app" class="hidden">
+            <div id="try-tabs" role="tablist" aria-label="試拍模式">
+              <button class="mode tab on" type="button" role="tab" data-view="free" aria-selected="true">自由拍</button>
+              <button class="mode tab" type="button" role="tab" data-view="practice" aria-selected="false">練習</button>
+              <button class="mode tab" type="button" role="tab" data-view="exam" aria-selected="false">考試</button>
+              <button class="mode tab" type="button" role="tab" data-view="records" aria-selected="false">記錄</button>
+            </div>
             <div id="modes">
               <button class="mode" id="m-scheme">方案：寫台文</button>
               <button class="mode" id="m-full_romanization">輸出：漢羅</button>
               <button class="mode" id="m-poj_mode">拼音：TL</button>
             </div>
+            <section id="practice" class="hidden" aria-label="練習">
+              <div id="pr-src-row" class="pr-row">
+                <label>題目
+                  <select id="pr-source">
+                    <option value="bank">例句庫（教典／900 例句）</option>
+                    <option value="wp-random">維基百科・隨機媠氣文章</option>
+                    <option value="wp-article">維基百科／維基文庫・指定文章</option>
+                    <option value="ws-book">維基文庫・揀冊</option>
+                    <option value="custom">自訂文章</option>
+                  </select>
+                </label>
+                <button class="mode hidden" id="pr-again" type="button">換一篇</button>
+                <span id="pr-wiki-box" class="hidden pr-inline"
+                  ><input id="pr-wiki" type="text" placeholder="貼維基網址，抑是文章標題（Tâi-oân）" /><button class="mode" id="pr-wiki-go" type="button">載入</button></span
+                >
+                <div id="pr-book-box" class="hidden pr-book">
+                  <select id="pr-book"><option value="">— 揀一本冊 —</option></select>
+                  <span id="pr-crumbs"></span>
+                  <div id="pr-chapters"></div>
+                </div>
+                <div id="pr-custom-box" class="hidden pr-custom">
+                  <textarea id="pr-custom" rows="4" placeholder="貼一篇漢羅文章，抑是白話字／台羅文章"></textarea>
+                  <button class="mode" id="pr-custom-go" type="button">開始練習</button>
+                </div>
+              </div>
+              <div id="pr-exam-start" class="hidden pr-row">
+                <button class="mode on" id="pr-exam-go" type="button">開始考試</button>
+                <span>例句庫隨機 10 句；干焦顯示漢羅佮華語意思，無讀音、無即時對錯，<kbd>Enter</kbd> 交一題，考了才算分。</span>
+              </div>
+              <div class="pr-meta"><span id="pr-title"></span><span id="pr-pos"></span><span id="pr-msg"></span></div>
+              <div id="pr-card">
+                <div id="pr-target" aria-live="polite"></div>
+                <div id="pr-gloss"></div>
+                <div id="pr-ref"></div>
+              </div>
+              <div class="pr-actions">
+                <button class="mode" id="pr-prev" type="button">‹ 上一句</button>
+                <button class="mode" id="pr-next" type="button">下一句 ›</button>
+                <button class="mode hidden" id="pr-restart" type="button">從頭開始</button>
+              </div>
+              <div id="pr-result"></div>
+            </section>
             <div id="editor" class="idle" tabindex="0" role="textbox" aria-multiline="true" aria-label="打字區">
               <div id="out"></div><div id="preedit" aria-live="polite"></div>
               <span class="focus-tip">點一下開始拍字</span>
@@ -225,11 +327,24 @@
               </div>
               <div id="cands" role="listbox" aria-label="候選字"></div>
             </div>
-            <div class="editor-actions">
+            <div class="editor-actions" id="editor-actions">
               <button class="mode" id="copy" type="button">複製</button>
               <button class="mode" id="clear" type="button">清空</button>
             </div>
-            <p id="hint">例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出反白的候選；欲揀別个，按 <kbd>Tab</kbd> 進選字模式，才按候選頭前的鍵（<kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>…），抑是直接點候選。<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。</p>
+            <p id="hint">例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出反白的候選；欲揀別个，按 <kbd>Tab</kbd> 進選字模式，才按候選頭前的鍵（<kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>…），抑是直接點候選。<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<br />練習：看讀音拍出整句，<kbd>Enter</kbd> 跳下一句；考試：干焦看漢羅。</p>
+            <section id="records" class="hidden" aria-label="練習記錄">
+              <p id="rec-summary"></p>
+              <div class="pr-actions">
+                <button class="mode" id="rec-export" type="button">匯出 JSON</button>
+                <button class="mode" id="rec-clear" type="button">清除記錄</button>
+              </div>
+              <div class="rec-wrap">
+                <table class="rec-table">
+                  <thead><tr><th>時間</th><th>模式</th><th>來源</th><th>句數</th><th>正確率</th><th>字／分</th></tr></thead>
+                  <tbody id="rec-rows"></tbody>
+                </table>
+              </div>
+            </section>
           </div>
           <p class="try-credits">
             引擎：<a href="https://github.com/LibreService/my_rime/tree/0.10.9" rel="noopener">My RIME 0.10.9</a>（librime 1.8.5 + librime-lua 編譯做 WebAssembly，<a href="LICENSE-my-rime.txt">AGPL-3.0-or-later</a>；<code>worker.js</code> 只改載入路徑做同源，其餘照原版）。
@@ -268,6 +383,14 @@
                 Android 分頁。
               </p>
             </details>
+            <details>
+              <summary>會當練習拍字無？</summary>
+              <p>
+                會。<a href="#practice">練習</a>：看讀音拍，逐字即時標對錯；<a href="#exam">考試</a>：干焦看漢羅，10 句考了才算分。
+                題目會當用例句庫、閩南語維基百科／維基文庫（白話字文章，自動轉台羅、附參考漢羅），抑是貼家己的文章。
+                練習記錄干焦存佇你這台瀏覽器（<a href="#records">記錄</a>會當匯出）。
+              </p>
+            </details>
           </div>
         </div>
       </section>
@@ -285,6 +408,7 @@
       </div>
     </footer>
 <script type="module">
+import { initPractice } from './practice.js';
 const $ = (id) => document.getElementById(id);
 const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
 
@@ -346,10 +470,11 @@ const UNHANDLED = 3; // api.cpp: COMMITTED, ACCEPTED, REJECTED, UNHANDLED
 const SELECT_PROMPT = /〔選字[^〕]*〕/;
 const SELECT_KEYS = 'asdfghjkl;';
 const editor = $('editor'), panel = $('panel');
+let practice = null; // initPractice() 佇 modes 了後建立
 
 function render(r) {
   if (typeof r === 'string') r = JSON.parse(r); // selectCandidateOnCurrentPage/changePage 回傳未 parse 的 JSON
-  if ('committed' in r) out.textContent += r.committed;
+  if ('committed' in r) { out.textContent += r.committed; practice?.update(out.textContent); }
   const composing = Boolean(r.candidates);
   const selecting = composing && SELECT_PROMPT.test((r.head || '') + (r.body || '') + (r.tail || ''));
   editor.classList.toggle('selecting', selecting);
@@ -399,9 +524,11 @@ $('pg-next').onclick = () => { call('changePage', false).then(render, console.er
 
 // 引擎無處理的鍵（無組字時的 Backspace／Enter／字元）＝一般編輯
 function editPlain(ev) {
+  if (ev.key === 'Enter' && practice?.active()) { practice.submit(); return; }
   if (ev.key === 'Backspace') out.textContent = [...out.textContent].slice(0, -1).join('');
   else if (ev.key === 'Enter') out.textContent += '\n';
   else if (ev.key.length === 1) out.textContent += ev.key;
+  practice?.update(out.textContent);
 }
 
 // 連續英數字鍵：引擎無閒時先囥緩衝，閒了才合併做一批送（每批只行一擺 Lua filter，快拍袂積延遲）。
@@ -418,7 +545,7 @@ function sendBuf() {
   if (!keyBuf) return;
   const keys = keyBuf;
   keyBuf = '';
-  send(keys, () => { out.textContent += keys; });
+  send(keys, () => { out.textContent += keys; practice?.update(out.textContent); });
 }
 $('editor').addEventListener('keydown', (ev) => {
   const name = keyName(ev);
@@ -432,7 +559,7 @@ $('editor').addEventListener('keydown', (ev) => {
   sendBuf();
   send(name, () => editPlain(ev));
 });
-$('clear').onclick = () => { out.textContent = ''; editor.classList.add('idle'); editor.focus(); };
+$('clear').onclick = () => { out.textContent = ''; editor.classList.add('idle'); practice?.update(''); editor.focus(); };
 $('copy').onclick = async () => {
   const btn = $('copy');
   try {
@@ -452,9 +579,17 @@ const modes = {
 };
 for (const [name, m] of Object.entries(modes)) {
   m.refresh = () => { m.btn.textContent = m.labels[m.on]; m.btn.classList.toggle('on', m.on === 1); };
-  m.btn.onclick = async () => { m.on = m.on ? 0 : 1; await call('setOption', name, m.on); m.refresh(); $('editor').focus(); };
+  m.btn.onclick = async () => { m.on = m.on ? 0 : 1; await call('setOption', name, m.on); m.refresh(); practice?.refresh(); $('editor').focus(); };
   m.refresh();
 }
+
+// ---- 練習／考試／記錄（practice.js）：送出的文字逐擺交予伊評分 ----
+practice = initPractice({
+  out,
+  clearOut: () => { out.textContent = ''; editor.classList.add('idle'); },
+  isPoj: () => modes.poj_mode.on === 1,
+  focusEditor: () => editor.focus(),
+});
 
 // ---- 方案：寫台文（數字調）／Telex（字母調鍵）----
 const SCHEMES = {
