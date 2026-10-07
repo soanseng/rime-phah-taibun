@@ -1,0 +1,47 @@
+{
+  "itaigi": {
+    "entries": 20474,
+    "license": "CC0 (iTaigi 華台對照典)"
+  },
+  "taihoa": {
+    "entries": 100983,
+    "license": "CC BY-SA 4.0 (台華線頂對照典)"
+  },
+  "sitbut": {
+    "entries": 1722,
+    "license": "CC BY-SA 4.0 (台灣植物名彙)"
+  },
+  "placenames": {
+    "entries": 8066,
+    "license": "CC BY 3.0 TW (教育部本土語言標注臺灣地名)"
+  },
+  "stti": {
+    "entries": 5467,
+    "license": "開放運用、標示來源 (教育部 STTI 學科術語臺灣台語對譯)"
+  },
+  "le9ku3": {
+    "entries": 1393,
+    "license": "MIT（Taiwanese-Corpus repo 聲明；原始教材：新北市900例句工作坊，標示來源）"
+  },
+  "lkk": {
+    "entries": 526,
+    "license": "使用者確認可用：非商用、標示來源 (LKK 李江却基金會用字表)"
+  },
+  "charsiu": {
+    "entries": 4,
+    "license": "curated：讀音內證自本典 CC0/BY-SA 複詞（之/枵/植/臨）"
+  },
+  "rimeword": {
+    "entries": 57436,
+    "license": "混合授權、非商業（rime-phah-taibun phah_taibun.dict.yaml：CC0＋CC BY-SA 4.0＋CC BY-ND 3.0 TW＋CC BY-NC-SA 3.0 TW〔台日大辭典、Maryknoll、Embree、甘字典〕＋待確認來源；rime LICENSE 完整揭露）。使用者 2026-09-29 裁定照 rime repo 2026-09-24 慣例入公開包"
+  },
+  "le7csv": {
+    "entries": 0,
+    "license": "教育部教典例句（CC BY-ND 3.0 TW，使用者 2026-09-27 准重發布、標示來源）——只收佮教典原文核對著的句子"
+  },
+  "_meta": {
+    "mode": "public",
+    "words": 136868,
+    "with_gloss": 81643
+  }
+}

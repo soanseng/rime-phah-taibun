@@ -1,0 +1,1540 @@
+{
+ "meta": {
+  "title": "文法筆記",
+  "authorship": "說明自寫、分類自訂。標〔教典〕的例句（連官方華語對譯）照教育部臺灣台語常用詞辭典原句逐字重刊——CC BY-ND 3.0 TW，標示來源；標〔自造〕的短句、伊的對譯佮逐句教學註記是本站加的。無重刊 TGGL、臉書、論文或講義的例句。",
+  "sources": "參考資料逐篇標示：臺灣台語語料庫應用檢索系統 TGGL（國家教育研究院）語法點／語法小專欄（謹此致謝教育部）、維基學院《閩南語文法》（CC BY-SA 4.0，採閩拼系統——佮本站臺羅拼法無仝，參考其概念）、廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉（國立臺灣師範大學碩士論文，虛詞／複句／語氣詞框架參考）、郭永錕（2016）《台語《語法》》講義（高雄市政府教育局，疑問／否定句型框架參考）、塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉（特色句法／輕聲框架；例句自造，無重刊貼文原句）、李淑鳳（2013）〈台語連詞和副詞的關聯性〉（《台灣學誌》第7期；「愈／那」連用分類）",
+  "disclaimer": "筆記是學習性整理，若有錯誤歡迎回報；欲看語法點完整說明佮語料例句，請點參考連結去原系統",
+  "updated": "2026-09-27",
+  "matchNote": "match／matchRe＝輸入區文法偵測用觸發詞（漢字做子字串、純臺羅字組做詞界比對）；無設的是結構主題（主題句、被動完成），無固定觸發詞。"
+ },
+ "categories": [
+  {
+   "id": "pronoun",
+   "title": "人稱代名詞"
+  },
+  {
+   "id": "negation",
+   "title": "否定系統"
+  },
+  {
+   "id": "question",
+   "title": "疑問句"
+  },
+  {
+   "id": "modality",
+   "title": "能願佮存在"
+  },
+  {
+   "id": "case",
+   "title": "連接佮處置"
+  },
+  {
+   "id": "aspect",
+   "title": "時貌"
+  },
+  {
+   "id": "conj",
+   "title": "複句關鍵字"
+  },
+  {
+   "id": "mood",
+   "title": "語氣詞"
+  },
+  {
+   "id": "syntax",
+   "title": "特色句法"
+  },
+  {
+   "id": "light",
+   "title": "輕聲變義"
+  },
+  {
+   "id": "complement",
+   "title": "補語"
+  },
+  {
+   "id": "demonstrative",
+   "title": "指示詞"
+  },
+  {
+   "id": "redup",
+   "title": "疊字"
+  },
+  {
+   "id": "sandhi",
+   "title": "變調"
+  },
+  {
+   "id": "quantity",
+   "title": "數量詞"
+  },
+  {
+   "id": "proverb",
+   "title": "諺語熟語"
+  }
+ ],
+ "notes": [
+  {
+   "id": "guan-lan-in",
+   "cat": "pronoun",
+   "title": "阮、咱：exclusive／inclusive 的分別",
+   "body": [
+    "台語人稱代名詞單數是 <strong>guá</strong>（我）、<strong>lí</strong>（你）、<strong>i</strong>（伊），無分男女。第三人稱複數兼所有格是 <strong>in</strong>（𪜶）。",
+    "第一人稱複數上愛分的就是「有無包含聽的人」：<strong>lán</strong>（咱）包含對方，<strong>guán</strong>（阮；南部腔 gún）無包含對方。「lán tsò-hué khì」是邀請你做伙去；講家內代誌用「guán tau」——你家就是你家，無包含聽的人。",
+    "所有格直接黏名詞就好：in tau（𪜶兜）、guán lāu-su（阮老師）；若單獨講「我的、你的」才用 ê：<strong>guá--ê</strong>（我的）。"
+   ],
+   "examples": [
+    {
+     "han": "阮大的對細漢的真照顧",
+     "tl": "Guán tuā--ê tuì sè-hān--ê tsin tsiàu-kòo.",
+     "hua": "我們老大對小弟們很照顧。",
+     "src": "moedict",
+     "note": "阮＝排除式（無含聽者）"
+    },
+    {
+     "han": "阮店賣的攏是高級貨",
+     "tl": "Guán tiàm bē--ê lóng sī ko-kip huè.",
+     "hua": "我們店裡頭賣的都是高級貨品。",
+     "src": "moedict",
+     "note": "阮＝排除式所有格"
+    },
+    {
+     "han": "咱做伙去！",
+     "tl": "Lán tsò-hué khì!",
+     "hua": "我們（含你）一起去！",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 006「阮/咱」（阮1·阮2·阮3·咱1·咱2·咱3）",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=阮"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈人稱代詞〉（inclusive/exclusive 表）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E4%BA%BA%E7%A8%B1%E4%BB%A3%E8%A9%9E"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "阮",
+    "咱",
+    "𪜶",
+    "恁",
+    "lán",
+    "guán",
+    "gún",
+    "lín"
+   ]
+  },
+  {
+   "id": "geng-teng-su",
+   "cat": "negation",
+   "title": "毋、無、袂、未、免、莫：否定詞點點名",
+   "body": [
+    "台語否定比華語分較細：<strong>m̄</strong>（毋）否定意願佮性質；<strong>bô</strong>（無）否定領有、存在、完成；<strong>bē</strong>（袂）否定能力佮可能（是「ē 會」的否定）。",
+    "語感三分（郭永錕 2016 的教學框架）：<strong>bô</strong>（無）講「事實」（無錢、無去）；<strong>bē</strong>（袂）講「判斷」（袂好看、看袂清楚）；<strong>m̄</strong>（毋）講「意願」（毋去、毋知）。",
+    "外沿閣有四个：<strong>iáu-buē</strong>（猶未）「還沒」；<strong>bián</strong>（免）「不必」；<strong>mài</strong>（莫）「別」（阻止的命令）；<strong>m̄-thang</strong>（毋通）「不可以」（警告）。語感攏無仝：mài 是叫你莫去，bián 是講無需要，m̄-thang 是按呢做會出代誌。",
+    "答話上利便用 bô 佮 m̄-sī：「Lí ū tsia̍h--bô?」——「Bô!」（有吃嗎？沒有。）"
+   ],
+   "examples": [
+    {
+     "han": "佯毋知",
+     "tl": "tènn-m̄-tsai",
+     "hua": "裝作不知道",
+     "src": "moedict",
+     "note": "m̄ 否定意願"
+    },
+    {
+     "han": "規个㨑起來才袂亂",
+     "tl": "Kui-ê tsang--khí-lâi tsiah bē luān.",
+     "hua": "整個捆起來才不會亂。",
+     "src": "moedict",
+     "note": "bē 袂——可能否定"
+    },
+    {
+     "han": "代誌猶未定著",
+     "tl": "tāi-tsì iáu-buē tiānn-tio̍h",
+     "hua": "事情尚未確定",
+     "src": "moedict",
+     "note": "iáu-buē 猶未——還沒"
+    },
+    {
+     "han": "莫共我亂",
+     "tl": "mài kā guá luān",
+     "hua": "不要煩我",
+     "src": "moedict",
+     "note": "mài 莫——命令；順紲看 kā"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 024 否定詞群組",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=毋"
+    },
+    {
+     "label": "TGGL 語法小專欄：無、毋、袂、免、莫各種否定詞的比較",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/13"
+    },
+    {
+     "label": "TGGL 語法小專欄：「毋」的否定與疑問",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/11"
+    },
+    {
+     "label": "郭永錕（2016）《台語《語法》》講義（第 1 節：否定句）（高雄市政府教育局）",
+     "url": "https://www.kh.edu.tw/filemanage/upload/2301/0712-2%E8%AA%9E%E6%B3%95-%E9%83%AD%E6%B0%B8%E9%8F%9C%E8%80%81%E5%B8%AB.pdf"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "毋",
+    "袂",
+    "未",
+    "免",
+    "莫"
+   ]
+  },
+  {
+   "id": "gi-mun-ku",
+   "cat": "question",
+   "title": "疑問句：疑問詞、句尾「--無／--未」佮「敢」",
+   "body": [
+    "特指疑問用疑問詞：<strong>siánn-mih</strong>（啥物，什麼）、<strong>tó-uī</strong>（佗位，哪裡）、<strong>tang-sî</strong>（當時，何時）、<strong>uī-siánn-mih</strong>（為啥物）、<strong>án-tsuánn</strong>（按怎，怎樣）。",
+    "是非疑問上捷用句尾 <strong>--bô</strong>（…無）：tsia̍h-pn̄g--bô?（食飯--無？吃飯了嗎）；問完成用 <strong>--buē</strong>（…未）。",
+    "<strong>kam</strong>（敢）是反詰、確認：「kam m̄ sī」（敢毋是，難道不是）。注意敢毋是「勇敢」彼个敢的語感，是提出質疑的。",
+    "是非問用 <strong>kám</strong>（敢），「好像」是另外的 <strong>káⁿ-ná</strong>（敢若），音佮意思無仝。潘科元建議推測義的漢字寫「咁」，免共疑問的敢混做伙。句尾輕聲 --bô 是問句，本調 bô 是陳述否定，寫全漢若會誤會著愛標輕聲。"
+   ],
+   "examples": [
+    {
+     "han": "我毋知影伊唱的是啥物調",
+     "tl": "Guá m̄ tsai-iánn i tshiùnn--ê sī siánn-mih tiāu.",
+     "hua": "我不知道他唱的是什麼曲。",
+     "note": "siánn-mih 啥物",
+     "src": "moedict"
+    },
+    {
+     "han": "你敢有食中晝頓？",
+     "tl": "Lí kám ū tsia̍h tiong-tàu-tǹg?",
+     "hua": "你有沒有吃午餐？",
+     "note": "kám 敢——是非問",
+     "src": "moedict"
+    },
+    {
+     "han": "你食飯--無？",
+     "tl": "Lí tsia̍h-pn̄g--bô?",
+     "hua": "你吃飯了嗎？",
+     "note": "句尾輕聲 --bô",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 035「敢……？」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=敢"
+    },
+    {
+     "label": "TGGL 語法小專欄：各種疑問句的比較",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/12"
+    },
+    {
+     "label": "TGGL 語法小專欄：……矣、未……、……未？",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/10"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈疑問代詞〉",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E7%96%91%E5%95%8F%E4%BB%A3%E8%A9%9E"
+    },
+    {
+     "label": "郭永錕（2016）《台語《語法》》講義（第 1 節：疑問句 8 型——有…無、會…袂、欲…毋、敢、乎、特指）（高雄市政府教育局）",
+     "url": "https://www.kh.edu.tw/filemanage/upload/2301/0712-2%E8%AA%9E%E6%B3%95-%E9%83%AD%E6%B0%B8%E9%8F%9C%E8%80%81%E5%B8%AB.pdf"
+    },
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·8–9 無字是非問、敢／káⁿ",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "敢",
+    "啥",
+    "佗"
+   ]
+  },
+  {
+   "id": "u-bo",
+   "cat": "modality",
+   "title": "有／無：領有、存在、完成",
+   "body": [
+    "<strong>ū</strong>（有）三个主要用法：領有（ū tsînn 有錢）、存在（toh-tíng ū thng 桌頂有湯）、經驗／完成（guá ū khì--kuè 我有去過）。",
+    "否定佮疑問常用 <strong>bô</strong>（無）：Guá bô khì（我沒去）；Lí ū khì--bô?（你有去無？）。動詞頭前的 ū／bô 會當標完成或經驗（我有去），毋過 ū 本身嘛是領有、存在——毋是見著 ū 就完成體。台灣華語「我有去」是ùi台語借去的。",
+    "「有……無？」是是非問的萬用型，欲練習會當逐項物攏按呢問。"
+   ],
+   "examples": [
+    {
+     "han": "有去無回",
+     "tl": "ū khì bô huê",
+     "hua": "",
+     "src": "moedict",
+     "note": "ū／bô 對比"
+    },
+    {
+     "han": "我有去--過台北。",
+     "tl": "Guá ū khì--kuè Tâi-pak",
+     "hua": "我去過台北。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 010「[動詞]+有/無」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=有"
+    },
+    {
+     "label": "TGGL 語法小專欄：有、無、有……無？",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/8"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈完成式動詞組〉（u+動詞 表完成）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%AE%8C%E6%88%90%E5%BC%8F%E5%8B%95%E8%A9%9E%E7%B5%84"
+    },
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·2 有字句（完成；台灣華語常直接挪用）",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "有",
+    "無"
+   ]
+  },
+  {
+   "id": "e-bue",
+   "cat": "modality",
+   "title": "會／袂：能力、可能佮「會使、會當」",
+   "body": [
+    "<strong>ē</strong>（會）表能力佮可能：I ē phah-kiû（伊會拍球）。否定是 <strong>bē</strong>（袂，TGGL 024-02）；講技能「不會」是 <strong>bē-hiáu</strong>（袂曉）。注意「未」（iáu-buē 猶未、句尾 --buē）是另外一个詞，臺羅寫 buē，毋是 bē。",
+    "情態詞組照 TGGL 009：<strong>ē-sái</strong>（會使，可以）、<strong>ē-tàng</strong>（會當，能夠）；否定 <strong>bē-sái</strong>（袂使）、<strong>bē-tàng</strong>（袂當）。語感：會使偏許可，會當偏能力所及。臺羅以教典詞條為準：ē-sái、bē-sái。",
+    "疑問用「會……袂？」：Mî-á-tsài ē lâi bē?（明仔載會來袂？）句尾袂讀輕聲 --bē。"
+   ],
+   "examples": [
+    {
+     "han": "會使",
+     "tl": "ē-sái",
+     "hua": "可以",
+     "src": "moedict",
+     "note": "詞條——臺羅 ē-sái"
+    },
+    {
+     "han": "袂使",
+     "tl": "bē-sái",
+     "hua": "不行",
+     "src": "moedict",
+     "note": "詞條——bē-sái"
+    },
+    {
+     "han": "講袂來",
+     "tl": "kóng bē lâi",
+     "hua": "說不通、不會說",
+     "src": "moedict",
+     "note": "bē 可能否定"
+    },
+    {
+     "han": "按呢會使無？",
+     "tl": "Án-ne ē-sái--bô?",
+     "hua": "這樣可以嗎？",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 009「會/袂+使/當」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=會"
+    },
+    {
+     "label": "TGGL 語法小專欄：會、袂、會……袂？",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/9"
+    },
+    {
+     "label": "TGGL 語法小專欄：會/袂使、會/袂當、會/袂[動詞]得",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/1"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "會使",
+    "會當",
+    "袂使",
+    "袂當",
+    "會曉",
+    "袂曉"
+   ]
+  },
+  {
+   "id": "kah",
+   "cat": "case",
+   "title": "佮：連詞「和」嘛是介詞「跟」",
+   "body": [
+    "<strong>kah</strong>（佮）做連詞，連兩个對等的名詞：Tâi-pak kah Tâi-lâm（台北佮台南）。",
+    "做介詞是「跟、和」的意思，後壁常孤做伙：<strong>kah i tsò-hué</strong>（佮伊做伙，和他一起）。",
+    "一个常見的混淆：佮（kah，佮人做伙）佮共（kā，對人做代誌）無仝——共看後一篇。"
+   ],
+   "examples": [
+    {
+     "han": "代誌佮你所想的差真濟",
+     "tl": "Tāi-tsì kah lí sóo siūnn--ê tsha tsin tsē.",
+     "hua": "事情跟你所想的差很多。",
+     "src": "moedict",
+     "note": "kah 佮＝佮／跟"
+    },
+    {
+     "han": "陳的佮王的咧加話",
+     "tl": "Tân--ê kah Ông--ê leh ke-uē.",
+     "hua": "老陳跟老王兩人在爭論。",
+     "src": "moedict",
+     "note": "佮＋leh 雙點"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 007「佮」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=佮"
+    },
+    {
+     "label": "TGGL 語法小專欄：「佮」的用法及讀音解析",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/7"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈介系詞正詞法〉（gaq 與）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E4%BB%8B%E7%B3%BB%E8%A9%9E%E6%AD%A3%E8%A9%9E%E6%B3%95"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "佮",
+    "kah",
+    "kap"
+   ]
+  },
+  {
+   "id": "ka",
+   "cat": "case",
+   "title": "共：對人／處置「把」",
+   "body": [
+    "<strong>kā</strong>（共）會當共受事提到動詞頭前，親像華語「把」：Kā mn̂g kuan--khì（共門關--去，把門關上）。",
+    "「kā＋人＋動詞」是對某人做動作（華語「跟／對」）：Guá kā i kóng（我共伊講，我對他說）。佮 kah 的分別：kā 是單向「對伊做」，kah 是「佮伊做伙」。",
+    "命令句「共我……」語氣真重：Kā guá thèng-hāu（共我等，給我等著）。"
+   ],
+   "examples": [
+    {
+     "han": "共伊交關",
+     "tl": "kā i kau-kuan",
+     "hua": "向他買東西",
+     "src": "moedict",
+     "note": "kā＋人＋動詞"
+    },
+    {
+     "han": "你免想欲共我創景",
+     "tl": "Lí bián siūnn beh kā guá tshòng-kíng .",
+     "hua": "你別想捉弄我。",
+     "src": "moedict",
+     "note": "kā＋我"
+    },
+    {
+     "han": "共門關--去。",
+     "tl": "Kā mn̂g kuan--khì.",
+     "hua": "把門關上。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 108「共」群組（共+[對象]+[動作]、共（伊）、共我、共……做……）",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=共"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈句法：主語+gaq+受詞+動詞（主動/處置語態）〉",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+    },
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·1 共字句（賓語提前；部份動詞限定用 kā）",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "kā"
+   ],
+   "matchRe": "(?<![一總相])共(?![同通識性])"
+  },
+  {
+   "id": "hoo",
+   "cat": "case",
+   "title": "予：給、被、讓",
+   "body": [
+    "<strong>hōo</strong>（予）是台語上無閒的虛詞之一，四个主要用法：<strong>給</strong>（物件轉移）：tsit pún tsheh hōo lí；<strong>被</strong>（被動）：guá hōo i mà（我予伊罵）；<strong>讓</strong>（使役）：hōo i khì（予伊去）；<strong>予人</strong>＝「令人」。",
+    "被動句 hōo 後壁定定接施事者（誰做的）：Thng hōo i lim--liáu（湯予伊飲--了）。無講是啥人的時，口語會用泛指「予人」。這是常見句式，毋是維基學院頁面的結論。",
+    "一个陷阱：hōo（予）佮 hōo…去（予…去）有時華語攏翻「給」，但是台語語感無仝——多看語例上實在。"
+   ],
+   "examples": [
+    {
+     "han": "伊去予人修理",
+     "tl": "i khì hōo lâng siu-lí",
+     "hua": "他被修理了",
+     "src": "moedict",
+     "note": "hōo 被動（予人）"
+    },
+    {
+     "han": "坐予好勢",
+     "tl": "tsē hōo hó-sè",
+     "hua": "坐好",
+     "src": "moedict",
+     "note": "hōo 到妥當狀態"
+    },
+    {
+     "han": "水電的工程貿予張的做",
+     "tl": "Tsuí-tiān ê kang-tîng bāu hōo Tiunn--ê tsò.",
+     "hua": "水電工程包給姓張的做。",
+     "src": "moedict",
+     "note": "hōo 給（發包）"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 109「予」群組（予1+[賓語]、予3/4+[對象]+[動詞]、予5（伊））",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=予"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈句法〉（閩拼 ho 被動句式；跨方言參考，臺羅以 TGGL 為準）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "予",
+    "hōo"
+   ]
+  },
+  {
+   "id": "leh-ah-bat",
+   "cat": "aspect",
+   "title": "咧、矣、bat：進行、完成、經驗",
+   "body": [
+    "台語的時貌靠虛詞標記，無華語「了、著、過」的一一對應。<strong>leh／teh</strong>（咧）是進行貌：教典例句拼 teh（風咧吹 Hong teh tshue），口語佮 TGGL 嘛定定拼 leh；閣會當講 tng-leh（當咧）。",
+    "<strong>--ah</strong>（--矣）是完成／變化貌，讀輕聲：I tsia̍h-pá--ah（伊食飽--矣）。否定「還沒」用 <strong>iáu-buē</strong>（猶未）：Guá iáu-buē tsia̍h-pn̄g。",
+    "經驗貌用 <strong>bat…--kuè</strong>（bat…過）：Guá bat khì--kuè Tâi-pak（我捌去--過台北）。bat 單獨也會使：Lí bat khuànn--tio̍h i--bô?（你捌看--著伊無？）"
+   ],
+   "examples": [
+    {
+     "han": "風咧吹",
+     "tl": "hong teh tshue",
+     "hua": "風在吹",
+     "note": "教典拼 teh——進行貌",
+     "src": "moedict"
+    },
+    {
+     "han": "伊來一霎仔久就轉去矣",
+     "tl": "I lâi tsi̍t-tiap-á-kú tō tńg--khì--ah.",
+     "hua": "他來一下子就回去了。",
+     "note": "--ah 完成",
+     "src": "moedict"
+    },
+    {
+     "han": "以前美國捌向日本宣戰",
+     "tl": "Í-tsîng Bí-kok bat hiòng Ji̍t-pún suan-tsiàn.",
+     "hua": "以前美國曾經向日本宣戰。",
+     "note": "bat 捌＝曾經（教典釋義「曾經」）",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 時態語：完成／未來／經驗／進行）（國立臺灣師範大學碩士論文）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    },
+    {
+     "label": "TGGL 語法小專欄：……矣、未……、……未？",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/10"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈完成式動詞組〉（u+動詞 表完成）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%AE%8C%E6%88%90%E5%BC%8F%E5%8B%95%E8%A9%9E%E7%B5%84"
+    },
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·3 咧字句（進行＝咧＋動詞／動詞＋咧）",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "咧",
+    "矣",
+    "bat",
+    "leh"
+   ]
+  },
+  {
+   "id": "na-to-lu-lu",
+   "cat": "conj",
+   "title": "若…就…、愈…愈…、那…那…：兩个「那」莫混",
+   "body": [
+    "假設用 <strong>nā…tō…</strong>（若…就…）：Nā lo̍h-hōo, tō mài khì（若落雨，就莫去）。",
+    "單獨的「愈」是副詞「更加」；教典詞條拼 <strong>jú</strong>，口語定定聽 <strong>lú</strong>，兩款攏有效。連用 <strong>lú…lú…</strong> 了後，後項的程度綴前項遞增，語意總合已經無仝——李淑鳳（2013）因此把連用的「愈…愈」看做連詞，毋是兩個副詞相加。",
+    "<strong>ná…ná…</strong>（那…那…）有兩款，莫混：一款佮「愈…愈」仝款（Ná khuànn ná tshuè，那看那趣＝愈看愈有趣），連用了後是連詞；另外一款是「邊…邊」（I ná kiânn ná chhiò，伊那行那笑），連用了後猶原是副詞，語意無產生新的因果。"
+   ],
+   "examples": [
+    {
+     "han": "愈想愈凝",
+     "tl": "jú siūnn jú gîng",
+     "hua": "愈想愈懊惱",
+     "src": "moedict",
+     "note": "教典拼 jú——遞增連用"
+    },
+    {
+     "han": "愈狂愈走傱",
+     "tl": "jú kông jú tsáu-tsông",
+     "hua": "越急越慌亂",
+     "src": "moedict",
+     "note": "jú…jú 遞增"
+    },
+    {
+     "han": "那行那看",
+     "tl": "ná kiânn ná khuànn",
+     "hua": "一邊走一邊看",
+     "src": "moedict",
+     "note": "ná＝邊…邊"
+    },
+    {
+     "han": "若落雨，就莫去。",
+     "tl": "Nā lo̍h-hōo, tō mài khì.",
+     "hua": "如果下雨，就別去。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.2 複句句型及關鍵字：假設句、比較句、選擇句）（國立臺灣師範大學碩士論文）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    },
+    {
+     "label": "TGGL 語法點 007「佮」（並列連接）",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=佮"
+    },
+    {
+     "label": "李淑鳳（2013）〈台語連詞和副詞的關聯性〉，《台灣學誌》第7期，頁21–55（連用「愈…愈」歸連詞；「那」分遞增佮同時兩款）",
+     "url": "https://www.tcll.ntnu.edu.tw/twnica/downloadfile.php?periodicalsPage=2&issue_id=23&paper_id=134"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "若",
+    "愈"
+   ]
+  },
+  {
+   "id": "lah-leh-hoo",
+   "cat": "mood",
+   "title": "lah、leh、ho͘ⁿh、niā-niā：語氣詞",
+   "body": [
+    "語氣詞黏佇句尾，數量有限、頻率懸。<strong>--lah</strong>（啦）口語定定用佇勸告、決定：Lí lâi--lah（你來--啦）。廖淑鳳（2007）分析教科書的時，把 lah 歸佇「完成」類——分類標準無仝，毋通當成唯一規則。<strong>--leh</strong>（咧）會當是輕聲提醒：Tsiânn--leh（靜--咧）；咧嘛是進行貌（看時貌篇），兩個愛分開。",
+    "<strong>hooNnh</strong>（乎）是不確定、推敲的疑問語氣：Lí ē lâi--hooNnh?（你會來--乎？）——佮 --bô 的是非問無仝，hooNnh 是「我猜是按呢，是無？」的語感。",
+    "<strong>niā-niā</strong>（爾爾）是「而已、不過如此」：Tsi̍t ê niā-niā（一个爾爾）。"
+   ],
+   "examples": [
+    {
+     "han": "你來--啦。",
+     "tl": "Lí lâi--lah.",
+     "hua": "你來吧。",
+     "src": "self"
+    },
+    {
+     "han": "靜--咧。",
+     "tl": "Tsiânn--leh.",
+     "hua": "安靜點。",
+     "src": "self"
+    },
+    {
+     "han": "你會來--乎？",
+     "tl": "Lí ē lâi--hooNnh?",
+     "hua": "你會來吧？（不確定的推敲）",
+     "src": "self"
+    },
+    {
+     "han": "一个爾爾。",
+     "tl": "Tsi̍t ê niā-niā.",
+     "hua": "一個而已。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（教科書語氣詞表把 lah 歸完成類；本篇口語用法是另行整理）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    }
+   ],
+   "match": [
+    "lah",
+    "leh",
+    "哩"
+   ]
+  },
+  {
+   "id": "comp-after",
+   "cat": "syntax",
+   "title": "補語後置：讀冊了、鹹 kah",
+   "body": [
+    "華語把補語插佇動詞佮賓語中間（讀完書）。台語口語定定是「動詞＋賓語＋補語」：讀冊了，毋是讀了冊。",
+    "若補語是另外一个動詞（切了、煮好），頭前的動詞愛重講一擺：切菜切了。無重講，聽的人會當理解做「先去切菜，好矣」的語氣。",
+    "形容詞的程度補語嘛後置，用 <strong>kah</strong>：這碗湯鹹 kah（鹹得很）。"
+   ],
+   "examples": [
+    {
+     "han": "讀冊了才歇困。",
+     "tl": "Tha̍k tsheh liáu tsiah hio-khùn.",
+     "hua": "讀完書再休息。",
+     "src": "self"
+    },
+    {
+     "han": "切菜切了才煮。",
+     "tl": "Tshiat tshài tshiat liáu tsiah tsú.",
+     "hua": "切好菜才煮。",
+     "src": "self"
+    },
+    {
+     "han": "這碗湯鹹 kah。",
+     "tl": "Tsit uánn thng kiâm kah.",
+     "hua": "這碗湯鹹得很。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·4–5 複合動詞補語後置、形容詞補語後置",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    }
+   ],
+   "match": [
+    "了後"
+   ]
+  },
+  {
+   "id": "topic-first",
+   "cat": "syntax",
+   "title": "主題先講，評論後置",
+   "body": [
+    "台語愛先共話題擲出來，後面才講對伊的評論或要求。華語較捷講「借我兩本書」；台語會講「冊兩本借我」。",
+    "仝款：「湯燒，逐家攏驚」是先講話題「燒湯」，才講「逐家攏驚」。這毋是倒裝錯誤，是主題優先。"
+   ],
+   "examples": [
+    {
+     "han": "冊兩本借我。",
+     "tl": "Tsheh nn̄g pún tsioh guá.",
+     "hua": "借我兩本書。",
+     "src": "self"
+    },
+    {
+     "han": "湯燒，逐家攏驚。",
+     "tl": "Thng sio, ta̍k-ke lóng kiaⁿ.",
+     "hua": "湯很燙，大家都怕。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·6 主題優先，補語後置",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    }
+   ]
+  },
+  {
+   "id": "khah-compare",
+   "cat": "syntax",
+   "title": "比較：A 較形容詞 B",
+   "body": [
+    "台語比較是「A＋（khah）＋形容詞＋B」，毋是華語「A 比 B 形容詞」。無物 khah 芳這蕊花＝沒有東西比這朵花香。khah 有時會當省，但是初學先寫出來較穩。",
+    "這款句無「比」字。年紀嘛用仝款：伊 khah 大漢我。"
+   ],
+   "examples": [
+    {
+     "han": "物件買二手的較俗",
+     "tl": "Mi̍h-kiānn bé jī-tshiú--ê khah sio̍k.",
+     "hua": "東西買中古的比較便宜。",
+     "src": "moedict",
+     "note": "khah 較"
+    },
+    {
+     "han": "外口較涼",
+     "tl": "guā-kháu khah liâng",
+     "hua": "外面比較涼",
+     "src": "moedict",
+     "note": "khah 較"
+    },
+    {
+     "han": "這條路較近彼條。",
+     "tl": "Tsit tiâu lōo khah kīn hit tiâu.",
+     "hua": "這條路比那條近。",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·7 比較句式 A 較 adj. B",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "較",
+    "khah"
+   ]
+  },
+  {
+   "id": "light-sense",
+   "cat": "light",
+   "title": "輕聲會改意思：揣無／揣--無",
+   "body": [
+    "仝款漢字，有無輕聲記號（--）意思會無仝。上常見是動詞後壁的 bô：本調是「做無成」（揣無＝找不到），輕聲 --bô 是問「做不做」。寫全漢若會誤會，愛標輕聲。揣無、聽無、看無是教典詞條（本調 bô「V 不成」）；輕聲問句 --bô 教典例句內底無收，對照是本站自造。",
+    "塗豆仁學台語列有一寡固定對照（有影、買、後日等）。本篇無重刊彼套原句，只用自造的動詞對照說明機制。媒體若用華語稿直譯來讀，這款對比上常消失。"
+   ],
+   "examples": [
+    {
+     "han": "揣無。／揣--無？",
+     "tl": "Tshuē bô.／Tshuē--bô?",
+     "hua": "找不到。／找不找？",
+     "src": "self"
+    },
+    {
+     "han": "聽無。／聽--無？",
+     "tl": "Thiann bô.／Thiann--bô?",
+     "hua": "聽不懂。／聽到了嗎？",
+     "src": "self"
+    },
+    {
+     "han": "看無。／看--無？",
+     "tl": "Khuànn bô.／Khuànn--bô?",
+     "hua": "看不懂。／看到了嗎？",
+     "src": "self"
+    }
+   ],
+   "refs": [
+    {
+     "label": "塗豆仁學台語（2024-10-03）臉書〈台語的十個特色文法〉·10 輕聲變義（框架；例句自造，無重刊原句）",
+     "url": "https://www.facebook.com/Taigipeanut/posts/857049303275669/"
+    }
+   ],
+   "match": [
+    "看無",
+    "聽無",
+    "揣無"
+   ]
+  },
+  {
+   "id": "deixis",
+   "cat": "demonstrative",
+   "title": "這／彼、遮／遐、這馬：指示詞",
+   "body": [
+    "指物用 <strong>tsit-／hit-</strong>（這／彼）加量詞：tsit ê（這个）、hit ê（彼个）；指所在用 <strong>tsia／hia</strong>（遮／遐）；複數「這些、那些」是 <strong>tsia-ê／hia-ê</strong>（遮的／遐的）。",
+    "時間指示：<strong>tsit-má</strong>（這馬，現在）佮 <strong>khah-tsá</strong>（較早，以前）對比；<strong>tsiah／hiah</strong>（遮爾／遐爾）是程度「這麼／那麼」。",
+    "教典例句「伊較早咧作田，這馬咧做生理」一句鞠三个點：較早、這馬、進行貌 teh。"
+   ],
+   "examples": [
+    {
+     "han": "伊較早咧作田，這馬咧做生理",
+     "tl": "I khah-tsá teh tsoh-tshân, tsit-má teh tsò-sing-lí.",
+     "hua": "他早先是在種田，現在是在做生意。",
+     "note": "較早／這馬對比＋teh 進行",
+     "src": "moedict"
+    },
+    {
+     "han": "這个囡仔真乖巧",
+     "tl": "Tsit ê gín-á tsin kuai-khá.",
+     "hua": "這個孩子聰明伶俐，討人喜歡。",
+     "note": "tsit ê 這个",
+     "src": "moedict"
+    },
+    {
+     "han": "遮的物件攏是免稅的",
+     "tl": "Tsia-ê mi̍h-kiānn lóng sī bián-suè--ê.",
+     "hua": "這些東西都是免稅的。",
+     "note": "tsia-ê 遮的＝這些",
+     "src": "moedict"
+    },
+    {
+     "han": "遐有一台哹哹",
+     "tl": "Hia ū tsi̍t tâi pu-pu.",
+     "hua": "那裡有一輛車車。",
+     "note": "hia 遐＝那裡",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 017「這/彼」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E9%80%99"
+    },
+    {
+     "label": "TGGL 語法點 018「遮/遐」群組",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E9%81%AE"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈指示代詞〉（閩拼；跨方言參考）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E6%8C%87%E7%A4%BA%E4%BB%A3%E8%A9%9E"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "這馬",
+    "這搭",
+    "彼搭",
+    "遮",
+    "遐",
+    "tsia",
+    "hia"
+   ]
+  },
+  {
+   "id": "directional",
+   "cat": "complement",
+   "title": "趨向補語：--起來、--落去、--轉來",
+   "body": [
+    "動詞後壁會當接送趨向的補語（來、去、起來、落去、出去、入來），講的時陣補語讀輕聲，寫做 <strong>--</strong> 相接：Tó--lo̍h-khì（倒落去；教典詞條拼 Tó）。",
+    "趨向會當疊兩層：phak--lo̍h-khì（仆--落去）、mau--lo̍h-khì--ah（㧌--落去--矣，趨向＋完成）。",
+    "方向義有時會虛化：tńg--lâi（轉--來）是「回來」，m̄-thang tshut--khì（毋通出去）的 khì 嘛是輕聲尾。"
+   ],
+   "examples": [
+    {
+     "han": "倒落去",
+     "tl": "Tó--lo̍h-khì.",
+     "hua": "倒下去。",
+     "note": "雙輕聲趨向補語",
+     "src": "moedict"
+    },
+    {
+     "han": "伊跋一下規个人仆落去",
+     "tl": "I pua̍h tsi̍t-ē kui-ê lâng phak--lo̍h-khì.",
+     "hua": "他跌得整個人撲倒在地。",
+     "note": "仆--落去",
+     "src": "moedict"
+    },
+    {
+     "han": "伊昨昏三更半暝才轉來",
+     "tl": "I tsa-hng sann-kenn-puànn-mê tsiah tńg--lâi.",
+     "hua": "他昨天三更半夜才回來。",
+     "note": "tńg--lâi 轉--來",
+     "src": "moedict"
+    },
+    {
+     "han": "伊規工攏佇厝裡無出去",
+     "tl": "I kui-kang lóng tī tshù--lí bô tshut--khì.",
+     "hua": "他整天都在家沒出門。",
+     "note": "tshut--khì 出去（輕聲尾）",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 趨向補語讀輕聲）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈動詞短語〉（V+方向動詞，多輕聲）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%8B%95%E8%A9%9E%E7%9F%AD%E8%AA%9E"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "起來",
+    "落去",
+    "轉來",
+    "轉去",
+    "出去",
+    "過來"
+   ]
+  },
+  {
+   "id": "trial",
+   "cat": "complement",
+   "title": "試行貌：V 看覓、V--一下、VV--咧",
+   "body": [
+    "動詞後壁加 <strong>khuànn-māi</strong>（看覓）是「試試看」：kau-sia̍p khuànn-māi（交涉看覓）。看覓後壁閣會當 tah <strong>--leh</strong>（看覓咧），語氣較軟。",
+    "另外兩款：V＋<strong>--tsi̍t-ē</strong>（--一下，借我看一下）佮動詞重疊 <strong>VV--leh</strong>（行行咧、看看咧）——動作放慢、放輕的語感。",
+    "「試看覓」tshì-khuànn-māi 已經做一個固定詞。"
+   ],
+   "examples": [
+    {
+     "han": "你去交涉看覓",
+     "tl": "Lí khì kau-sia̍p khuànn-māi.",
+     "hua": "你去交涉看看。",
+     "note": "V＋看覓",
+     "src": "moedict"
+    },
+    {
+     "han": "我想欲捻一塊粿來食看覓",
+     "tl": "Guá siūnn-beh liàm tsi̍t tè kué lâi tsia̍h khuànn-māi.",
+     "hua": "我想要捏取一塊糕來吃看看。",
+     "note": "來＋V＋看覓",
+     "src": "moedict"
+    },
+    {
+     "han": "家己先照鏡看覓咧，才袂卸世眾",
+     "tl": "Ka-kī sing tsiò-kiànn khuànn-māi--leh, tsiah bē sià-sì-tsìng.",
+     "hua": "自己先反省看看，才不會貽笑大方。",
+     "note": "看覓＋咧",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 嘗試動補：V＋看覓咧／V--一下／V--咧）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    },
+    {
+     "label": "TGGL 語法點 028「[動詞重疊]+--咧」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E5%92%A7"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "看覓",
+    "一下",
+    "試看"
+   ]
+  },
+  {
+   "id": "win-lose",
+   "cat": "syntax",
+   "title": "輸贏佮「上蓋」：比較的另一路",
+   "body": [
+    "「較」以外，台語嘛用 <strong>iânn（贏）／su（輸）</strong> 做比較動詞：khah iânn（較贏）＝划得來；A iânn B＝A 贏過 B。",
+    "最高級用 <strong>siōng-kài（上蓋）</strong>抑是 siōng（上）：上蓋好＝最好。TGGL 149 有專門語法點。",
+    "「拚輸贏」是固定詞——爭勝負。"
+   ],
+   "examples": [
+    {
+     "han": "俗賣減趁較贏了錢",
+     "tl": "Sio̍k-bē kiám-thàn khah iânn liáu-tsînn.",
+     "hua": "賤賣少賺些還是比賠錢好。",
+     "note": "khah iânn 較贏",
+     "src": "moedict"
+    },
+    {
+     "han": "比賽會贏會輸無包穩的",
+     "tl": "Pí-sài ē iânn ē su bô pau-ún--ê.",
+     "hua": "比賽有贏有輸沒有一個定數。",
+     "note": "iânn／su 對比",
+     "src": "moedict"
+    },
+    {
+     "han": "占贏毋占輸",
+     "tl": "Tsiàm-iânn m̄ tsiàm-su.",
+     "hua": "只想佔上風，不想屈居下風。",
+     "note": "諺語式用法",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 149「上蓋……」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E4%B8%8A%E8%93%8B"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈比較句型〉（贏／輸／上概）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "輸贏",
+    "上蓋"
+   ]
+  },
+  {
+   "id": "adj-redup",
+   "cat": "redup",
+   "title": "疊字形容詞：紅紅、白白、清清咧",
+   "body": [
+    "單音節形容詞重疊（AA）連寫：<strong>âng-âng</strong>（紅紅）、<strong>pe̍h-pe̍h</strong>（白白），程度加強、畫面較活。常常 kah 程度補語 kah 做伙出現：tsia̍h kah tshuì-khoo âng-âng（食甲喙箍紅紅）。",
+    "動詞嘛會當輕疊加 <strong>--leh</strong>：tshing-tshing--leh（清清咧，清理一下）——這就接去「試行貌」彼篇。",
+    "三疊（âng âng-âng）佮 AABB、ABAB 的進一步變化，TGGL 053–056 有專門語法點。"
+   ],
+   "examples": [
+    {
+     "han": "你是食啥食甲喙箍紅紅？",
+     "tl": "Lí sī tsia̍h siánn tsia̍h kah tshuì-khoo âng-âng?",
+     "hua": "你是吃什麼吃得嘴邊紅紅的？",
+     "note": "kah 補語＋AA 疊字",
+     "src": "moedict"
+    },
+    {
+     "han": "白白布染甲烏",
+     "tl": "Pe̍h-pe̍h pòo ní kah oo.",
+     "hua": "一塊純白的布料被染成黑的。比喻一個人被抹黑了。",
+     "note": "pe̍h-pe̍h 白白",
+     "src": "moedict"
+    },
+    {
+     "han": "咱共灶跤清清咧",
+     "tl": "Lán kā tsàu-kha tshing-tshing--leh.",
+     "hua": "我們把廚房清理一下。",
+     "note": "VV--leh 輕疊",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 053–056 形容詞重疊 AA／AABB／ABAB、動詞重疊",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E7%B4%85%E7%B4%85"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈形容詞正詞法〉（二重疊／三重疊；閩拼）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%BD%A2%E5%AE%B9%E8%A9%9E%E6%AD%A3%E8%A9%9E%E6%B3%95"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "matchRe": "([\\p{Script=Han}])\\1"
+  },
+  {
+   "id": "locative-sandhi",
+   "cat": "sandhi",
+   "title": "方位詞頭前的本調佮變調：頂面／頂、內面／內",
+   "body": [
+    "方位詞有雙音節（<strong>tíng-bīn</strong> 頂面、<strong>lāi-bīn</strong> 內面、<strong>guā-kháu</strong> 外口、<strong>ē-kha</strong> 下跤）佮單音節（頂、內、口、跤）兩款。",
+    "變調規則（TGGL 專欄整理）：雙音節方位詞頭前的名詞，上尾音節唸<strong>本調</strong>；單音節方位詞頭前，上尾音節唸<strong>變調</strong>。書寫攏是分寫，差別佇唸的調。",
+    "「以＋方位詞」（poo-bíng í-lāi 八百公尺以內）是固定結構，「以」頭前唸本調；「數字＋量詞」的場合「以」會當省——省了後頭前彼字就對本調改唸變調（八百公尺內）。TGGL 133 有專門語法點。"
+   ],
+   "examples": [
+    {
+     "han": "物件囥佇桌頂",
+     "tl": "Mi̍h-kiānn khǹg tī toh tíng.",
+     "hua": "東西放在桌上。",
+     "note": "toh tíng 桌頂",
+     "src": "moedict"
+    },
+    {
+     "han": "市場外口有人咧拚俗貨",
+     "tl": "Tshī-tiûnn guā-kháu ū-lâng teh piànn sio̍k-huè.",
+     "hua": "市場外面有人在拋售便宜貨。",
+     "note": "guā-kháu 外口",
+     "src": "moedict"
+    },
+    {
+     "han": "這跤皮箱內底貯啥物？",
+     "tl": "Tsit kha phuê-siunn lāi-té té siánn-mih?",
+     "hua": "這只皮箱裡面裝什麼東西？",
+     "note": "lāi-té 內底",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法小專欄：方位詞前的名詞變調讀法（「以＋方位詞」結構；雙音節＝本調、單音節＝變調）",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/4"
+    },
+    {
+     "label": "TGGL 語法點 133「以+[方位]」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E4%BB%A5"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈空間名詞〉（閩拼；跨方言參考）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E7%A9%BA%E9%96%93%E5%90%8D%E8%A9%9E"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "頂面",
+    "內面",
+    "頂懸",
+    "下跤"
+   ]
+  },
+  {
+   "id": "numerals",
+   "cat": "quantity",
+   "title": "數量詞：一台車、兩百箍、偌濟錢",
+   "body": [
+    "數詞＋量詞＋名詞：<strong>tsi̍t tâi tshia</strong>（一台車）、<strong>tsi̍t ki tik-á</strong>（一枝竹仔）。量詞真豐富（台、枝、欉、丸、塊），佮華語無一一對應。",
+    "問「多少」用 <strong>guā-tsuē</strong>（偌濟）：guā-tsuē tsînn（偌濟錢）；「幾」用 <strong>kuí</strong>（ kuí ê 幾个）。",
+    "數字有文白兩讀（一 tsi̍t／it、二 nn̄g／jī、三 sann／sam），一般算數用白讀、序數佮編號用文讀——規則複雜，TGGL「台語數字的讀法」專欄整理了透徹。"
+   ],
+   "examples": [
+    {
+     "han": "頭家，弓蕉一斤偌濟錢？",
+     "tl": "Thâu-ke, king-tsio tsi̍t kin guā-tsē tsînn?",
+     "hua": "老闆，香蕉一斤多少錢？",
+     "note": "guā-tsuē 偌濟＋量詞 kin 斤",
+     "src": "moedict"
+    },
+    {
+     "han": "遮的上加是兩百箍",
+     "tl": "Tsia-ê siōng-ke sī nn̄g pah khoo.",
+     "hua": "這些頂多兩百元。",
+     "note": "nn̄g pah 兩百（白讀）",
+     "src": "moedict"
+    },
+    {
+     "han": "你一月日趁偌濟錢？",
+     "tl": "Lí tsi̍t gue̍h-ji̍t thàn guā-tsē tsînn?",
+     "hua": "你一個月賺多少錢？",
+     "note": "guā-tsuē 問薪水",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法小專欄：台語數字的讀法（文白異讀、序數、電話號碼）",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/2"
+    },
+    {
+     "label": "維基學院《閩南語文法》·〈基序數詞與合成數詞〉（閩拼）",
+     "url": "https://zh.wikiversity.org/zh-tw/%E9%96%A9%E5%8D%97%E8%AA%9E%E6%96%87%E6%B3%95#%E5%9F%BA%E5%BA%8F%E6%95%B8%E8%A9%9E%E8%88%87%E5%90%88%E6%88%90%E6%95%B8%E8%A9%9E"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "箍",
+    "偌濟",
+    "幾若",
+    "逐工",
+    "逐家"
+   ]
+  },
+  {
+   "id": "mood-ooh",
+   "cat": "mood",
+   "title": "語氣詞--ooh（喔）：提醒佮感嘆",
+   "body": [
+    " lah、leh、ho͘ⁿh 以外，教典例句閣定定出現 <strong>--ooh</strong>（喔）——提醒、感嘆的語氣，親像「勞力--ooh!」（謝啦！）。",
+    "--ooh 佮句尾本調 oh 無仝：輕聲的 --ooh 是語氣詞（袂使得--ooh），教典直接用輕聲符號標。",
+    "規則性的整理看「lah、leh、ho͘ⁿh、niā-niā」彼篇；這篇補教典實例。"
+   ],
+   "examples": [
+    {
+     "han": "這件代誌予你加真麻煩，勞力喔！",
+     "tl": "Tsit kiānn tāi-tsì hōo lí ke tsin mâ-huân,  lóo-la̍t--ooh!",
+     "hua": "這件事讓你添麻煩了，謝謝你！",
+     "note": "--ooh 道謝語氣（勞力＝多謝）",
+     "src": "moedict"
+    },
+    {
+     "han": "你莫看伊人一疕仔囝，伊力頭真飽喔！",
+     "tl": "Lí mài khuànn i lâng tsi̍t-phí-á kiánn, i la̍t-thâu tsin pá--ooh!",
+     "hua": "你別看他是個小不點，他力氣可大著！",
+     "note": "--ooh 感嘆",
+     "src": "moedict"
+    },
+    {
+     "han": "家己的工課拖甲欲袂赴矣才欲哭賴人是袂使得喔！",
+     "tl": "Ka-kī ê khang-khuè thua kah beh bē-hù--ah tsiah beh khàu-luā--lâng sī bē-sái--tit oh!",
+     "hua": "自己的工作拖到快來不及了才要哭著賴給別人是不行的唷！",
+     "note": "--ooh 警告語氣",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "ooh"
+   ]
+  },
+  {
+   "id": "hoo-khi",
+   "cat": "case",
+   "title": "予……--去：被動的完成佮允許",
+   "body": [
+    "<strong>hōo…--khì</strong>（予……--去）是被動句加上趨向補語：官方對譯「厝煞予銀行估去」＝「房子卻被銀行拿去抵債」、「毋通予伊騙去」＝「別讓他給騙了」——受事去予人「估去」「騙去」，有轉移、受害的完成感。",
+    "允許義嘛定定用 <strong>hōo i khì</strong>（予伊去，讓他去）；命令句尾閣加 --lah（予伊去--啦）。",
+    "佮「予」彼篇（hōo 給／被／讓）做伙看：這篇專講結尾 --khì 的變化。"
+   ],
+   "examples": [
+    {
+     "han": "伊真久無納貸款，厝煞予銀行估去",
+     "tl": "I tsin kú bô la̍p tāi-khuán, tshù suah hōo gîn-hâng kóo--khì.",
+     "hua": "他太久沒繳貸款，房子卻被銀行拿去抵債。",
+     "note": "被動＋--去（受事轉移）",
+     "src": "moedict"
+    },
+    {
+     "han": "阿達仔是一个佬仔，你毋通予伊騙去",
+     "tl": "A-ta̍t-á sī tsi̍t ê láu-á, lí m̄-thang hōo i phiàn--khì.",
+     "hua": "阿達是個騙子，你別讓他給騙了。",
+     "note": "允許／受害＋--去",
+     "src": "moedict"
+    },
+    {
+     "han": "予伊去啦！莫插伊",
+     "tl": "Hōo i khì--lah! Mài tshap--i.",
+     "hua": "讓他去啦！別理他。",
+     "note": "允許＋命令 --lah",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 109「予」群組",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E4%BA%88"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ]
+  },
+  {
+   "id": "tng-teh",
+   "cat": "aspect",
+   "title": "當咧（tng-teh）：進行貌的強調",
+   "body": [
+    "進行貌基本是 <strong>teh／leh</strong>（咧），看「咧、矣、bat」彼篇。欲強調「正當彼當時」，頭前加 <strong>tng</strong>（當）：<strong>tng-teh</strong>（當咧）。",
+    "教典例句「……看著大漢查某囝當咧煮矣」是敘述看著的當時，動作已經佇咧進行——tng-teh 佮句尾 --ah 連用，語感是「已經在煮了」。",
+    "教典例句的芥菜「當咧出」（正當產季）顯示 tng-teh 嘛會當表示正當某個時節。"
+   ],
+   "examples": [
+    {
+     "han": "老師當咧課堂上課",
+     "tl": "Lāu-su tng teh khò-tn̂g siōng-khò.",
+     "hua": "老師正在教室裡面授課。",
+     "note": "tng-teh 強調進行",
+     "src": "moedict"
+    },
+    {
+     "han": "伊當咧困難，你就小共伊鬥相共一下",
+     "tl": "I tng-teh khùn-lân, lí tō sió kā i tàu-sann-kāng--tsi̍t-ē.",
+     "hua": "他正當窮困，你就稍微幫忙他一下。",
+     "note": "tng-teh 引伸：正處於（困難）",
+     "src": "moedict"
+    },
+    {
+     "han": "予𪜶兩个去仙拚仙，咱蹛邊仔看戲就好",
+     "tl": "Hōo in nn̄g ê khì sian-piànn-sian, lán tuà pinn--á khuànn hì tō hó.",
+     "hua": "讓他們去拚鬥，我們在旁邊看戲就好。",
+     "note": "複句語感句（做伙複習）",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "廖淑鳳（2007）〈國小台語教科書基本句型練習研究〉第三章（3.1.2 進行式動詞組：當咧／咧）",
+     "url": "http://rportal.lib.ntnu.edu.tw/handle/20.500.12235/93278"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "當咧",
+    "teh"
+   ]
+  },
+  {
+   "id": "proverbs",
+   "cat": "proverb",
+   "title": "諺語熟語：一兼二顧、校長兼摃鐘",
+   "body": [
+    "教典收真濟俗諺，官方華語對譯直接說明比喻義。讀諺語是文法總複習——一句底豆 often 有三四個虛詞做伙出現。",
+    "「一兼二顧，摸蜊仔兼洗褲」用 <strong>kiam</strong>（兼）做連接；「校長兼摃鐘」嘛是 kiam。",
+    "「倖豬夯灶，倖囝不孝」是教誨型諺語；「惹熊惹虎，毋通惹著刺查某」用 <strong>m̄-thang</strong>（毋通）＋<strong>jia̍h--tio̍h</strong>（惹--著）的結構。"
+   ],
+   "examples": [
+    {
+     "han": "一兼二顧，摸蜊仔兼洗褲",
+     "tl": "It kiam jī kòo, bong lâ-á kiam sé khòo.",
+     "hua": "比喻二者兼顧。",
+     "note": "kiam 兼＋二者兼顧",
+     "src": "moedict"
+    },
+    {
+     "han": "校長兼摃鐘",
+     "tl": "Hāu-tiúnn kiam kòng-tsing.",
+     "hua": "校長兼工友。比喻包辦所有事情。",
+     "note": "kiam 兼",
+     "src": "moedict"
+    },
+    {
+     "han": "倖豬夯灶，倖囝不孝",
+     "tl": "Sīng ti giâ tsàu, sīng kiánn put-hàu.",
+     "hua": "比喻子女要加以管教，不能放縱，否則會變成不孝。",
+     "note": "教誨諺",
+     "src": "moedict"
+    },
+    {
+     "han": "石頭浸久嘛會上青苔",
+     "tl": "Tsio̍h-thâu tsìm kú mā ē tshiūnn-tshenn-thî.",
+     "hua": "石頭浸久了也會長青苔。比喻從事某一工作，時間久了也會有所成就。",
+     "note": "嘛 bē…（mā）也會；勵志諺",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ]
+  },
+  {
+   "id": "ka-imperative",
+   "cat": "syntax",
+   "title": "共我＋動詞：對人的句式",
+   "body": [
+    "<strong>kā guá</strong>（共我）＋動詞是固定的對人句式：Lí kā guá ē-kì--leh!（你共我會記咧！）＝「你給我記住！」——命令、警告語氣真重。",
+    "無仝於命令的場合，kā＋人就是「對／向／替」：I kā guá tò-siàu（伊共我倒數，他欠我錢不還）；你若想欲 kā guá tsioh-tsînn（共我借錢）。",
+    "「共我」佮「予我」愛分：kā 是對我做、hōo 是給我受益／受害，看「予」佮「共」兩篇。"
+   ],
+   "examples": [
+    {
+     "han": "你共我會記咧！",
+     "tl": "Lí kā guá ē kì--leh!",
+     "hua": "你給我記住！",
+     "note": "kā guá＋V 命令",
+     "src": "moedict"
+    },
+    {
+     "han": "伊共我倒數",
+     "tl": "I kā guá tó-siàu.",
+     "hua": "他欠我錢不還。",
+     "note": "kā＝對（欠我）",
+     "src": "moedict"
+    },
+    {
+     "han": "你若想欲共我借錢，就愛先揣一个保家",
+     "tl": "Lí nā siūnn-beh kā guá tsioh-tsînn, tō ài sing tshuē tsi̍t ê pó-ke.",
+     "hua": "你如果想向我借錢，就要先找一個保人。",
+     "note": "nā 若＋kā＋人",
+     "src": "moedict"
+    },
+    {
+     "han": "伊閣咧共我供體矣",
+     "tl": "I koh teh kā guá king-thé.",
+     "hua": "他又對我冷嘲熱諷了。",
+     "note": "koh＋teh＋kā 三點",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法點 108「共」群組（共+[對象]+[動作]、共我……）",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E5%85%B1"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "共我"
+   ]
+  },
+  {
+   "id": "q-final",
+   "cat": "question",
+   "title": "句尾疑問系統：--無、--未、--呢",
+   "body": [
+    "是非問的句尾助詞是一組：<strong>--bô</strong>（--無，問狀態）、<strong>--buē</strong>（--未，問完成）、<strong>--nih</strong>（--呢，帶推測的反問）。",
+    "教典直接用輕聲符號標：Lí tsia̍h-pá--buē?（你食飽未？）；Pe̋nn hó guân-tsuân--buē?（病好原全未？）。",
+    "會當疊：khùn-pá--ah--nih（睏飽--矣--呢？）是完成貌 --ah 加推測 --nih；hó-sè--ah--buē（好勢--矣--未？）是 --ah 加 --buē。"
+   ],
+   "examples": [
+    {
+     "han": "病好原全未？",
+     "tl": "Pēnn hó guân-tsuân--buē?",
+     "hua": "病痊癒了沒？",
+     "note": "--buē 未＝完成問",
+     "src": "moedict"
+    },
+    {
+     "han": "代誌好勢矣未？",
+     "tl": "Tāi-tsì hó-sè--ah--buē?",
+     "hua": "事情順利了嗎？",
+     "note": "--ah＋--buē 疊用",
+     "src": "moedict"
+    },
+    {
+     "han": "你睏飽矣呢？",
+     "tl": "Lí khùn-pá--ah--nih?",
+     "hua": "你睡飽了是嗎？",
+     "note": "--ah＋--nih 推測反問",
+     "src": "moedict"
+    }
+   ],
+   "refs": [
+    {
+     "label": "TGGL 語法小專欄：各種疑問句的比較",
+     "url": "https://tggl.naer.edu.tw/grammar_snippets/12"
+    },
+    {
+     "label": "TGGL 語法點 037「……未？」",
+     "url": "https://tggl.naer.edu.tw/grammars?n=20&type=word&text=%E6%9C%AA"
+    },
+    {
+     "label": "教育部臺灣台語常用詞辭典（教典）例句——CC BY-ND 3.0 TW，標示來源",
+     "url": "https://sutian.moe.edu.tw/"
+    }
+   ],
+   "match": [
+    "--無",
+    "--未",
+    "--呢",
+    "是無"
+   ]
+  }
+ ]
+}
