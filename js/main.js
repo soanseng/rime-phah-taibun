@@ -3,12 +3,13 @@
 // 差異與 BY-SA 分發義務仍待最終授權複核，部署狀態以該複核為條件）。
 // 本機測其他組合請改 fetch("./data/dict.json")。
 
-import { loadDict } from "./dict.js?v=20";
-import { initConverter } from "./ui/converter.js?v=20";
-import { initPractice, initSentencePractice } from "./ui/practice.js?v=20";
-import { initVocab } from "./ui/vocab.js?v=20";
-import { initGrammar } from "./ui/grammar.js?v=20";
-import { initGrammarCheck } from "./ui/grammarcheck.js?v=20";
+import { buildReverseIndex } from "./dict.js?v=21";
+import { loadDict } from "./dict.js?v=21";
+import { initConverter } from "./ui/converter.js?v=21";
+import { initPractice, initSentencePractice } from "./ui/practice.js?v=21";
+import { initVocab } from "./ui/vocab.js?v=21";
+import { initGrammar } from "./ui/grammar.js?v=21";
+import { initGrammarCheck } from "./ui/grammarcheck.js?v=21";
 
 const ready = async () => {
   if (typeof jQuery === "undefined") {
@@ -18,17 +19,55 @@ const ready = async () => {
   }
   initGrammar(); // 獨立載入：文法索引失敗嘛袂拖累其他分頁
   try {
-    const [dict, hints] = await Promise.all([
-      loadDict("./data-public/dict.json"),
-      fetch("./data-public/hints.json")
-        .then((r) => (r.ok ? r.json() : { lighttone: [], calque: [] }))
-        .catch(() => ({ lighttone: [], calque: [] })),
-    ]);
+    // worker：fetch＋parse＋反查索引攏佇背景，閣分段傳——主線程逐段
+    // yield，無 half長 long task（fallback：直接載，較簡但會阻塞）
+    const hints = await fetch("./data-public/hints.json")
+      .then((r) => (r.ok ? r.json() : { lighttone: [], calque: [] }))
+      .catch(() => ({ lighttone: [], calque: [] }));
+    const loadViaWorker = () => new Promise((resolve, reject) => {
+      const dict = {};
+      const revEntries = [];
+      const w = new Worker("./js/dict-worker.js?v=21", { type: "module" });
+      const raf = () => new Promise(requestAnimationFrame);
+      let ready = Promise.resolve();
+      w.onmessage = (ev) => {
+        const d = ev.data;
+        if (d.type === "chunk") {
+          if (d.kind === "dict") Object.assign(dict, ...d.entries.map(([k, v]) => ({ [k]: v })));
+          else revEntries.push(...d.entries);
+          ready = ready.then(raf).then(() => w.postMessage({ type: "ack" }));
+        } else if (d.type === "done") {
+          w.terminate();
+          ready.then(() => resolve({ dict, revEntries }));
+        } else {
+          w.terminate();
+          reject(new Error(d.message));
+        }
+      };
+      w.onerror = () => { w.terminate(); reject(new Error("worker 失敗")); };
+      w.postMessage({ url: "./data-public/dict.json" });
+    });
+    const { dict, revEntries } = await loadViaWorker()
+      .catch(() => loadDict("./data-public/dict.json").then((dict) => ({
+        dict, revEntries: [...buildReverseIndex(dict).entries()],
+      })));
+    const rev = new Map(revEntries);
     $("#load-state").remove();
-    initConverter(dict, hints, initGrammarCheck(hints));
+    initConverter(dict, hints, initGrammarCheck(hints), rev);
     initPractice(dict);
-    initSentencePractice();
+    // 句庫 973KB——練習分頁頭一擺開才載（landing/轉換無愛等伊）
+    let sentReady = false;
+    const sentInit = () => { if (!sentReady) { sentReady = true; initSentencePractice(); } };
+    $("#tab-practice").on("click", sentInit);
+    $(".seg-btn[data-pmode='sent']").on("click", sentInit);
     initVocab(dict);
+    // Landing 例句卡：點了→轉換分頁看變調讀音＋POJ
+    $(".demo-card").on("click", (ev) => {
+      $("#tab-convert").trigger("click");
+      $("#cv-in").val($(ev.currentTarget).data("han") ?? "");
+      $("#cv-run").trigger("click");
+      $("#panel-convert")[0].scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     $(".seg-btn[data-pmode]").on("click", (ev) => {
       const $b = $(ev.currentTarget);
       $(".seg-btn[data-pmode]").removeClass("is-active");

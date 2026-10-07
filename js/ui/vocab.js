@@ -1,18 +1,22 @@
 // 詞彙分頁：台語詞／華語釋義查詢＋教典例句（CC BY-ND 3.0 TW，標示來源）。
 
-import { lookup, sutianUrl } from "../dict.js?v=20";
-import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=20";
+import { lookup, sutianUrl } from "../dict.js?v=21";
+import { formatRomanization, tlToPoj, pojFixDiacritics } from "../roman.js?v=21";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-export async function initVocab(dict) {
+export function initVocab(dict) {
   const $tb = $("#vb-tbl tbody");
-  let examples = {};
-  try {
-    examples = await (await fetch("../data-public/examples.json")).json();
-  } catch { /* 例句載入失敗：欄位留空 */ }
+  // 例句 300KB——詞彙分頁頭一擺開才載（轉換/landing 無愛等伊）
+  let examples = null;
+  $("#tab-vocab").one("click", () => {
+    fetch("../data-public/examples.json")
+      .then((r) => (r.ok ? r.json() : {}))
+      .catch(() => ({}))
+      .then((j) => { examples = j; if ($("#vb-in").val()) run(); });
+  });
   const exHtml = (han) =>
-    (examples[han] ?? [])
+    ((examples ?? {})[han] ?? [])
       .map(([h, t]) => `<div class="ex">${esc(h)}<br><span class="roman">${esc(t)}</span></div>`)
       .join("");
   const run = () => {

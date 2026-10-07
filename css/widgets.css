@@ -87,7 +87,7 @@ textarea:focus,
 }
 
 .seg-btn.is-active {
-  background: var(--accent);
+  background: var(--accent-deep);
   color: var(--accent-ink);
 }
 
@@ -250,13 +250,13 @@ textarea:focus,
 }
 
 .btn.primary {
-  background: var(--accent);
+  background: var(--accent-deep);
   color: var(--accent-ink);
   border-color: transparent;
 }
 
 .btn.primary:hover {
-  background: var(--accent-deep);
+  background: #095f57;
 }
 
 .btn-ghost {

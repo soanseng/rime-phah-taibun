@@ -19,6 +19,71 @@
   font-size: 0.95rem;
 }
 
+/* Landing：webapp 頂蒂例句卡（教典 CC BY-ND 3.0 TW，靜態呈現） */
+.landing {
+  margin: 0.6rem 0 1.2rem;
+}
+
+.landing .lead {
+  margin: 0 0 0.9rem;
+  max-width: 46rem;
+}
+
+.landing .lead b {
+  color: var(--accent-deep);
+}
+
+.demo-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+}
+
+.demo-card {
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.demo-card:hover,
+.demo-card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.demo-han {
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.demo-tl {
+  color: var(--accent-deep);
+}
+
+.demo-hoa {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.demo-note {
+  margin: 0.7rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+@media (min-width: 48rem) {
+  .demo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .tabs {
   position: sticky;
   top: 0;
@@ -54,7 +119,7 @@
 }
 
 .tab.is-active {
-  background: var(--accent);
+  background: var(--accent-deep);
   color: var(--accent-ink);
   box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
 }
@@ -82,11 +147,15 @@
   margin: 0.3rem 0;
 }
 
+/* fixed：載入收掉了毋會振動版面（CLS） */
 .load-state {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0.8rem;
   text-align: center;
-  padding: 1rem;
   color: var(--accent-deep);
   font-weight: 600;
+  pointer-events: none;
 }
 
 @media (min-width: 48rem) {

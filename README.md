@@ -2,16 +2,18 @@
 
 漢羅 ⇄ 台羅 TL／白話字 POJ 一頁式網頁：貼漢羅文章即時轉出台羅（TL）佮白話字（POJ）雙軌對照，點漢字換讀音，做拼音練習、查詞彙——攏免安裝、免後端。
 
-讀台文是 [拍台文 Phah Tâi-bûn](https://github.com/soanseng/rime-phah-taibun)（Rime 台語輸入法）的姊妹品：拍台文予你**拍**台文，讀台文予你**讀**台文。
+讀台文是 [寫台文 Siá Tâi-bûn](https://taigi.anatomind.com/)（[rime-phah-taibun](https://github.com/soanseng/rime-phah-taibun)，RIME 台語輸入法，舊名拍台文）的姊妹品，共用仝一个轉換核心：寫台文予你**寫**台文，讀台文予你**讀**台文。
 
 ## 功能
 
 - **轉換**：漢羅 → TL／POJ 雙軌。多音字點漢字循環切換讀音；詞典揣無的字顯示 ⟨?⟩。POJ 出正式字形（oo→o͘、nn→ⁿ、ts→ch、ua→oa）兼 POJ 調符定位（gōa、hōe、chúi；有韻尾照舊：koán、goe̍h）。混寫無空白嘛會使：羅馬字直接黏漢字會試佮詞典合做一个詞（「Pháiⁿ命人」→ 歹命人 → pháinn-miā-lâng；「hit款」→ 彼款），組袂起就隔做空格（to̍h是 → to̍h sī）。已知限制：去調合詞袂分同音異詞，「mā人格」會揀著「罵人」（嘛／罵 攏 ma7），語境歧義佮羅→漢解碼仝款。
-- **羅→漢（實驗）**：拍台羅／POJ（免調、數字調攏會使）出漢字佮 TL 正規化。同音詞真濟，可能選錯詞義，僅供輔助對照。
+- **羅→漢（實驗）**：拍台羅／POJ（免調、數字調、調符攏會使）出漢字佮 TL 正規化。有標調句內無調符音節按正字法當 1/4 聲（`tsit`→這、`tsi̍t`→一）。同音詞真濟，可能選錯詞義——詞對照卡點會循環換同音詞，僅供輔助對照。
 - **拼音練習**：看漢字拍台羅——免調就算對，拍調號嘛會當；比對該詞全部讀音（方言變體攏接受）。
 - **詞彙查詢**：台語詞／華語釋義查詢，附 TL、POJ、華語對照。
 - **學習提示（輸入區文法檢查佮教學，建議性質）**：① 用字建議——華台對照表比對（上長片語優先、span 袂重複列），有筆記的會使點「看文法」② 輕聲標記建議 ③ **可能用著的文法點** chip：照筆記觸發詞（漢字子字串／臺羅詞界／疊字正規）掃，點了跳去文法頁彼篇。純規則比對、毋是語法解析：攏是「建議檢查／可參考」，毋是判對毋著。
 - **教典連結**：詞條直接連去[教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/und-hani/)。
+- **Landing／SEO**：頂蒂例句卡（教典真實句，點一句直接看變調讀音＋POJ）；canonical／og:url／JSON-LD（WebApplication）／robots.txt／sitemap.xml 攏指向 https://thak.anatomind.com/ 。
+- **性能**：詞典 6.8MB 佇 worker 解析＋反查索引、分段 ack 傳轉主線程（主線程無 long task）；句庫／詞彙例句拍到分頁才載；字體 `display=optional`＋非同步 CSS（CLS 0）；jQuery defer。Lighthouse（本機 headless-shell，2026-10-07）：SEO／A11y／Best-Practices **100/100/100**，Performance mobile 69／desktop 73——行動版 TBT 大頭是 jQuery 佇節流環境的評估時間（~3s），家己的載入鏈已無 long task。
 
 手機、平板、桌機攏好用（RWD），字型用 [芫荽 Iansui](https://fonts.google.com/specimen/Iansui)（支援 𠢕、𤆬、𨑨迌 等台語推薦用字）。
 
@@ -20,10 +22,14 @@
 | 項目 | 數字 | 說明 |
 |---|---|---|
 | 漢→TL | 90.2／90.3／91.2／90.1% 去調相似、100% 字元涵蓋 | 四篇真實文章（10／6／8／12 對）嚴格配對；POJ 無對照稿未計分。延伸詞層（拍台文字典 fallback）上線後 ⟨miss⟩ 歸零 |
-| 羅→漢（實驗） | lattice 89.9／90.9／89.5／85.9%｜greedy 59.5／62.4／63.2／61.1% | 開發集／held-out×3（延伸詞層上線後；上線前 lattice 88.4／89.4／89.0／83.6）。第四篇（醫學＋英文專名）略低：免疫學複合詞多在詞典外、hông-ka 同音（皇家→放假）。殘餘誤差＝同鍵同調的同音詞 |
+| 羅→漢（實驗） | lattice 92.6／93.2／92.1／89.9%｜greedy 59.5／62.4／63.2／61.1% | 開發集／held-out×3。2026-10-07 升級（+2.7～+4.0）：隱性調號（有標調句內無調符＝1/4 聲，`tsit`→這、`beh`→欲）、讀音條件化 unigram（runi：「到」的 373 全是 kau 用法，袂使替 tio̍h 討票）、教典收錄訊號取代 gloss 紅利（𪜶/抑 無釋義）、≥2 連續未知音節逐字文讀組詞（抗原、儲存）。第四篇（醫學＋英文專名）略低：免疫學複合詞多在詞典外。殘餘誤差＝同鍵同調的同音詞——詞對照卡點選會循環換同音詞 |
 
 > 羅→漢仍屬實驗：同音詞歧義（的/個、人/膿、新聞/訊問）與語料域偏移（identity 為新聞體）
 > 會造成誤選；標點、斷行、未命中音節原樣保留。
+> **獨立最後測試（2026-10-07）**：蔡培火《十項管見》（1925，純 POJ 全書，
+> zh-min-nan.wikisource）十章 19,873 音節——涵蓋 99.5%、零 crash、輸出可讀；
+> 語料 `tools/wikisource/`、測試 `tools/wikisource-r2h.mjs`。舊式 `o·` 中點
+> 未入解碼（當分隔音節），1925 拼法（Tâi-oan、gîn）靠 pojToTl 轉換無問題。
 
 | 來源 | 授權 |
 |---|---|
@@ -62,6 +68,9 @@ BY-SA 資料之衍生詞典包隨 repo 提供（`data-public/dict.json`）；各
 # 產生資料包（需 sibling 目錄 rime-phah-taibun 佮伊的 data/）
 python3 tools/build.py --mode public --out data-public
 
+# build 後處理（冪等）：教典例句→讀音條件化 unigram（bigrams.json）
+# ＋教典讀音補正（dict.json：一 it4、相 siong1）
+bun tools/build-runi.mjs && bun tools/build-lexfix.mjs
 # 重抓 TGGL 語法點索引 → data-public/grammars.json（只取中繼資料，原文不落地）
 node tools/fetch-grammar.mjs
 
