@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://thak.anatomind.com/sitemap.xml

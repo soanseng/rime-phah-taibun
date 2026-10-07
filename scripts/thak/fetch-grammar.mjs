@@ -2,13 +2,13 @@
 // TGGL 語法點索引——只取「書目級」中繼資料（編號／語法點名／臺羅／群組／頁碼），
 // 語法說明與例句原文依 TGGL 授權條款不落地、不重刊，一律連回原系統查閱。
 // 來源：臺灣台語語料庫應用檢索系統 https://tggl.naer.edu.tw/grammars（國家教育研究院）
-// 用法：node tools/fetch-grammar.mjs  （寫出 data-public/grammars.json）
+// 用法：node scripts/thak/fetch-grammar.mjs  （寫出 docs/thak/data-public/grammars.json）
 
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../docs/thak");
 const BASE = "https://tggl.naer.edu.tw";
 const UA = { headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) tl-poj-convert/grammar-index" } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -1,11 +1,10 @@
 // 字辭典補正（冪等，重跑覆寫）：dict.json 讀音修正——LEXICON_FIXES
 // （教典根據，逐條附證據）。
-// 執行：bun tools/build-lexfix.mjs
+// 執行：bun scripts/thak/build-lexfix.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { homedir } from "node:os";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
 const dir = join(root, "data-public");
 
 

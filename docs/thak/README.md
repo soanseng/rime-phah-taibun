@@ -28,7 +28,7 @@
 > 會造成誤選；標點、斷行、未命中音節原樣保留。
 > **獨立最後測試（2026-10-07）**：蔡培火《十項管見》（1925，純 POJ 全書，
 > zh-min-nan.wikisource）十章 19,873 音節——涵蓋 99.5%、零 crash、輸出可讀；
-> 語料 `tools/wikisource/`、測試 `tools/wikisource-r2h.mjs`。舊式 `o·` 中點
+> 語料 `scripts/thak/wikisource/`、測試 `scripts/thak/wikisource-r2h.mjs`。舊式 `o·` 中點
 > 未入解碼（當分隔音節），1925 拼法（Tâi-oan、gîn）靠 pojToTl 轉換無問題。
 
 | 來源 | 授權 |
@@ -65,18 +65,19 @@ BY-SA 資料之衍生詞典包隨 repo 提供（`data-public/dict.json`）；各
 ## 開發
 
 ```bash
-# 產生資料包（需 sibling 目錄 rime-phah-taibun 佮伊的 data/）
-python3 tools/build.py --mode public --out data-public
+# 本專案已併入 rime-phah-taibun（docs/thak/），指令佇 repo 根目錄執行
+# 產生資料包（需要 repo 的 data/，由 scripts/build_all.py 產生）
+uv run python scripts/thak/build.py --mode public --out docs/thak/data-public
 
 # build 後處理（冪等）：教典例句→讀音條件化 unigram（bigrams.json）
 # ＋教典讀音補正（dict.json：一 it4、相 siong1）
-bun tools/build-runi.mjs && bun tools/build-lexfix.mjs
+bun scripts/thak/build-runi.mjs && bun scripts/thak/build-lexfix.mjs
 # 重抓 TGGL 語法點索引 → data-public/grammars.json（只取中繼資料，原文不落地）
-node tools/fetch-grammar.mjs
+node scripts/thak/fetch-grammar.mjs
 
 # 本機起 web server
-python3 -m http.server 8765
-# 打開 http://127.0.0.1:8765/
+python3 -m http.server 8765 --directory docs
+# 打開 http://127.0.0.1:8765/thak/
 ```
 
 依賴：Python 3.10+（建置）、jQuery 4.0（CDN）、芫荽字型（Google Fonts）。無建置步驟——純靜態檔案。
@@ -91,7 +92,7 @@ python3 -m http.server 8765
 ## Roadmap（v2）
 
 - [x] 連讀變調 toggle（詞內連讀近似）佮輕聲詞顯示（`--`）
-- [x] bigram＋trigram 語言模型（identity＋900句＋詞典短語＋教典例句）。**A/B 消融（`tools/ablation-trigram.mjs`）**：例句域 84.67→84.71%（+0.04pp），四語料 0.00 差——trigram 零退化、醫學/新聞域零覆蓋（1,909 條文語三元組），日常域微增益。四語料 lattice 88.4/89.4/89.0/83.6%
+- [x] bigram＋trigram 語言模型（identity＋900句＋詞典短語＋教典例句）。**A/B 消融（`scripts/thak/ablation-trigram.mjs`）**：例句域 84.67→84.71%（+0.04pp），四語料 0.00 差——trigram 零退化、醫學/新聞域零覆蓋（1,909 條文語三元組），日常域微增益。四語料 lattice 88.4/89.4/89.0/83.6%
 - [x] 句級練習（教典例句 11,512 句，逐句併教典原文核對；CC BY-ND 3.0 TW 標示來源；逐詞免調比對＋錯題加重抽樣）
 - [x] 詞彙例句（教典，CC BY-ND 3.0 TW，標示來源）
 - [x] 補齊 之／枵／植／臨 等缺詞（讀音內證自本典複詞）

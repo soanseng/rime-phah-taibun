@@ -1,13 +1,14 @@
-// 雙向評測：bun tools/measure-r2h.mjs [bundle] [corpus]
+// 雙向評測：bun scripts/thak/measure-r2h.mjs [bundle] [corpus]
 // bundle 可為相對（repo 內）或絕對路徑；corpus 預設 weightloss（開發集）
 import {
   segment, render, buildReverseIndex, buildLM, decodeTlToHan, tlToHan,
-} from "../js/dict.js?v=21";
-import { toNumeric } from "../js/roman.js?v=21";
+} from "../../docs/thak/js/dict.js?v=21";
+import { toNumeric } from "../../docs/thak/js/roman.js?v=21";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
+const here = new URL(".", import.meta.url).pathname;
 const bundleArg = process.argv[2] || "data-public";
 const corpusName = process.argv[3] || "weightloss-corpus.txt";
 const bundle = isAbsolute(bundleArg) ? bundleArg : join(root, bundleArg);
@@ -35,7 +36,7 @@ const syls = (t) =>
   toNumeric(t.replace(/--/g, " ")).split(/[\s\-,.;:!?()"“”《》〈〉·]+/).filter((x) => /^[a-z0-9]+$/.test(x));
 const tlJoin = (arr) => arr.map((s) => s.replace(/[0-9]/g, "")).join("");
 
-const paras = readFileSync(join(root, "tools", corpusName), "utf8")
+const paras = readFileSync(join(here, corpusName), "utf8")
   .split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
 const pairs = [];
 let pending = null;

@@ -2,12 +2,12 @@
 // 逐字累計 (漢字, 去調音節) 次數 → 寫入 data-public/bigrams.json 的 "runi"。
 // 動機：uni 只有字詞頻——「到」的 373 全是 kau 用法，煞嘛替 tio̍h 鍵加分；
 // runi 予解碼器用「這字佇這音」的實計數（著@tioh > 到@tioh）。
-// 執行：bun tools/build-runi.mjs  （冪等：重跑覆寫 runi）
-import { toNumeric, pojToTl } from "../js/roman.js?v=21";
+// 執行：bun scripts/thak/build-runi.mjs  （冪等：重跑覆寫 runi）
+import { toNumeric, pojToTl } from "../../docs/thak/js/roman.js?v=21";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
 const dir = join(root, "data-public");
 const dict = JSON.parse(readFileSync(join(dir, "dict.json"), "utf8"));
 const sents = JSON.parse(readFileSync(join(dir, "sentences.json"), "utf8")).s;

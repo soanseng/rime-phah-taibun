@@ -18,6 +18,8 @@ dev = [
 [tool.ruff]
 target-version = "py310"
 line-length = 120
+# 讀台文 (docs/thak) 併入的 vendored 工具: 保留原作風格, 毋套本專案 lint/format
+extend-exclude = ["scripts/thak"]
 
 [tool.ruff.lint]
 select = [

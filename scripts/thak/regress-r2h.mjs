@@ -1,9 +1,9 @@
-// 羅→漢回歸斷言：bun tools/regress-r2h.mjs [bundle]
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=21";
-import { segment, render } from "../js/dict.js?v=21";
+// 羅→漢回歸斷言：bun scripts/thak/regress-r2h.mjs [bundle]
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../../docs/thak/js/dict.js?v=21";
+import { segment, render } from "../../docs/thak/js/dict.js?v=21";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
 const arg = process.argv[2] || "data-public";
 const bundle = isAbsolute(arg) ? arg : join(root, arg);
 const dict = JSON.parse(readFileSync(join(bundle, "dict.json"), "utf8"));
@@ -21,7 +21,7 @@ const wc = decodeTlToHan("Guá khì Tâi-pak, lí lâi.", rev, lm);
 ok("跨逗號解碼", wc.han.includes("臺北") && wc.han.includes("你") || wc.han.includes("臺北"));
 ok("words 含兩側詞", wc.words.some(x => x.word === "臺北") && wc.words.length >= 3);
 ok("words 帶讀音", wc.words.every(x => typeof x.reading === "string" && x.reading.length > 0));
-const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../js/roman.js?v=21");
+const { formatRomanization, tlToPoj, pojFixDiacritics } = await import("../../docs/thak/js/roman.js?v=21");
 // 上游 rime-phah-taibun v0.9.4 parity：Python tl_to_poj 內嵌 poj_fix_diacritics
 // （音節尾 oa/oe 標 o、ui 標 u；大小寫攏支援；空白嘛是音節邊界）
 ok("tlToPoj oa 修正", nfc(tlToPoj("gua\u0304")) === nfc("go\u0304a"));

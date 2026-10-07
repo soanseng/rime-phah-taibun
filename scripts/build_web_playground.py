@@ -16,7 +16,7 @@ Data (docs/try/<PACK_DIR>/, listed in docs/try/manifest.json):
   the two schemas (a user default.custom.yaml cannot patch it: the built-in one
   lives prebuilt in shared/build/)
 - phah_taibun.dict.yaml: concise web dictionary. Words = (漢字, TL) pairs of the
-  讀台文 public lexicon (tl-poj-convert data-public/dict.json: redistributable
+  讀台文 public lexicon (docs/thak/data-public/dict.json: redistributable
   layers only), corpus-attested pairs first (iCorpus identity + 楊允言 reading
   counts from data/, selection signal only), then by main weight; plus the
   main dictionary's single characters (weight >= SINGLE_MIN) so any sentence
@@ -25,7 +25,7 @@ Data (docs/try/<PACK_DIR>/, listed in docs/try/manifest.json):
 
 Usage:
     uv run python scripts/build_web_playground.py \
-        [--public-dict ../tl-poj-convert/data-public/dict.json] \
+        [--public-dict docs/thak/data-public/dict.json] \
         [--my-rime-dist /path/to/@libreservice/my-rime/dist]
 """
 
@@ -49,7 +49,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO_ROOT / "docs" / "try"
 # 唔通叫 data: .gitignore 的 data/ 規則會共伊食去, 正式站 (Git 部署) 就無檔案
 PACK_DIR = "pack"
-DEFAULT_PUBLIC_DICT = REPO_ROOT.parent / "tl-poj-convert" / "data-public" / "dict.json"
+DEFAULT_PUBLIC_DICT = REPO_ROOT / "docs" / "thak" / "data-public" / "dict.json"
 
 WORD_LIMIT = 45000
 # 單字是逐音節組句的底: 500 收著日常虛詞白讀 (欲 beh4 800、咧 leh4 640、阮 gun2 565)

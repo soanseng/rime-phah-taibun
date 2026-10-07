@@ -1,10 +1,11 @@
 // A/B：trigram 開vs關（同 bundle、同解碼參數）——四語料 char-sim
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=21";
-import { toNumeric } from "../js/roman.js?v=21";
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../../docs/thak/js/dict.js?v=21";
+import { toNumeric } from "../../docs/thak/js/roman.js?v=21";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
+const here = new URL(".", import.meta.url).pathname;
 const dict = JSON.parse(readFileSync(join(root, "data-public/dict.json"), "utf8"));
 const rev = buildReverseIndex(dict);
 const lmFull = buildLM(JSON.parse(readFileSync(join(root, "data-public/bigrams.json"), "utf8")));
@@ -46,7 +47,7 @@ const run = (lm) => {
 console.log(`例句域(400句): tri-off=${run(lmOff).toFixed(2)}%  tri-on=${run(lmFull).toFixed(2)}%`);
 
 for (const c of ["weightloss", "brownfat", "epigenetics", "nobel"]) {
-  const paras = readFileSync(join(root, `tools/${c}-corpus.txt`), "utf8")
+  const paras = readFileSync(join(here, `${c}-corpus.txt`), "utf8")
     .split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
   const pairs = [];
   let pending = null;

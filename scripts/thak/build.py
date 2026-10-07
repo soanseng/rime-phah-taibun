@@ -10,7 +10,8 @@ Layers:
   freq    public: icorpus (CC BY 4.0)
           local : + ungian/pojbh/nmtl/kipsutian/900leku/kok4hau7/identity (混合/待確認)
 
-Usage: python3 tools/build.py [--mode public|local] [--rime-dir DIR] [--out DIR]
+Usage: uv run python scripts/thak/build.py [--mode public|local] [--rime-dir DIR] [--out DIR]
+       (public bundle: --mode public --out docs/thak/data-public)
 """
 from __future__ import annotations
 
@@ -21,7 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-RIME_DEFAULT = Path(__file__).resolve().parents[2] / "rime-phah-taibun"
+RIME_DEFAULT = Path(__file__).resolve().parents[2]
 CT = "ChhoeTaigiDatabase/ChhoeTaigiDatabase/"
 
 FREQ_PUBLIC = ["icorpus_freq.tsv"]
@@ -517,7 +518,7 @@ def main() -> None:
     ap.add_argument("--mode", choices=["public", "local"], default="public")
     ap.add_argument("--rime-dir", type=Path, default=RIME_DEFAULT)
     ap.add_argument("--out", type=Path,
-                    default=Path(__file__).resolve().parent.parent / "data")
+                    default=RIME_DEFAULT / "docs" / "thak" / "data")
     a = ap.parse_args()
     build(a.mode, a.rime_dir, a.out)
 

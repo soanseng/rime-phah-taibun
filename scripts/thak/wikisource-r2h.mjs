@@ -1,14 +1,14 @@
 // 最後測試：Wiki Tô·-su-kóan「Cha̍p-hāng Koán-kiàn」（蔡培火 1925，純 POJ）
 // 十章全文跑羅→漢解碼。獨立語料：無入 LM 訓練、無調參。
 // 指標：無 crash、音節涵蓋率（matched/total）、逐章輸出樣本（無漢字金標準，
-// 袂算字元準確率）。來源佮授權：tools/wikisource/SOURCE.md。
-// 語料袂入版控——無檔就自動掠（idempotent）。執行：bun tools/wikisource-r2h.mjs
-import { buildReverseIndex, buildLM, decodeTlToHan } from "../js/dict.js?v=21";
+// 袂算字元準確率）。來源佮授權：scripts/thak/wikisource/SOURCE.md。
+// 語料袂入版控——無檔就自動掠（idempotent）。執行：bun scripts/thak/wikisource-r2h.mjs
+import { buildReverseIndex, buildLM, decodeTlToHan } from "../../docs/thak/js/dict.js?v=21";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname;
-const wsDir = join(root, "tools/wikisource");
+const root = new URL("../../docs/thak/", import.meta.url).pathname;
+const wsDir = join(new URL(".", import.meta.url).pathname, "wikisource");
 
 for (let i = 1; i <= 10; i++) {
   const f = join(wsDir, `te${i}.wiki`);

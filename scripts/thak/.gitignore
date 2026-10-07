@@ -1,0 +1,3 @@
+# 十項管見全文（1925，台灣著作權至 2033）——測試語料袂入版控；
+# wikisource-r2h.mjs 會自動下載（wikisource/SOURCE.md 有來源說明）
+wikisource/*.wiki
