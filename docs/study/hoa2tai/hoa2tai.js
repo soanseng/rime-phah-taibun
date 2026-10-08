@@ -4,7 +4,7 @@
 import { createStudy } from "../study-store.js?v=1";
 import { loadBank } from "../../try/practice-sources.js?v=3";
 import { readingOf } from "../../try/practice-core.js?v=2";
-import { overlap, seededOrder, matchesLength } from "./hoa2tai-core.js?v=1";
+import { overlap, seededOrder, matchesLength, cardFor } from "./hoa2tai-core.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => {
