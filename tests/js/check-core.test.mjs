@@ -6,7 +6,7 @@ import {
   scanRomanWords, wordSystem, convertWord,
   checkSystemMixing, checkNumericTones, checkToneFinals, checkMarkPosition, checkSpelling,
   buildSyllableSet, checkSyllables, buildMultiReadings, checkHyphens,
-  buildAltMap, checkHanji, checkCalqueLighttone, runChecks, CATS,
+  buildAltMap, checkHanji, checkCalqueLighttone, runChecks, CATS, buildLkkMap, checkLkk,
 } from "../../docs/check/check-core.js";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js?v=26";
 
@@ -270,4 +270,89 @@ test("runChecks: 5–8 干焦佇資料有予的時出現；重疊 span 留頭先
 
   const cats = new Set(CATS.map(([k]) => k));
   for (const i of full) assert.ok(cats.has(i.cat), `cat ${i.cat} 有佇 CATS`);
+});
+
+// ---------- 用字規範 LKK 漢羅（rule 9 ＋ rule 7 的 LKK 講法） ----------
+const YONGJI_ITEMS = [
+  { word: "按呢", tl: "án-ne", alts: [], lkk: [{ form: "án-ne", kind: "lo" }] },
+  { word: "抑是", tl: "a̍h-sī", alts: [], lkk: [{ form: "iah是", kind: "mix" }] },
+  { word: "袂", tl: "bē", alts: ["𣍐"], lkk: [{ form: "bē", kind: "lo" }] },
+  { word: "遐的", tl: "hia--ê", alts: [], lkk: [{ form: "hia ê", kind: "lo" }, { form: "hia--ê", kind: "lo" }, { form: "hia-ê", kind: "lo" }] },
+  { word: "重要", tl: "tiōng-iàu", alts: [], lkk: [{ form: "重要", kind: "han" }] },
+];
+const LKK_DICT = {
+  "伊": { r: ["i1"] }, "按呢": { r: ["an2 ne1"] }, "講": { r: ["kong2"] },
+  "按呢生": { r: ["an2 ne1 senn1"] },
+  "抑是": { r: ["iah8 si7"] }, "袂": { r: ["be7"] }, "記得": { r: ["ki3 tit8"] },
+  "遐的": { r: ["hia1 e5"] }, "冊": { r: ["tsheh4"] }, "重要": { r: ["tiong7 iau3"] },
+};
+const lkkSeg = (t) => segment(t, LKK_DICT, buildReverseIndex(LKK_DICT));
+
+test("buildLkkMap: 同字的重複項目愛合併、{form,kind} 去重", () => {
+  const m = buildLkkMap([...YONGJI_ITEMS,
+    { word: "遐的", tl: "hia ê", alts: [], lkk: [{ form: "hia ê", kind: "lo" }, { form: "hia-ê", kind: "lo" }] },
+    { word: "漚", tl: "au", alts: [], lkk: [{ form: "au", kind: "lo" }] },
+    { word: "漚", tl: "àu", alts: [], lkk: [{ form: "àu", kind: "lo" }] },
+  ]);
+  assert.equal(m.get("按呢").length, 1);
+  assert.equal(m.get("遐的").length, 3, "homograph 項目合併了後猶是 3 个無仝寫法");
+  assert.deepEqual(m.get("漚").map((e) => e.form), ["au", "àu"], "無仝讀音的 form 攏收");
+});
+
+test("checkLkk: LKK 寫羅馬字／漢羅混的推薦字獨立成詞→建議；長詞內底、han 類免", () => {
+  const map = buildLkkMap(YONGJI_ITEMS);
+  const t1 = "伊按呢講。";
+  const iss = checkLkk(t1, lkkSeg(t1), map);
+  assert.equal(iss.length, 1);
+  assert.deepEqual([iss[0].start, iss[0].end], [t1.indexOf("按呢"), t1.indexOf("按呢") + 2]);
+  assert.equal(iss[0].cat, "hanji");
+  assert.equal(iss[0].msg, "LKK 漢羅表建議寫羅馬字：án-ne（教育部推薦漢字：按呢）");
+  assert.equal(iss[0].fix, "án-ne");
+
+  const t2 = "抑是按呢？";
+  const iss2 = checkLkk(t2, lkkSeg(t2), map);
+  assert.equal(iss2.length, 2);
+  assert.equal(iss2[0].fix, "iah是");
+  assert.equal(iss2[0].msg, "LKK 漢羅表建議漢羅混寫：iah是（教育部推薦漢字：抑是）");
+
+  assert.deepEqual(checkLkk("按呢生", lkkSeg("按呢生"), map), [], "長詞內底毋受點");
+  assert.deepEqual(checkLkk("重要", lkkSeg("重要"), map), [], "LKK 寫漢字免");
+});
+
+test("checkLkk: 幾若種寫法→列出來、無 auto-fix", () => {
+  const map = buildLkkMap(YONGJI_ITEMS);
+  const iss = checkLkk("遐的冊", lkkSeg("遐的冊"), map);
+  assert.equal(iss.length, 1);
+  assert.equal(iss[0].fix, undefined);
+  assert.ok(iss[0].msg.includes("hia ê") && iss[0].msg.includes("hia--ê") && iss[0].msg.includes("hia-ê"));
+  assert.ok(iss[0].msg.includes("LKK"));
+});
+
+test("checkHanji: LKK 模式推薦字愛用 LKK 寫法；預設模式照舊", () => {
+  const altMap = buildAltMap([{ word: "袂", tl: "bē", alts: ["𣍐"], recAlts: [] }]);
+  const lkkMap = buildLkkMap(YONGJI_ITEMS);
+  const t = "我𣍐記得。";
+  const segs = lkkSeg(t);
+  const moe = checkHanji(t, segs, altMap);
+  assert.equal(moe[0].fix, "袂");
+  assert.equal(moe[0].msg, "教育部推薦用字：袂（bē）");
+  const lkk = checkHanji(t, segs, altMap, { mode: "lkk", lkkMap });
+  assert.equal(lkk[0].fix, "bē", "推薦字 LKK 寫羅馬字→直接建議 bē");
+  assert.ok(lkk[0].msg.includes("教育部推薦用字：袂（bē）"));
+  assert.ok(lkk[0].msg.includes("LKK 漢羅表建議寫「bē」"));
+});
+
+test("runChecks: mode 無設／moe→無 LKK 建議；lkk→有", () => {
+  const t = "伊按呢講。";
+  const base = {
+    segments: lkkSeg(t),
+    lkkMap: buildLkkMap(YONGJI_ITEMS),
+    altMap: new Map(),
+    hints: { calque: [], lighttone: [] },
+  };
+  assert.ok(!runChecks(t, base).some((i) => i.msg.includes("LKK")), "預設模式無 LKK");
+  assert.ok(!runChecks(t, { ...base, mode: "moe" }).some((i) => i.msg.includes("LKK")));
+  const lkkIss = runChecks(t, { ...base, mode: "lkk" });
+  assert.ok(lkkIss.some((i) => i.fix === "án-ne"));
+  assert.ok(lkkIss.every((i) => i.cat === "hanji" || i.msg.includes("建議")));
 });

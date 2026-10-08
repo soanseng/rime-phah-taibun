@@ -42,6 +42,7 @@ SOFTWARE.
 | lua/phah_taibun_emoji_menu.lua（Emoji 分類選單，由 emoji-test.txt 產生） | Unicode.org emoji-test 15.1 | Unicode License |
 | （Windows 安裝包內附）小狼毫 Weasel 0.17.4 安裝程式（未修改；原始碼：https://github.com/rime/weasel/tree/0.17.4） | rime/weasel | GPL-3.0 |
 | docs/study/data/iongji.json（推薦用字選擇、寫作檢查） | 教育部《臺灣台語推薦用字700字詞》建議用字、異用字、用例（照原文）；新北市104學年度閩南語字音字形900例句（Taiwanese-Corpus，MIT） | CC BY-NC-ND 2.5 TW（**非商用、禁止改作**）＋MIT |
+| docs/study/data/yongji.json（推薦用字表、寫作檢查 LKK 模式） | 教育部《臺灣台語推薦用字700字詞》（照原文）；李江却台語文教基金會 LKK 漢羅用字表（寫法分類） | CC BY-NC-ND 2.5 TW（**非商用、禁止改作**）＋LKK（標示來源、非商用） |
 | docs/study/data/listen.json、docs/study/audio/*.mp3（聽寫） | 教育部《臺灣台語常用詞辭典》例句文字、華語對譯、例句音檔（原文原音；音檔僅轉檔為單聲道 32 kbps MP3） | CC BY-ND 3.0 TW |
 
 > **非商用注意事項**：主字典與 wordlist 含四個 CC BY-NC-SA 3.0 TW 來源

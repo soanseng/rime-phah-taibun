@@ -1,6 +1,6 @@
 """檢定練習資料 (docs/study/data/iongji.json): 推薦用字 700 的異用字 → 用字選擇題佮寫作檢查。"""
 
-from scripts.build_study_data import build_iongji
+from scripts.build_study_data import build_iongji, build_yongji
 
 
 def row(word, tl, alts, examples="", hoa="", also=""):
@@ -60,3 +60,75 @@ def test_sentence_whose_romanization_does_not_line_up_with_its_hanji_is_dropped(
 def test_variant_reading_keeps_only_the_first_and_question_needs_some_context():
     items = build_iongji([row("覕", "bih/phih", "匿", ""), row("某", "bóo", "姥", "翁仔某")], LEKU)
     assert [(i["word"], i["tl"]) for i in items] == [("某", "bóo")]
+
+
+def lkk(form, moe="", tl="", hoa="", examples=""):
+    return {"建議用字": form, "音讀": tl, "教育部推薦漢字": moe, "對應華語": hoa, "用例": examples}
+
+
+def test_yongji_classifies_each_700_word_by_how_lkk_writes_it():
+    # LKK 建議 a̍h (羅馬字) 對應教育部「曷」; 「阿妗」LKK 照寫漢字; 「紅記記」LKK 寫做漢羅混
+    moe = [row("曷", "a̍h", ""), row("阿妗", "a-kīm", ""), row("紅記記", "âng-kì-kì", "")]
+    rows = [lkk("a̍h", moe="曷"), lkk("阿妗", tl="a-kīm"), lkk("紅kì-kì", moe="紅記記")]
+    items = {i["word"]: i for i in build_yongji(moe, rows)}
+    assert items["曷"]["lkk"] == [{"form": "a̍h", "kind": "lo"}]
+    assert items["阿妗"]["lkk"] == [{"form": "阿妗", "kind": "han"}]
+    assert items["紅記記"]["lkk"] == [{"form": "紅kì-kì", "kind": "mix"}]
+
+
+def test_yongji_homographs_take_only_the_lkk_form_with_the_same_reading():
+    # 700 有兩个「漚」(au 浸泡、àu 爛); LKK 兩个讀音攏寫羅馬字。逐个讀音干焦提家己彼个寫法,
+    # 調符位置寫法無仝 (ngeh̍ / nge̍h) 嘛算仝音; LKK 無收的讀音 (落 lo̍h) 毋通借別个讀音的寫法
+    moe = [
+        row("漚", "au", ""),
+        row("漚", "àu", ""),
+        row("挾", "ngeh̍", ""),
+        row("落", "lak", ""),
+        row("落", "lo̍h", ""),
+        row("家婆", "ke-pô", ""),
+    ]
+    rows = [
+        lkk("au", moe="漚"),
+        lkk("àu", moe="漚"),
+        lkk("au", moe="漚"),
+        lkk("gia̍p", moe="挾"),
+        lkk("nge̍h", moe="挾"),
+        lkk("lak", moe="落"),
+    ]
+    items = [(i["word"], i["tl"], [f["form"] for f in i["lkk"]]) for i in build_yongji(moe, rows)]
+    assert items == [
+        ("漚", "au", ["au"]),
+        ("漚", "àu", ["àu"]),
+        ("挾", "ngeh̍", ["nge̍h"]),
+        ("落", "lak", ["lak"]),
+        ("落", "lo̍h", []),
+        ("家婆", "ke-pô", []),
+    ]
+
+
+def test_yongji_han_entries_match_despite_accent_and_self_mapping():
+    # LKK「家己 ka-kī」對 700「家己 ka-tī」: 腔口無仝, 寫法仝款; 「囡仔」LKK 教育部欄寫家己本身;
+    # 700 讀音用無點 i (U+0131) 嘛愛對會著 LKK 的 ji̍t 羅馬字寫法
+    moe = [row("家己", "ka-tī", ""), row("囡仔", "gín-á", ""), row("日", "j\u0131\u030dt", "")]
+    rows = [lkk("家己", tl="ka-kī"), lkk("囡仔", moe="囡仔", tl="gín-á"), lkk("ji̍t", moe="日")]
+    items = [(i["word"], [f["form"] for f in i["lkk"]]) for i in build_yongji(moe, rows)]
+    assert items == [("家己", ["家己"]), ("囡仔", ["囡仔"]), ("日", ["ji̍t"])]
+
+
+def test_yongji_single_reading_word_takes_lkk_form_even_if_tones_differ_and_shifted_rows():
+    # 700「連鞭 liâm-mi」干焦一个讀音; LKK 寫 liam-mi (無調符) 嘛是伊。
+    # LKK 表「家婆」彼列欄位錯位 (建議用字 ke-pô、音讀欄是 家婆), 嘛愛對會著
+    moe = [row("連鞭", "liâm-mi", ""), row("家婆", "ke-pô", "")]
+    rows = [lkk("liam-mi", moe="連鞭"), lkk("ke-pô", tl="家婆")]
+    items = [(i["word"], [f["form"] for f in i["lkk"]]) for i in build_yongji(moe, rows)]
+    assert items == [("連鞭", ["liam-mi"]), ("家婆", ["ke-pô"])]
+
+
+def test_yongji_does_not_borrow_an_lkk_spelling_with_another_reading():
+    # 700 干焦一个讀音, 毋過 LKK 羅馬字寫法去調了嘛對袂著 → 無證據, 毋收
+    moe = [row("遮", "jia", "")]
+    rows = [lkk("tsia", moe="遮"), lkk("tsiah", moe="遮")]
+    assert build_yongji(moe, rows)[0]["lkk"] == []
+    # LKK 表本身有「遮 jia」照寫漢字彼列 (遮雨、遮日): 彼才是 jia 的寫法
+    rows.append(lkk("遮", tl="jia"))
+    assert build_yongji(moe, rows)[0]["lkk"] == [{"form": "遮", "kind": "han"}]

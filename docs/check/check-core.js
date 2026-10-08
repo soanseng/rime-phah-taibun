@@ -349,32 +349,102 @@ export function buildAltMap(items) {
   return map;
 }
 
-// 干焦 segment() 共異用字切做獨立詞（w／miss）的所在才受點；
-// 按呢「重要」內底的「要」袂冤枉受點。位置用游標 indexOf 對原文。
-export function checkHanji(text, segs, altMap) {
-  if (!altMap) return [];
+// segment 的獨立詞（w／miss）→ 位置（游標 indexOf 對原文，mergeMixed 的短詞嘛穩）。
+function walkSegments(text, segs, cb) {
   const t = String(text ?? "");
-  const out = [];
   let cursor = 0;
   for (const seg of segs ?? []) {
     const piece = seg.t === "w" ? seg.han : seg.s;
-    if (!piece || !altMap.has(piece)) { // 無 hit 嘛愛行過去（推進 cursor 用）
-      const idx = t.indexOf(piece ?? "", cursor);
-      if (piece && idx >= 0) cursor = idx + piece.length;
-      continue;
-    }
+    if (!piece) continue;
     const idx = t.indexOf(piece, cursor);
     if (idx < 0) continue;
     cursor = idx + piece.length;
+    cb({ seg, piece, start: idx, end: idx + piece.length });
+  }
+}
+
+// 干焦 segment() 共異用字切做獨立詞（w／miss）的所在才受點；
+// 按呢「重要」內底的「要」袂冤枉受點。
+// LKK 模式（opts.mode === "lkk"）：推薦字家己 LKK 寫羅馬字（一式）→ 建議直接改 LKK 寫法。
+export function checkHanji(text, segs, altMap, opts = {}) {
+  if (!altMap) return [];
+  const out = [];
+  const lkkMap = opts.mode === "lkk" ? opts.lkkMap : null;
+  walkSegments(text, segs, ({ piece, start, end }) => {
+    if (!altMap.has(piece)) return;
     const info = altMap.get(piece);
+    const loForms = lkkMap
+      ? (lkkMap.get(info.word) ?? []).filter((e) => e.kind === "lo")
+      : [];
+    if (loForms.length === 1) {
+      out.push({
+        start,
+        end,
+        cat: "hanji",
+        msg: `教育部推薦用字：${info.word}（${info.tl}）；LKK 漢羅表建議寫「${loForms[0].form}」`,
+        fix: loForms[0].form,
+      });
+      return;
+    }
     out.push({
-      start: idx,
-      end: idx + piece.length,
+      start,
+      end,
       cat: "hanji",
       msg: `教育部推薦用字：${info.word}（${info.tl}）`,
       fix: info.word,
     });
+  });
+  return out;
+}
+
+// ---------- 檢查 9：LKK 漢羅用字（用字規範「LKK 漢羅」模式） ----------
+
+// yongji.json items → Map 推薦字 → lkk 寫法 [{form, kind}]（lo 羅馬字／mix 漢羅混）。
+// 同字重複項目（homograph 讀音拆開）愛合併，{form, kind} 去重。
+export function buildLkkMap(items) {
+  const map = new Map();
+  for (const it of items ?? []) {
+    for (const e of it.lkk ?? []) {
+      if (!map.has(it.word)) map.set(it.word, []);
+      const arr = map.get(it.word);
+      if (!arr.some((x) => x.form === e.form && x.kind === e.kind)) {
+        arr.push({ form: e.form, kind: e.kind });
+      }
+    }
   }
+  return map;
+}
+
+const lkkForms = (lkk) => (lkk ?? []).filter((e) => e.kind === "lo" || e.kind === "mix");
+
+// 推薦字獨立成詞而且 LKK 表寫羅馬字／漢羅混 → 建議 LKK 寫法。
+// 一式→有 fix；幾若式→列出來無 auto-fix（親像 遐的 hia ê／hia--ê／hia-ê）。
+export function checkLkk(text, segs, lkkMap) {
+  if (!lkkMap) return [];
+  const out = [];
+  walkSegments(text, segs, ({ piece, start, end }) => {
+    const forms = lkkForms(lkkMap.get(piece));
+    if (!forms.length) return;
+    if (forms.length === 1) {
+      const e = forms[0];
+      out.push({
+        start,
+        end,
+        cat: "hanji",
+        msg: e.kind === "lo"
+          ? `LKK 漢羅表建議寫羅馬字：${e.form}（教育部推薦漢字：${piece}）`
+          : `LKK 漢羅表建議漢羅混寫：${e.form}（教育部推薦漢字：${piece}）`,
+        fix: e.form,
+      });
+      return;
+    }
+    out.push({
+      start,
+      end,
+      cat: "hanji",
+      msg: `LKK 漢羅表有幾若種寫法：${forms.map((e) => e.form).join("、")}（教育部推薦漢字：${piece}）`,
+    });
+  });
   return out;
 }
 
@@ -428,14 +498,17 @@ export function checkCalqueLighttone(text, hints) {
 // ---------- 總匣 ----------
 
 // 全部檢查合做伙（照 CATS 順序做優先權），重疊 span 留頭先那條。
-// 詞典相關資料（syllableSet／multiReadings／altMap／hints／segments）有才做 5–8。
+// 詞典相關資料（syllableSet／multiReadings／altMap／hints／segments）有才做 5–8；
+// opts.mode === "lkk"（用字規範 LKK 漢羅）→ rule 9 佮 rule 7 的 LKK 講法。
 export function runChecks(text, opts = {}) {
   const t = String(text ?? "");
+  const mode = opts.mode === "lkk" ? "lkk" : "moe";
   const sorted = [
     ...checkSpelling(t, opts.target ?? null),
     ...checkHyphens(t, opts.multiReadings),
     ...checkSyllables(t, opts.syllableSet),
-    ...checkHanji(t, opts.segments, opts.altMap),
+    ...checkHanji(t, opts.segments, opts.altMap, { mode, lkkMap: opts.lkkMap }),
+    ...(mode === "lkk" ? checkLkk(t, opts.segments, opts.lkkMap) : []),
     ...checkCalqueLighttone(t, opts.hints),
   ].map((i, k) => ({ ...i, k }))
     .sort((a, b) => a.start - b.start || a.k - b.k);

@@ -77,7 +77,7 @@
       #app.study-app { display: grid; gap: 0.75rem; }
       .chk-top { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; }
       .chk-samples { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; color: var(--color-muted); }
-      #chk-target { font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); }
+      #chk-target, #chk-yongji { font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); }
       #chk-input { width: 100%; min-height: 8.5em; padding: 0.75rem; font: inherit; line-height: 1.7; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); resize: vertical; }
       .chk-preview { white-space: pre-wrap; word-break: break-word; line-height: 1.95; padding: 0.75rem 0.9rem; border: 1px dashed var(--color-line); border-radius: var(--radius); background: var(--color-surface-alt); }
       .chk-mark { background: linear-gradient(transparent 62%, rgb(255 200 60 / 0.5) 62%); border-radius: 2px; padding: 0 0.08em; cursor: pointer; }
@@ -160,6 +160,12 @@
                   <option value="poj">白話字 POJ</option>
                 </select>
               </label>
+              <label>用字規範
+                <select id="chk-yongji">
+                  <option value="moe" selected>教育部 700（全漢字）</option>
+                  <option value="lkk">LKK 漢羅</option>
+                </select>
+              </label>
               <span class="chk-samples">試看看：
                 <button type="button" class="btn btn-ghost chk-sample" data-i="0">台羅摻白話字</button>
                 <button type="button" class="btn btn-ghost chk-sample" data-i="1">推薦用字・輕聲</button>
@@ -179,7 +185,7 @@
               <div id="chk-issues" class="chk-issues"></div>
             </div>
           </div>
-          <p class="tool-credits">詞典資料：iTaigi 華台對照典（CC0）・台華線頂對照典（CC BY-SA 4.0）・台灣植物名彙（CC BY-SA 4.0）・教育部「以本土語言標注臺灣地名」（CC BY 3.0 TW）・教育部學科術語臺灣台語對譯 STTI（依官方說明開放運用、標示來源）・新北市900例句（MIT；標示來源）・李江却台語文教基金會 LKK 用字表（標示來源）・教育部臺灣台語常用詞辭典（萌典版，CC BY-ND 3.0 TW）・寫台文主詞庫（混合授權非商業，詳見 <a href="https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE" rel="noopener">LICENSE</a>）。推薦用字：用字：教育部《臺灣台語推薦用字700字詞》（建議用字、異用字、用例）。例句：新北市104學年度閩南語字音字形900例句工作坊（Taiwanese-Corpus，MIT；標示來源）。</p>
+          <p class="tool-credits">詞典資料：iTaigi 華台對照典（CC0）・台華線頂對照典（CC BY-SA 4.0）・台灣植物名彙（CC BY-SA 4.0）・教育部「以本土語言標注臺灣地名」（CC BY 3.0 TW）・教育部學科術語臺灣台語對譯 STTI（依官方說明開放運用、標示來源）・新北市900例句（MIT；標示來源）・李江却台語文教基金會 LKK 漢羅用字表（標示來源）・教育部臺灣台語常用詞辭典（萌典版，CC BY-ND 3.0 TW）・寫台文主詞庫（混合授權非商業，詳見 <a href="https://github.com/soanseng/rime-phah-taibun/blob/main/LICENSE" rel="noopener">LICENSE</a>）。推薦用字：用字：教育部《臺灣台語推薦用字700字詞》（建議用字、異用字、用例）。例句：新北市104學年度閩南語字音字形900例句工作坊（Taiwanese-Corpus，MIT；標示來源）。</p>
         </div>
       </section>
     </main>
@@ -196,6 +202,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./check.js?v=1"></script>
+    <script type="module" src="./check.js?v=2"></script>
   </body>
 </html>

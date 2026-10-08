@@ -83,6 +83,20 @@
       #ig-wrong-list { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
       .ig-wrong { padding: 0.5rem 0.75rem; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-surface-alt); }
       .ig-wrong b { font-size: 1.2rem; margin-right: 0.4rem; }
+      #ig-views { justify-self: start; }
+      #ig-table { display: grid; gap: 0.75rem; }
+      #ig-search { padding: 0.45rem 0.7rem; border: 1px solid var(--color-line); border-radius: 999px; min-width: 13rem; background: var(--color-surface); }
+      .ig-table-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); }
+      .ig-yongji { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
+      .ig-yongji th, .ig-yongji td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--color-line); text-align: left; vertical-align: top; white-space: nowrap; }
+      .ig-yongji td.ig-ex { white-space: normal; min-width: 10rem; }
+      .ig-yongji thead th { position: sticky; top: 0; background: var(--color-surface-alt); }
+      .ig-yongji .ig-w { font-size: 1.15rem; }
+      .ig-badge { display: inline-block; margin-right: 0.45em; padding: 0.05rem 0.45rem; border-radius: 999px; font-size: 0.72rem; vertical-align: 0.1em; }
+      .ig-badge.han { background: var(--color-green); color: #fff; }
+      .ig-badge.lo { background: var(--color-blue); color: #fff; }
+      .ig-badge.mix { background: var(--color-muted); color: #fff; }
+      .ig-form { margin-right: 0.35em; }
     </style>
   </head>
   <body>
@@ -146,6 +160,10 @@
             <a href="../../study/worksheet/">學習單列印</a>
           </nav>
           <div id="app" class="study-app" data-page="iongji">
+            <div class="seg" id="ig-views" role="tablist" aria-label="款式">
+              <button class="seg-btn is-active" type="button" id="ig-tab-quiz" data-view="quiz" aria-selected="true">選擇題</button><button
+                class="seg-btn" type="button" id="ig-tab-table" data-view="table" aria-selected="false">用字表</button>
+            </div>
             <p class="hint" id="app-loading">載入中…</p>
             <div class="stat-row" id="ig-progress" hidden>
               <span>第 <b id="ig-i">–</b>／<b id="ig-total">–</b> 題</span>
@@ -168,8 +186,37 @@
               </div>
             </div>
             <p class="q-sub muted">題目：教育部《臺灣台語推薦用字700字詞》；例句：新北市900例句。用例照 700 字詞表原文顯示。</p>
+            <section id="ig-table" hidden aria-label="推薦用字表">
+              <p class="q-sub">教育部 700 字詞是「漢字用字」的標準；李江却台語文教基金會的 LKK 漢羅用字表閣較進一步：某寡詞（虛詞、語助詞、本字有爭議的）建議直接寫羅馬字，有的漢羅做伙寫。「寫台文」輸入法的漢羅輸出就是照 LKK 表。</p>
+              <div class="btn-row" style="gap: 0.75rem; align-items: center;">
+                <div class="seg" id="ig-filters" aria-label="LKK 寫法過濾">
+                  <button class="seg-btn is-active" type="button" data-kind="all">全部</button><button
+                    class="seg-btn" type="button" data-kind="han">LKK 寫漢字</button><button
+                    class="seg-btn" type="button" data-kind="lo">LKK 寫羅馬字</button><button
+                    class="seg-btn" type="button" data-kind="mix">漢羅混</button>
+                </div>
+                <input type="search" id="ig-search" placeholder="揣用字、讀音抑是華語" aria-label="揣用字" />
+              </div>
+              <p class="stat-row" id="ig-counts"></p>
+              <div class="ig-table-wrap">
+                <table class="ig-yongji" id="ig-yongji">
+                  <thead>
+                    <tr>
+                      <th scope="col">教育部推薦用字</th>
+                      <th scope="col">讀音</th>
+                      <th scope="col">LKK 寫法</th>
+                      <th scope="col">華語</th>
+                      <th scope="col">異用字</th>
+                      <th scope="col">用例</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ig-yongji-body"></tbody>
+                </table>
+              </div>
+              <p class="q-sub muted">LKK 寫法：李江却台語文教基金會《漢羅用字表》（標示來源）。用例照教育部 700 字詞表原文顯示。</p>
+            </section>
           </div>
-          <p class="tool-credits">用字：教育部《臺灣台語推薦用字700字詞》（建議用字、異用字、用例）。例句：新北市104學年度閩南語字音字形900例句工作坊（Taiwanese-Corpus，MIT；標示來源）。考試資訊參考<a href="https://ttg.moe.edu.tw/tmt/view.php?page=questionBase" rel="noopener">教育部臺灣台語語言能力認證考試・題型介紹</a>；本站練習毋是官方題目。進度攏存佇你家己的瀏覽器（localStorage），無傳去伺服器；換電腦請佇<a href="../../study/">檢定練習總覽</a>匯出／匯入備份。</p>
+          <p class="tool-credits">用字：教育部《臺灣台語推薦用字700字詞》（建議用字、異用字、用例）。例句：新北市104學年度閩南語字音字形900例句工作坊（Taiwanese-Corpus，MIT；標示來源）。LKK 寫法：李江却台語文教基金會 LKK 漢羅用字表（標示來源）。考試資訊參考<a href="https://ttg.moe.edu.tw/tmt/view.php?page=questionBase" rel="noopener">教育部臺灣台語語言能力認證考試・題型介紹</a>；本站練習毋是官方題目。進度攏存佇你家己的瀏覽器（localStorage），無傳去伺服器；換電腦請佇<a href="../../study/">檢定練習總覽</a>匯出／匯入備份。</p>
         </div>
       </section>
     </main>
@@ -186,6 +233,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./iongji.js?v=1"></script>
+    <script type="module" src="./iongji.js?v=2"></script>
   </body>
 </html>

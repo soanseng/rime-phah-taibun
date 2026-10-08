@@ -1,7 +1,8 @@
-// 寫作檢查頁 UI：貼台文 → 即時檢查（拼寫先；詞典載好了後規尾 8 條），
+// 寫作檢查頁 UI：貼台文 → 即時檢查（拼寫先；詞典載好了後規尾 9 條），
 // 逐條建議會當一鍵「採用」，拼寫類閣有「全部採用」。改了隨時閣檢查。
+// 用字規範會當揀「教育部 700（全漢字）」抑是「LKK 漢羅」（揀了記佇瀏覽器）。
 // 檢查邏輯攏佇 check-core.js（純函式，有 node 測試）。
-import { runChecks, buildSyllableSet, buildMultiReadings, buildAltMap, CATS } from "./check-core.js?v=1";
+import { runChecks, buildSyllableSet, buildMultiReadings, buildAltMap, buildLkkMap, CATS } from "./check-core.js?v=2";
 import { segment } from "../thak/js/dict.js?v=26";
 import { loadDictBundle } from "../try/practice-sources.js?v=3";
 
@@ -34,7 +35,10 @@ function init() {
   const preview = document.getElementById("chk-preview");
   const issuesBox = document.getElementById("chk-issues");
   const sel = document.getElementById("chk-target");
-  if (!input || !status || !summary || !fixAll || !preview || !issuesBox || !sel) return;
+  const yongjiSel = document.getElementById("chk-yongji");
+  if (!input || !status || !summary || !fixAll || !preview || !issuesBox || !sel || !yongjiSel) return;
+  const YONGJI_KEY = "phahtaibun.check.yongji";
+  if (yongjiSel.value !== "lkk") yongjiSel.value = localStorage.getItem(YONGJI_KEY) === "lkk" ? "lkk" : "moe";
 
   let issues = [];
   let data = null; // { syllableSet, multiReadings, altMap, hints, dict, rev }
@@ -46,10 +50,12 @@ function init() {
     const segs = data && text ? segment(text, data.dict, data.rev) : null;
     issues = runChecks(text, {
       target,
+      mode: yongjiSel.value === "lkk" ? "lkk" : "moe",
       syllableSet: data?.syllableSet,
       multiReadings: data?.multiReadings,
       segments: segs,
       altMap: data?.altMap,
+      lkkMap: data?.lkkMap,
       hints: data?.hints,
     });
     render();
@@ -130,6 +136,10 @@ function init() {
 
   input.addEventListener("input", schedule);
   sel.addEventListener("change", checkNow);
+  yongjiSel.addEventListener("change", () => {
+    try { localStorage.setItem(YONGJI_KEY, yongjiSel.value); } catch { /* 無 localStorage 嘛無妨 */ }
+    checkNow();
+  });
   for (const btn of document.querySelectorAll(".chk-sample")) {
     btn.addEventListener("click", () => {
       input.value = SAMPLES[Number(btn.dataset.i)] ?? "";
@@ -139,21 +149,23 @@ function init() {
   }
   checkNow();
 
-  // 詞典（檢查 5–8 愛）：載好了隨閣檢查一擺。載敗猶會用拼寫檢查。
+  // 詞典（檢查 5–9 愛）：載好了隨閣檢查一擺。載敗猶會用拼寫檢查。
   Promise.all([
     loadDictBundle(),
     fetch(new URL("../study/data/iongji.json", import.meta.url)).then((r) => r.json()),
     fetch(new URL("../thak/data-public/hints.json", import.meta.url)).then((r) => r.json()),
-  ]).then(([bundle, iongji, hints]) => {
+    fetch(new URL("../study/data/yongji.json", import.meta.url)).then((r) => r.json()),
+  ]).then(([bundle, iongji, hints, yongji]) => {
     data = {
       dict: bundle.dict,
       rev: bundle.rev,
       syllableSet: buildSyllableSet(bundle.dict),
       multiReadings: buildMultiReadings(bundle.dict),
       altMap: buildAltMap(iongji.items),
+      lkkMap: buildLkkMap(yongji.items),
       hints,
     };
-    status.textContent = "詞典載入好矣：音節、連字符、推薦用字、華語直譯／輕聲檢查攏開矣。";
+    status.textContent = "詞典載入好矣：音節、連字符、推薦用字／LKK 漢羅、華語直譯／輕聲檢查攏開矣。";
     checkNow();
   }).catch(() => {
     status.textContent = "詞典載入失敗，請重新整理（拼寫檢查猶會用）。";

@@ -1,6 +1,7 @@
-// 推薦用字選擇題的題目產生（無 DOM，會當獨立測試）。
+// 推薦用字選擇題的題目產生＋LKK 用字表的過濾／搜尋（無 DOM，會當獨立測試）。
 // 700 字詞表是 CC BY-NC-ND：干焦新北市900例句（MIT）會當挖空出題；
 // 表內的「用例」一律原文顯示（答了後才出現），無挖空。
+import { pojToTl, stripTones } from "../../thak/js/roman.js?v=26";
 const BLANK = "＿";
 
 // Fisher–Yates：注入 rng 會當固定順序。
@@ -31,4 +32,60 @@ export function buildQuestion(item, rng = Math.random) {
     return { prompt: blankSentence(han, word), blankedFrom: [han, tl], options, answer: word, item };
   }
   return { prompt: `「${item.hoa}」，台語讀做 ${item.tl}，推薦寫法是？`, options, answer: word, item };
+}
+
+// 搜尋鍵：台羅／白話字／調號數字攏會著（揣讀音用）。
+export function tlKey(s) {
+  if (!s) return "";
+  return stripTones(pojToTl(String(s)))
+    .toLowerCase()
+    .replace(/[0-9]/g, "")
+    .replace(/[-\s]+/g, "");
+}
+
+export function lkkKindLabel(kind) {
+  return { han: "漢字", lo: "羅馬字", mix: "漢羅混" }[kind] ?? kind;
+}
+
+// 予選擇題回饋顯示：「a̍h（寫羅馬字）」；仝款寫法的 form 鬥做伙。
+export function lkkText(item) {
+  const forms = item?.lkk ?? [];
+  if (!forms.length) return null;
+  const parts = [];
+  for (const f of forms) {
+    const label = f.kind === "han" ? "（寫漢字）" : f.kind === "lo" ? "（寫羅馬字）" : "（漢羅混）";
+    const last = parts[parts.length - 1];
+    if (last && last.label === label) last.forms.push(f.form);
+    else parts.push({ label, forms: [f.form] });
+  }
+  return parts.map((p) => `${p.forms.join("、")}${p.label}`).join("、");
+}
+
+export function lkkHas(item, kind) {
+  if (kind === "all") return true;
+  return (item?.lkk ?? []).some((f) => f.kind === kind);
+}
+
+function textMatch(item, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    item.word.toLowerCase().includes(q) ||
+    (item.hoa ?? "").toLowerCase().includes(q) ||
+    tlKey(item.tl).includes(tlKey(q))
+  );
+}
+
+export function filterWords(items, { kind = "all", query = "" } = {}) {
+  return items.filter((it) => lkkHas(it, kind) && textMatch(it, query));
+}
+
+export function lkkCounts(items, query = "") {
+  const hit = items.filter((it) => textMatch(it, query));
+  return {
+    all: hit.length,
+    han: hit.filter((it) => lkkHas(it, "han")).length,
+    lo: hit.filter((it) => lkkHas(it, "lo")).length,
+    mix: hit.filter((it) => lkkHas(it, "mix")).length,
+  };
 }

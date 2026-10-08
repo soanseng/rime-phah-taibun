@@ -1,8 +1,11 @@
-// 推薦用字選擇題：題目產生（挖空、選項、無例句時的備用問法）。
+// 推薦用字選擇題：題目產生（挖空、選項、無例句時的備用問法）＋LKK 用字表的過濾／搜尋。
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { buildQuestion, shuffle } from "../../docs/study/iongji/iongji-core.js";
+import {
+  buildQuestion, shuffle,
+  tlKey, lkkKindLabel, lkkText, lkkHas, filterWords, lkkCounts,
+} from "../../docs/study/iongji/iongji-core.js";
 
 // 固定種子的 rng，順序才會當重現。
 const seeded = (s) => () => {
@@ -128,4 +131,97 @@ test("buildQuestion: 真實資料 229 項攏生會出合法的題目", () => {
       assert.equal(q.prompt, `「${item.hoa}」，台語讀做 ${item.tl}，推薦寫法是？`, item.word);
     }
   }
+});
+
+test("tlKey: 台羅／白話字／調號數字攏揣會著", () => {
+  assert.equal(tlKey("tshuì-phué"), "tshuiphue");
+  assert.equal(tlKey("tshui-phue"), "tshuiphue");
+  assert.equal(tlKey("chhui-phoe"), "tshuiphue"); // POJ 拼寫
+  assert.equal(tlKey("tshui-phue7"), "tshuiphue"); // 調號數字
+  assert.equal(tlKey("hia--ê"), "hiae"); // 輕聲連字號
+  assert.equal(tlKey(""), "");
+  assert.equal(tlKey(null), "");
+});
+
+test("lkkKindLabel: han/lo/mix 的台語名", () => {
+  assert.equal(lkkKindLabel("han"), "漢字");
+  assert.equal(lkkKindLabel("lo"), "羅馬字");
+  assert.equal(lkkKindLabel("mix"), "漢羅混");
+});
+
+test("lkkText: 仝一種寫法的 form 鬥做伙，無收就 null", () => {
+  assert.equal(lkkText({ lkk: [{ form: "a̍h", kind: "lo" }] }), "a̍h（寫羅馬字）");
+  assert.equal(
+    lkkText({ lkk: [{ form: "阿", kind: "han" }, { form: "仔", kind: "han" }] }),
+    "阿、仔（寫漢字）",
+  );
+  assert.equal(
+    lkkText({ lkk: [{ form: "leh/teh", kind: "lo" }, { form: "--leh", kind: "lo" }] }),
+    "leh/teh、--leh（寫羅馬字）",
+  );
+  assert.equal(lkkText({ lkk: [{ form: "iah是", kind: "mix" }] }), "iah是（漢羅混）");
+  assert.equal(lkkText({ lkk: [] }), null);
+  assert.equal(lkkText({}), null);
+});
+
+test("lkkHas: all 攏有；無收的干焦 all 會著", () => {
+  const item = { lkk: [{ form: "a̍h", kind: "lo" }] };
+  assert.equal(lkkHas(item, "all"), true);
+  assert.equal(lkkHas(item, "lo"), true);
+  assert.equal(lkkHas(item, "han"), false);
+  assert.equal(lkkHas({ lkk: [] }, "all"), true);
+  assert.equal(lkkHas({ lkk: [] }, "han"), false);
+  assert.equal(lkkHas({}, "lo"), false);
+});
+
+test("filterWords: 揀 kind 閣會當照漢字／讀音／華語揣", () => {
+  const items = [
+    { word: "喙䫌", tl: "tshuì-phué", hoa: "臉頰", lkk: [{ form: "喙䫌", kind: "han" }] },
+    { word: "按呢", tl: "án-ne", hoa: "這樣", lkk: [{ form: "án-ne", kind: "lo" }] },
+    { word: "紅kì-kì", tl: "âng-kì-kì", hoa: "紅通通", lkk: [{ form: "紅kì-kì", kind: "mix" }] },
+    { word: "無收的", tl: "bô", hoa: "—", lkk: [] },
+  ];
+  assert.equal(filterWords(items).length, 4);
+  assert.equal(filterWords(items, { kind: "lo" }).length, 1);
+  assert.equal(filterWords(items, { kind: "lo" })[0].word, "按呢");
+  assert.deepEqual(
+    filterWords(items, { query: "臉頰" }).map((x) => x.word),
+    ["喙䫌"],
+  );
+  assert.deepEqual(filterWords(items, { query: "an-ne" }).map((x) => x.word), ["按呢"]); // 調號無要緊
+  assert.deepEqual(filterWords(items, { query: "án-ne" }).map((x) => x.word), ["按呢"]);
+  assert.equal(filterWords(items, { query: "  " }).length, 4); // 空白當做無條件
+  assert.deepEqual(
+    filterWords(items, { kind: "mix", query: "紅通通" }).map((x) => x.word),
+    ["紅kì-kì"],
+  );
+});
+
+test("lkkCounts: 照搜尋字算各種寫法的數量", () => {
+  const items = [
+    { word: "a", tl: "a", hoa: "", lkk: [{ form: "a", kind: "han" }] },
+    { word: "b", tl: "b", hoa: "", lkk: [{ form: "b", kind: "lo" }] },
+    { word: "c", tl: "c", hoa: "", lkk: [{ form: "c", kind: "lo" }] },
+    { word: "d", tl: "d", hoa: "", lkk: [] },
+  ];
+  assert.deepEqual(lkkCounts(items, ""), { all: 4, han: 1, lo: 2, mix: 0 });
+  assert.deepEqual(lkkCounts(items, "a"), { all: 1, han: 1, lo: 0, mix: 0 });
+});
+
+test("yongji 真實資料：700 字攏會當揣著，數量佇表一致", () => {
+  const { items } = JSON.parse(
+    readFileSync(new URL("../../docs/study/data/yongji.json", import.meta.url), "utf8"),
+  );
+  assert.equal(items.length, 700);
+  for (const it of items) {
+    assert.ok(typeof it.word === "string" && it.word.length > 0);
+    assert.ok(typeof it.tl === "string");
+    for (const f of it.lkk) assert.ok(["han", "lo", "mix"].includes(f.kind), `${it.word} ${f.kind}`);
+  }
+  // 229 个練習題的詞攏佇表內
+  const bank = JSON.parse(
+    readFileSync(new URL("../../docs/study/data/iongji.json", import.meta.url), "utf8"),
+  );
+  const words = new Set(items.map((x) => x.word));
+  for (const it of bank.items) assert.ok(words.has(it.word), it.word);
 });
