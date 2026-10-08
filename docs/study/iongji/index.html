@@ -187,13 +187,14 @@
             </div>
             <p class="q-sub muted">題目：教育部《臺灣台語推薦用字700字詞》；例句：新北市900例句。用例照 700 字詞表原文顯示。</p>
             <section id="ig-table" hidden aria-label="推薦用字表">
-              <p class="q-sub">教育部 700 字詞是「漢字用字」的標準；李江却台語文教基金會的 LKK 漢羅用字表閣較進一步：某寡詞（虛詞、語助詞、本字有爭議的）建議直接寫羅馬字，有的漢羅做伙寫。「寫台文」輸入法的漢羅輸出就是照 LKK 表。</p>
+              <p class="q-sub">教育部 700 字詞是「漢字用字」的標準；李江却台語文教基金會的 LKK 漢羅用字表閣較進一步：某寡詞（虛詞、語助詞、本字有爭議的）建議直接寫羅馬字，有的漢羅做伙寫。「寫台文」輸入法的漢羅輸出就是照 LKK 表：候選的 ◆＝LKK 寫漢字（包含漢羅混寫），★＝LKK 寫羅馬字。</p>
               <div class="btn-row" style="gap: 0.75rem; align-items: center;">
                 <div class="seg" id="ig-filters" aria-label="LKK 寫法過濾">
                   <button class="seg-btn is-active" type="button" data-kind="all">全部</button><button
-                    class="seg-btn" type="button" data-kind="han">LKK 寫漢字</button><button
-                    class="seg-btn" type="button" data-kind="lo">LKK 寫羅馬字</button><button
-                    class="seg-btn" type="button" data-kind="mix">漢羅混</button>
+                    class="seg-btn" type="button" data-kind="hantype">◆ LKK 寫漢字</button><button
+                    class="seg-btn" type="button" data-kind="lo">★ LKK 寫羅馬字</button><button
+                    class="seg-btn" type="button" data-kind="han" title="◆ 內底完全無羅馬字的">◆ 其中全漢字</button><button
+                    class="seg-btn" type="button" data-kind="mix" title="◆ 內底漢字佮羅馬字混寫的">◆ 其中漢羅混</button>
                 </div>
                 <input type="search" id="ig-search" placeholder="揣用字、讀音抑是華語" aria-label="揣用字" />
               </div>
@@ -233,6 +234,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./iongji.js?v=2"></script>
+    <script type="module" src="./iongji.js?v=3"></script>
   </body>
 </html>

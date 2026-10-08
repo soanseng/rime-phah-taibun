@@ -1,5 +1,5 @@
 // 推薦用字選擇題：一輪 10 題；揀 1–4 抑是滑鼠點。進度存佇瀏覽器（localStorage）。
-import { buildQuestion, shuffle, lkkText, lkkKindLabel, filterWords, lkkCounts } from "./iongji-core.js?v=2";
+import { buildQuestion, shuffle, lkkText, lkkKindLabel, filterWords, lkkCounts } from "./iongji-core.js?v=3";
 import { createStudy } from "../study-store.js?v=1";
 import { toNumeric } from "../../thak/js/roman.js?v=26";
 
@@ -207,9 +207,8 @@ function renderTable() {
   const counts = lkkCounts(yongjiItems, query);
   $("ig-counts").replaceChildren(
     el("span", null, `全部 ${counts.all}`),
-    el("span", null, `寫漢字 ${counts.han}`),
-    el("span", null, `寫羅馬字 ${counts.lo}`),
-    el("span", null, `漢羅混 ${counts.mix}`),
+    el("span", null, `◆ 寫漢字 ${counts.hantype}（全漢字 ${counts.han}、漢羅混 ${counts.mix}）`),
+    el("span", null, `★ 寫羅馬字 ${counts.lo}`),
   );
   const body = $("ig-yongji-body");
   body.replaceChildren();

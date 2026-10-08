@@ -143,23 +143,23 @@ test("tlKey: 台羅／白話字／調號數字攏揣會著", () => {
   assert.equal(tlKey(null), "");
 });
 
-test("lkkKindLabel: han/lo/mix 的台語名", () => {
-  assert.equal(lkkKindLabel("han"), "漢字");
-  assert.equal(lkkKindLabel("lo"), "羅馬字");
-  assert.equal(lkkKindLabel("mix"), "漢羅混");
+test("lkkKindLabel: 主分類照 LKK type（漢羅混算 ◆ 寫漢字）", () => {
+  assert.ok(lkkKindLabel("mix").startsWith("◆"));
+  assert.ok(lkkKindLabel("han").startsWith("◆"));
+  assert.ok(lkkKindLabel("lo").startsWith("★"));
 });
 
 test("lkkText: 仝一種寫法的 form 鬥做伙，無收就 null", () => {
-  assert.equal(lkkText({ lkk: [{ form: "a̍h", kind: "lo" }] }), "a̍h（寫羅馬字）");
+  assert.equal(lkkText({ lkk: [{ form: "a̍h", kind: "lo" }] }), "a̍h（★ 寫羅馬字）");
   assert.equal(
     lkkText({ lkk: [{ form: "阿", kind: "han" }, { form: "仔", kind: "han" }] }),
-    "阿、仔（寫漢字）",
+    "阿、仔（◆ 寫漢字）",
   );
   assert.equal(
     lkkText({ lkk: [{ form: "leh/teh", kind: "lo" }, { form: "--leh", kind: "lo" }] }),
-    "leh/teh、--leh（寫羅馬字）",
+    "leh/teh、--leh（★ 寫羅馬字）",
   );
-  assert.equal(lkkText({ lkk: [{ form: "iah是", kind: "mix" }] }), "iah是（漢羅混）");
+  assert.equal(lkkText({ lkk: [{ form: "iah是", kind: "mix" }] }), "iah是（◆ 寫漢字，漢羅混寫）");
   assert.equal(lkkText({ lkk: [] }), null);
   assert.equal(lkkText({}), null);
 });
@@ -195,6 +195,8 @@ test("filterWords: 揀 kind 閣會當照漢字／讀音／華語揣", () => {
     filterWords(items, { kind: "mix", query: "紅通通" }).map((x) => x.word),
     ["紅kì-kì"],
   );
+  // 「含漢字」＝LKK type: han（輸入法 ◆ 的範圍）：寫漢字佮漢羅混攏算
+  assert.deepEqual(filterWords(items, { kind: "hantype" }).map((x) => x.word), ["喙䫌", "紅kì-kì"]);
 });
 
 test("lkkCounts: 照搜尋字算各種寫法的數量", () => {
@@ -204,8 +206,8 @@ test("lkkCounts: 照搜尋字算各種寫法的數量", () => {
     { word: "c", tl: "c", hoa: "", lkk: [{ form: "c", kind: "lo" }] },
     { word: "d", tl: "d", hoa: "", lkk: [] },
   ];
-  assert.deepEqual(lkkCounts(items, ""), { all: 4, han: 1, lo: 2, mix: 0 });
-  assert.deepEqual(lkkCounts(items, "a"), { all: 1, han: 1, lo: 0, mix: 0 });
+  assert.deepEqual(lkkCounts(items, ""), { all: 4, han: 1, lo: 2, mix: 0, hantype: 1 });
+  assert.deepEqual(lkkCounts(items, "a"), { all: 1, han: 1, lo: 0, mix: 0, hantype: 1 });
 });
 
 test("yongji 真實資料：700 字攏會當揣著，數量佇表一致", () => {

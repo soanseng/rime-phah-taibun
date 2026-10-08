@@ -43,8 +43,9 @@ export function tlKey(s) {
     .replace(/[-\s]+/g, "");
 }
 
+// 徽章：主分類照 LKK type（◆ 寫漢字＝type: han，含漢羅混；★ 寫羅馬字＝type: lo）
 export function lkkKindLabel(kind) {
-  return { han: "漢字", lo: "羅馬字", mix: "漢羅混" }[kind] ?? kind;
+  return { han: "◆ 漢字", lo: "★ 羅馬字", mix: "◆ 漢羅混" }[kind] ?? kind;
 }
 
 // 予選擇題回饋顯示：「a̍h（寫羅馬字）」；仝款寫法的 form 鬥做伙。
@@ -53,7 +54,7 @@ export function lkkText(item) {
   if (!forms.length) return null;
   const parts = [];
   for (const f of forms) {
-    const label = f.kind === "han" ? "（寫漢字）" : f.kind === "lo" ? "（寫羅馬字）" : "（漢羅混）";
+    const label = f.kind === "han" ? "（◆ 寫漢字）" : f.kind === "lo" ? "（★ 寫羅馬字）" : "（◆ 寫漢字，漢羅混寫）";
     const last = parts[parts.length - 1];
     if (last && last.label === label) last.forms.push(f.form);
     else parts.push({ label, forms: [f.form] });
@@ -61,9 +62,12 @@ export function lkkText(item) {
   return parts.map((p) => `${p.forms.join("、")}${p.label}`).join("、");
 }
 
+// kind：han／lo／mix 是 LKK 寫法的字面樣式；hantype＝LKK 表的 type: han（有漢字就算，
+// 寫漢字＋漢羅混），佮輸入法候選的 ◆ 範圍仝款
 export function lkkHas(item, kind) {
   if (kind === "all") return true;
-  return (item?.lkk ?? []).some((f) => f.kind === kind);
+  const kinds = kind === "hantype" ? ["han", "mix"] : [kind];
+  return (item?.lkk ?? []).some((f) => kinds.includes(f.kind));
 }
 
 function textMatch(item, query) {
@@ -87,5 +91,6 @@ export function lkkCounts(items, query = "") {
     han: hit.filter((it) => lkkHas(it, "han")).length,
     lo: hit.filter((it) => lkkHas(it, "lo")).length,
     mix: hit.filter((it) => lkkHas(it, "mix")).length,
+    hantype: hit.filter((it) => lkkHas(it, "hantype")).length,
   };
 }
