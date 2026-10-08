@@ -2,6 +2,8 @@
 - [網頁試拍（免安裝）](https://taigi.anatomind.com/try/)
 - 網頁工具
   - [漢羅⇄羅馬字轉換](https://taigi.anatomind.com/convert/)
+  - [寫作檢查](https://taigi.anatomind.com/check/)
+  - [檢定練習](https://taigi.anatomind.com/study/)
   - [詞彙查詢](https://taigi.anatomind.com/vocab/)
   - [文法筆記](https://taigi.anatomind.com/grammar/)
   - [工具原理佮名詞說明](tools.md)

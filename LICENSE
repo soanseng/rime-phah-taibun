@@ -41,6 +41,8 @@ SOFTWARE.
 | opencc/emoji.json、emoji_word.txt、emoji_category.txt（Emoji 候選） | rime/rime-emoji | LGPL-3.0 |
 | lua/phah_taibun_emoji_menu.lua（Emoji 分類選單，由 emoji-test.txt 產生） | Unicode.org emoji-test 15.1 | Unicode License |
 | （Windows 安裝包內附）小狼毫 Weasel 0.17.4 安裝程式（未修改；原始碼：https://github.com/rime/weasel/tree/0.17.4） | rime/weasel | GPL-3.0 |
+| docs/study/data/iongji.json（推薦用字選擇、寫作檢查） | 教育部《臺灣台語推薦用字700字詞》建議用字、異用字、用例（照原文）；新北市104學年度閩南語字音字形900例句（Taiwanese-Corpus，MIT） | CC BY-NC-ND 2.5 TW（**非商用、禁止改作**）＋MIT |
+| docs/study/data/listen.json、docs/study/audio/*.mp3（聽寫） | 教育部《臺灣台語常用詞辭典》例句文字、華語對譯、例句音檔（原文原音；音檔僅轉檔為單聲道 32 kbps MP3） | CC BY-ND 3.0 TW |
 
 > **非商用注意事項**：主字典與 wordlist 含四個 CC BY-NC-SA 3.0 TW 來源
 > （台日大辭典、Maryknoll、Embree、甘字典）的詞條，依上游授權**不得用於商業用途**。

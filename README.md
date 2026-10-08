@@ -4,7 +4,7 @@
 
 # 寫台文 Siá Tâi-bûn
 
-台語輸入法・Rime 的台語方案，佮仝一个網站的網頁試拍、練習、轉換、詞彙、文法工具
+台語輸入法・Rime 的台語方案，佮仝一个網站的網頁試拍、轉換、寫作檢查、詞彙、文法工具，閣有檢定練習
 
 > 寫台文（舊名：拍台文 Phah Tâi-bûn）。本專案佮「PhahTaigi 台語輸入法」是無仝的專案。
 
@@ -35,7 +35,10 @@
 | 安裝輸入法 | [#install](https://taigi.anatomind.com/#install) | Windows、macOS、Linux、Android，佇任何軟體拍台文 |
 | 網頁試拍 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器內就是真的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
 | 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音拍、逐字標對錯；考試干焦看漢羅，10 句算分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；記錄存佇你家己的瀏覽器 |
+| 聽寫練習 | [/try/#listen](https://taigi.anatomind.com/try/#listen) | 聽教典例句原音，用網頁試拍拍出漢羅抑是羅馬字 |
 | 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 佮白話字 POJ（連讀變調、輕聲、點字換讀音），POJ／TL 嘛會當倒轉漢字；附用字佮文法提示 |
+| 寫作檢查 | [/check/](https://taigi.anatomind.com/check/) | 台羅、白話字、漢羅攏會用得：檢查拼音系統、調號、音節、連字符、推薦用字佮華語直譯，逐項有建議 |
+| 檢定練習 | [/study/](https://taigi.anatomind.com/study/) | 推薦用字選擇、華語→台語造句、變調練習、弱點複習（間隔重複）、學習單列印；進度會當匯出備份 |
 | 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 拍台語詞抑是華語意思，揣出 TL、POJ 佮教典例句 |
 | 文法筆記 | [/grammar/](https://taigi.anatomind.com/grammar/) | 本站整理的台語文法筆記，佮 TGGL 語法點索引 |
 
@@ -173,7 +176,7 @@ ziahv     == tsiah8   → 食 [tsia̍h]
 | 漢羅輸出 | 自動（LKK 規範）＋手動 | 有 | 無 |
 | 字典 | 228,763 條 | 無公開 | 約 2.4 萬條 |
 | 華→台反查 | 有 | 無 | 無 |
-| 網頁工具 | 試拍、練習、轉換、詞彙、文法 | 無 | 無 |
+| 網頁工具 | 試拍、練習、聽寫、轉換、寫作檢查、詞彙、文法、檢定練習 | 無 | 無 |
 
 ## 開發
 
@@ -241,7 +244,10 @@ tests/         pytest 測試（tests/js/ 是網頁練習的 node 測試）
 | 安裝輸入法 | [#install](https://taigi.anatomind.com/#install) | Windows、macOS、Linux、Android，在任何軟體打台文 |
 | 網頁試打 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器裡就是真正的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
 | 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音打字、逐字標示對錯；考試只看漢羅，10 句計分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；紀錄存在你自己的瀏覽器 |
+| 聽寫練習 | [/try/#listen](https://taigi.anatomind.com/try/#listen) | 聽教典例句原音，用網頁試打打出漢羅或羅馬字 |
 | 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 與白話字 POJ（連讀變調、輕聲、點字換讀音），也能把 POJ／TL 轉回漢字；附用字與文法提示 |
+| 寫作檢查 | [/check/](https://taigi.anatomind.com/check/) | 台羅、白話字、漢羅都能用：檢查拼音系統、調號、音節、連字號、推薦用字與華語直譯，逐項給建議 |
+| 檢定練習 | [/study/](https://taigi.anatomind.com/study/) | 推薦用字選擇、華語→台語造句、變調練習、弱點複習（間隔重複）、學習單列印；進度可匯出備份 |
 | 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 輸入台語詞或華語意思，查出 TL、POJ 與教典例句 |
 | 文法筆記 | [/grammar/](https://taigi.anatomind.com/grammar/) | 本站整理的台語文法筆記，以及 TGGL 語法點索引 |
 
@@ -322,7 +328,7 @@ tai uan                →  臺灣 / 台灣
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：詞語附加候選＋分類瀏覽（含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
-| **網頁工具** | 試打、練習、轉換、詞彙、文法 | 無 | 無 |
+| **網頁工具** | 試打、練習、聽寫、轉換、寫作檢查、詞彙、文法、檢定練習 | 無 | 無 |
 
 ### 疑難排解
 

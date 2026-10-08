@@ -1,11 +1,14 @@
-// 網頁試拍「練習／考試／記錄」畫面。引擎頁（index.html）送出的文字逐擺交予 update()，
+// 網頁試拍「練習／聽寫／考試／記錄」畫面。引擎頁（index.html）送出的文字逐擺交予 update()，
 // 遮負責出題、逐格標對錯、記錄。外部文字（維基、自訂）一律用 textContent，無 innerHTML。
+// 拍毋著的字（練習中途紅過、聽寫無拍著、考試錯的）會加入檢定練習的弱點複習卡。
 import { grade, readingOf } from "./practice-core.js?v=2";
 import { createRecords } from "./practice-records.js?v=2";
 import {
   loadBank, loadWords, loadDictBundle, refHanFor, fromCustom, CUSTOM_KEY, randomWikipediaFeatured, wikiArticle,
-  wikisourceBooks, wikisourceChildren, wikisourcePage, wikisourceChapter,
-} from "./practice-sources.js?v=2";
+  wikisourceBooks, wikisourceChildren, wikisourcePage, wikisourceChapter, loadListen,
+} from "./practice-sources.js?v=3";
+import { createStudy } from "../study/study-store.js?v=1";
+import { pojToTl, addImplicitTones } from "../thak/js/roman.js?v=26";
 
 // 例句庫、詞語：隨機出題、無進度；其他來源照順序、記讀到佗
 const isRandom = (s) => s.kind === "bank" || s.kind === "words";
@@ -17,7 +20,8 @@ const el = (tag, cls, text) => {
   if (text != null) e.textContent = text;
   return e;
 };
-const VIEWS = ["free", "practice", "exam", "records"];
+const VIEWS = ["free", "practice", "listen", "exam", "records"];
+const TYPING_VIEWS = ["practice", "listen", "exam"];
 const EXAM_SIZE = 10;
 const FLASH_MS = 700;
 const fmtTime = (ms) => {
@@ -28,6 +32,7 @@ const pct = (x) => `${Math.round(x * 100)}%`;
 
 export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   const records = createRecords();
+  const study = createStudy();
   let view = "free";
   let src = null; // 目前題目來源 {kind, key, title, url, license, items}
   let idx = 0;
@@ -38,10 +43,27 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   let locked = false; // 完成閃爍中
   let exam = null; // {items, i, answers: [{g, ms}], t0}
   let loadToken = 0;
+  let everBad = new Set(); // 這句捌拍毋著的格（弱點卡）
+  let revealed = false; // 聽寫：答案已經揭曉
 
   const item = () => (view === "exam" ? exam?.items[exam.i] : src?.items[idx]) ?? null;
   // 羅馬字來源佮自動標音的格，漢字照讀音接受同音字；例句庫愛仝字（練選字）
   const keysFor = (it) => (it && (it.roman || it.autoReading) ? charKeys : null);
+  const typing = () => TYPING_VIEWS.includes(view);
+
+  // 漢字格（有讀音的）→ 弱點複習卡；卡 id 用詞身份（漢字＋正規化讀音）
+  function addCards(it, indexes) {
+    for (const i of indexes) {
+      const s = it.slots[i];
+      if (!s?.h || s.k == null) continue;
+      const numeric = addImplicitTones(pojToTl(s.src.normalize("NFC").replace(/ı/g, "i").replace(/·/g, "\u0358")).replace(/-/g, " "));
+      study.addCard({
+        id: `reading:${s.h}|${numeric}`, kind: "reading", src: view,
+        front: { h: s.h, ctx: it.text, ...(it.gloss ? { hoa: it.gloss } : {}) },
+        back: { tl: readingOf(s, false), numeric },
+      });
+    }
+  }
 
   // ---- 畫面切換 ----
   const typingEls = ["modes", "editor", "panel", "editor-actions", "hint"];
@@ -53,15 +75,19 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
       b.classList.toggle("on", on);
       b.setAttribute("aria-selected", String(on));
     }
-    $("practice").classList.toggle("hidden", v !== "practice" && v !== "exam");
+    $("practice").classList.toggle("hidden", !typing());
     $("records").classList.toggle("hidden", v !== "records");
     for (const id of typingEls) $(id).classList.toggle("hidden", v === "records");
     $("pr-src-row").classList.toggle("hidden", v !== "practice");
+    $("pr-listen-bar").classList.toggle("hidden", v !== "listen");
     $("pr-exam-start").classList.toggle("hidden", v !== "exam" || Boolean(exam && exam.i < EXAM_SIZE));
     $("practice").classList.toggle("exam", v === "exam");
+    $("practice").classList.toggle("listen", v === "listen");
+    if (v !== "listen") $("pr-audio").pause();
     clearOut();
     tStart = null;
-    if (v === "practice" && !src) chooseSource($("pr-source").value);
+    if (v === "practice" && (!src || src.kind === "listen")) chooseSource($("pr-source").value);
+    if (v === "listen" && src?.kind !== "listen") withLoading("聽寫題庫載入中…", loadListen);
     if (v === "exam") paintExamIdle();
     if (v === "records") paintRecords();
     paint();
@@ -80,7 +106,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   function paint() {
     const target = $("pr-target");
     const it = item();
-    if ((view !== "practice" && view !== "exam") || !it) {
+    if (!typing() || !it) {
       target.replaceChildren();
       $("pr-gloss").textContent = "";
       $("pr-ref").textContent = "";
@@ -90,20 +116,29 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     const poj = isPoj();
     const g = last ?? { marks: [] };
     const curAt = g.marks.length;
+    const listen = view === "listen";
     target.replaceChildren(...it.slots.map((s, i) => {
       const reading = readingOf(s, poj);
       const c = el("span", "cell");
-      if (view === "practice") {
-        if (g.marks[i]) c.classList.add(g.marks[i]);
-        else if (i === curAt) c.classList.add("cur");
-      } else if (i < curAt) c.classList.add("filled");
-      c.append(el("b", null, s.h ?? (view === "exam" ? s.src : reading ?? s.src)));
-      if (view === "practice" && s.h != null) c.append(el("i", null, reading ?? "　"));
+      if (view === "exam") {
+        if (i < curAt) c.classList.add("filled");
+      } else if (g.marks[i]) c.classList.add(g.marks[i]);
+      else if (i === curAt && !revealed) c.classList.add("cur");
+      const shown = s.h ?? (view === "exam" ? s.src : reading ?? s.src);
+      // 聽寫：拍著的格才現字，揭曉了後全部現
+      c.append(el("b", null, !listen || revealed || g.marks[i] === "ok" ? shown : "＿"));
+      if (s.h != null && (view === "practice" || (listen && revealed))) c.append(el("i", null, reading ?? "　"));
       return c;
     }));
     if (g.extra) target.append(el("span", "cell bad extra", `＋${g.extra}`));
-    $("pr-gloss").textContent = it.gloss ? `華語：${it.gloss}` : it.roman ? `原文：${it.text}` : "";
+    const showGloss = !listen || revealed || $("pr-hint-hoa").checked;
+    $("pr-gloss").textContent = it.gloss && showGloss ? `華語：${it.gloss}` : it.roman ? `原文：${it.text}` : "";
     $("pr-ref").textContent = it.autoReading && view === "practice" ? "讀音是自動標音，可能有誤。" : "";
+    if (listen) {
+      $("pr-ref").textContent = revealed
+        ? `${g.done ? "全對！" : `拍著 ${g.correct ?? 0}／${it.slots.length} 字。`}Enter 下一句。`
+        : "聽音檔，拍你聽著的句（漢羅抑是羅馬字攏會使）；Enter 揭曉答案。";
+    }
     if (it.roman && view === "practice") showRefHan(it);
     paintMeta();
   }
@@ -175,10 +210,30 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     idx = Math.max(0, Math.min(i, src.items.length - 1));
     last = null;
     tStart = null;
+    everBad = new Set();
+    revealed = false;
     clearOut();
     paint();
     focusEditor();
+    if (view === "listen") play();
   }
+
+  // 聽寫音檔：換句自動播（瀏覽器擋自動播放就請伊家己按）
+  function play(rate = 1) {
+    const it = item();
+    if (view !== "listen" || !it?.audio) return;
+    const a = $("pr-audio");
+    if (a.dataset.src !== it.audio) {
+      a.src = it.audio;
+      a.dataset.src = it.audio;
+    }
+    a.playbackRate = rate;
+    a.currentTime = 0;
+    a.play().then(() => msg(""), () => msg("按「▶ 播放」聽音檔。"));
+  }
+  $("pr-play").onclick = () => { play(1); focusEditor(); };
+  $("pr-slow").onclick = () => { play(0.75); focusEditor(); };
+  $("pr-hint-hoa").onchange = () => { paint(); focusEditor(); };
 
   function nextItem() {
     if (!src) return;
@@ -190,20 +245,39 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     }
   }
 
-  function record(g) {
+  // cardIdx：這句愛加入弱點複習的格
+  function record(g, cardIdx = everBad) {
     const it = item();
     if (!it) return;
-    if (!sessionId) sessionId = records.startSession("practice", { kind: src.kind, title: src.title, url: src.url });
+    if (!sessionId) sessionId = records.startSession(view, { kind: src.kind, title: src.title, url: src.url });
     records.addSentence(sessionId, { slots: it.slots.length, correct: g.correct, ms: tStart ? Date.now() - tStart : 0 });
     if (src.key && !isRandom(src)) records.setProgress(src.key, idx + 1, src.items.length);
+    addCards(it, cardIdx);
+  }
+
+  function reveal(g) {
+    const it = item();
+    revealed = true;
+    last = g;
+    const missed = new Set(everBad);
+    it.slots.forEach((_, i) => { if (g.marks[i] !== "ok") missed.add(i); });
+    record(g, missed);
+    study.record("listen", { n: 1, correct: g.done ? 1 : 0 });
+    if (g.done) {
+      $("pr-card").classList.add("flash");
+      setTimeout(() => $("pr-card").classList.remove("flash"), FLASH_MS);
+    }
+    paint();
   }
 
   function update(text) {
-    if ((view !== "practice" && view !== "exam") || locked || !item()) return;
+    if (!typing() || locked || !item() || (view === "listen" && revealed)) return;
     if (!tStart && text) tStart = Date.now();
     if (view === "exam" && !tStart) return;
     if (view === "exam" && exam?.t0 == null && text) exam.t0 = Date.now();
     last = grade(item().slots, text, keysFor(item()));
+    if (view !== "exam") last.marks.forEach((m, i) => { if (m === "bad") everBad.add(i); });
+    if (view === "listen" && last.done) return reveal(last);
     paint();
     if (view === "practice" && last.done) {
       record(last);
@@ -223,6 +297,10 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
       const g = last ?? grade(item().slots, out.textContent, keysFor(item()));
       if (out.textContent.trim()) record(g);
       nextItem();
+    } else if (view === "listen") {
+      if (!item()) return;
+      if (revealed) nextItem();
+      else reveal(grade(item().slots, out.textContent, keysFor(item())));
     } else if (view === "exam" && exam && exam.i < EXAM_SIZE) {
       const it = item();
       const g = grade(it.slots, out.textContent);
@@ -399,6 +477,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     const ms = exam.answers.reduce((a, x) => a + x.ms, 0);
     const id = records.startSession("exam", { kind: "bank", title: "考試 10 句", url: null });
     exam.items.forEach((it, i) => records.addSentence(id, { slots: it.slots.length, correct: exam.answers[i].g.correct, ms: exam.answers[i].ms }));
+    exam.items.forEach((it, i) => addCards(it, it.slots.map((_, k) => k).filter((k) => exam.answers[i].g.marks[k] !== "ok")));
 
     const box = $("pr-result");
     const head = el("div", "res-head");
@@ -428,7 +507,8 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   }
 
   // ---- 記錄 ----
-  const KIND = { bank: "例句庫", words: "詞語", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂" };
+  const KIND = { bank: "例句庫", words: "詞語", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂", listen: "聽寫" };
+  const MODE = { practice: "練習", listen: "聽寫", exam: "考試" };
   function paintRecords() {
     const s = records.summary();
     $("rec-summary").textContent = s.sessions
@@ -449,7 +529,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
       } else srcCell.textContent = label;
       tr.append(
         el("td", null, when.toLocaleString("zh-TW", { hour12: false })),
-        el("td", null, x.mode === "exam" ? "考試" : "練習"),
+        el("td", null, MODE[x.mode] ?? "練習"),
         srcCell,
         el("td", null, String(x.sentences)),
         el("td", null, x.slots ? pct(x.correct / x.slots) : "—"),
@@ -477,7 +557,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   return {
     update,
     submit,
-    active: () => view === "practice" || view === "exam",
+    active: typing,
     refresh: paint,
   };
 }

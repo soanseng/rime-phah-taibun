@@ -5,7 +5,8 @@ import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from
 import { loadDict, segment, buildReverseIndex, buildLM, decodeTlToHan, practicePool } from "../thak/js/dict.js?v=26";
 import { pojToTl, formatRomanization } from "../thak/js/roman.js?v=26";
 
-const THAK_DATA = "../thak/data-public/";
+// 模組相對：/try/ 佮 /study/*/ 頁攏會當用（資料佇 /thak/data-public/）
+const THAK_DATA = new URL("../thak/data-public/", import.meta.url).href;
 export const WP_HOST = "zh-min-nan.wikipedia.org";
 export const WS_HOST = "zh-min-nan.wikisource.org";
 
@@ -27,6 +28,46 @@ export function loadBank() {
     });
   bankPromise.catch(() => { bankPromise = null; });
   return bankPromise;
+}
+
+// 固定 seed 的洗牌（mulberry32）：聽寫題順序逐擺仝款，進度（第幾題）重整了後才對會著
+export function seededShuffle(arr, seed) {
+  let a = seed >>> 0;
+  const rnd = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// ---- 聽寫（教典例句原音；/study/data/listen.json + /study/audio/*.mp3）----
+export function listenItems(json, base = import.meta.url) {
+  const items = [];
+  for (const { id, han, tl, hoa, audio } of json.items ?? []) {
+    const slots = alignSentence(han, tl);
+    if (slots) items.push({ id, text: han, slots, gloss: hoa || "", audio: new URL(`../study/audio/${audio}`, base).href });
+  }
+  return items;
+}
+let listenPromise = null;
+export function loadListen() {
+  listenPromise ??= fetch(new URL("../study/data/listen.json", import.meta.url))
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error("聽寫題庫載入失敗"))))
+    .then((json) => ({
+      kind: "listen", key: "listen", title: "教典例句原音聽寫", url: "https://sutian.moe.edu.tw/",
+      license: "教育部臺灣台語常用詞辭典 例句文字佮音檔 CC BY-ND 3.0 TW",
+      items: seededShuffle(listenItems(json), 20261008),
+    }));
+  listenPromise.catch(() => { listenPromise = null; });
+  return listenPromise;
 }
 
 // ---- 轉換工具的詞典（詞語、自訂文章、維基用；需要才載）----

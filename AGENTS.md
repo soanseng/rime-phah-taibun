@@ -98,6 +98,8 @@ rime-phah-taibun/
 │   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
 │   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
 │   ├── thak/                      # 網頁工具資料管線（vendored 自舊讀台文，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
+│   ├── build_study_data.py        # 檢定練習：教育部推薦用字700 異用字 → docs/study/data/iongji.json（用字選擇、寫作檢查）
+│   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）

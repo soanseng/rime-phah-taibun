@@ -22,8 +22,13 @@ PAGES = {
     "docs/convert/index.html": SITE + "convert/",
     "docs/vocab/index.html": SITE + "vocab/",
     "docs/grammar/index.html": SITE + "grammar/",
+    "docs/check/index.html": SITE + "check/",
+    "docs/study/index.html": SITE + "study/",
 }
-TOOL_PAGES = ["convert", "vocab", "grammar"]
+TOOL_PAGES = ["convert", "vocab", "grammar", "check"]
+STUDY_PAGES = ["iongji", "hoa2tai", "sandhi", "review", "worksheet"]
+for _s in STUDY_PAGES:
+    PAGES[f"docs/study/{_s}/index.html"] = SITE + f"study/{_s}/"
 
 
 class _NavLinks(HTMLParser):
@@ -63,10 +68,16 @@ def nav_targets(page: str) -> list[tuple[str, str]]:
 
 
 def test_header_nav_is_identical_on_every_page():
-    """逐頁頂懸的導覽愛仝款 (目標網址佮文字攏仝), 工具下拉愛連會著逐个功能。"""
+    """逐頁頂懸的導覽愛仝款 (目標網址佮文字攏仝), 工具、檢定下拉愛連會著逐个功能。"""
     expected = nav_targets("docs/index.html")
     urls = {url for url, _ in expected}
-    for path in ["try/", "try/#practice", *(f"{t}/" for t in TOOL_PAGES)]:
+    for path in [
+        "try/",
+        "try/#practice",
+        *(f"{t}/" for t in TOOL_PAGES),
+        "study/",
+        *(f"study/{s}/" for s in STUDY_PAGES),
+    ]:
         assert SITE + path in urls, f"首頁導覽愛有 {path}"
     for page in PAGES:
         assert nav_targets(page) == expected, page
@@ -145,6 +156,25 @@ def test_tool_pages_are_part_of_the_main_site():
         assert any(n["@type"] == "WebApplication" and n["url"] == canonical for n in graph), tool
         assert f"<loc>{canonical}</loc>" in sitemap, tool
     assert "/thak/</loc>" not in sitemap, "舊入口 /thak/ 已經轉址, sitemap 毋通閣列"
+
+
+def test_study_pages_sit_under_the_study_overview():
+    """檢定練習逐頁: canonical 指家己, 麵包屑 寫台文 → 檢定練習 → 本頁, sitemap 有。"""
+    import json
+
+    sitemap = (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8")
+    assert f"<loc>{SITE}study/</loc>" in sitemap
+    for s in STUDY_PAGES:
+        head = _Head()
+        head.feed((ROOT / f"docs/study/{s}/index.html").read_text(encoding="utf-8"))
+        canonical = SITE + f"study/{s}/"
+        assert head.links["canonical"] == canonical == head.meta["og:url"], s
+        assert head.h1 == 1, s
+        graph = [node for block in head.jsonld for node in json.loads(block)["@graph"]]
+        page = next(n for n in graph if n["@type"] == "WebPage")
+        crumbs = [i["item"] for i in page["breadcrumb"]["itemListElement"]]
+        assert crumbs == [SITE, SITE + "study/", canonical], s
+        assert f"<loc>{canonical}</loc>" in sitemap, s
 
 
 def test_old_thak_entry_redirects_to_converter():

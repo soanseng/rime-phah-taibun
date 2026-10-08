@@ -44,6 +44,14 @@
 - 漢羅⇄台羅／白話字轉換：https://taigi.anatomind.com/convert/
 - 台語詞彙查詢：https://taigi.anatomind.com/vocab/
 - 台語文法筆記：https://taigi.anatomind.com/grammar/
+- 台文寫作檢查（TL／POJ／漢羅）：https://taigi.anatomind.com/check/
+- 台語檢定練習總覽：https://taigi.anatomind.com/study/
+- 聽寫練習（教典例句原音）：https://taigi.anatomind.com/try/#listen
+- 推薦用字選擇題：https://taigi.anatomind.com/study/iongji/
+- 華語→台語造句：https://taigi.anatomind.com/study/hoa2tai/
+- 變調練習：https://taigi.anatomind.com/study/sandhi/
+- 弱點複習：https://taigi.anatomind.com/study/review/
+- 學習單列印：https://taigi.anatomind.com/study/worksheet/
 - 使用說明：https://taigi.anatomind.com/guide
 - 原始碼：https://github.com/soanseng/rime-phah-taibun
 - 下載：https://github.com/soanseng/rime-phah-taibun/releases

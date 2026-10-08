@@ -1,6 +1,9 @@
 # 外部資料（不進 repo，用 scripts/download_resources.sh 重新下載）
 data/
 
+# 聽寫音檔原始下載快取（build_listen_data.py 可重抓）
+data/leku-mp3-cache/
+
 # Rime 編譯產物
 *.bin
 *.userdb/
