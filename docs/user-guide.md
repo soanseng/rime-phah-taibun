@@ -7,7 +7,7 @@
 
 第一次使用可以先看[快速上手小卡](quickstart-card.md)：安裝、第一句練習、常用快捷鍵和基本排錯都整理在一頁。
 
-<video src="demo/demo-part1.mp4" controls muted playsinline preload="metadata" aria-label="寫台文打字示範：基本輸入" style="max-width:100%;border-radius:8px"></video>
+<video src="demo/demo-part1.mp4" controls muted playsinline preload="metadata" width="640" height="386" aria-label="寫台文打字示範：基本輸入" style="max-width:100%;height:auto;border-radius:8px"></video>
 
 ---
 
@@ -153,7 +153,7 @@ Font="Iansui 12"
 
 ## 二、基本輸入
 
-![寫台文輸入示範](demo-1.png)
+![寫台文輸入示範](demo-1.png ':size=220x325')
 
 ### 台語拼音輸入
 
@@ -573,7 +573,7 @@ POJ 模式輸入: goa2-kio5  → 候選最後： Góa-kiô 〔羅馬字原文〕
 
 ### 流程
 
-<video src="demo/demo-part2.mp4" controls muted playsinline preload="metadata" aria-label="寫台文打字示範：選字與候選" style="max-width:100%;border-radius:8px"></video>
+<video src="demo/demo-part2.mp4" controls muted playsinline preload="metadata" width="640" height="386" aria-label="寫台文打字示範：選字與候選" style="max-width:100%;height:auto;border-radius:8px"></video>
 
 ```
 Step 1: 打拼音 tsiah8png7 → 候選字出現
@@ -679,7 +679,7 @@ patch:
 
 不知道台語怎麼講？按 `~` 進入反查模式，用注音找華語字，選字後自動轉換成台語候選。
 
-![注音反查](注音反查.png)
+![注音反查](注音反查.png ':size=389x328')
 
 ### 基本流程
 
@@ -723,7 +723,7 @@ Step 5: 選「食」→ 輸出
 
 不確定聲母時，用 `?` 代替。寫台文採用**二段式查字**，先選音節再選字：
 
-![萬用查字](wildcard-lookup.png)
+![萬用查字](wildcard-lookup.png ':size=152x317')
 
 ### 流程
 
@@ -805,7 +805,7 @@ Step 3: 選字輸出
 
 輸入後按 `'`（單引號）查看同音字。
 
-![同音選字](同音選字.png)
+![同音選字](同音選字.png ':size=496x358')
 
 ### 用法
 
@@ -1122,7 +1122,7 @@ Step 4: 選「掠」→ 輸出
 
 想練習打台文？推薦到 [台語文拍字練習](https://kiantiong.com/taigi_typing/) 網站，有各種台語文章可以練習打字。搭配寫台文輸入法一起使用，邊打邊熟悉台語拼音和漢羅混寫！
 
-<video src="demo/demo-part3.mp4" controls muted playsinline preload="metadata" aria-label="寫台文打字示範：完成練習" style="max-width:100%;border-radius:8px"></video>
+<video src="demo/demo-part3.mp4" controls muted playsinline preload="metadata" width="640" height="386" aria-label="寫台文打字示範：完成練習" style="max-width:100%;height:auto;border-radius:8px"></video>
 
 ### 教學四：POJ 使用者無痛轉移
 

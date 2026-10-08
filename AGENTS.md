@@ -100,6 +100,7 @@ rime-phah-taibun/
 │   ├── thak/                      # 網頁工具資料管線（vendored 自舊讀台文，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
 │   ├── build_study_data.py        # 檢定練習：教育部推薦用字700 異用字 → docs/study/data/iongji.json（用字選擇、寫作檢查）
 │   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
+│   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）

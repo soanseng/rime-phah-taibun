@@ -224,3 +224,70 @@ def test_study_data_files_are_not_gitignored():
     assert len(files) >= 3
     r = subprocess.run(["git", "check-ignore", *files], cwd=ROOT, capture_output=True, text=True)
     assert r.stdout.strip() == "", f"予 .gitignore 擋著: {r.stdout}"
+
+
+# 公開網址 -> 檔案 (sitemap 逐條攏愛對著一頁, .md 是 guide 的 Docsify 內容, 另外處理)
+INDEXABLE = {canonical: page for page, canonical in PAGES.items() if page != "docs/poj.html"} | {
+    SITE + "poj": "docs/poj.html",
+    SITE + "guide": "docs/guide.html",
+}
+
+
+def _sitemap_locs() -> list[str]:
+    import re
+
+    return re.findall(r"<loc>([^<]+)</loc>", (ROOT / "docs/sitemap.xml").read_text(encoding="utf-8"))
+
+
+def test_every_page_has_search_and_share_metadata():
+    """逐頁 (包含使用說明) 攏愛有: canonical=家己、description、og/twitter 分享卡、index 允准。
+    少一項, Google 搜尋結果抑是 LINE/FB 分享就無標題、無圖抑是指去別頁。"""
+    for canonical, page in INDEXABLE.items():
+        head = _Head()
+        head.feed((ROOT / page).read_text(encoding="utf-8"))
+        assert head.links.get("canonical") == canonical, page
+        assert 30 <= len(head.meta.get("description", "")) <= 160, page
+        assert head.meta.get("og:url") == canonical, page
+        for key in ("og:title", "og:description", "og:image", "twitter:card", "twitter:title"):
+            assert head.meta.get(key), f"{page}: {key}"
+        assert "noindex" not in head.meta.get("robots", ""), page
+        assert head.links.get("apple-touch-icon"), page
+
+
+def test_sitemap_lists_exactly_the_indexable_pages():
+    """sitemap 愛列逐頁的 canonical (無列的頁 Google 較慢揣著), 也袂使列無存在抑轉址的網址。"""
+    locs = [u for u in _sitemap_locs() if not u.endswith(".md")]
+    assert sorted(locs) == sorted(INDEXABLE), set(locs) ^ set(INDEXABLE)
+    robots = (ROOT / "docs/robots.txt").read_text(encoding="utf-8")
+    assert f"Sitemap: {SITE}sitemap.xml" in robots
+
+
+def test_unknown_url_gets_a_real_404_page():
+    """查無的網址愛回 404 (毋是首頁 200): 若回首頁, Google 當做 soft 404、重複內容。
+    Cloudflare Workers assets 照 wrangler 的 not_found_handling 回 docs/404.html。"""
+    import json
+    import re
+
+    cfg = json.loads(re.sub(r"^\s*//.*$", "", (ROOT / "wrangler.jsonc").read_text(), flags=re.M))
+    assert cfg["assets"]["not_found_handling"] == "404-page"
+    head = _Head()
+    head.feed((ROOT / "docs/404.html").read_text(encoding="utf-8"))
+    assert "noindex" in head.meta.get("robots", "")
+    assert head.h1 == 1
+
+
+def test_grammar_notes_are_in_the_static_html():
+    """文法筆記愛直接寫佇 HTML: 搜尋引擎免跑 JS 就讀會著, 頁面嘛免等 JSON 才有內容 (LCP)。
+    HTML 愛佮 grammar-notes.json 仝步 (改 JSON 了後跑 scripts/build_grammar_page.py)。"""
+    import json
+    import subprocess
+    import sys
+
+    r = subprocess.run(
+        [sys.executable, "scripts/build_grammar_page.py", "--check"], cwd=ROOT, capture_output=True, text=True
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    html = (ROOT / "docs/grammar/index.html").read_text(encoding="utf-8")
+    notes = json.loads((ROOT / "docs/thak/data-public/grammar-notes.json").read_text(encoding="utf-8"))["notes"]
+    for n in notes:
+        assert f'id="note-{n["id"]}"' in html, n["id"]

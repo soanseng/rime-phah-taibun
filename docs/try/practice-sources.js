@@ -15,9 +15,13 @@ let bankPromise = null;
 export function loadBank() {
   bankPromise ??= fetch(THAK_DATA + "sentences.json")
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error("例句庫載入失敗"))))
-    .then(({ s }) => {
+    .then(async ({ s }) => {
       const items = [];
-      for (const [han, tl, hoabun] of s ?? []) {
+      const rows = s ?? [];
+      for (let k = 0; k < rows.length; k++) {
+        // 一萬外句對齊：每 1000 句讓主線程喘一下，免一个長任務卡牢頁面（TBT）
+        if (k && k % 1000 === 0) await new Promise((r) => setTimeout(r, 0));
+        const [han, tl, hoabun] = rows[k];
         const slots = alignSentence(han, tl);
         if (slots && slots.length >= 3 && slots.length <= 20) items.push({ text: han, slots, gloss: hoabun || "" });
       }

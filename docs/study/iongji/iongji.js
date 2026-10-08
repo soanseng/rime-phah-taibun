@@ -197,11 +197,14 @@ function setView(v) {
   $("ig-card").hidden = !quiz;
   $("ig-done").hidden = !quiz;
   $("ig-table").hidden = quiz;
+  if (!quiz) renderTable();
   // hash 佮視圖同步，袂跳 history
   history.replaceState(null, "", quiz ? location.pathname + location.search : "#table");
 }
 
+// 用字表上千逝：干焦佇「用字表」視圖才畫（選擇題視圖開頁免算 6000 个節點的版面）
 function renderTable() {
+  if (view !== "table") return;
   const query = $("ig-search").value;
   const rows = filterWords(yongjiItems, { kind: tableKind, query });
   const counts = lkkCounts(yongjiItems, query);
@@ -267,7 +270,6 @@ async function init() {
   }
   $("app-loading").remove();
   if (location.hash === "#table") setView("table");
-  renderTable();
   startRound();
 }
 

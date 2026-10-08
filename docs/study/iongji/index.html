@@ -10,7 +10,7 @@
     <link rel="canonical" href="https://taigi.anatomind.com/study/iongji/" />
     <link rel="icon" type="image/png" sizes="32x32" href="../../favicon.png" />
     <link rel="icon" type="image/png" sizes="128x128" href="../../icon.png" />
-    <link rel="apple-touch-icon" href="../../icon.png" />
+    <link rel="apple-touch-icon" href="../../assets/img/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="zh_TW" />
     <meta property="og:site_name" content="寫台文 Siá Tâi-bûn" />
@@ -71,7 +71,7 @@
     <link rel="stylesheet" href="../../assets/css/components.css?v=2" />
     <link rel="stylesheet" href="../../assets/css/landing.css?v=2" />
     <link rel="stylesheet" href="../../thak/css/tools.css?v=2" />
-    <link rel="stylesheet" href="../../thak/css/widgets.css?v=2" />
+    <link rel="stylesheet" href="../../thak/css/widgets.css?v=3" />
     <link rel="stylesheet" href="../../study/study.css?v=1" />
     <style>
       #app .choice { font-size: 1.5rem; min-width: 5rem; padding: 0.55rem 1.1rem; }
@@ -104,7 +104,7 @@
     <header class="site-header" data-elevate>
       <div class="container header-grid">
         <a class="brand" href="../../" aria-label="寫台文首頁"
-          ><img src="../../icon.png" alt="" width="44" height="44" /><span
+          ><img src="../../assets/img/brand-88.webp" alt="" width="44" height="44" /><span
             ><strong>寫台文</strong><small>Siá Tâi-bûn</small></span
           ></a
         ><button
@@ -161,8 +161,8 @@
           </nav>
           <div id="app" class="study-app" data-page="iongji">
             <div class="seg" id="ig-views" role="tablist" aria-label="款式">
-              <button class="seg-btn is-active" type="button" id="ig-tab-quiz" data-view="quiz" aria-selected="true">選擇題</button><button
-                class="seg-btn" type="button" id="ig-tab-table" data-view="table" aria-selected="false">用字表</button>
+              <button class="seg-btn is-active" type="button" role="tab" id="ig-tab-quiz" data-view="quiz" aria-selected="true">選擇題</button><button
+                class="seg-btn" type="button" role="tab" id="ig-tab-table" data-view="table" aria-selected="false">用字表</button>
             </div>
             <p class="hint" id="app-loading">載入中…</p>
             <div class="stat-row" id="ig-progress" hidden>
@@ -234,6 +234,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./iongji.js?v=3"></script>
+    <script type="module" src="./iongji.js?v=4"></script>
   </body>
 </html>

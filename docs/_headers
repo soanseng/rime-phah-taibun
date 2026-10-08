@@ -1,0 +1,10 @@
+# Cloudflare Workers static assets 回應標頭（https://developers.cloudflare.com/workers/static-assets/headers/）
+
+# 網頁試拍的方案包（.yaml/.lua/.wordlist，約 3 MB 純文字）：預設 text/yaml、
+# text/x-lua、application/octet-stream 這款 Cloudflare 袂壓縮；改 text/plain 就有 br/gzip（約減一半）。
+/try/pack/*
+  Content-Type: text/plain; charset=utf-8
+
+# workers.dev 預覽網址毋通予搜尋引擎收（正式站是 taigi.anatomind.com）
+https://:project.:subdomain.workers.dev/*
+  X-Robots-Tag: noindex

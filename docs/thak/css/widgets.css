@@ -55,6 +55,14 @@ textarea:focus,
   overflow: hidden;
 }
 
+/* 文法分類 17 个：細螢幕愛換逝，袂使撐開頁面（390px 原本闊 500px） */
+#gr-note-cats {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+}
+
 .seg-btn {
   border: 0;
   background: var(--card);
@@ -403,9 +411,12 @@ textarea:focus,
   border-radius: var(--radius-sm);
   padding: 0.9rem 1rem 0.55rem;
   background: linear-gradient(180deg, #fdfefe, #f7faf9);
+  /* 28 篇筆記：畫面外的先免排版（字型載入時逐擺重排全頁，TBT） */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
 }
 
-.gr-note h4 {
+.gr-note h3 {
   margin: 0.2rem 0 0.4rem;
   font-size: 1.06rem;
 }
@@ -477,9 +488,17 @@ textarea:focus,
   white-space: nowrap;
 }
 
+/* .roman（轉換輸出）是 block＋anywhere 斷字：表格內愛轉做 table-cell、照詞斷，
+   若無欄會擠甲 40px 闊、逝逝 180px 懸 */
 #vb-tbl td.roman,
 #gr-tbl td.roman {
-  overflow-wrap: anywhere;
+  display: table-cell;
+  min-height: 0;
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  overflow-wrap: break-word;
+  min-width: 7em;
 }
 
 #gr-tbl td.gr-id {

@@ -16,7 +16,7 @@
     <link rel="canonical" href="https://taigi.anatomind.com/try/" />
     <link rel="icon" type="image/png" sizes="32x32" href="../favicon.png" />
     <link rel="icon" type="image/png" sizes="128x128" href="../icon.png" />
-    <link rel="apple-touch-icon" href="../icon.png" />
+    <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="zh_TW" />
     <meta property="og:site_name" content="寫台文 Siá Tâi-bûn" />
@@ -120,7 +120,9 @@
       .try-app-section { padding-top: 20px; }
       .try-app > * { max-width: 920px; }
       .hidden { display: none !important; }
-      #status { padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface-alt); margin: 8px 0 16px; }
+      /* 載入中先佔輸入法區差不多的高度（手機約 590px、桌面約 400px），引擎好了換做 #app 時下面的內容才袂跳（CLS） */
+      #status { padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface-alt); margin: 8px 0 16px; min-height: 24rem; display: flex; align-items: center; justify-content: center; text-align: center; }
+      @media (max-width: 640px) { #status { min-height: 36rem; } }
       #status.err { border-color: var(--color-red); color: var(--color-red); }
       #modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
       .mode { border: 1px solid var(--color-line); background: var(--color-surface-alt); color: var(--color-ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .9rem; }
@@ -217,7 +219,7 @@
     <header class="site-header" data-elevate>
       <div class="container header-grid">
         <a class="brand" href="../" aria-label="寫台文首頁"
-          ><img src="../icon.png" alt="" width="44" height="44" /><span
+          ><img src="../assets/img/brand-88.webp" alt="" width="44" height="44" /><span
             ><strong>寫台文</strong><small>Siá Tâi-bûn</small></span
           ></a
         ><button

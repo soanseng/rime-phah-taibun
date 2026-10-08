@@ -14,62 +14,10 @@ async function fetchJson(url) {
   return r.json();
 }
 
-let notesReady = Promise.resolve(); // initNotes 的 promise：revealNote 愛等伊
-
 // —— ① 文法筆記（本站整理） ——
-async function initNotes() {
-  let data;
-  try {
-    data = await fetchJson(new URL("../../data-public/grammar-notes.json", import.meta.url));
-  } catch {
-    $("#gr-notes").html('<p class="hint">文法筆記載入失敗（grammar-notes.json）</p>');
-    return;
-  }
-  const catTitle = new Map(data.categories.map((c) => [c.id, c.title]));
-
-  $("#gr-note-cats").html(
-    `<button type="button" class="seg-btn is-active" data-cat="">全部（${data.notes.length}）</button>` +
-      data.categories
-        .map(
-          (c) =>
-            `<button type="button" class="seg-btn" data-cat="${c.id}">${esc(c.title)}</button>`,
-        )
-        .join(""),
-  );
-
-  $("#gr-notes").html(
-    data.notes
-      .map((n) => {
-        const body = n.body.map((p) => `<p>${p}</p>`).join("");
-        const exs = n.examples
-          .map((e) => {
-            const hua = e.hua ? `<span class="hua">　${esc(e.hua)}</span>` : "";
-            const note = e.note ? `<span class="hua">　〔註〕${esc(e.note)}</span>` : "";
-            return (
-              `<div class="gr-ex"><span class="han">${esc(e.han)}</span>` +
-              `<span class="tl">　${esc(e.tl)}</span>${hua}${note}` +
-              `<span class="gr-src-tag">${e.src === "moedict" ? "教典" : "自造"}</span></div>`
-            );
-          })
-          .join("");
-        const refs = n.refs
-          .map(
-            (r) =>
-              `<a href="${r.url}" target="_blank" rel="noopener">${esc(r.label)}</a>`,
-          )
-          .join("・");
-        return (
-          `<article class="gr-note" id="note-${esc(n.id)}" data-cat="${n.cat}">` +
-          `<span class="gr-cat">${esc(catTitle.get(n.cat) ?? "")}</span>` +
-          `<h4>${esc(n.title)}</h4>${body}` +
-          `<div class="gr-ex-list">${exs}</div>` +
-          `<p class="gr-refs hint">參考：${refs}</p>` +
-          `</article>`
-        );
-      })
-      .join(""),
-  );
-
+// 分類鈕佮筆記本文是 scripts/build_grammar_page.py 照 grammar-notes.json 寫入
+// HTML 的（搜尋引擎讀會著、免等 JSON），遮干焦掛分類篩選。
+function initNotes() {
   $("#gr-note-cats").on("click", ".seg-btn", (ev) => {
     const $b = $(ev.currentTarget);
     $("#gr-note-cats .seg-btn").removeClass("is-active");
@@ -155,7 +103,6 @@ export async function revealNote(id) {
     location.href = `../grammar/#note-${encodeURIComponent(id)}`;
     return;
   }
-  await notesReady;
   $("#gr-note-cats .seg-btn").first().trigger("click");
   const el = document.getElementById(`note-${id}`);
   if (!el) return;
@@ -167,7 +114,7 @@ export async function revealNote(id) {
 }
 
 export function initGrammar() {
-  notesReady = initNotes(); // 各自 catch：一篇失敗嘛袂拖累另外一篇
+  initNotes();
   initIndex();
   const m = location.hash.match(/^#note-(.+)$/);
   if (m) revealNote(decodeURIComponent(m[1]));
