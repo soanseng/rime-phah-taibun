@@ -214,3 +214,13 @@ def test_site_css_and_js_carry_a_version_query():
         assert local, page
         for url in local:
             assert "?v=" in url, f"{page}: {url}"
+
+
+def test_study_data_files_are_not_gitignored():
+    """根目錄 .gitignore 的 data/ 會吞著 docs/study/data/ (2026-10 首擺部署 JSON 全無去, 回首頁 HTML)。"""
+    import subprocess
+
+    files = sorted(str(p.relative_to(ROOT)) for p in (ROOT / "docs/study/data").glob("*.json"))
+    assert len(files) >= 3
+    r = subprocess.run(["git", "check-ignore", *files], cwd=ROOT, capture_output=True, text=True)
+    assert r.stdout.strip() == "", f"予 .gitignore 擋著: {r.stdout}"
