@@ -41,7 +41,7 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
   let dir = "h2r";
 
   // 文法檢查／輕聲／對照表：全部交予 grammarcheck 模組（#cv-gram）
-  const renderHints = (text) => grammarCheck?.(text);
+  const renderHints = (text, segs) => grammarCheck?.(text, segs);
 
   const paintH2R = () => {
     const { tl, poj } = render(segs, picks, {
@@ -85,7 +85,7 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
       }
     }
     // ab9c5d2 重構時漏掉這行，文法檢查區就攏無出現
-    renderHints(String($("#cv-in").val() ?? ""));
+    renderHints(String($("#cv-in").val() ?? ""), segs);
   };
   // r2h：結果狀態＋詞卡點選循環同音候選（手動改正同音歧義）
   const r2h = { pieces: [], overrides: new Map() };

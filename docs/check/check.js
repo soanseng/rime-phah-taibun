@@ -1,8 +1,8 @@
-// 寫作檢查頁 UI：貼台文 → 即時檢查（拼寫先；詞典載好了後規尾 9 條），
+// 寫作檢查頁 UI：貼台文 → 即時檢查（拼寫先；詞典載好了後規尾 10 條），
 // 逐條建議會當一鍵「採用」，拼寫類閣有「全部採用」。改了隨時閣檢查。
-// 用字規範會當揀「教育部 700（全漢字）」抑是「LKK 漢羅」（揀了記佇瀏覽器）。
+// 用字規範會當揀「教育部 700（全漢字）」抑是「LKK 漢羅」（揀了記佇瀏覽器，選單下跤有規則說明）。
 // 檢查邏輯攏佇 check-core.js（純函式，有 node 測試）。
-import { runChecks, CATS } from "./check-core.js?v=2";
+import { runChecks, CATS } from "./check-core.js?v=5";
 
 const SAMPLES = [
   "Goá beh khì ha̍k-hāu, tsia̍h png7.",
@@ -42,7 +42,7 @@ function init() {
   let ready = false; // worker 詞典載好未；未好進前主線程干焦做拼寫檢查（免詞典、真緊）
   let lastId = 0;
   let timer = 0;
-  const worker = new Worker(new URL("./check-worker.js?v=1", import.meta.url), { type: "module" });
+  const worker = new Worker(new URL("./check-worker.js?v=4", import.meta.url), { type: "module" });
 
   const checkNow = () => {
     const text = input.value;
@@ -116,6 +116,10 @@ function init() {
           class: "btn", type: "button", text: "採用",
           onclick: () => applyFixes([i]),
         }));
+        if (i.note) li.append(el("a", {
+          class: "btn btn-ghost", href: `../grammar/#note-${encodeURIComponent(i.note)}`,
+          target: "_blank", rel: "noopener", text: "看文法",
+        }));
         ul.append(li);
       }
       issuesBox.append(el("p", { class: "chk-cat", text: `${label}（${group.length}）` }), ul);
@@ -132,10 +136,20 @@ function init() {
 
   input.addEventListener("input", schedule);
   sel.addEventListener("change", checkNow);
+  const MODE_NOTE = {
+    moe: "教育部 700（全漢字）：全漢字書寫，「的（ê）」「个（ê）」攏是推薦字；阿嬤 寫 阿媽、華語字（嗎）會標出來。",
+    lkk: "LKK 漢羅：教育部 700 的字若 LKK 表建議寫羅馬字（ê、bē）就照 LKK——所以 我的 建議寫 我 ê。",
+  };
+  const modeNote = document.getElementById("chk-mode-note");
+  const setModeNote = () => {
+    if (modeNote) modeNote.textContent = MODE_NOTE[yongjiSel.value] ?? "";
+  };
   yongjiSel.addEventListener("change", () => {
     try { localStorage.setItem(YONGJI_KEY, yongjiSel.value); } catch { /* 無 localStorage 嘛無妨 */ }
+    setModeNote();
     checkNow();
   });
+  setModeNote();
   for (const btn of document.querySelectorAll(".chk-sample")) {
     btn.addEventListener("click", () => {
       input.value = SAMPLES[Number(btn.dataset.i)] ?? "";
@@ -152,7 +166,7 @@ function init() {
   worker.onmessage = ({ data: msg }) => {
     if (msg.type === "ready") {
       ready = true;
-      status.textContent = "詞典載入好矣：音節、連字符、推薦用字／LKK 漢羅、華語直譯／輕聲檢查攏開矣。";
+      status.textContent = "詞典載入好矣：音節、連字符、推薦用字／LKK 漢羅、華語直譯／輕聲、華語用字檢查攏開矣。";
       checkNow();
     } else if (msg.type === "result") {
       if (msg.id !== lastId) return; // 舊的結果（後來閣有拍字）毋畫
@@ -172,6 +186,7 @@ function init() {
       iongji: url("../study/data/iongji.json"),
       hints: url("../thak/data-public/hints.json"),
       yongji: url("../study/data/yongji.json"),
+      hyphen: url("./data/hyphen-words.json"),
     },
   });
 }

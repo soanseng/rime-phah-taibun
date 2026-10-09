@@ -90,8 +90,9 @@
       .chk-issue.flash { outline: 2px solid var(--color-blue); }
       .chk-msg { flex: 1 1 24em; }
       .chk-mark[data-cat="spelling"] { text-decoration: underline wavy rgb(214 79 79 / 0.55) underline-offset: 0.2em; }
-      .chk-mark[data-cat="syllable"] { text-decoration: underline dotted var(--color-red); text-decoration-underline-offset: 0.2em; }
       .chk-mark[data-cat="hanji"], .chk-mark[data-cat="calque"] { text-decoration: underline dotted var(--color-green); text-decoration-underline-offset: 0.2em; }
+      .chk-mark[data-cat="hoabun"], .chk-mark[data-cat="grammar"] { text-decoration: underline dotted var(--color-red); text-decoration-underline-offset: 0.2em; }
+      .chk-mark[data-cat="legacy"] { text-decoration: underline dashed var(--color-muted); text-decoration-underline-offset: 0.2em; }
     </style>
   </head>
   <body>
@@ -172,6 +173,7 @@
                 <button type="button" class="btn btn-ghost chk-sample" data-i="2">數字調</button>
               </span>
             </div>
+            <p class="hint" id="chk-mode-note" aria-live="polite"></p>
             <label class="sr-only" for="chk-input">欲檢查的台文</label>
             <textarea id="chk-input" rows="5" spellcheck="false"
               placeholder="貼你的台文——全羅、漢羅、台羅 TL、白話字 POJ、數字調攏會用得…"></textarea>
@@ -202,6 +204,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./check.js?v=3"></script>
+    <script type="module" src="./check.js?v=5"></script>
   </body>
 </html>

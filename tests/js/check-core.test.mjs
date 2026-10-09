@@ -7,6 +7,7 @@ import {
   checkSystemMixing, checkNumericTones, checkToneFinals, checkMarkPosition, checkSpelling,
   buildSyllableSet, checkSyllables, buildMultiReadings, checkHyphens,
   buildAltMap, checkHanji, checkCalqueLighttone, runChecks, CATS, buildLkkMap, checkLkk,
+  buildCharMap, buildWordReadings, buildGlossIndex, checkHoabun,
 } from "../../docs/check/check-core.js";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js?v=26";
 
@@ -149,7 +150,7 @@ test("buildSyllableSet/checkSyllables: 詞典外的音節受點、有提 3 个�
   for (const k of ["tsiah", "png", "huan", "tshia", "ku"]) assert.ok(set.has(k), k);
   assert.ok(!set.has("tsiah8"), "存去調鍵");
 
-  const iss = checkSyllables("txiah png7", set);
+  const iss = checkSyllables("tsiak png7", set);
   assert.equal(iss.length, 1);
   assert.equal(iss[0].cat, "syllable");
   assert.equal(iss[0].fix, undefined);
@@ -157,6 +158,7 @@ test("buildSyllableSet/checkSyllables: 詞典外的音節受點、有提 3 个�
   assert.ok(iss[0].msg.includes("tsiah"), "建議有距離 1 的合法音節");
   assert.ok(iss[0].msg.split("、").length - 1 <= 2, "頂懸 3 个");
   assert.deepEqual(checkSyllables("tsia̍h png7", set), []);
+  assert.deepEqual(checkSyllables("Formosa sic", set), [], "外語（f／r／孤 c）毋檢查");
 });
 
 test("buildMultiReadings/checkHyphens: 隔空音節正妙合詞典多音節讀音→建議連字符", () => {
@@ -355,4 +357,165 @@ test("runChecks: mode 無設／moe→無 LKK 建議；lkk→有", () => {
   const lkkIss = runChecks(t, { ...base, mode: "lkk" });
   assert.ok(lkkIss.some((i) => i.fix === "án-ne"));
   assert.ok(lkkIss.every((i) => i.cat === "hanji" || i.msg.includes("建議")));
+});
+
+// ---------- 華語字／華語用字（詞內華語代換 + rule 10） ----------
+const MOE_ITEMS = [
+  { word: "个", tl: "ê", hoa: "個", alts: ["個"], recAlts: [] },
+  { word: "的", tl: "ê", hoa: "的", alts: ["个"], recAlts: ["个"] },
+  { word: "媽", tl: "má", hoa: "祖母、媽祖、女神", alts: [] },
+];
+const MOE_DICT = {
+  "這個": { r: ["tsit4 e5"], h: "這個" },
+  "這个": { r: ["tsit4 e5"], h: "這個" },
+  "我的": { r: ["gua2 e5"], h: "我的" },
+  "阿媽": { r: ["a1 ma2"], h: "阿嬤" },
+  "阿": { r: ["a1"] },
+  "對": { r: ["tuì"], h: "對" },
+  "目的": { r: ["bok8 tik4"], h: "目的" },
+};
+const moeSeg = (t) => segment(t, MOE_DICT, buildReverseIndex(MOE_DICT));
+
+test("buildCharMap: 異用字佮「對應華語」單字 → 推薦字（數字調讀音）", () => {
+  const m = buildCharMap(MOE_ITEMS);
+  assert.deepEqual(m.get("個"), [{ word: "个", tl: "ê", num: "e5" }], "個 是 个 的華語字");
+  assert.ok(!m.has("个"), "recAlts（个）毋入");
+  assert.ok(!m.has("的"), "華語義＝家己 免");
+});
+
+test("checkHanji: 詞內的華語字讀音仝才建議——這個→這个；目的 的 免", () => {
+  const charMap = buildCharMap(MOE_ITEMS);
+  const t = "這個好。";
+  const iss = checkHanji(t, moeSeg(t), new Map(), { charMap, dict: MOE_DICT });
+  assert.equal(iss.length, 1);
+  assert.deepEqual([iss[0].start, iss[0].end], [1, 2], "干焦 個 受點");
+  assert.equal(iss[0].fix, "个");
+  assert.equal(checkHanji(t, moeSeg(t), new Map(), { charMap }).length, 0, "無詞典袂做代換建議");
+  const tik = checkHanji("目的明確。", moeSeg("目的明確。"), new Map(), { charMap, dict: MOE_DICT });
+  assert.deepEqual(tik.filter((i) => i.fix === "ê"), [], "bo̍k-tik 的 的 讀音無合 免");
+});
+
+test("checkLkk: 單字推薦字佇詞內（我的）讀音合→建議 ê；目的 免", () => {
+  const items = [...MOE_ITEMS.map((x) => ({ ...x, lkk: [{ form: "ê", kind: "lo" }] }))];
+  const lkkMap = buildLkkMap(items);
+  const wordReadings = buildWordReadings(items);
+  const t = "我的冊。";
+  const iss = checkLkk(t, moeSeg(t), lkkMap, { wordReadings });
+  assert.equal(iss.length, 1);
+  assert.equal(iss[0].fix, "ê");
+  assert.deepEqual(checkLkk("目的明確。", moeSeg("目的明確。"), lkkMap, { wordReadings }), []);
+});
+
+test("buildGlossIndex/checkHoabun: 揣無讀音的漢字→華語義建議（阿嬤→阿媽）；嗎＝華語語氣詞", () => {
+  const gi = buildGlossIndex(MOE_DICT);
+  assert.ok(gi.has("阿嬤"));
+  assert.ok(!buildGlossIndex({ 伊: { r: ["i1"], h: "他" } }).has("伊"), "詞＝華語義 免");
+  const t = "我的阿嬤。";
+  const iss = runChecks(t, {
+    segments: moeSeg(t),
+    glossIndex: gi,
+    hints: { calque: [], lighttone: [] },
+  });
+  const hoa = iss.filter((i) => i.cat === "hoabun");
+  assert.equal(hoa.length, 1, "阿嬤（2 字）食掉 嬤 的重疊 span");
+  assert.deepEqual([hoa[0].start, hoa[0].end], [2, 4]);
+  assert.equal(hoa[0].fix, "阿媽");
+  assert.ok(hoa[0].msg.includes("阿媽"));
+
+  const ma = runChecks("這個對嗎？", {
+    segments: moeSeg("這個對嗎？"),
+    glossIndex: gi,
+    charMap: buildCharMap(MOE_ITEMS),
+    dict: MOE_DICT,
+    altMap: new Map(),
+    hints: { calque: [], lighttone: [] },
+  });
+  assert.ok(ma.some((i) => i.cat === "hanji" && i.fix === "个"), "這個→這个");
+  const ma2 = ma.find((i) => i.cat === "grammar");
+  assert.ok(ma2 && ma2.note === "q-final" && ma2.msg.includes("敢"), "嗎→文法規則（敢…／…無），連文法筆記");
+});
+
+test("checkCalqueLighttone: 的 是 700 推薦字→recWords 有予就毋報（教育部模式寫 的 無毋著）", () => {
+  const hints = { calque: [{ han: "的", suggest: "ê（的）" }, { han: "什麼", suggest: "啥物" }], lighttone: [] };
+  const recWords = new Set(MOE_ITEMS.map((x) => x.word));
+  const iss = checkCalqueLighttone("我看的是什麼？", hints, { recWords });
+  assert.equal(iss.length, 1);
+  assert.equal(iss[0].msg.includes("什麼"), true);
+  assert.equal(checkCalqueLighttone("我看的是什麼？", hints).length, 2, "無 recWords 照舊");
+});
+
+// ---------- 語料評估揣著的誤報（scripts/thak/check-eval.mjs）：教典台文／台羅袂冤枉 ----------
+const TW_DICT = {
+  "實在": { r: ["sit8 tsai7"], h: "實在" }, "不時": { r: ["put4 si5"], h: "時常" },
+  "記得": { r: ["ki3 tit4"], h: "記得" }, "嗎啡": { r: ["ma2 hui1"], h: "嗎啡" },
+  "酒吧": { r: ["tsiu2 pa1"], h: "酒吧" }, "比賽": { r: ["pi2 sai3"], h: "比賽" },
+  "其他": { r: ["ki5 thann1"], h: "其他" }, "心肝": { r: ["sim1 kuann1"], h: "心" },
+  "重要": { r: ["tiong7 iau3"], h: "重要" }, "蕹菜": { r: ["ing3 tshai3"], h: "空心菜" },
+};
+const twSeg = (t) => segment(t, TW_DICT, buildReverseIndex(TW_DICT));
+const runTw = (t, extra = {}) => runChecks(t, { segments: twSeg(t), hints: { calque: [], lighttone: [] }, ...extra });
+
+test("華語直譯：詞典長詞內底的字毋報（實在、不時）；了 干焦句尾；數詞後的 把 是量詞", () => {
+  const hints = {
+    calque: [{ han: "在", suggest: "佇" }, { han: "不", suggest: "毋" }, { han: "了", suggest: "矣" }, { han: "把", suggest: "共" }],
+    lighttone: [],
+  };
+  assert.deepEqual(runTw("伊實在不時來。", { hints }).filter((i) => i.cat === "calque"), []);
+  assert.deepEqual(runTw("衫洗了勼水。", { hints }).filter((i) => i.cat === "calque"), [], "句中 了 是 liáu");
+  assert.equal(runTw("我吃飽了。", { hints }).filter((i) => i.cat === "calque").length, 1, "華語句尾 了");
+  assert.deepEqual(runTw("食三把蕹菜。", { hints }).filter((i) => i.cat === "calque"), []);
+  assert.equal(runTw("他把門關起來。", { hints }).filter((i) => i.msg.includes("「把」")).length, 1);
+});
+
+test("輕聲建議干焦句尾（後壁會使有語助詞）：句中「人的心肝」毋報", () => {
+  const hints = { calque: [], lighttone: [{ han: "人的", marked: "人--的", reading: "lang5--e5" }, { han: "重要的", marked: "重要--的", reading: "tiong7 iau3--e5" }] };
+  assert.deepEqual(runTw("人的心肝真䆀。", { hints }), []);
+  const iss = runTw("真重要的。", { hints });
+  assert.equal(iss.length, 1);
+  assert.equal(iss[0].fix, "重要--的");
+});
+
+test("文法規則：華語句式有報、連文法筆記；台語詞內底的字（記得、嗎啡、酒吧、比賽、其他）袂報", () => {
+  const cases = [
+    ["跑得很快。", "comp-after", "得"],
+    ["你吃飽了嗎？", "q-final", "嗎"],
+    ["是誰？", "gi-mun-ku", "誰"],
+    ["我可以去。", "e-bue", "可以"],
+    ["他比我高。", "khah-compare", "比"],
+    ["看一看。", "trial", "看一看"],
+    ["他去了。", "guan-lan-in", "他"],
+  ];
+  for (const [t, note, key] of cases) {
+    const g = runTw(t).filter((i) => i.cat === "grammar");
+    assert.ok(g.some((i) => i.note === note && t.slice(i.start, i.end) === key), `${t} → ${note}`);
+  }
+  assert.ok(runTw("你吃飽了嗎？").find((i) => i.note === "q-final").msg.includes("矣未"), "…了嗎 → …矣未");
+  for (const t of ["我記得。", "伊食嗎啡。", "去酒吧。", "看比賽。", "其他人。", "伊比我較懸。", "你袂曉聽呢？"]) {
+    assert.deepEqual(runTw(t).filter((i) => i.cat === "grammar"), [], t);
+  }
+});
+
+test("白話字舊式調符（oa／oe 囥 o 抑是 a）→ legacy 提醒；無系統記號的詞照全文系統（súi 是 POJ 正寫）", () => {
+  const old = runChecks("Tâi-ôan ê lâng chin chē.", {});
+  const lg = old.filter((i) => i.cat === "legacy");
+  assert.equal(lg.length, 1);
+  assert.equal(lg[0].fix, "oân");
+  assert.ok(lg[0].msg.includes("舊式"));
+  assert.deepEqual(runChecks("Chhoē chin súi ê hoe.", {}).filter((i) => i.cat === "spelling"), [],
+    "POJ 文 súi 毋報；chhoē 是 legacy 毋是 spelling");
+  assert.equal(runChecks("tsìah", {}).filter((i) => i.cat === "spelling").length, 1, "台羅照舊");
+  const ui = runChecks("Chhoē i tuì chia lâi.", {}).filter((i) => i.cat !== "legacy");
+  assert.deepEqual(ui, [], "POJ tuì（ui 囥 i）嘛是另一派 → legacy，毋是 spelling");
+  assert.deepEqual(runChecks("guá tsia̍h Door.", {}), [], "外語詞 Door 毋算 POJ／TL");
+  // Door 有 oo（像台羅）：佇 POJ 文內底若算台羅，會變做「少數系統」受點
+  assert.deepEqual(checkSystemMixing("Chhoē chheng Door chia.", null), [], "Door 袂予算做台羅詞");
+  assert.equal(checkSystemMixing("Chhoē chheng tshia chia.", null).length, 1, "真正的台羅詞（tshia）照報");
+});
+
+test("buildMultiReadings: src=rime 的語料連紲音節毋收；有予教典連字詞表就干焦收表內", () => {
+  const d = { 有一: { r: ["u7 tsit8"], src: "rime" }, 攏無: { r: ["long2 bo5"], h: "都沒有" }, 身軀: { r: ["sin1 khu1"], h: "身體" } };
+  assert.ok(!buildMultiReadings(d).has("u7 tsit8"));
+  assert.ok(buildMultiReadings(d).has("long2 bo5"));
+  const moe = buildMultiReadings(d, new Set(["身軀"]));
+  assert.deepEqual([...moe], ["sin1 khu1"]);
 });

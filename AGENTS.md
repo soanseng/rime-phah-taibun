@@ -101,6 +101,8 @@ rime-phah-taibun/
 │   ├── build_study_data.py        # 檢定練習：教育部推薦用字700 異用字 → docs/study/data/iongji.json（用字選擇、寫作檢查）
 │   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
 │   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
+│   ├── build_check_data.py        # 寫作檢查連字符詞表：教典詞目且例句家己連字號寫的 → docs/check/data/hyphen-words.json（改字典後重跑）
+│   │                               #   規則評估（教典台文/台羅/華語、教會公報、十項管見）：bun scripts/thak/check-eval.mjs
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
@@ -116,6 +118,7 @@ rime-phah-taibun/
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
     ├── test_try_practice.py       # node --test tests/js/：練習比對（TL/POJ 等價、對位、評分）、來源、本機記錄
+    │                               #   含 check-corpus.test.mjs：教典 200 句誤報率／華語檢出率門檻（寫作檢查規則把關）
     ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
     ├── test_site_pages.py         # 全站導覽一致、工具頁 SEO 掛佇主站、舊 /thak/ 轉址
     ├── test_lua_filter*.py        # Lua 模組測試

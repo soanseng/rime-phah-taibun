@@ -48,8 +48,8 @@ const ready = async () => {
   const vocab = has("vb-in");
   if (!convert && !vocab) return;
   const [{ initConverter }, { initGrammarCheck }, { initVocab }] = await Promise.all([
-    convert ? import("./ui/converter.js?v=26") : {},
-    convert ? import("./ui/grammarcheck.js?v=27") : {},
+    convert ? import("./ui/converter.js?v=27") : {},
+    convert ? import("./ui/grammarcheck.js?v=29") : {},
     vocab ? import("./ui/vocab.js?v=26") : {},
   ]);
 
