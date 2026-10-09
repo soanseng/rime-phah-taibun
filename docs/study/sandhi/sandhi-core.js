@@ -110,24 +110,45 @@ export function sandhiPattern(numeric) {
 }
 
 // ---- 小測驗 ----
-// 詞池：全漢 2–3 字、有華語義、音節數＝字數、逐音節有明調、無輕聲「--」
-export function quizPool(dict) {
+// 詞池：教典例句（listen.json items）裡連字號連做伙的詞——
+// TL 佇詞內音節中間畫連字號，敢若 khuànn-huat，所以詞內非尾音節一定愛變調，答案無歧義。
+// 條件：全漢 2–3 字、逐音節提會出調、無 仔（仔前變調無固定）、無三疊音；詞佮讀音對位。
+const LATIN_EDGE = /^[^A-Za-z0-9\u00c0-\u024f\u0131]+|[^A-Za-z0-9\u00c0-\u024f\u0131\u0300-\u036f\u0358\u207f]+$/g;
+export function sentencePool(items) {
   const out = [];
-  for (const [han, e] of Object.entries(dict)) {
-    const chars = [...han];
-    if (chars.length < 2 || chars.length > 3 || !chars.every(isHan)) continue;
-    if (!e.h || !Array.isArray(e.r) || !e.r.length) continue;
-    const syls = e.r[0].split(/\s+/).filter(Boolean);
-    if (syls.length !== chars.length) continue;
-    if (syls.some((s) => s.includes("--") || !/[1-9]$/.test(s))) continue;
-    out.push({ han, r: e.r, h: e.h });
+  const seen = new Set();
+  for (const it of items ?? []) {
+    const hanRaw = String(it.han ?? "");
+    // 漢羅例句（han 內底有羅馬字）對位複雜，這馬無收；標點（，。？！）毋算 slot。
+    if (/[A-Za-z\u00C0-\u024F\u0131]/.test(hanRaw)) continue;
+    const han = [...hanRaw].filter(isHan);
+    let k = 0; // 例句漢字對位游標
+    for (const raw of String(it.tl ?? "").split(/\s+/).filter(Boolean)) {
+      const tk = raw.replace(LATIN_EDGE, "");
+      if (!tk) continue; // 標點／別的符號：無食音節
+      const parts = tk.split("--");
+      const syls = parts[0].split("-").filter(Boolean)
+        .map((s) => addImplicitTone(pojToTl(s)));
+      const total = parts.reduce((n, p) => n + p.split("-").filter(Boolean).length, 0);
+      const hanWord = han.slice(k, k + syls.length).join("");
+      k += total;
+      if (syls.length < 2 || syls.length > 3) continue;
+      if (syls.some((s) => !/[1-9]$/.test(s))) continue;
+      if ([...hanWord].length !== syls.length || ![...hanWord].every(isHan)) continue;
+      if (hanWord.includes("仔")) continue;
+      if (syls.length === 3 && syls[0] === syls[1] && syls[1] === syls[2]) continue;
+      const numeric = syls.join(" ");
+      if (seen.has(`${hanWord}|${numeric}`)) continue;
+      seen.add(`${hanWord}|${numeric}`);
+      out.push({ han: hanWord, numeric, sent: it.han ?? "", sentTl: it.tl ?? "", hoa: it.hoa ?? "" });
+    }
   }
   return out;
 }
 
 // 揀一个非尾音節問變調；correct ＝ sandhiSyllable 出來的調（數字字串）
 export function makeQuestion(entry, rng = Math.random) {
-  const syls = entry.r[0].split(/\s+/).filter(Boolean);
+  const syls = entry.numeric.split(/\s+/).filter(Boolean);
   const i = Math.floor(rng() * (syls.length - 1));
   const numeric = syls.join(" ");
   return {
@@ -135,8 +156,10 @@ export function makeQuestion(entry, rng = Math.random) {
     correct: toneOf(sandhiSyllable(syls[i])),
     options: [...TONE_OPTIONS],
     pattern: sandhiPattern(numeric),
+    sent: entry.sent ?? "", sentTl: entry.sentTl ?? "", hoa: entry.hoa ?? "",
   };
 }
+
 
 // 一輪 n 題，對詞池無重複抽（池仔細就出甲了）
 export function makeRound(pool, n = 10, rng = Math.random) {

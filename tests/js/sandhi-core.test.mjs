@@ -5,7 +5,7 @@ import { segment } from "../../docs/thak/js/dict.js?v=26";
 import { sandhiSyllable } from "../../docs/thak/js/roman.js?v=26";
 import {
   TONE_OPTIONS, analyzeRoman, analyzeHanlo, applySandhi, toggleEnd, toneOf, romanOf,
-  sandhiPattern, quizPool, makeQuestion, makeRound, cardId,
+  sandhiPattern, sentencePool, makeQuestion, makeRound, cardId,
 } from "../../docs/study/sandhi/sandhi-core.js";
 
 const T2 = "\u0301"; // 2 聲
@@ -111,36 +111,63 @@ test("romanOf/toneOf/sandhiPattern: 顯示用 TL／POJ 調符佮數字", () => {
   assert.equal(sandhiPattern("ho2 tsiah8"), "ho1 tsiah8");
 });
 
-test("quizPool: 干焦收全漢、2–3 字、有華語義、音節合、明調、無輕聲的詞", () => {
-  const pool = quizPool({
-    "食飯": { r: ["tsiah8 png7"], h: "吃飯" },
-    "好食": { r: ["ho2 tsiah8"], h: "好吃" },
-    "拍球": { r: ["phah4 kiu5"], h: "打球" },
-    "無義": { r: ["bo5 gi7"], h: "" },
-    "青紅燈光": { r: ["tshinn1 ang5 ting1 kng1"], h: "霓虹燈" },
-    "單字": { r: ["tsit8"], h: "一" },
-    "混字a": { r: ["a1 b1"], h: "x" },
-    "輕聲": { r: ["tsit8--e7"], h: "這個" },
-    "缺調": { r: ["tsiah png"], h: "吃飯" },
-    "音無合": { r: ["tsiah8"], h: "吃" },
-  });
-  assert.deepEqual(pool.map((x) => x.han).sort(), ["好食", "拍球", "食飯"]);
+const LEKU = [
+  { han: "紅嬰仔哭甲一身軀汗。", tl: "Âng-enn-á khàu kah tsi̍t sin-khu kuānn.", hoa: "小嬰兒哭得滿身大汗。" },
+  { han: "伊佮我的看法並無一致。", tl: "I kah guá ê khuànn-huat pīng bô it-tì.", hoa: "他跟我的看法並不一致。" },
+];
+
+test("sentencePool: 教典例句的連字號詞（2–3 音節、全漢、無輕聲）→ 詞池，帶原句", () => {
+  const pool = sentencePool(LEKU);
+  const byHan = Object.fromEntries(pool.map((x) => [x.han, x]));
+  // Âng-enn-á 用單連字號，歸个詞是「紅嬰仔」——詞內有 仔，整詞免
+  assert.deepEqual(Object.keys(byHan).sort(), ["一致", "看法", "身軀"]);
+  assert.equal(byHan.身軀.numeric, "sin1 khu1");
+  assert.equal(byHan.身軀.sent, LEKU[0].han, "帶出例句做語境");
+  assert.equal(byHan.一致.numeric, "it4 ti3", "調符轉數字調");
+  assert.ok(!pool.some((x) => x.han.includes("仔")), "詞內有 仔 免（連讀變調無固定）");
 });
 
-test("makeQuestion/makeRound/cardId: 揀一个非尾音節，答案＝sandhiSyllable 的調", () => {
-  const q = makeQuestion({ han: "食飯", r: ["tsiah8 png7"], h: "吃飯" }, () => 0);
+test("sentencePool: 仝詞第二个例句袂重複；單音節、三疊音、標點干焦的 token 免", () => {
+  const dup = sentencePool([
+    ...LEKU,
+    { han: "身軀愛洗浴。", tl: "Sin-khu ài sé-i̍k.", hoa: "身體要洗澡。" },
+    { han: "伊食飯。", tl: "I tsia̍h--pn̄g.", hoa: "他吃飯。" },
+  ]);
+  assert.equal(dup.filter((x) => x.han === "身軀").length, 1);
+  const noTriple = sentencePool([{ han: "伊食食食。", tl: "I tsiah8-tsiah8-tsiah8.", hoa: "x" }]);
+  assert.deepEqual(noTriple, [], "三疊音免");
+  assert.deepEqual(sentencePool([]), []);
+  assert.deepEqual(sentencePool([{ han: "喔。", tl: "Ooh." }]), [], "單音節／標點免");
+});
+
+test("sentencePool: 逗號後壁的詞嘛愛對位著（標點毋算漢字 slot）", () => {
+  const real = sentencePool([
+    { han: "你著較拍拚咧，毋通做了尾仔囝。", tl: "Lí tio̍h khah phah-piànn--leh, m̄-thang tsò liáu-bué-á-kiánn.", hoa: "你要更努力，別做吊車尾的。" },
+  ]);
+  const byHan = Object.fromEntries(real.map((x) => [x.han, x]));
+  assert.equal(byHan.毋通?.numeric, "m7 thang1", "逗號後 詞佮字對位著");
+  assert.ok(!real.some((x) => x.han.includes("仔")), "尾仔囝 免");
+  const mini = sentencePool([
+    { han: "我看電影，食便當。", tl: "Guá khuànn tiān-iánn, tsia̍h piān-tong.", hoa: "x" },
+  ]);
+  assert.deepEqual(mini.map((x) => x.han), ["電影", "便當"]);
+  assert.deepEqual(sentencePool([{ han: "tsit8 e5 好。", tl: "tsit8 e5 hó." }]), [], "漢羅例句無收");
+});
+test("makeQuestion/makeRound/cardId: 揀一个非尾音節，答案＝sandhiSyllable 的調；題帶例句", () => {
+  const q = makeQuestion({ han: "食飯", numeric: "tsiah8 png7", sent: "我食飯。", sentTl: "Guá tsia̍h-pn̄g.", hoa: "我吃飯。" }, () => 0);
   assert.equal(q.i, 0);
   assert.equal(q.correct, "3");
   assert.equal(q.numeric, "tsiah8 png7");
   assert.equal(q.pattern, "tsiah3 png7");
+  assert.equal(q.sent, "我食飯。");
   assert.deepEqual(q.options, TONE_OPTIONS);
   assert.deepEqual(TONE_OPTIONS, ["1", "2", "3", "4", "5", "7", "8"]);
-  const q2 = makeQuestion({ han: "食飽飯", r: ["tsiah8 pa2 png7"], h: "吃飽飯" }, () => 0.99);
+  const q2 = makeQuestion({ han: "食飽飯", numeric: "tsiah8 pa2 png7" }, () => 0.99);
   assert.equal(q2.i, 1);
   assert.equal(q2.correct, "1");
   assert.equal(cardId(q2), "sandhi:食飽飯|tsiah8 pa2 png7|1");
   assert.equal(cardId(q), "sandhi:食飯|tsiah8 png7|0");
-  const pool = ["食飯", "好食", "拍球"].map((han) => ({ han, r: ["tsiah8 png7"], h: "x" }));
+  const pool = ["食飯", "好食", "拍球"].map((han) => ({ han, numeric: "tsiah8 png7" }));
   const qs = makeRound(pool, 10, () => 0);
   assert.equal(qs.length, 3, "池仔細就出甲了");
   assert.deepEqual(qs.map((x) => x.han), ["食飯", "好食", "拍球"]);

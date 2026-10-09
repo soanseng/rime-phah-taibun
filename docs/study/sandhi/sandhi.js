@@ -1,13 +1,13 @@
 // 變調練習頁：A. 變調分析（漢羅／全羅 → 逐音節本調佮變調、點音節手動切調組）
-// B. 變調小測驗（詞典隨機揀詞、問連讀變調、10 題一輪、記錄入 study-store）。
-// 外部資料（詞典）干焦用讀的；畫面一律 textContent，無 innerHTML。
+// B. 變調小測驗（教典例句的連字號詞、問連讀變調、10 題一輪、記錄入 study-store）。
+// 外部資料（詞典＝分析、listen.json＝測驗）干焦用讀的；畫面一律 textContent，無 innerHTML。
 import { createStudy } from "../study-store.js?v=1";
 import { segment, isHan } from "../../thak/js/dict.js?v=26";
 import { loadDictBundle } from "../../try/practice-sources.js?v=3";
 import {
   analyzeRoman, analyzeHanlo, applySandhi, toggleEnd, romanOf,
-  quizPool, makeRound, TONE_OPTIONS, cardId,
-} from "./sandhi-core.js?v=1";
+  sentencePool, makeRound, TONE_OPTIONS, cardId,
+} from "./sandhi-core.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => {
@@ -20,12 +20,21 @@ const el = (tag, cls, text) => {
 const QUIZ_N = 10;
 const study = createStudy();
 
-// ---- 詞典（分析漢羅佮小測驗愛用；第一擺約 8 MB，需要才載）----
+// ---- 詞典（分析漢羅愛用；第一擺約 8 MB，需要才載）＋教典例句（測驗詞池，約 200 KB）----
 let bundlePromise = null;
 function ensureBundle() {
   bundlePromise ??= loadDictBundle();
   bundlePromise.catch(() => { bundlePromise = null; });
   return bundlePromise;
+}
+let lekuPromise = null;
+function ensureLeku() {
+  lekuPromise ??= fetch(new URL("../data/listen.json", import.meta.url)).then((r) => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  });
+  lekuPromise.catch(() => { lekuPromise = null; });
+  return lekuPromise;
 }
 let poolCache = null;
 
@@ -103,10 +112,10 @@ let quiz = null; // {qs, qi, correct}
 let answered = false;
 
 function startQuiz() {
-  setStatus("詞典載入中…（第一擺約 8 MB）");
+  setStatus("教典例句載入中…");
   $("sd-quiz-start").disabled = true;
-  ensureBundle().then(({ dict }) => {
-    poolCache ??= quizPool(dict);
+  ensureLeku().then(({ items }) => {
+    poolCache ??= sentencePool(items);
     quiz = { qs: makeRound(poolCache, QUIZ_N), qi: 0, correct: 0 };
     answered = false;
     $("sd-quiz-result").hidden = true;
@@ -116,7 +125,7 @@ function startQuiz() {
     renderQuestion();
   }).catch(() => {
     $("sd-quiz-start").disabled = false;
-    setStatus("詞典載入失敗，請重新整理", true);
+    setStatus("例句載入失敗，請重新整理", true);
   });
 }
 
@@ -125,6 +134,7 @@ function renderQuestion() {
   $("sd-quiz-n").textContent = `第 ${quiz.qi + 1}／${quiz.qs.length} 題`;
   $("sd-quiz-score").textContent = `著 ${quiz.correct} 題`;
   $("sd-quiz-q").textContent = `『${q.han}』第 ${q.i + 1} 字連讀時讀第幾聲？`;
+  $("sd-quiz-sent").textContent = q.sent ? `例句：${q.sent}（${q.hoa || q.sentTl}）` : "";
   const base = $("sd-quiz-base");
   base.replaceChildren();
   base.append("本調：");
@@ -144,6 +154,7 @@ function renderQuestion() {
   $("sd-quiz-next").hidden = true;
   answered = false;
 }
+
 
 function answer(digit) {
   if (!quiz || answered) return;
@@ -199,7 +210,7 @@ function nextQuestion() {
   $("sd-quiz-start").textContent = "閣考一擺";
 }
 
-// 鍵盤：測驗進行中直接撳 1 2 3 4 5 7 8 應答；應答了 Enter 下一題
+// 鍵盤：測驗進行中直接用鍵盤 1 2 3 4 5 7 8 應答；應答了 Enter 下一題
 document.addEventListener("keydown", (ev) => {
   if (!quiz || $("sd-quiz").hidden) return;
   const t = ev.target;

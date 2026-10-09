@@ -195,13 +195,14 @@
             </section>
             <section class="q-card">
               <h2>變調小測驗</h2>
-              <p class="hint">對詞典隨機揀 2–3 字的詞，問你連讀時第 N 字變做第幾聲。一擺 10 題；拍毋著的會加入弱點複習。會當直接撳鍵盤 1 2 3 4 5 7 8。</p>
+              <p class="hint">對教典例句隨機揀連字號連做伙的詞（2–3 音節），問你連讀時第 N 字變做第幾聲。一擺 10 題；拍毋著的會加入弱點複習。會當直接用鍵盤 1 2 3 4 5 7 8 作答。</p>
               <div class="btn-row">
                 <button class="btn primary" id="sd-quiz-start" type="button">開始測驗</button>
               </div>
               <div id="sd-quiz" hidden>
                 <p class="stat-row"><b id="sd-quiz-n"></b><span id="sd-quiz-score"></span></p>
                 <p class="q-prompt" id="sd-quiz-q"></p>
+                <p class="hint" id="sd-quiz-sent"></p>
                 <p class="q-sub" id="sd-quiz-base"></p>
                 <div class="choices" id="sd-quiz-choices"></div>
                 <div class="answer" id="sd-quiz-fb" hidden></div>
@@ -250,6 +251,6 @@
     </footer>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../../assets/js/landing.js?v=2"></script>
-    <script type="module" src="./sandhi.js?v=1"></script>
+    <script type="module" src="./sandhi.js?v=2"></script>
   </body>
 </html>
