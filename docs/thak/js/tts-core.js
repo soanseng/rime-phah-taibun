@@ -84,12 +84,51 @@ function groupToSentence(group, picks, lighttone) {
 }
 
 // segment() 的結果＋使用者點過的讀音（picks）→ 逐句模型字串；詞典揣無的字收入 unread。
+// groupOf：逐句是 sentenceGroups 的第幾組（無讀音的組略過，輸出區的句靠伊對位）
 export function speechSentences(segs, picks = new Map(), lighttone = null) {
   const unread = segs.filter((s) => s.t === "miss").map((s) => s.s);
-  const sentences = sentenceGroups(segs)
-    .map((g) => groupToSentence(g, picks, lighttone))
-    .filter(Boolean);
-  return { sentences, unread };
+  const sentences = [];
+  const groupOf = [];
+  sentenceGroups(segs).forEach((g, i) => {
+    const s = groupToSentence(g, picks, lighttone);
+    if (s) { sentences.push(s); groupOf.push(i); }
+  });
+  return { sentences, unread, groupOf };
+}
+
+const hasLetter = (s) => /\p{L}/u.test(s);
+
+// 顯示文字照空白、佮句內停頓標點（，、：）後壁切——漢→羅輸出「…lâng，guá-beh」中央無空白；
+// 有字（漢字、羅馬字）的才算詞，標點綴佇詞。接起來佮原文仝款。
+export function displayTokens(text) {
+  return text.split(/(\s+)|(?<=[，、,：:])/).filter(Boolean)
+    .map((t) => ({ text: t, word: hasLetter(t) }));
+}
+
+// 一句的逐詞時間（秒，對句頭算）：phraseDurs 是逐短語合成出來的聲音長度（null = 無合成）。
+// 短語內照字母數分配（模型無報逐字時間，這是推算）；逐短語用實際長度重新對齊，差誤袂累積。
+// 短語中央的停頓 gap 佮 synthSentence 仝款：干焦插佇有聲的短語之間。
+export function wordTimeline(sentence, phraseDurs, gap) {
+  const out = [];
+  let t = 0;
+  let voiced = false;
+  splitPhrases(sentence).forEach((phrase, i) => {
+    const words = phrase.split(" ").filter(hasLetter);
+    const dur = phraseDurs[i];
+    if (dur == null) { for (const _ of words) out.push(null); return; }
+    if (voiced) t += gap;
+    voiced = true;
+    const weights = words.map((w) => (w.match(/\p{L}/gu) ?? []).length + 1);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let start = t;
+    words.forEach((_, j) => {
+      const end = j === words.length - 1 ? t + dur : start + (dur * weights[j]) / total;
+      out.push({ start, end });
+      start = end;
+    });
+    t += dur;
+  });
+  return out;
 }
 
 // 模型句 → 短語（句內停頓處切開，合成時中央加短停）

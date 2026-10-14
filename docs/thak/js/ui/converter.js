@@ -4,7 +4,7 @@ import {
   segment, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
 } from "../dict.js?v=26";
 import { formatRomanization, stripTones } from "../roman.js?v=26";
-import { sentenceGroups, renderGroups, splitAtSentenceEnds } from "../tts-core.js?v=3";
+import { sentenceGroups, renderGroups, splitAtSentenceEnds, displayTokens } from "../tts-core.js?v=4";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -44,17 +44,21 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
   // 文法檢查／輕聲／對照表：全部交予 grammarcheck 模組（#cv-gram）
   const renderHints = (text, segs) => grammarCheck?.(text, segs);
 
-  // 語音（ui/tts.js）設定：開的時陣 TL／POJ 輸出逐句包 span，句尾右上角一个細 ▶
-  let sentencePlayer = null; // (groupSegs, $btn) => void
+  // 語音（ui/tts.js）設定：開的時陣 TL／POJ 輸出逐句包 span、逐詞包 .cv-w（唸的時詞光），句尾一个細 ▶
+  let sentencePlayer = null; // (groupSegs, $btn, groupIndex) => void
   const paintOutput = ($out, parts, key, groups) => {
     if (!sentencePlayer) { $out.text(parts.map((p) => p[key]).join("") || "—"); return; }
     $out.empty();
     parts.forEach((p, i) => {
-      const $s = $("<span class='cv-sent'></span>").text(p[key]);
+      const $s = $("<span class='cv-sent'></span>");
+      // 包 span 毋改文字：複製 .text() 佮無包仝款
+      for (const t of displayTokens(p[key])) {
+        $s.append(t.word ? $("<span class='cv-w'></span>").text(t.text) : document.createTextNode(t.text));
+      }
       // 會唸的句（有台語讀音）才有鈕；鈕無文字（CSS 畫 ▶），複製 .text() 袂濫著
       if (groups[i].some((s) => s.t === "w" || (s.t === "r" && /\p{L}/u.test(s.s)))) {
         const $b = $("<button type='button' class='cv-say' aria-label='唸這句'></button>");
-        $b.on("click", () => sentencePlayer(groups[i], $b));
+        $b.on("click", () => sentencePlayer(groups[i], $b, i));
         $s.append($b);
       }
       $out.append($s);

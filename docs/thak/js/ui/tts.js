@@ -1,7 +1,7 @@
 // 轉換頁「🔊 唸予我聽」：預設關；使用者開了、撳唸才下載模型（預設約 30 MB，存入瀏覽器快取）。
 // 兩種唸法：「▶ 唸全篇」逐句串流；轉換輸出（TL／POJ）逐句右上角的細 ▶ 干焦唸彼句
 // （文章長的時建議用這个，袂規篇一直佔電腦）。
-import { speechSentences } from "../tts-core.js?v=3";
+import { speechSentences, splitPhrases } from "../tts-core.js?v=4";
 
 const PREF_KEY = "phah-tts-enabled";
 const MODEL_KEY = "phah-tts-model"; // "small"（預設 約 30 MB）｜"full"（約 58 MB）
@@ -21,7 +21,7 @@ export function initTTS(conv) {
 
   const ensureEngine = async () => {
     if (tts) return tts;
-    const { loadEngine, speak } = await import("../tts.js?v=3");
+    const { loadEngine, speak } = await import("../tts.js?v=4");
     const engine = await loadEngine($model.val(), ({ phase, loaded, total, cached }) => {
       if (phase === "model") {
         $status.text(cached
@@ -55,8 +55,23 @@ export function initTTS(conv) {
     (unread.length ? `（詞典揣無讀音、略過：${[...new Set(unread)].join("")}）` : "")
     + (sentences.some((s) => s.includes("\u207F")) ? "（鼻化 ⁿ 模型無支援，唸做無鼻化）" : "");
 
+  // 詞光：輸出區（TL／POJ；羅→漢是漢字）第 g 句的第 w 詞。逐擺重揣 DOM（轉換結果會重畫）。
+  // 顯示的詞數佮唸的詞數無仝（親像詞典揣無的字）就光規句，毋亂對。
+  const spokenWords = (sentence) => splitPhrases(sentence).flatMap((p) => p.split(" ")).filter((w) => /\p{L}/u.test(w));
+  const highlight = (sentences, groupOf, s, w) => {
+    $(".cv-sent.is-speaking, .cv-w.is-speaking").removeClass("is-speaking");
+    if (s === null) return;
+    for (const box of ["#cv-tl", "#cv-poj"]) {
+      const $sent = $(box).children(".cv-sent").eq(groupOf[s]);
+      if (!$sent.length) continue;
+      const $words = $sent.children(".cv-w");
+      if ($words.length === spokenWords(sentences[s]).length) $words.eq(w).addClass("is-speaking");
+      else $sent.addClass("is-speaking");
+    }
+  };
+
   // 唸一組句；仝一个鈕閣撳就停，撳別个鈕先停這馬的。
-  const play = async ({ sentences, unread }, $btn) => {
+  const play = async ({ sentences, unread, groupOf }, $btn) => {
     const note = noteFor(sentences, unread);
     const again = playing?.$btn?.is($btn);
     stopPlaying();
@@ -70,6 +85,7 @@ export function initTTS(conv) {
       if (playing !== mine) return; // 載入中閣撳別个
       mine.stop = speak(engine, sentences, {
         onSentence: (i, n) => $status.text(n > 1 ? `唸第 ${i + 1}／${n} 句${note}` : `唸…${note}`),
+        onWord: (s, w) => highlight(sentences, groupOf, s, w),
         onDone: (err) => {
           if (playing === mine) { playing = null; mark($btn, false); }
           $status.text(err ? `語音錯誤：${err.message}` : mine.stopped ? "停矣。" : `唸了矣${note}`);
@@ -97,10 +113,11 @@ export function initTTS(conv) {
   };
 
   $all.on("click", () => play(current(), $all));
-  // 逐句：converter 共該句的 seg 組交過來，照仝款規則轉做模型句
-  const playGroup = (group, $btn) => {
+  // 逐句：converter 共該句的 seg 組佮伊是第幾句交過來，照仝款規則轉做模型句
+  const playGroup = (group, $btn, g) => {
     const { picks, lighttone } = conv.speechInput();
-    play(speechSentences(group, picks, lighttone), $btn);
+    const res = speechSentences(group, picks, lighttone);
+    play({ ...res, groupOf: res.groupOf.map(() => g) }, $btn);
   };
   // 輸出區內容換（childList／文字）才重整；鈕仔狀態是 class，袂觸發
   new MutationObserver(refresh).observe(document.getElementById("cv-poj"), {

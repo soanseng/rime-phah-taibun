@@ -595,3 +595,18 @@ textarea:focus,
 .tool-app .cv-say.is-playing {
   opacity: 1;
 }
+/* 唸的時詞光（時間是推算：照短語聲音長度按字母數分） */
+.tool-app .cv-w,
+.tool-app .cv-sent {
+  border-radius: var(--radius-sm, 4px);
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+.tool-app .cv-w.is-speaking,
+.tool-app .cv-sent.is-speaking {
+  background: color-mix(in srgb, var(--brand, #0b6f55) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand, #0b6f55) 20%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-app .cv-w,
+  .tool-app .cv-sent { transition: none; }
+}

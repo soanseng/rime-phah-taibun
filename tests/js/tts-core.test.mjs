@@ -6,12 +6,14 @@ import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js";
 import { render } from "../../docs/thak/js/dict.js";
 import {
   speechSentences, encodeForModel, parseTokens, sentenceGroups, renderGroups, splitPhrases, splitAtSentenceEnds,
+  wordTimeline, displayTokens,
 } from "../../docs/thak/js/tts-core.js";
 
 const dict = JSON.parse(readFileSync(new URL("../../docs/thak/data-public/dict.json", import.meta.url), "utf8"));
 const rev = buildReverseIndex(dict);
 const tokens = parseTokens(readFileSync(new URL("../../docs/tts/tokens.txt", import.meta.url), "utf8"));
 const say = (text, picks = new Map()) => speechSentences(segment(text, dict, rev), picks);
+const wordCount = (text) => displayTokens(text).filter((t) => t.word).length;
 
 test("漢羅、TL、POJ、數字調：仝一句讀音送模型的字串仝款", () => {
   const want = say("góa sī tâi-oân-lâng").sentences;
@@ -131,4 +133,56 @@ test("使用者例句（舊式 POJ 調符、o͘、ⁿ、m̄、句內逗號）：
   assert.equal(phrases.length, 3);
   for (const p of phrases) assert.deepEqual(encodeForModel(p, tokens).oov, [], p);
   assert.equal(sentenceGroups(segs).length, 1);
+});
+
+test("wordTimeline：短語聲音長度照字母數分予逐詞，接續無空縫，短語中央是停頓", () => {
+  const s = "guá sī tâi-oân-lâng, lí hó";
+  const t = wordTimeline(s, [2.0, 0.6], 0.15);
+  assert.equal(t.length, 5, "一个講話的詞一格");
+  assert.equal(t[0].start, 0);
+  assert.ok(Math.abs(t[2].end - 2.0) < 1e-9, "頭一短語收佇伊的聲音長度");
+  for (const i of [1, 2]) assert.ok(Math.abs(t[i].start - t[i - 1].end) < 1e-9, "短語內詞接詞");
+  assert.ok(t[2].end - t[2].start > t[1].end - t[1].start, "字母較濟的詞時間較長");
+  assert.ok(Math.abs(t[3].start - 2.15) < 1e-9, "第二短語佇停頓後開始（逐短語重新對齊）");
+  assert.ok(Math.abs(t[4].end - 2.75) < 1e-9);
+});
+
+test("wordTimeline：無合成的短語（null）伊的詞無時間，後壁照常（佮 synthSentence 仝款無加停頓）", () => {
+  const t = wordTimeline("a, guá sī", [null, 1.0], 0.15);
+  assert.equal(t[0], null);
+  assert.equal(t[1].start, 0);
+  assert.ok(Math.abs(t[2].end - 1.0) < 1e-9);
+});
+
+test("speechSentences 回報逐句對應的句組（無讀音的組略過，輸出區的句才對得著）", () => {
+  const { sentences, groupOf } = say("Guá sī tâi-uân-lâng. 123! Lí hó?");
+  assert.equal(sentences.length, 2);
+  assert.deepEqual(groupOf, [0, 2]);
+});
+
+test("詞光對位：輸出顯示的詞數佮唸的詞數仝款（漢→羅 TL／POJ，羅→漢使用者例句）", async () => {
+  const { tlToHan } = await import("../../docs/thak/js/dict.js");
+  for (const text of ["我是台灣人，我欲講台語。", "Guá sī tâi-uân-lâng, guá ài kóng tâi-gí."]) {
+    const segs = segment(text, dict, rev);
+    const groups = sentenceGroups(segs);
+    const shown = renderGroups(groups);
+    const { sentences } = speechSentences(segs);
+    groups.forEach((g, i) => {
+      const n = wordTimeline(sentences[i], splitPhrases(sentences[i]).map(() => 1), 0).length;
+      assert.equal(wordCount(shown[i].tl), n, shown[i].tl);
+      assert.equal(wordCount(shown[i].poj), n, shown[i].poj);
+    });
+  }
+  const text = "Lán Tâi-ôan ê tē khoah-tōa bô chhin-chhiūⁿ Tiong-kok, Ìn-tō͘ hit khóan, m̄ iông-ún soaⁿ-khîm iá-siù ê pháu-cháu";
+  const [s] = speechSentences(segment(text, dict, rev)).sentences;
+  const han = tlToHan(text, rev).han;
+  assert.equal(wordCount(han), 17);
+  assert.equal(wordTimeline(s, [1, 1, 1], 0).length, 17);
+});
+
+test("displayTokens：照空白切，有字的才算詞（標點綴詞），接起來佮原文仝款", () => {
+  const text = "咱 臺灣, — 印度 彼 款.";
+  const tokens = displayTokens(text);
+  assert.deepEqual(tokens.filter((t) => t.word).map((t) => t.text), ["咱", "臺灣,", "印度", "彼", "款."]);
+  assert.equal(tokens.map((t) => t.text).join(""), text, "複製的文字袂變");
 });

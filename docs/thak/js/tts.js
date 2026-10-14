@@ -1,7 +1,7 @@
-// 轉換頁語音引擎：Meta MMS-TTS 台語模型（VITS，ONNX）佇瀏覽器本機用 ONNX Runtime Web（WASM）合成。
+// 轉換頁語音引擎：Meta MMS-TTS 台語模型（VITS，ONNX）佇瀏覽器本機用 ONNX Runtime Web（WASM，tts-worker.js）合成。
 // 模型兩版（細版 int8 權重約 30 MB 預設、原版 fp16 權重約 58 MB），切塊放 docs/tts/parts/（Cloudflare 單檔上限
 // 25 MiB）；頭一擺下載了存入 Cache Storage，後擺通常直接對快取讀。只有使用者家己開「唸予我聽」才會載。
-import { encodeForModel, parseTokens, splitPhrases } from "./tts-core.js?v=3";
+import { encodeForModel, parseTokens, splitPhrases, wordTimeline } from "./tts-core.js?v=4";
 
 const ORT_VERSION = "1.22.0";
 const ORT_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`;
@@ -53,7 +53,7 @@ export function loadEngine(variant = null, onProgress = () => {}) {
   if (enginePromise && engineVariant !== variant) {
     const old = enginePromise;
     enginePromise = null;
-    old.then((e) => e.session.release?.()).catch(() => {});
+    old.then((e) => e.release()).catch(() => {});
   }
   if (!enginePromise) {
     engineVariant = variant;
@@ -89,37 +89,61 @@ async function doLoad(variant, onProgress) {
     throw new Error("模型檔驗證失敗（已清掉快取，請閣試一擺）");
   }
   onProgress({ phase: "runtime", loaded: total, total, cached });
-  const ort = await import(`${ORT_BASE}ort.wasm.min.mjs`);
-  ort.env.wasm.wasmPaths = ORT_BASE;
-  ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
-  const [session, tokens] = await Promise.all([
-    ort.InferenceSession.create(model, { executionProviders: ["wasm"] }),
+  const [run, tokens] = await Promise.all([
+    startWorker(model),
     fetch(new URL("tokens.txt", MODEL_BASE)).then((r) => r.text()).then(parseTokens),
   ]);
   onProgress({ phase: "ready", loaded: total, total, cached });
-  return { ort, session, tokens, sampleRate: manifest.sampleRate };
+  return { ...run, tokens, sampleRate: manifest.sampleRate };
+}
+
+// 推論放 worker（tts-worker.js）：合成的時主執行緒閒閒，畫面、詞光才袂頓。
+// 回傳 { run(ids) → Promise<Float32Array>, release() }
+function startWorker(model) {
+  const worker = new Worker(new URL("./tts-worker.js?v=1", import.meta.url), { type: "module" });
+  const pending = new Map();
+  let nextId = 0;
+  return new Promise((resolve, reject) => {
+    worker.onerror = (e) => reject(new Error(e.message || "語音 worker 起袂來"));
+    worker.onmessage = ({ data }) => {
+      if (data.type === "ready") {
+        resolve({
+          run: (ids) => new Promise((ok, fail) => {
+            const id = nextId++;
+            pending.set(id, { ok, fail });
+            worker.postMessage({ type: "run", id, ids });
+          }),
+          release: () => worker.terminate(),
+        });
+      } else if (data.id === undefined) {
+        worker.terminate();
+        reject(new Error(data.message));
+      } else {
+        const p = pending.get(data.id);
+        pending.delete(data.id);
+        if (data.type === "pcm") p?.ok(data.pcm);
+        else p?.fail(new Error(data.message));
+      }
+    };
+    worker.postMessage({ type: "init", model: model.buffer, ortBase: ORT_BASE }, [model.buffer]);
+  });
 }
 
 async function synthPhrase(engine, phrase) {
-  const { ort, session, tokens } = engine;
-  const { ids } = encodeForModel(phrase, tokens);
+  const { ids } = encodeForModel(phrase, engine.tokens);
   if (ids.length < 3) return null;
-  const { y } = await session.run({
-    x: new ort.Tensor("int64", BigInt64Array.from(ids, BigInt), [1, ids.length]),
-    x_length: new ort.Tensor("int64", BigInt64Array.from([BigInt(ids.length)]), [1]),
-    noise_scale: new ort.Tensor("float32", Float32Array.from([0.667]), [1]),
-    length_scale: new ort.Tensor("float32", Float32Array.from([1.0]), [1]),
-    noise_scale_w: new ort.Tensor("float32", Float32Array.from([0.8]), [1]),
-  });
-  return y.data;
+  return engine.run(ids);
 }
 
-// 一句：句內停頓（逗號、頓號、冒號）切做短語分別合成，中央插短停（模型本身毋認得標點）
+// 一句：句內停頓（逗號、頓號、冒號）切做短語分別合成，中央插短停（模型本身毋認得標點）。
+// durs：逐短語的聲音長度（秒；null = 無合成），予詞光推算時間。
 async function synthSentence(engine, sentence) {
   const gap = new Float32Array(Math.round(engine.sampleRate * PHRASE_GAP_SEC));
   const pieces = [];
+  const durs = [];
   for (const phrase of splitPhrases(sentence)) {
     const pcm = await synthPhrase(engine, phrase);
+    durs.push(pcm ? pcm.length / engine.sampleRate : null);
     if (!pcm) continue;
     if (pieces.length) pieces.push(gap);
     pieces.push(pcm);
@@ -128,34 +152,51 @@ async function synthSentence(engine, sentence) {
   const out = new Float32Array(pieces.reduce((n, p) => n + p.length, 0));
   let o = 0;
   for (const p of pieces) { out.set(p, o); o += p.length; }
-  return out;
+  return { pcm: out, durs };
 }
 
 // 逐句合成、頭一句好就先放（後壁的句邊放邊合成）。回傳 stop()。
-export function speak(engine, sentences, { onSentence = () => {}, onDone = () => {} } = {}) {
+// onWord(句, 詞)：照聲音時鐘報這馬唸到第幾詞（推算，見 wordTimeline）；唸煞報 onWord(null)。
+export function speak(engine, sentences, { onSentence = () => {}, onWord = () => {}, onDone = () => {} } = {}) {
   const ctx = new AudioContext({ sampleRate: engine.sampleRate });
   let stopped = false;
   let finished = false;
   let at = ctx.currentTime + 0.05;
   const sources = [];
+  const marks = []; // { start, end, s, w }（聲音時鐘），照時間排
+  let shown = null;
+  let raf = 0;
+  const tick = () => {
+    const now = ctx.currentTime;
+    const m = marks.find((x) => now >= x.start && now < x.end);
+    const key = m ? `${m.s}:${m.w}` : null;
+    if (key !== shown) { shown = key; onWord(m ? m.s : null, m ? m.w : null); }
+    raf = requestAnimationFrame(tick);
+  };
   const finish = (err) => {
     if (finished) return;
     finished = true;
+    cancelAnimationFrame(raf);
+    if (shown !== null) onWord(null, null);
     ctx.close().catch(() => {});
     onDone(err);
   };
   (async () => {
     for (let i = 0; i < sentences.length && !stopped; i++) {
       onSentence(i, sentences.length);
-      const pcm = await synthSentence(engine, sentences[i]);
-      if (stopped || !pcm) continue;
-      const buf = ctx.createBuffer(1, pcm.length, engine.sampleRate);
-      buf.copyToChannel(pcm, 0);
+      const out = await synthSentence(engine, sentences[i]);
+      if (stopped || !out) continue;
+      const buf = ctx.createBuffer(1, out.pcm.length, engine.sampleRate);
+      buf.copyToChannel(out.pcm, 0);
       const src = ctx.createBufferSource();
       src.buffer = buf;
       src.connect(ctx.destination);
       at = Math.max(at, ctx.currentTime + 0.02);
       src.start(at);
+      wordTimeline(sentences[i], out.durs, PHRASE_GAP_SEC).forEach((t, w) => {
+        if (t) marks.push({ start: at + t.start, end: at + t.end, s: i, w });
+      });
+      if (!raf) raf = requestAnimationFrame(tick);
       at += buf.duration + SENTENCE_GAP_SEC;
       sources.push(src);
     }
