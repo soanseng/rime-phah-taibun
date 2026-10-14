@@ -104,12 +104,14 @@ rime-phah-taibun/
 │   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
 │   ├── build_check_data.py        # 寫作檢查連字符詞表：教典詞目且例句家己連字號寫的 → docs/check/data/hyphen-words.json（改字典後重跑）
 │   │                               #   規則評估（教典台文/台羅/華語、教會公報、十項管見）：bun scripts/thak/check-eval.mjs
+│   ├── build_tts_model.py         # 轉換頁語音：MMS-TTS nan ONNX（釘 revision＋sha256）→ fp16 權重 → 切塊 ≤20 MiB → docs/tts/（uv run --with onnx --with 'numpy<2.4'）
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）
 ├── docs/                          # 網站（Cloudflare wrangler 部署 taigi.anatomind.com）+ 使用文件
 │   ├── try/                       # 網頁試拍：引擎＋pack（build_web_playground.py 產生）、練習/考試/記錄（practice*.js）
-│   ├── convert/ vocab/ grammar/   # 網頁工具頁：漢羅⇄羅馬字轉換、詞彙查詢、文法筆記（共用 docs/thak/js/main.js）
+│   ├── convert/ vocab/ grammar/   # 網頁工具頁：漢羅⇄羅馬字轉換、詞彙查詢、文法筆記（共用 docs/thak/js/main.js）；轉換頁有「🔊 唸予我聽」（預設關，tts-core.js／tts.js／ui/tts.js）
+│   ├── tts/                       # 語音模型（build_tts_model.py 產生）：manifest.json＋parts/ 含雜湊切塊（Cloudflare 單檔上限 25 MiB；_headers 永久快取）
 │   ├── thak/                      # 工具共用 JS/CSS/data-public（2026-10 由 soanseng/thak-tai-bun subtree 併入；舊 /thak/ 由 _redirects 301 去 /convert/）
 │   └── _redirects                 # Cloudflare 靜態資產轉址
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）/ browser-extension（STORE.md 商店上架資料）
@@ -123,6 +125,7 @@ rime-phah-taibun/
     ├── test_try_practice.py       # node --test tests/js/：練習比對（TL/POJ 等價、對位、評分）、來源、本機記錄
     │                               #   含 check-corpus.test.mjs：教典 200 句誤報率／華語檢出率門檻（寫作檢查規則把關）
     ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
+    ├── test_tts_assets.py         # 語音模型部署把關：docs/ 逐檔 ≤25 MiB、切塊合起來 sha256 對、parts 檔名含版本
     ├── test_site_pages.py         # 全站導覽一致、工具頁 SEO 掛佇主站、舊 /thak/ 轉址
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
@@ -151,6 +154,7 @@ rime-phah-taibun/
 | 教育部學科術語臺灣台語對譯（STTI） | stti.moe.edu.tw（ttg_20241219.ods，僅取台語欄） | 官方明示「提供一般大眾參考運用」，標示來源使用（頁面版權：All rights reserved） |
 | 教育部以本土語言標注臺灣地名 | language.moe.gov.tw 地名計畫成果（*_list.zip，僅取台語欄） | CC BY 3.0 TW |
 | 芫荽字體 | ChhoeTaigi/iansui | SIL OFL 1.1（建議安裝） |
+| Meta MMS-TTS 閩南語（轉換頁語音） | facebook/mms-tts-nan；ONNX 轉換 willwade/mms-tts-multilingual-models-onnx | CC BY-NC 4.0（非商用） |
 
 **授權原則**：字典資料 per-source 保持分離標示；NC 來源（台日大辭典、甘字典）不得進入商業發佈版本。LICENSE 檔內含 per-source 對照表。
 

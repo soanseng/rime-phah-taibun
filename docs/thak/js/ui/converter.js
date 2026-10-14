@@ -194,4 +194,11 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
   // 詞典載入中使用者就拍好字／點過轉換（hit 陣 handler 攏未縛、事件落空）：
   // 初始化了若 input 已有字自動補跑一擺，毋免閣點一擺。
   if (String($("#cv-in").val() ?? "").trim()) run();
+
+  // 語音（ui/tts.js）：漢→羅用目前分詞＋使用者點過的讀音；羅→漢方向輸入本身是羅馬字，直接分詞
+  return {
+    speechInput: () => (dir === "h2r"
+      ? { segs, picks, lighttone: lighttoneMap }
+      : { segs: segment(String($("#cv-in").val() ?? ""), dict, rev), picks: new Map(), lighttone: null }),
+  };
 }

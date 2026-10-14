@@ -48,7 +48,7 @@ const ready = async () => {
   const vocab = has("vb-in");
   if (!convert && !vocab) return;
   const [{ initConverter }, { initGrammarCheck }, { initVocab }] = await Promise.all([
-    convert ? import("./ui/converter.js?v=27") : {},
+    convert ? import("./ui/converter.js?v=28") : {},
     convert ? import("./ui/grammarcheck.js?v=29") : {},
     vocab ? import("./ui/vocab.js?v=26") : {},
   ]);
@@ -74,7 +74,8 @@ const ready = async () => {
       })));
     $("#load-state").remove();
     if (convert) {
-      initConverter(dict, hints, initGrammarCheck(hints), rev, preDir);
+      const conv = initConverter(dict, hints, initGrammarCheck(hints), rev, preDir);
+      if (has("tts-enable")) (await import("./ui/tts.js?v=1")).initTTS(conv.speechInput);
       // 例句卡：點了直接轉換、看變調讀音＋POJ
       $(".demo-card").on("click", (ev) => {
         $("#cv-in").val($(ev.currentTarget).data("han") ?? "");

@@ -70,7 +70,7 @@
     <link rel="stylesheet" href="../assets/css/components.css?v=2" />
     <link rel="stylesheet" href="../assets/css/landing.css?v=2" />
     <link rel="stylesheet" href="../thak/css/tools.css?v=2" />
-    <link rel="stylesheet" href="../thak/css/widgets.css?v=3" />
+    <link rel="stylesheet" href="../thak/css/widgets.css?v=4" />
     <script defer src="https://umami.anatomind.com/script.js" data-website-id="42feef16-dddc-4003-b155-19cba296c797"></script>
   </head>
   <body>
@@ -177,6 +177,25 @@
                 <output id="cv-poj" class="roman">—</output>
               </div>
             </div>
+            <div class="tts">
+              <label class="opt"><input type="checkbox" id="tts-enable" /> 🔊 唸予我聽（實驗功能，預設關）</label>
+              <div id="tts-panel" hidden>
+                <p class="tts-row">
+                  <button type="button" id="tts-speak" class="btn primary">▶ 唸出來</button>
+                  <span id="tts-status" class="hint" role="status" aria-live="polite">照頂面轉換的讀音唸：漢羅、TL、POJ 攏會使，揀過的讀音嘛照用。</span>
+                </p>
+                <details class="tts-about">
+                  <summary>開進前請看：會下載約 58 MB、授權佮原理</summary>
+                  <ul>
+                    <li><strong>下載佮儲存</strong>：頭一擺撳「唸出來」會下載語音模型約 58 MB，閣有語音引擎約 11 MB；了後模型存佇你的瀏覽器（Cache Storage），後擺通常免閣下載（清除網站資料、抑是瀏覽器空間無夠回收快取，就愛重新下載）。欲清掉：瀏覽器設定 → 清除這个網站的資料。毋開這个功能就毋會下載。</li>
+                    <li><strong>攏佇你的電腦內底走</strong>：語音佇瀏覽器本機合成，文字毋會傳去伺服器。</li>
+                    <li><strong>技術</strong>：Meta <a href="https://huggingface.co/facebook/mms-tts-nan" rel="noopener" target="_blank">MMS-TTS 閩南語模型</a>（VITS 神經網路語音合成），用 <a href="https://onnxruntime.ai/" rel="noopener" target="_blank">ONNX Runtime Web</a>（WebAssembly）佇瀏覽器合成。文字先用本站的轉換核心轉做白話字（模型認得的拼寫），逐句合成、頭一句好就先放。</li>
+                    <li><strong>授權</strong>：模型是 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hant" rel="noopener" target="_blank">CC BY-NC 4.0</a>（非商業用途）；轉換成 ONNX 出自 <a href="https://huggingface.co/willwade/mms-tts-multilingual-models-onnx" rel="noopener" target="_blank">willwade/mms-tts-multilingual-models-onnx</a>，本站改存 16 位元權重。本工具非商業用途。</li>
+                    <li><strong>限制</strong>：干焦一種聲；MMS 系列模型用聖經朗讀錄音訓練，口氣可能較像讀經（音質猶未系統評估）；變調由模型家己處理，毋一定準；白話字鼻化符號 ⁿ 模型無支援，會唸做無鼻化；詞典揣無讀音的字會略過。</li>
+                  </ul>
+                </details>
+              </div>
+            </div>
             <div id="cv-anno" class="anno"></div>
             <div id="cv-gram" class="hints" hidden></div>
           </section>
@@ -202,6 +221,6 @@
     <div id="load-state" class="load-state" role="status">載入詞典中…</div>
     <script defer src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <script defer src="../assets/js/landing.js?v=2"></script>
-    <script type="module" src="../thak/js/main.js?v=30"></script>
+    <script type="module" src="../thak/js/main.js?v=31"></script>
   </body>
 </html>

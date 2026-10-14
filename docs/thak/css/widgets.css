@@ -538,3 +538,26 @@ textarea:focus,
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* 轉換頁語音「🔊 唸予我聽」（預設關） */
+.tts {
+  margin: 0.75rem 0;
+}
+.tts-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+}
+.tts-about {
+  font-size: 0.9rem;
+  color: var(--muted, #555);
+}
+.tts-about summary {
+  cursor: pointer;
+}
+.tts-about ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}

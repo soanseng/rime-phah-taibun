@@ -8,3 +8,7 @@
 # workers.dev 預覽網址毋通予搜尋引擎收（正式站是 taigi.anatomind.com）
 https://:project.:subdomain.workers.dev/*
   X-Robots-Tag: noindex
+
+# 轉換頁語音模型塊（scripts/build_tts_model.py）：檔名含內容雜湊，永久快取
+/tts/parts/*
+  Cache-Control: public, max-age=31536000, immutable
