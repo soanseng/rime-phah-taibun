@@ -154,7 +154,7 @@ rime-phah-taibun/
 | 教育部學科術語臺灣台語對譯（STTI） | stti.moe.edu.tw（ttg_20241219.ods，僅取台語欄） | 官方明示「提供一般大眾參考運用」，標示來源使用（頁面版權：All rights reserved） |
 | 教育部以本土語言標注臺灣地名 | language.moe.gov.tw 地名計畫成果（*_list.zip，僅取台語欄） | CC BY 3.0 TW |
 | 芫荽字體 | ChhoeTaigi/iansui | SIL OFL 1.1（建議安裝） |
-| Meta MMS-TTS 閩南語（轉換頁語音） | facebook/mms-tts-nan；ONNX 轉換 willwade/mms-tts-multilingual-models-onnx | CC BY-NC 4.0（非商用） |
+| Meta MMS-TTS 台灣台語（白話字 POJ；轉換頁語音） | facebook/mms-tts-nan；ONNX 轉換 willwade/mms-tts-multilingual-models-onnx | CC BY-NC 4.0（非商用） |
 
 **授權原則**：字典資料 per-source 保持分離標示；NC 來源（台日大辭典、甘字典）不得進入商業發佈版本。LICENSE 檔內含 per-source 對照表。
 

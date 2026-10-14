@@ -20,7 +20,7 @@
 
 <h3>原理（技術）</h3>
 <ul>
-<li><strong>模型</strong>：Meta <a href="https://huggingface.co/facebook/mms-tts-nan" target="_blank" rel="noopener">MMS-TTS 閩南語</a>（VITS 神經網路語音合成，單一聲音）。</li>
+<li><strong>模型</strong>：Meta <a href="https://huggingface.co/facebook/mms-tts-nan" target="_blank" rel="noopener">MMS-TTS 台灣台語模型（白話字 POJ）</a>（VITS 神經網路語音合成，單一聲音）。</li>
 <li><strong>執行</strong>：<a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>（WebAssembly）佇瀏覽器本機合成，<strong>文字毋會傳去伺服器</strong>。</li>
 <li><strong>文字前處理</strong>：模型認得的拼寫是白話字，所以文字先用本站的轉換核心（佮輸入法仝一套詞典）轉做白話字本調，閣照句讀切句，逐句合成、頭一句好就先放。</li>
 <li><strong>模型縮細</strong>：權重改存細版 int8（約 30 MB）抑是原版 fp16（約 58 MB），載入了照 fp32 計算。客觀量測（MFCC＋DTW 距離）兩版佮原始 fp32 模型的差異，攏佇模型本身隨機變化的範圍內；切塊放佇網站（主機單檔上限 25 MiB）。</li>
