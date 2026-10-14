@@ -342,9 +342,10 @@ def test_release_packages_wait_for_complete_verification_gate():
     # 2026-09-25): the CI gate must keep them excluded, not silently re-add
     # an hour-long stall. Since the real_rime marker (2026-09-29) the
     # exclusion lives in pyproject addopts + the marker on the module — pin
-    # all three pieces so removing any one trips this test.
+    # all three pieces so removing any one trips this test. e2e (browser
+    # extension, 2026-10-12) rides the same default exclusion.
     assert "--ignore=tests/test_real_rime.py" not in verify_commands
-    assert "addopts = \"-m 'not real_rime'\"" in read("pyproject.toml")
+    assert "addopts = \"-m 'not real_rime and not e2e'\"" in read("pyproject.toml")
     assert "pytestmark = pytest.mark.real_rime" in read("tests/test_real_rime.py")
     assert "uv run ruff check" in verify_commands
     assert "luac5.4 -p" in verify_commands

@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "寫台文 Siá Tâi-bûn 輸入法",
+  "short_name": "寫台文",
+  "description": "佇任何網頁輸入框直接拍台文：漢羅／全羅輸出、TL／POJ 拼音攏會使換。",
+  "version": "0.0.0",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": ["storage", "offscreen"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "寫台文輸入法",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "commands": {
+    "toggle-ime": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space"
+      },
+      "description": "開／關寫台文輸入"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["keys.js", "content.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}

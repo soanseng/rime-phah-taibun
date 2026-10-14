@@ -40,5 +40,6 @@ known-first-party = ["scripts"]
 testpaths = ["tests"]
 markers = [
     "real_rime: 真 librime 整合測試（g++ 編譯＋部署 220K 字典，84 條 15+ 分鐘）；日常迴圈預設跳過，全套驗證用 -m real_rime",
+    "e2e: 瀏覽器擴充功能真 Chromium e2e（playwright）；日常迴圈預設跳過，驗證用 uv run --with playwright pytest -m e2e",
 ]
-addopts = "-m 'not real_rime'"
+addopts = "-m 'not real_rime and not e2e'"

@@ -97,6 +97,7 @@ rime-phah-taibun/
 │   ├── download_resources.sh      # 18+ 外部資源下載
 │   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
 │   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
+│   ├── build_extension.py        # ★ 瀏覽器擴充功能打包：讀 docs/try/ 產出 → dist/extension/{chrome,firefox}/＋商店 zip（Chrome MV3 offscreen／Firefox MV2 background page）
 │   ├── thak/                      # 網頁工具資料管線（vendored 自舊讀台文，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
 │   ├── build_study_data.py        # 檢定練習：教育部推薦用字700 異用字 → docs/study/data/iongji.json（用字選擇、寫作檢查）
 │   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
@@ -111,12 +112,14 @@ rime-phah-taibun/
 │   ├── convert/ vocab/ grammar/   # 網頁工具頁：漢羅⇄羅馬字轉換、詞彙查詢、文法筆記（共用 docs/thak/js/main.js）
 │   ├── thak/                      # 工具共用 JS/CSS/data-public（2026-10 由 soanseng/thak-tai-bun subtree 併入；舊 /thak/ 由 _redirects 301 去 /convert/）
 │   └── _redirects                 # Cloudflare 靜態資產轉址
-├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）
+├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）/ browser-extension（STORE.md 商店上架資料）
+├── extension/                     # 瀏覽器擴充功能原始碼（build_extension.py 打包）：content script 浮動候選框、engine-host（worker RPC）、controller、popup
 ├── install.sh / install_windows.ps1
 └── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
+    ├── test_browser_extension.py # ★ 瀏覽器擴充功能：套件靜態檢查（manifest/CSP/pack/zip）＋ -m e2e 真 Chromium 打字（uv run --with playwright；無 playwright/Chromium 則 skip）
     ├── test_try_practice.py       # node --test tests/js/：練習比對（TL/POJ 等價、對位、評分）、來源、本機記錄
     │                               #   含 check-corpus.test.mjs：教典 200 句誤報率／華語檢出率門檻（寫作檢查規則把關）
     ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
@@ -224,6 +227,10 @@ uv run python scripts/build_all.py     # 一鍵管線（語料→字典→規則
 ./install.sh                           # Linux
 # Windows: install_windows.ps1（需 Weasel）
 # macOS:  scripts/install_macos.sh（需 Squirrel）
+
+# === 瀏覽器擴充功能（Chrome／Firefox；改 extension/、docs/try/ 產出後重跑）===
+uv run python scripts/build_extension.py      # dist/extension/{chrome,firefox}/＋phah-taibun-*.zip；上架資料佇 packaging/browser-extension/STORE.md
+uv run --with playwright pytest -m e2e        # 真 Chromium 打字 e2e（無 playwright／Chromium 則 skip）
 ```
 
 ## 文件網站本機預覽與部署
