@@ -3,7 +3,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js";
-import { speechSentences, encodeForModel, parseTokens } from "../../docs/thak/js/tts-core.js";
+import { render } from "../../docs/thak/js/dict.js";
+import {
+  speechSentences, encodeForModel, parseTokens, sentenceGroups, renderGroups, splitPhrases,
+} from "../../docs/thak/js/tts-core.js";
 
 const dict = JSON.parse(readFileSync(new URL("../../docs/thak/data-public/dict.json", import.meta.url), "utf8"));
 const rev = buildReverseIndex(dict);
@@ -25,10 +28,39 @@ test("漢字照詞典讀音轉做 POJ（本調，毋做變調）", () => {
   assert.match(sentences[0], /tâi-oân-lâng$/);
 });
 
-test("句讀切句：全形、半形標點攏是句界，毋送入模型", () => {
-  const { sentences } = say("我是台灣人，我愛講台語。guá sī lâng!");
-  assert.equal(sentences.length, 3);
-  for (const s of sentences) assert.doesNotMatch(s, /[，。!,.]/);
+test("切句干焦看句尾標點（。？！；. ? ! ;、換行），逗號毋切", () => {
+  const { sentences } = say("我是台灣人，我愛講台語。guá sī lâng! Lí hó? 好；好");
+  assert.equal(sentences.length, 5);
+  assert.match(sentences[0], /^góa-sī-tâi-oân-lâng, góa-ài/, "逗號留做句內停頓");
+  for (const s of sentences) assert.doesNotMatch(s, /[，。！？；.!?;]/);
+});
+
+test("句內停頓：逗號、頓號、冒號 → 分做短語（合成時短停）", () => {
+  assert.deepEqual(splitPhrases("góa, lí, i"), ["góa", "lí", "i"]);
+  const { sentences } = say("我、你：伊。");
+  assert.equal(sentences.length, 1);
+  assert.equal(splitPhrases(sentences[0]).length, 3);
+});
+
+test("sentenceGroups：句界佇羅馬字段中央嘛切，組合起來佮規篇 render 仝款", () => {
+  const text = "我是台灣人，我愛講台語。guá sī lâng! Lí hó? 好";
+  const segs = segment(text, dict, rev);
+  const groups = sentenceGroups(segs);
+  assert.equal(groups.length, 4);
+  for (const opts of [{}, { sandhi: true }]) {
+    const whole = render(segs, new Map(), opts);
+    const parts = renderGroups(groups, new Map(), opts);
+    assert.equal(parts.map((p) => p.tl).join(""), whole.tl, JSON.stringify(opts));
+    assert.equal(parts.map((p) => p.poj).join(""), whole.poj, JSON.stringify(opts));
+  }
+});
+
+test("逐組唸的句佮規篇唸的句一對一（轉換區逐句 ▶ 對得著）", () => {
+  const segs = segment("我是台灣人。我㘝。。guá sī lâng!", dict, rev);
+  const groups = sentenceGroups(segs);
+  const perGroup = groups.map((g) => speechSentences(g, new Map()).sentences);
+  assert.deepEqual(perGroup.flat(), speechSentences(segs, new Map()).sentences);
+  for (const s of perGroup) assert.ok(s.length <= 1, "一組上濟一句");
 });
 
 test("點過的讀音（picks）愛照用：詞身份 = 漢字＋讀音", () => {

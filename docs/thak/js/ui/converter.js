@@ -1,9 +1,10 @@
 // 轉換分頁：漢→羅（點字換讀音）／羅→漢（實驗功能）。
 
 import {
-  segment, render, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
+  segment, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
 } from "../dict.js?v=26";
 import { formatRomanization, stripTones } from "../roman.js?v=26";
+import { sentenceGroups, renderGroups } from "../tts-core.js?v=2";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -43,15 +44,34 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
   // 文法檢查／輕聲／對照表：全部交予 grammarcheck 模組（#cv-gram）
   const renderHints = (text, segs) => grammarCheck?.(text, segs);
 
+  // 語音（ui/tts.js）設定：開的時陣 TL／POJ 輸出逐句包 span，句尾右上角一个細 ▶
+  let sentencePlayer = null; // (groupSegs, $btn) => void
+  const paintOutput = ($out, parts, key, groups) => {
+    if (!sentencePlayer) { $out.text(parts.map((p) => p[key]).join("") || "—"); return; }
+    $out.empty();
+    parts.forEach((p, i) => {
+      const $s = $("<span class='cv-sent'></span>").text(p[key]);
+      // 會唸的句（有台語讀音）才有鈕；鈕無文字（CSS 畫 ▶），複製 .text() 袂濫著
+      if (groups[i].some((s) => s.t === "w" || (s.t === "r" && /\p{L}/u.test(s.s)))) {
+        const $b = $("<button type='button' class='cv-say' aria-label='唸這句'></button>");
+        $b.on("click", () => sentencePlayer(groups[i], $b));
+        $s.append($b);
+      }
+      $out.append($s);
+    });
+    if (!parts.length) $out.text("—");
+  };
+
   const paintH2R = () => {
-    const { tl, poj } = render(segs, picks, {
+    const groups = sentenceGroups(segs);
+    const parts = renderGroups(groups, picks, {
       sandhi: $("#cv-sandhi").prop("checked"),
       lighttone: lighttoneMap,
     });
     $("#cv-h1").text("台羅 TL");
     $("#cv-h2").text("白話字 POJ");
-    $("#cv-tl").text(tl || "—");
-    $("#cv-poj").text(poj || "—");
+    paintOutput($("#cv-tl"), parts, "tl", groups);
+    paintOutput($("#cv-poj"), parts, "poj", groups);
     const $anno = $("#cv-anno").show().empty();
     for (let gi = 0; gi < segs.length; ) {
       const seg = segs[gi];
@@ -200,5 +220,10 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
     speechInput: () => (dir === "h2r"
       ? { segs, picks, lighttone: lighttoneMap }
       : { segs: segment(String($("#cv-in").val() ?? ""), dict, rev), picks: new Map(), lighttone: null }),
+    // 語音開關：fn(groupSegs, $btn) 設落去，漢→羅輸出逐句出 ▶；null 收起來
+    setSentencePlayer: (fn) => {
+      sentencePlayer = fn;
+      if (dir === "h2r") paint();
+    },
   };
 }

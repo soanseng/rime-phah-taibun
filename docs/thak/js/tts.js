@@ -1,13 +1,14 @@
 // 轉換頁語音引擎：Meta MMS-TTS 台語模型（VITS，ONNX）佇瀏覽器本機用 ONNX Runtime Web（WASM）合成。
 // 模型兩版（細版 int8 權重約 30 MB 預設、原版 fp16 權重約 58 MB），切塊放 docs/tts/parts/（Cloudflare 單檔上限
 // 25 MiB）；頭一擺下載了存入 Cache Storage，後擺通常直接對快取讀。只有使用者家己開「唸予我聽」才會載。
-import { encodeForModel, parseTokens } from "./tts-core.js?v=1";
+import { encodeForModel, parseTokens, splitPhrases } from "./tts-core.js?v=2";
 
 const ORT_VERSION = "1.22.0";
 const ORT_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`;
 const MODEL_BASE = new URL("../../tts/", import.meta.url);
 const CACHE_NAME = "phah-tts-model";
-const SENTENCE_GAP_SEC = 0.25;
+const SENTENCE_GAP_SEC = 0.35;
+const PHRASE_GAP_SEC = 0.15; // 句內逗號的短停
 
 let enginePromise = null;
 
@@ -99,9 +100,9 @@ async function doLoad(variant, onProgress) {
   return { ort, session, tokens, sampleRate: manifest.sampleRate };
 }
 
-async function synthSentence(engine, sentence) {
+async function synthPhrase(engine, phrase) {
   const { ort, session, tokens } = engine;
-  const { ids } = encodeForModel(sentence, tokens);
+  const { ids } = encodeForModel(phrase, tokens);
   if (ids.length < 3) return null;
   const { y } = await session.run({
     x: new ort.Tensor("int64", BigInt64Array.from(ids, BigInt), [1, ids.length]),
@@ -111,6 +112,23 @@ async function synthSentence(engine, sentence) {
     noise_scale_w: new ort.Tensor("float32", Float32Array.from([0.8]), [1]),
   });
   return y.data;
+}
+
+// 一句：句內停頓（逗號、頓號、冒號）切做短語分別合成，中央插短停（模型本身毋認得標點）
+async function synthSentence(engine, sentence) {
+  const gap = new Float32Array(Math.round(engine.sampleRate * PHRASE_GAP_SEC));
+  const pieces = [];
+  for (const phrase of splitPhrases(sentence)) {
+    const pcm = await synthPhrase(engine, phrase);
+    if (!pcm) continue;
+    if (pieces.length) pieces.push(gap);
+    pieces.push(pcm);
+  }
+  if (!pieces.length) return null;
+  const out = new Float32Array(pieces.reduce((n, p) => n + p.length, 0));
+  let o = 0;
+  for (const p of pieces) { out.set(p, o); o += p.length; }
+  return out;
 }
 
 // 逐句合成、頭一句好就先放（後壁的句邊放邊合成）。回傳 stop()。

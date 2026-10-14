@@ -65,6 +65,6 @@ def test_tts_disclosure_is_readable_before_opting_in():
     about = html.index('class="tts-about"')
     panel = html.index('id="tts-panel"')
     assert about < panel, "tts-about 愛佇 tts-panel 頭前"
-    panel_end = html.index("</div>", html.index('id="tts-sentences"'))
+    panel_end = html.index("</div>", html.index('id="tts-long"'))
     assert not (panel < about < panel_end)
     assert "30 MB" in html[about:panel] and "CC BY-NC 4.0" in html[about:panel]

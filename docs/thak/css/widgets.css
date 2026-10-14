@@ -561,16 +561,37 @@ textarea:focus,
   margin: 0.4rem 0 0;
   padding-left: 1.2rem;
 }
-.tts-sentences {
-  margin: 0.25rem 0 0;
-  padding-left: 1.6rem;
-  max-height: 18rem;
-  overflow-y: auto;
+/* 轉換輸出逐句右上角的細 ▶（文字由 CSS 畫，複製輸出袂濫著） */
+.tool-app .cv-say {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: -0.55em; /* 右上角：比字的頂懸較懸 */
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: 0 0.2rem 0 0.05rem;
+  padding: 0 0 0 0.1rem; /* ▶ 視覺置中 */
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: var(--surface, #fff);
+  color: var(--brand, #0b6f55);
+  font-family: system-ui, sans-serif;
+  font-size: 0.55rem;
+  line-height: 1;
+  vertical-align: baseline;
+  cursor: pointer;
+  opacity: 0.8;
 }
-.tts-sentences li {
-  margin: 0.15rem 0;
+.tool-app .cv-say::before {
+  content: "\25B6\FE0E"; /* ▶ 文字款（毋是 emoji） */
 }
-.tts-one {
-  min-width: 2rem;
-  margin-right: 0.4rem;
+.tool-app .cv-say.is-playing::before {
+  content: "\25A0"; /* ■ */
+  padding-right: 0.1rem;
+}
+.tool-app .cv-say:hover,
+.tool-app .cv-say:focus-visible,
+.tool-app .cv-say.is-playing {
+  opacity: 1;
 }
