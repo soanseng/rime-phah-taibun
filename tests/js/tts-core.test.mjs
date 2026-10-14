@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js";
 import { render } from "../../docs/thak/js/dict.js";
 import {
-  speechSentences, encodeForModel, parseTokens, sentenceGroups, renderGroups, splitPhrases,
+  speechSentences, encodeForModel, parseTokens, sentenceGroups, renderGroups, splitPhrases, splitAtSentenceEnds,
 } from "../../docs/thak/js/tts-core.js";
 
 const dict = JSON.parse(readFileSync(new URL("../../docs/thak/data-public/dict.json", import.meta.url), "utf8"));
@@ -100,4 +100,35 @@ test("鼻化 ⁿ：speechSentences 保留（UI 靠伊提醒），encodeForModel 
   const withoutN = encodeForModel(sentences[0].replace("\u207F", ""), tokens);
   assert.deepEqual(withN.ids, withoutN.ids);
   assert.deepEqual(withN.oov, []);
+});
+
+test("羅→漢：輸出漢字照句尾標點切的句數，佮輸入羅馬字的句組一對一", async () => {
+  const { tlToHan } = await import("../../docs/thak/js/dict.js");
+  const inputs = [
+    "Guá sī tâi-uân-lâng, guá ài kóng tâi-gí. Lí hó? Tsia̍h-pn̄g!",
+    "Góa sī Tâi-oân-lâng.\nKin-á-ji̍t thiⁿ-khì chin hó, lán lâi-khì chia̍h-pn̄g.",
+    "tsia̍h-pn̄g",
+  ];
+  for (const text of inputs) {
+    const groups = sentenceGroups(segment(text, dict, rev));
+    const pieces = splitAtSentenceEnds(tlToHan(text, rev).han);
+    assert.equal(pieces.length, groups.length, text);
+    assert.equal(pieces.join(""), tlToHan(text, rev).han, "切開閣接起來愛佮原文仝款");
+  }
+});
+
+test("使用者例句（舊式 POJ 調符、o͘、ⁿ、m̄、句內逗號）：一句三短語，羅→漢一對一", () => {
+  const text = "Lán Tâi-ôan ê tē khoah-tōa bô chhin-chhiūⁿ Tiong-kok, Ìn-tō͘ hit khóan, m̄ iông-ún soaⁿ-khîm iá-siù ê pháu-cháu";
+  const segs = segment(text, dict, rev);
+  const { sentences, unread } = speechSentences(segs);
+  assert.deepEqual(unread, []);
+  assert.equal(sentences.length, 1, "逗號毋切句");
+  const [s] = sentences;
+  assert.match(s, /tâi-oân/, "舊式 Tâi-ôan → 現代 tâi-oân");
+  assert.match(s, /hit khoán/, "舊式 khóan → khoán");
+  assert.match(s, /ìn-tō͘/);
+  const phrases = splitPhrases(s);
+  assert.equal(phrases.length, 3);
+  for (const p of phrases) assert.deepEqual(encodeForModel(p, tokens).oov, [], p);
+  assert.equal(sentenceGroups(segs).length, 1);
 });

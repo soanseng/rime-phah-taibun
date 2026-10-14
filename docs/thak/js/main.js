@@ -48,11 +48,11 @@ const ready = async () => {
   const vocab = has("vb-in");
   if (!convert && !vocab) return;
   const [{ initConverter }, { initGrammarCheck }, { initVocab }, { initTTS }] = await Promise.all([
-    convert ? import("./ui/converter.js?v=29") : {},
+    convert ? import("./ui/converter.js?v=30") : {},
     convert ? import("./ui/grammarcheck.js?v=29") : {},
     vocab ? import("./ui/vocab.js?v=26") : {},
     // 語音 UI 佮轉換做伙載：詞典好就即時縛事件，免得使用者早勾、事件落空
-    has("tts-enable") ? import("./ui/tts.js?v=5") : {},
+    has("tts-enable") ? import("./ui/tts.js?v=7") : {},
   ]);
 
   // 詞典載入中（5–10 秒）方向鈕就先會動：記方向＋鈕仔視覺切換，

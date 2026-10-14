@@ -18,8 +18,8 @@ const DROPPED = new Set(["\u207F"]);
 const romanToPoj = (s) => s.replace(ROMAN_WORD, (word) =>
   word.split(/-+/).map((syl) => pojFixDiacritics(formatRomanization(tlToPoj(pojToTl(syl))))).join("-"));
 
-// 羅馬字段照句尾標點切開：標點（佮後壁的空白）綴頭前彼段
-function splitRomanAtSentenceEnds(s) {
+// 文字照句尾標點切開：標點（佮後壁的空白）綴頭前彼段
+function splitPieces(s) {
   const pieces = [];
   let cur = "";
   const chars = [...s];
@@ -35,13 +35,18 @@ function splitRomanAtSentenceEnds(s) {
   return pieces;
 }
 
+// 輸出文字（親像羅→漢的漢字）照仝款規則切句；接起來佮原文仝款
+export function splitAtSentenceEnds(text) {
+  return splitPieces(text).map((p) => p.text);
+}
+
 // segment() 結果 → 逐句的 seg 組（句尾標點收佇該句尾）；seg 物件（含 si）照原本，picks 照用。
 export function sentenceGroups(segs) {
   const groups = [];
   let cur = [];
   for (const seg of segs) {
     if (seg.t !== "r") { cur.push(seg); continue; }
-    for (const piece of splitRomanAtSentenceEnds(seg.s)) {
+    for (const piece of splitPieces(seg.s)) {
       cur.push({ ...seg, s: piece.text });
       if (piece.ends) { groups.push(cur); cur = []; }
     }

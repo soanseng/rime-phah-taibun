@@ -1,7 +1,7 @@
 // 轉換頁「🔊 唸予我聽」：預設關；使用者開了、撳唸才下載模型（預設約 30 MB，存入瀏覽器快取）。
 // 兩種唸法：「▶ 唸全篇」逐句串流；轉換輸出（TL／POJ）逐句右上角的細 ▶ 干焦唸彼句
 // （文章長的時建議用這个，袂規篇一直佔電腦）。
-import { speechSentences } from "../tts-core.js?v=2";
+import { speechSentences } from "../tts-core.js?v=3";
 
 const PREF_KEY = "phah-tts-enabled";
 const MODEL_KEY = "phah-tts-model"; // "small"（預設 約 30 MB）｜"full"（約 58 MB）
@@ -18,7 +18,6 @@ export function initTTS(conv) {
   const $model = $("#tts-model");
   let tts = null; // { speak, engine }
   let playing = null; // { stop, stopped, $btn, done() }
-  let note = "";
 
   const ensureEngine = async () => {
     if (tts) return tts;
@@ -51,8 +50,14 @@ export function initTTS(conv) {
     mark(p.$btn, false);
   };
 
+  // 提醒干焦講這擺欲唸的句（揣無讀音的字、鼻化 ⁿ）
+  const noteFor = (sentences, unread) =>
+    (unread.length ? `（詞典揣無讀音、略過：${[...new Set(unread)].join("")}）` : "")
+    + (sentences.some((s) => s.includes("\u207F")) ? "（鼻化 ⁿ 模型無支援，唸做無鼻化）" : "");
+
   // 唸一組句；仝一个鈕閣撳就停，撳別个鈕先停這馬的。
-  const play = async (sentences, $btn) => {
+  const play = async ({ sentences, unread }, $btn) => {
+    const note = noteFor(sentences, unread);
     const again = playing?.$btn?.is($btn);
     stopPlaying();
     if (again) return;
@@ -85,19 +90,17 @@ export function initTTS(conv) {
   const refresh = () => {
     if ($panel.prop("hidden")) return;
     stopPlaying();
-    const { sentences, unread } = current();
-    const nasal = sentences.some((s) => s.includes("\u207F")) ? "（鼻化 ⁿ 模型無支援，唸做無鼻化）" : "";
-    note = (unread.length ? `（詞典揣無讀音、略過：${[...new Set(unread)].join("")}）` : "") + nasal;
+    const { sentences } = current();
     $long.prop("hidden", sentences.length <= LONG_TEXT_SENTENCES)
       .text(`文章較長（${sentences.length} 句）：建議撳轉換結果逐句右上角的 ▶ 一句一句唸；「唸全篇」會一路合成落去，較食電腦。`);
     $all.prop("disabled", !sentences.length);
   };
 
-  $all.on("click", () => play(current().sentences, $all));
+  $all.on("click", () => play(current(), $all));
   // 逐句：converter 共該句的 seg 組交過來，照仝款規則轉做模型句
   const playGroup = (group, $btn) => {
     const { picks, lighttone } = conv.speechInput();
-    play(speechSentences(group, picks, lighttone).sentences, $btn);
+    play(speechSentences(group, picks, lighttone), $btn);
   };
   // 輸出區內容換（childList／文字）才重整；鈕仔狀態是 class，袂觸發
   new MutationObserver(refresh).observe(document.getElementById("cv-poj"), {

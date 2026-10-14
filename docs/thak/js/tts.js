@@ -1,7 +1,7 @@
 // 轉換頁語音引擎：Meta MMS-TTS 台語模型（VITS，ONNX）佇瀏覽器本機用 ONNX Runtime Web（WASM）合成。
 // 模型兩版（細版 int8 權重約 30 MB 預設、原版 fp16 權重約 58 MB），切塊放 docs/tts/parts/（Cloudflare 單檔上限
 // 25 MiB）；頭一擺下載了存入 Cache Storage，後擺通常直接對快取讀。只有使用者家己開「唸予我聽」才會載。
-import { encodeForModel, parseTokens, splitPhrases } from "./tts-core.js?v=2";
+import { encodeForModel, parseTokens, splitPhrases } from "./tts-core.js?v=3";
 
 const ORT_VERSION = "1.22.0";
 const ORT_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`;

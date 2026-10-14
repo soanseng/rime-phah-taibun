@@ -4,7 +4,7 @@ import {
   segment, wordVariants, buildReverseIndex, tlToHan, decodeTlToHan, buildLM, sutianUrl,
 } from "../dict.js?v=26";
 import { formatRomanization, stripTones } from "../roman.js?v=26";
-import { sentenceGroups, renderGroups } from "../tts-core.js?v=2";
+import { sentenceGroups, renderGroups, splitAtSentenceEnds } from "../tts-core.js?v=3";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -132,7 +132,20 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
     $("#cv-h1").text("漢字（實驗）");
     $("#cv-h2").text("詞對照");
     const hanText = () => r2h.pieces.map((p) => p.w ? (r2h.overrides.get(p) ?? p.w) : p.s).join("");
-    const $out = $("#cv-tl").text(r.han || "—");
+    const $out = $("#cv-tl");
+    // 漢字輸出照句尾標點切句；逐句 ▶ 唸彼句的「原本羅馬字輸入」（比對漢字倒推讀音較準）。
+    // 標點原樣保留，句數會佮輸入對齊；萬一無對齊，干焦留「唸全篇」。
+    const inputGroups = sentenceGroups(segment(input, dict, rev));
+    const paintHan = () => {
+      const text = hanText() || r.han;
+      const pieces = text ? splitAtSentenceEnds(text) : [];
+      if (sentencePlayer && pieces.length === inputGroups.length) {
+        paintOutput($out, pieces.map((t) => ({ han: t })), "han", inputGroups);
+      } else {
+        $out.text(text || "—");
+      }
+    };
+    paintHan();
     const $list = $("#cv-poj").empty().removeClass("roman");
     if (r.words?.length) {
       for (const p of r2h.pieces) {
@@ -153,7 +166,7 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
           r2h.overrides.set(p, alts[i].word);
           $chip.find("b").text(alts[i].word);
           $link.attr("href", sutianUrl(alts[i].word));
-          $out.text(hanText());
+          paintHan();
         });
         $list.append($chip, $link, " ");
       }
@@ -220,10 +233,10 @@ export function initConverter(dict, hints, grammarCheck, revIn = null, preDirIn 
     speechInput: () => (dir === "h2r"
       ? { segs, picks, lighttone: lighttoneMap }
       : { segs: segment(String($("#cv-in").val() ?? ""), dict, rev), picks: new Map(), lighttone: null }),
-    // 語音開關：fn(groupSegs, $btn) 設落去，漢→羅輸出逐句出 ▶；null 收起來
+    // 語音開關：fn(groupSegs, $btn) 設落去，兩个方向的輸出逐句出 ▶；null 收起來
     setSentencePlayer: (fn) => {
       sentencePlayer = fn;
-      if (dir === "h2r") paint();
+      paint();
     },
   };
 }
