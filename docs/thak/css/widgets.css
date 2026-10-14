@@ -561,3 +561,16 @@ textarea:focus,
   margin: 0.4rem 0 0;
   padding-left: 1.2rem;
 }
+.tts-sentences {
+  margin: 0.25rem 0 0;
+  padding-left: 1.6rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.tts-sentences li {
+  margin: 0.15rem 0;
+}
+.tts-one {
+  min-width: 2rem;
+  margin-right: 0.4rem;
+}

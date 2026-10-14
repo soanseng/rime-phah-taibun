@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""轉換頁語音: Meta MMS-TTS 台語(nan)模型 -> docs/tts/ (fp16 權重, 切塊, 瀏覽器快取用).
+"""轉換頁語音: Meta MMS-TTS 台語(nan)模型 -> docs/tts/ (細版 int8 權重 + 原版 fp16 權重, 切塊).
 
 來源: willwade/mms-tts-multilingual-models-onnx 的 nan/(facebook/mms-tts-nan 轉 sherpa-onnx ONNX),
 授權 CC BY-NC 4.0(非商用; 寫台文網站免費非商用, 頁面有標示)。
 
 處理:
 1. 下載 (釘 revision) model.onnx + tokens.txt, 驗 sha256。
-2. fp16 儲存 / fp32 計算: 大 float 權重改存 fp16, 前面加 Cast->fp32(ORT 載入時常數折疊)。
-   114 MB -> 58 MB, 輸出佮 fp32 相關係數約 0.9998。直接轉 fp16 計算的模型 onnxruntime-web WASM 袂起。
+2. 兩版, 攏是「縮細儲存 / fp32 計算」(onnxruntime-web WASM 速度佮 fp32 仝款):
+   - small (預設, 約 30 MB): 大權重逐 output channel 量化做 int8, DequantizeLinear->fp32。
+   - full (約 58 MB): 大權重存 fp16, Cast->fp32; 輸出佮 fp32 相關係數約 0.9998。
+   MFCC+DTW 距離(VITS 有隨機性, fp32 對 fp32 本身約 22.7): small 24.9、full 25.5 攏佇自然差異內;
+   動態 int8 計算(QUInt8)36.7 明顯較差閣較慢, 毋用。直接 fp16 計算 WASM 袂起。
 3. 切塊: Cloudflare Workers 靜態資產單檔上限 25 MiB -> 每塊 <= 20 MiB。
    檔名含內容雜湊(會使永久快取); manifest.json 列塊佮全模型 sha256(前端驗證)。
 
@@ -35,6 +38,7 @@ SOURCE_FILES = {
 }
 CHUNK_BYTES = 20 * 1024 * 1024  # Cloudflare 靜態資產單檔上限 25 MiB, 留餘裕
 FP16_MIN_ELEMENTS = 1024  # 細的權重(偏差等)保持 fp32
+VARIANTS = {"small": "int8", "full": "fp16"}  # manifest 模型名 -> 權重儲存格式
 
 
 def sha256(data: bytes) -> str:
@@ -53,33 +57,55 @@ def fetch_source(name: str, cache: Path) -> bytes:
     return data
 
 
-def to_fp16_storage(model_bytes: bytes) -> bytes:
+def compress_weights(model_bytes: bytes, kind: str) -> bytes:
+    """大 float 權重改做 fp16 (kind="fp16") 抑是逐 channel int8 (kind="int8") 儲存, 圖頭插還原節點做 fp32."""
     import numpy as np
     import onnx
     from onnx import TensorProto, helper, numpy_helper
 
     m = onnx.load_from_string(model_bytes)
     g = m.graph
-    inits, casts = [], []
+    inits, restore = [], []
     for init in g.initializer:
-        if init.data_type == TensorProto.FLOAT and int(np.prod(init.dims)) >= FP16_MIN_ELEMENTS:
-            half = numpy_helper.from_array(numpy_helper.to_array(init).astype(np.float16), init.name + "__fp16")
-            inits.append(half)
-            casts.append(helper.make_node("Cast", [half.name], [init.name], to=TensorProto.FLOAT))
-        else:
+        if init.data_type != TensorProto.FLOAT or int(np.prod(init.dims)) < FP16_MIN_ELEMENTS:
             inits.append(init)
+            continue
+        w = numpy_helper.to_array(init)
+        name = init.name
+        if kind == "fp16":
+            inits.append(numpy_helper.from_array(w.astype(np.float16), name + "__fp16"))
+            restore.append(helper.make_node("Cast", [name + "__fp16"], [name], to=TensorProto.FLOAT))
+            continue
+        # int8: 對稱量化, 多維權重逐 output channel (axis 0), 一維整條仝一个 scale
+        if w.ndim > 1:
+            scale = (np.abs(w).max(axis=tuple(range(1, w.ndim))) / 127).astype(np.float32)
+            scale[scale == 0] = 1.0
+            q = np.round(w / scale.reshape((-1,) + (1,) * (w.ndim - 1)))
+            zero = np.zeros(scale.shape, np.int8)
+            attrs = {"axis": 0}
+        else:
+            scale = np.array(np.abs(w).max() / 127 or 1.0, np.float32)
+            q = np.round(w / scale)
+            zero = np.array(0, np.int8)
+            attrs = {}
+        inits += [
+            numpy_helper.from_array(np.clip(q, -127, 127).astype(np.int8), name + "__q"),
+            numpy_helper.from_array(scale, name + "__s"),
+            numpy_helper.from_array(zero, name + "__z"),
+        ]
+        restore.append(
+            helper.make_node("DequantizeLinear", [name + "__q", name + "__s", name + "__z"], [name], **attrs)
+        )
     del g.initializer[:]
     g.initializer.extend(inits)
     nodes = list(g.node)
     del g.node[:]
-    g.node.extend(casts + nodes)
+    g.node.extend(restore + nodes)
     return m.SerializeToString()
 
 
-def write_chunks(model: bytes, tokens: bytes, out: Path) -> dict:
-    if out.exists():
-        shutil.rmtree(out)
-    (out / "parts").mkdir(parents=True)
+def write_chunks(model: bytes, out: Path) -> dict:
+    """模型切塊寫入 out/parts/, 回傳 manifest 的一个模型項目."""
     digest = sha256(model)
     parts = []
     for i in range(0, len(model), CHUNK_BYTES):
@@ -88,18 +114,7 @@ def write_chunks(model: bytes, tokens: bytes, out: Path) -> dict:
         name = f"parts/mms-nan-{digest[:12]}.part{len(parts)}"
         (out / name).write_bytes(chunk)
         parts.append({"name": name, "size": len(chunk)})
-    (out / "tokens.txt").write_bytes(tokens)
-    manifest = {
-        "version": digest[:12],
-        "sha256": digest,
-        "size": len(model),
-        "sampleRate": 16000,
-        "parts": parts,
-        "source": f"https://huggingface.co/{SOURCE_REPO}/tree/{SOURCE_REV}/nan",
-        "license": "CC BY-NC 4.0 (Meta MMS-TTS, facebook/mms-tts-nan)",
-    }
-    (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    return manifest
+    return {"version": digest[:12], "sha256": digest, "size": len(model), "parts": parts}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -108,9 +123,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cache", type=Path, default=Path(tempfile.gettempdir()) / "phah-tts-cache")
     args = parser.parse_args(argv)
     args.cache.mkdir(parents=True, exist_ok=True)
-    model = to_fp16_storage(fetch_source("nan/model.onnx", args.cache))
-    manifest = write_chunks(model, fetch_source("nan/tokens.txt", args.cache), args.output)
-    print(f"{args.output}: {manifest['size'] / 1e6:.1f} MB, {len(manifest['parts'])} 塊, version {manifest['version']}")
+    source = fetch_source("nan/model.onnx", args.cache)
+    out = args.output
+    if out.exists():
+        shutil.rmtree(out)
+    (out / "parts").mkdir(parents=True)
+    models = {name: write_chunks(compress_weights(source, kind), out) for name, kind in VARIANTS.items()}
+    (out / "tokens.txt").write_bytes(fetch_source("nan/tokens.txt", args.cache))
+    manifest = {
+        "default": "small",
+        "sampleRate": 16000,
+        "models": models,
+        "source": f"https://huggingface.co/{SOURCE_REPO}/tree/{SOURCE_REV}/nan",
+        "license": "CC BY-NC 4.0 (Meta MMS-TTS, facebook/mms-tts-nan)",
+    }
+    (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    for name, m in models.items():
+        print(f"{name}: {m['size'] / 1e6:.1f} MB, {len(m['parts'])} 塊, version {m['version']}")
     return 0
 
 

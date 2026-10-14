@@ -104,7 +104,7 @@ rime-phah-taibun/
 │   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
 │   ├── build_check_data.py        # 寫作檢查連字符詞表：教典詞目且例句家己連字號寫的 → docs/check/data/hyphen-words.json（改字典後重跑）
 │   │                               #   規則評估（教典台文/台羅/華語、教會公報、十項管見）：bun scripts/thak/check-eval.mjs
-│   ├── build_tts_model.py         # 轉換頁語音：MMS-TTS nan ONNX（釘 revision＋sha256）→ fp16 權重 → 切塊 ≤20 MiB → docs/tts/（uv run --with onnx --with 'numpy<2.4'）
+│   ├── build_tts_model.py         # 轉換頁語音：MMS-TTS nan ONNX（釘 revision＋sha256）→ 細版 int8／原版 fp16 權重 → 切塊 ≤20 MiB → docs/tts/（uv run --with onnx --with 'numpy<2.4'）
 │   └── install_linux.sh / install_macos.sh
 │
 ├── data/                          # 原始資料（gitignore，不下載不進 repo）

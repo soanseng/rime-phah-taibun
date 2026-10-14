@@ -1,6 +1,6 @@
 // 轉換頁語音引擎：Meta MMS-TTS 台語模型（VITS，ONNX）佇瀏覽器本機用 ONNX Runtime Web（WASM）合成。
-// 模型約 58 MB，切 3 塊放 docs/tts/（Cloudflare 單檔上限 25 MiB）；頭一擺下載了存入 Cache Storage，
-// 後擺直接對快取讀（毋免閣下載）。只有使用者家己開「唸予我聽」才會載。
+// 模型兩版（細版 int8 權重約 30 MB 預設、原版 fp16 權重約 58 MB），切塊放 docs/tts/parts/（Cloudflare 單檔上限
+// 25 MiB）；頭一擺下載了存入 Cache Storage，後擺通常直接對快取讀。只有使用者家己開「唸予我聽」才會載。
 import { encodeForModel, parseTokens } from "./tts-core.js?v=1";
 
 const ORT_VERSION = "1.22.0";
@@ -44,36 +44,46 @@ async function loadPart(cache, url, size, onBytes) {
   return buf;
 }
 
-// 載入引擎（single-flight）。onProgress({phase, loaded, total, cached})
-export function loadEngine(onProgress = () => {}) {
+// 載入引擎（single-flight，照模型版本）。variant："small"（預設）｜"full"；null＝manifest 預設。
+// 換版本：放掉舊 session；快取干焦留這馬用的版本（免得兩版加起來 88 MB 佔空間）。
+// onProgress({phase, loaded, total, cached})
+let engineVariant = null;
+export function loadEngine(variant = null, onProgress = () => {}) {
+  if (enginePromise && engineVariant !== variant) {
+    const old = enginePromise;
+    enginePromise = null;
+    old.then((e) => e.session.release?.()).catch(() => {});
+  }
   if (!enginePromise) {
-    enginePromise = doLoad(onProgress).catch((e) => { enginePromise = null; throw e; });
+    engineVariant = variant;
+    enginePromise = doLoad(variant, onProgress).catch((e) => { enginePromise = null; throw e; });
   }
   return enginePromise;
 }
 
-async function doLoad(onProgress) {
+async function doLoad(variant, onProgress) {
   const manifest = await (await fetch(new URL("manifest.json", MODEL_BASE), { cache: "no-cache" })).json();
+  const spec = manifest.models[variant ?? manifest.default] ?? manifest.models[manifest.default];
   const cache = "caches" in self ? await caches.open(CACHE_NAME) : null;
-  // 舊版模型塊（檔名含版本）清掉，免得佔空間
+  // 毋是這馬版本的模型塊（舊版、抑是另一个大細）清掉，免得佔空間
   if (cache) {
     for (const req of await cache.keys()) {
-      if (!manifest.parts.some((p) => req.url.endsWith(p.name))) await cache.delete(req);
+      if (!spec.parts.some((p) => req.url.endsWith(p.name))) await cache.delete(req);
     }
   }
-  const urls = manifest.parts.map((p) => new URL(p.name, MODEL_BASE).href);
+  const urls = spec.parts.map((p) => new URL(p.name, MODEL_BASE).href);
   const cached = cache ? (await Promise.all(urls.map((u) => cache.match(u)))).every(Boolean) : false;
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   let loaded = 0;
-  const total = manifest.size;
+  const total = spec.size;
   const bump = (n) => { loaded += n; onProgress({ phase: "model", loaded, total, cached }); };
   onProgress({ phase: "model", loaded: 0, total, cached });
   const parts = [];
-  for (let i = 0; i < urls.length; i++) parts.push(await loadPart(cache, urls[i], manifest.parts[i].size, bump));
+  for (let i = 0; i < urls.length; i++) parts.push(await loadPart(cache, urls[i], spec.parts[i].size, bump));
   const model = new Uint8Array(total);
   let o = 0;
   for (const p of parts) { model.set(p, o); o += p.length; }
-  if ((await sha256Hex(model)) !== manifest.sha256) {
+  if ((await sha256Hex(model)) !== spec.sha256) {
     if (cache) await caches.delete(CACHE_NAME);
     throw new Error("模型檔驗證失敗（已清掉快取，請閣試一擺）");
   }

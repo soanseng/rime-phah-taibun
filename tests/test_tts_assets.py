@@ -23,25 +23,37 @@ def test_every_site_asset_fits_cloudflare_limit():
     assert too_big == [], f"超過 Cloudflare 25 MiB 單檔上限, 部署會失敗: {too_big}"
 
 
+def load_manifest() -> dict:
+    return json.loads((TTS / "manifest.json").read_text(encoding="utf-8"))
+
+
+def test_default_model_is_the_small_one():
+    manifest = load_manifest()
+    models = manifest["models"]
+    assert manifest["default"] in models
+    assert models[manifest["default"]]["size"] == min(m["size"] for m in models.values()), "預設愛是上細的模型"
+
+
 def test_tts_manifest_parts_reassemble_to_verified_model():
-    manifest = json.loads((TTS / "manifest.json").read_text(encoding="utf-8"))
-    digest = hashlib.sha256()
-    total = 0
-    for part in manifest["parts"]:
-        data = (TTS / part["name"]).read_bytes()
-        assert len(data) == part["size"], part["name"]
-        digest.update(data)
-        total += len(data)
-    assert total == manifest["size"]
-    assert digest.hexdigest() == manifest["sha256"], "合起來的模型愛佮 manifest sha256 仝款(前端會驗)"
+    for name, model in load_manifest()["models"].items():
+        digest = hashlib.sha256()
+        total = 0
+        for part in model["parts"]:
+            data = (TTS / part["name"]).read_bytes()
+            assert len(data) == part["size"], part["name"]
+            digest.update(data)
+            total += len(data)
+        assert total == model["size"], name
+        assert digest.hexdigest() == model["sha256"], f"{name}: 合起來的模型愛佮 manifest sha256 仝款(前端會驗)"
 
 
 def test_tts_parts_are_content_addressed_under_immutable_cache_path():
-    manifest = json.loads((TTS / "manifest.json").read_text(encoding="utf-8"))
-    for part in manifest["parts"]:
-        assert part["name"].startswith("parts/"), "永久快取規則干焦對 /tts/parts/*"
-        assert manifest["version"] in part["name"], "檔名愛含版本雜湊, 換模型才袂食著舊快取"
+    models = load_manifest()["models"].values()
+    for model in models:
+        for part in model["parts"]:
+            assert part["name"].startswith("parts/"), "永久快取規則干焦對 /tts/parts/*"
+            assert model["version"] in part["name"], "檔名愛含版本雜湊, 換模型才袂食著舊快取"
     headers = (DOCS / "_headers").read_text(encoding="utf-8")
     assert "/tts/parts/*\n  Cache-Control: public, max-age=31536000, immutable" in headers
     on_disk = {str(p.relative_to(TTS)) for p in (TTS / "parts").iterdir()}
-    assert on_disk == {p["name"] for p in manifest["parts"]}, "parts/ 毋通留舊版塊"
+    assert on_disk == {p["name"] for m in models for p in m["parts"]}, "parts/ 毋通留舊版塊"
