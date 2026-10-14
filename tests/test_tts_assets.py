@@ -57,3 +57,14 @@ def test_tts_parts_are_content_addressed_under_immutable_cache_path():
     assert "/tts/parts/*\n  Cache-Control: public, max-age=31536000, immutable" in headers
     on_disk = {str(p.relative_to(TTS)) for p in (TTS / "parts").iterdir()}
     assert on_disk == {p["name"] for m in models for p in m["parts"]}, "parts/ 毋通留舊版塊"
+
+
+def test_tts_disclosure_is_readable_before_opting_in():
+    """下載量/授權說明愛佇勾選進前就看會著: 毋通囥入去 #tts-panel(hidden, 勾了才出現)."""
+    html = (DOCS / "convert" / "index.html").read_text(encoding="utf-8")
+    about = html.index('class="tts-about"')
+    panel = html.index('id="tts-panel"')
+    assert about < panel, "tts-about 愛佇 tts-panel 頭前"
+    panel_end = html.index("</div>", html.index('id="tts-sentences"'))
+    assert not (panel < about < panel_end)
+    assert "30 MB" in html[about:panel] and "CC BY-NC 4.0" in html[about:panel]

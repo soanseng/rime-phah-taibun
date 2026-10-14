@@ -193,7 +193,7 @@
                   <li><strong>下載佮儲存</strong>：頭一擺撳唸會下載語音模型：預設細版約 30 MB，會使換做原版約 58 MB；閣有語音引擎約 11 MB。了後模型存佇你的瀏覽器（Cache Storage），後擺通常免閣下載（清除網站資料、抑是瀏覽器空間無夠回收快取，就愛重新下載）。欲清掉：瀏覽器設定 → 清除這个網站的資料。毋開這个功能就毋會下載。</li>
                   <li><strong>攏佇你的電腦內底走</strong>：語音佇瀏覽器本機合成，文字毋會傳去伺服器。</li>
                   <li><strong>技術</strong>：Meta <a href="https://huggingface.co/facebook/mms-tts-nan" rel="noopener" target="_blank">MMS-TTS 台灣台語模型（白話字 POJ）</a>（VITS 神經網路語音合成），用 <a href="https://onnxruntime.ai/" rel="noopener" target="_blank">ONNX Runtime Web</a>（WebAssembly）佇瀏覽器合成。文字先用本站的轉換核心轉做白話字（模型認得的拼寫），逐句合成、頭一句好就先放。</li>
-                  <li><strong>授權</strong>：模型是 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hant" rel="noopener" target="_blank">CC BY-NC 4.0</a>（非商業用途）；轉換成 ONNX 出自 <a href="https://huggingface.co/willwade/mms-tts-multilingual-models-onnx" rel="noopener" target="_blank">willwade/mms-tts-multilingual-models-onnx</a>，本站改存縮細的權重（細版 8 位元、原版 16 位元；計算攏照 32 位元；客觀量測佮原始模型的差異真細）。本工具非商業用途。</li>
+                  <li><strong>授權</strong>：模型是 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hant" rel="noopener" target="_blank">CC BY-NC 4.0</a>（非商業用途）；轉換成 ONNX 出自 <a href="https://huggingface.co/willwade/mms-tts-multilingual-models-onnx" rel="noopener" target="_blank">willwade/mms-tts-multilingual-models-onnx</a>，本站改存縮細的權重（細版 8 位元、原版 16 位元；計算攏照 32 位元；初步客觀量測差異小，音質猶未經聽感評估）。本工具非商業用途。</li>
                   <li><strong>限制</strong>：干焦一種聲；MMS 系列模型用聖經朗讀錄音訓練，口氣可能較像讀經（音質猶未系統評估）；變調由模型家己處理，毋一定準；白話字鼻化符號 ⁿ 模型無支援，會唸做無鼻化；詞典揣無讀音的字會略過。</li>
                 </ul>
               </details>
