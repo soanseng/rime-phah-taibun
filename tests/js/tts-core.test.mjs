@@ -60,3 +60,12 @@ test("POJ 調符組字：o͘ 佮第八聲 ̍ 攏是模型認得的字元", () =>
   const { oov } = encodeForModel("o͘ chia̍h pn̄g", tokens);
   assert.deepEqual(oov, []);
 });
+
+test("鼻化 ⁿ：speechSentences 保留（UI 靠伊提醒），encodeForModel 略過毋算 OOV", () => {
+  const { sentences } = say("thiⁿ-khì");
+  assert.ok(sentences[0].includes("\u207F"), "句內愛保留 ⁿ，UI 才會提醒鼻化無支援");
+  const withN = encodeForModel(sentences[0], tokens);
+  const withoutN = encodeForModel(sentences[0].replace("\u207F", ""), tokens);
+  assert.deepEqual(withN.ids, withoutN.ids);
+  assert.deepEqual(withN.oov, []);
+});
