@@ -89,10 +89,18 @@ async function doLoad(variant, onProgress) {
     throw new Error("模型檔驗證失敗（已清掉快取，請閣試一擺）");
   }
   onProgress({ phase: "runtime", loaded: total, total, cached });
-  const [run, tokens] = await Promise.all([
-    startWorker(model),
-    fetch(new URL("tokens.txt", MODEL_BASE)).then((r) => r.text()).then(parseTokens),
-  ]);
+  const worker = startWorker(model);
+  let run;
+  let tokens;
+  try {
+    [run, tokens] = await Promise.all([
+      worker,
+      fetch(new URL("tokens.txt", MODEL_BASE)).then((r) => r.text()).then(parseTokens),
+    ]);
+  } catch (e) {
+    worker.then((w) => w.release()).catch(() => {}); // tokens 失敗：worker 已經起來嘛愛收
+    throw e;
+  }
   onProgress({ phase: "ready", loaded: total, total, cached });
   return { ...run, tokens, sampleRate: manifest.sampleRate };
 }
@@ -104,7 +112,10 @@ function startWorker(model) {
   const pending = new Map();
   let nextId = 0;
   return new Promise((resolve, reject) => {
-    worker.onerror = (e) => reject(new Error(e.message || "語音 worker 起袂來"));
+    worker.onerror = (e) => {
+      worker.terminate();
+      reject(new Error(e.message || "語音 worker 起袂來"));
+    };
     worker.onmessage = ({ data }) => {
       if (data.type === "ready") {
         resolve({

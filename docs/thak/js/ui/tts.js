@@ -21,7 +21,7 @@ export function initTTS(conv) {
 
   const ensureEngine = async () => {
     if (tts) return tts;
-    const { loadEngine, speak } = await import("../tts.js?v=4");
+    const { loadEngine, speak } = await import("../tts.js?v=5");
     const engine = await loadEngine($model.val(), ({ phase, loaded, total, cached }) => {
       if (phase === "model") {
         $status.text(cached
