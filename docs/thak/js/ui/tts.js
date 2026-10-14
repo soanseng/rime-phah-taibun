@@ -59,6 +59,8 @@ export function initTTS(getInput) {
   $toggle.on("change", () => apply($toggle.prop("checked")));
   let saved = false;
   try { saved = localStorage.getItem(PREF_KEY) === "1"; } catch { /* 私密模式 */ }
-  $toggle.prop("checked", saved);
-  apply(saved);
+  // 詞典載入中（handler 未縛）使用者就勾矣：照伊這馬勾的，毋通共伊蓋做記錄的「關」
+  const on = saved || $toggle.prop("checked");
+  $toggle.prop("checked", on);
+  apply(on);
 }
