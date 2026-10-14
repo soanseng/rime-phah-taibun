@@ -36,7 +36,7 @@
 | 網頁試拍 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器內就是真的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
 | 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音拍、逐字標對錯；考試干焦看漢羅，10 句算分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；記錄存佇你家己的瀏覽器 |
 | 聽寫練習 | [/try/#listen](https://taigi.anatomind.com/try/#listen) | 聽教典例句原音，用網頁試拍拍出漢羅抑是羅馬字 |
-| 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 佮白話字 POJ（連讀變調、輕聲、點字換讀音），POJ／TL 嘛會當倒轉漢字；附用字佮文法提示 |
+| 漢羅轉換・台語發音 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 佮白話字 POJ（連讀變調、輕聲、點字換讀音），閣會使用台語語音合成唸出來（逐句、整篇，瀏覽器本機合成，[說明](https://taigi.anatomind.com/guide.html#/tts)）；POJ／TL 嘛會當倒轉漢字；附用字佮文法提示 |
 | 寫作檢查 | [/check/](https://taigi.anatomind.com/check/) | 台羅、白話字、漢羅攏會用得：檢查拼音系統、調號、音節、連字符、推薦用字佮華語直譯，逐項有建議 |
 | 檢定練習 | [/study/](https://taigi.anatomind.com/study/) | 推薦用字選擇、華語→台語造句、變調練習、弱點複習（間隔重複）、學習單列印；進度會當匯出備份 |
 | 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 拍台語詞抑是華語意思，揣出 TL、POJ 佮教典例句 |
@@ -245,7 +245,7 @@ tests/         pytest 測試（tests/js/ 是網頁練習的 node 測試）
 | 網頁試打 | [/try/](https://taigi.anatomind.com/try/) | 免安裝，瀏覽器裡就是真正的 Rime 引擎（WebAssembly），精簡字典約 4.5 萬詞 |
 | 練習・考試 | [/try/#practice](https://taigi.anatomind.com/try/#practice) | 看讀音打字、逐字標示對錯；考試只看漢羅，10 句計分；題目有例句庫、詞語、閩南語維基百科／維基文庫、自訂文章；紀錄存在你自己的瀏覽器 |
 | 聽寫練習 | [/try/#listen](https://taigi.anatomind.com/try/#listen) | 聽教典例句原音，用網頁試打打出漢羅或羅馬字 |
-| 漢羅⇄羅馬字轉換 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 與白話字 POJ（連讀變調、輕聲、點字換讀音），也能把 POJ／TL 轉回漢字；附用字與文法提示 |
+| 漢羅轉換・台語發音 | [/convert/](https://taigi.anatomind.com/convert/) | 漢羅轉台羅 TL 與白話字 POJ（連讀變調、輕聲、點字換讀音），還能用台語語音合成唸出來（逐句或整篇，瀏覽器本機合成）；也能把 POJ／TL 轉回漢字；附用字與文法提示 |
 | 寫作檢查 | [/check/](https://taigi.anatomind.com/check/) | 台羅、白話字、漢羅都能用：檢查拼音系統、調號、音節、連字號、推薦用字與華語直譯，逐項給建議 |
 | 檢定練習 | [/study/](https://taigi.anatomind.com/study/) | 推薦用字選擇、華語→台語造句、變調練習、弱點複習（間隔重複）、學習單列印；進度可匯出備份 |
 | 詞彙查詢 | [/vocab/](https://taigi.anatomind.com/vocab/) | 輸入台語詞或華語意思，查出 TL、POJ 與教典例句 |

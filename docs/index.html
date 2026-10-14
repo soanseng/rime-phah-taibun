@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>寫台文 Siá Tâi-bûn｜台語輸入法 RIME：白話字 POJ・台羅 TL</title>
     <meta name="description" content="寫台文 Siá Tâi-bûn｜免費開源 RIME 台語輸入法：白話字 POJ、台羅 TL 混打，聲調可省略，漢羅輸出、注音反查。Windows／macOS／Linux／Android 都能用。" />
-    <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,RIME 台語輸入法,Rime 輸入法,白話字輸入法,POJ 輸入法,台語羅馬字,台羅輸入法,TL 輸入法,臺灣台語輸入法,漢羅輸入,漢羅混寫,台語打字,台語鍵盤,教羅,教會羅馬字,Pe̍h-ōe-jī,Peh-oe-ji,Tâi-gí,Tai-gi,Tâi-bûn,Hàn-lô,Tâi-lô,Lô-má-jī,siá-jī,寫台語,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,寫台文,Siá Tâi-bûn" />
+    <meta name="keywords" content="台語輸入法,臺語輸入法,台文輸入法,RIME 台語輸入法,Rime 輸入法,白話字輸入法,POJ 輸入法,台語羅馬字,台羅輸入法,TL 輸入法,臺灣台語輸入法,漢羅輸入,漢羅混寫,台語打字,台語鍵盤,教羅,教會羅馬字,Pe̍h-ōe-jī,Peh-oe-ji,Tâi-gí,Tai-gi,Tâi-bûn,Hàn-lô,Tâi-lô,Lô-má-jī,siá-jī,寫台語,意傳台語輸入法,教育部台語輸入法,信望愛台語輸入法,ChhoeTaigi,iTaigi,寫台文,Siá Tâi-bûn,台語發音,台語發音工具,台語語音合成,台語念出來,台語朗讀" />
     <meta name="author" content="Soan Seng" />
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <link rel="canonical" href="https://taigi.anatomind.com/" />
@@ -94,6 +94,7 @@
               "漢羅／全羅輸出，TL／POJ 皆可切換",
               "整句輸入，中途 Tab 挑字",
               "注音反查：從華語查台語",
+              "台語發音：漢羅／TL／POJ 文字用語音合成唸出來（網頁工具，瀏覽器本機合成）",
               "228,763 詞條，7 個語料庫詞頻",
               "Windows／macOS／Linux／Android（Trime）"
             ],
@@ -150,6 +151,14 @@
               },
               {
                 "@type": "Question",
+                "name": "可以把台語文字唸出來（台語發音）嗎？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以。到「漢羅轉換・台語發音」頁勾「🔊 唸予我聽」，漢羅、台羅 TL、白話字 POJ 都能一句一句或整篇唸出來。語音在瀏覽器本機合成（Meta MMS-TTS 閩南語模型，CC BY-NC 4.0 非商用），第一次下載約 30 MB 模型並存在瀏覽器，之後通常不必再下載。"
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "寫台文是原本的拍台文嗎？和 PhahTaigi 有關係嗎？",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -188,7 +197,7 @@
           ><div class="nav-group"
             ><button class="nav-group-btn" type="button" aria-expanded="false" aria-controls="nav-tools">工具</button
             ><div class="nav-menu" id="nav-tools"
-              ><a href="try/">網頁試拍</a><a href="convert/">漢羅⇄羅馬字轉換</a><a href="check/">寫作檢查</a><a href="vocab/">詞彙查詢</a><a href="grammar/">文法筆記</a></div
+              ><a href="try/">網頁試拍</a><a href="convert/">漢羅轉換・台語發音</a><a href="check/">寫作檢查</a><a href="vocab/">詞彙查詢</a><a href="grammar/">文法筆記</a></div
             ></div
           ><div class="nav-group"
             ><button class="nav-group-btn" type="button" aria-expanded="false" aria-controls="nav-study">檢定</button
@@ -223,6 +232,7 @@
                 href="https://github.com/soanseng/rime-phah-taibun/releases"
                 >下載安裝包</a
               ><a class="btn btn-secondary" href="try/">免安裝，網頁試拍</a
+              ><a class="btn btn-secondary" href="convert/#tts">🔊 台語唸予你聽</a
               ><a class="btn btn-secondary" href="guide.html">看使用說明</a>
             </div>
             <dl class="hero-facts">
@@ -271,6 +281,7 @@
           ><a href="#install">我要在 Android 打台文</a
           ><a href="try/#practice">我想練習拍台文</a
           ><a href="convert/">我想共漢羅轉做羅馬字</a
+          ><a href="convert/#tts">我想聽台語發音（唸出來）</a
           ><a href="vocab/">我想查台語詞</a>
         </div>
       </section>
@@ -343,6 +354,41 @@
           </ul>
         </div>
       </section>
+      <section class="section" id="tts">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">台語發音・語音合成</p>
+            <h2>
+              寫好的台語，唸予你聽。<span class="pojo" lang="nan-Latn-tailo">Liām--tshut-lâi</span>
+            </h2>
+            <p>
+              毋知影按怎讀？貼漢羅、台羅 TL 抑是白話字 POJ，台語語音合成照讀音唸出來——會使一句一句聽，嘛會使規篇唸。
+              語音佇你的瀏覽器本機合成，文字毋會傳出去；免安裝、免註冊、免費。
+            </p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="marker marker-green">聽</span>
+              <h3>漢羅、TL、POJ 攏會唸</h3>
+              <p>先用輸入法仝一套詞典轉做讀音，多音字點一下就換，唸法綴咧改。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-blue">句</span>
+              <h3>一句一句，抑是規篇</h3>
+              <p>逐句有 ▶ 會使重聽；文章長嘛袂卡，頭一句好就先放。</p>
+            </article>
+            <article class="feature-card">
+              <span class="marker marker-yellow">機</span>
+              <h3>瀏覽器本機合成</h3>
+              <p>頭一擺下載約 30 MB 語音模型，存佇瀏覽器，後擺通常免閣等。</p>
+            </article>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="convert/#tts">🔊 開轉換頁唸看覓</a
+            ><a class="btn btn-secondary" href="guide.html#/tts">原理、授權佮限制</a>
+          </div>
+        </div>
+      </section>
       <section class="section" id="tools">
         <div class="container">
           <div class="section-heading">
@@ -351,7 +397,7 @@
               一套詞典，拍、練、讀、查攏佇遮。<span class="pojo" lang="nan-Latn-tailo">Kang-kū</span>
             </h2>
             <p>
-              寫台文毋但是輸入法：仝一个網站閣有免安裝的網頁試拍、漢羅⇄羅馬字轉換、寫作檢查、詞彙查詢、文法筆記，佮準備台語檢定的練習工具。
+              寫台文毋但是輸入法：仝一个網站閣有免安裝的網頁試拍、漢羅轉換佮台語發音（唸出來）、寫作檢查、詞彙查詢、文法筆記，佮準備台語檢定的練習工具。
               逐个功能攏用仝一套詞典佮轉換核心——你佇轉換頁看著的讀音，就是輸入法候選看著的讀音。
             </p>
           </div>
@@ -373,8 +419,8 @@
             </article>
             <article class="feature-card">
               <span class="marker marker-yellow">讀</span>
-              <h3><a href="convert/">漢羅⇄羅馬字轉換</a></h3>
-              <p>漢羅文章轉台羅 TL 佮白話字 POJ（連讀變調、輕聲），POJ／TL 嘛會當倒轉漢字。</p>
+              <h3><a href="convert/">漢羅轉換・台語發音</a></h3>
+              <p>漢羅文章轉台羅 TL 佮白話字 POJ（連讀變調、輕聲），閣會使用台語語音合成唸出來；POJ／TL 嘛會當倒轉漢字。</p>
             </article>
             <article class="feature-card">
               <span class="marker marker-red">改</span>
@@ -940,7 +986,7 @@ cd rime-phah-taibun
               Linux 佮 Android，Windows 有時仔爾爾。
             </p>
             <p>
-              另外一爿，真濟台語文學冊誠讚：漢羅看有，拼音煞袂曉——想學，著愛一字一字查；顛倒來看 POJ、TL 的時，閣想欲緊知影意思。所以我共輸入法的字典提來，閣做幾个網頁工具：<a href="convert/">漢羅⇄羅馬字轉換</a>、<a href="vocab/">詞彙查詢</a>、<a href="grammar/">文法筆記</a>，佮會當練習、考試的<a href="try/">網頁試拍</a>。橫直，遮攏是我任性、做予我一个人用的。
+              另外一爿，真濟台語文學冊誠讚：漢羅看有，拼音煞袂曉——想學，著愛一字一字查；顛倒來看 POJ、TL 的時，閣想欲緊知影意思。所以我共輸入法的字典提來，閣做幾个網頁工具：<a href="convert/">漢羅轉換・台語發音</a>、<a href="vocab/">詞彙查詢</a>、<a href="grammar/">文法筆記</a>，佮會當練習、考試的<a href="try/">網頁試拍</a>。橫直，遮攏是我任性、做予我一个人用的。
             </p>
             <figure class="creator-art">
               <img
@@ -1017,6 +1063,12 @@ cd rime-phah-taibun
               <p>
                 不一樣。寫台文只把有用的詞庫資料納入建置流程；操作仍維持寫台文設計：數字鍵打聲調，候選選字按
                 <kbd>Tab</kbd> 後用 <kbd>asdfghjkl;</kbd>，符號選單按反引號。
+              </p>
+            </details>
+            <details>
+              <summary>可以把台語文字唸出來（台語發音）嗎？</summary>
+              <p>
+                可以。到<a href="convert/#tts">「漢羅轉換・台語發音」</a>頁勾「🔊 唸予我聽」，漢羅、台羅 TL、白話字 POJ 都能一句一句或整篇唸出來。語音在瀏覽器本機合成（Meta MMS-TTS 閩南語模型，CC BY-NC 4.0 非商用），第一次下載約 30 MB 模型並存在瀏覽器，之後通常不必再下載。說明見<a href="guide.html#/tts">台語發音・語音合成</a>。
               </p>
             </details>
             <details>

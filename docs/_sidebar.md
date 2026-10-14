@@ -1,7 +1,8 @@
 - [首頁](https://taigi.anatomind.com/)
 - [網頁試拍（免安裝）](https://taigi.anatomind.com/try/)
 - 網頁工具
-  - [漢羅⇄羅馬字轉換](https://taigi.anatomind.com/convert/)
+  - [漢羅轉換・台語發音](https://taigi.anatomind.com/convert/)
+  - [台語發音・語音合成說明](tts.md)
   - [寫作檢查](https://taigi.anatomind.com/check/)
   - [檢定練習](https://taigi.anatomind.com/study/)
   - [詞彙查詢](https://taigi.anatomind.com/vocab/)
