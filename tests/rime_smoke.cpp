@@ -887,6 +887,18 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "tone8_chioh8");
   api->clear_composition(session);
 
+  // LKK lo readings (in, nih): hanzi sharing the reading must stay
+  // selectable next to the romanized ★ candidate (𪜶 in1, 𥍉 nih4).
+  api->simulate_key_sequence(session, "in1");
+  print_state(api, session, "lo_reading_in1");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "nih4");
+  print_state(api, session, "lo_reading_nih4");
+  api->clear_composition(session);
+  api->simulate_key_sequence(session, "kah4");
+  print_state(api, session, "lo_reading_kah4");
+  api->clear_composition(session);
+
   // Remaining checked codas at tone 4 (-p: 接 tsiap4/chiap, -k: 積
   // tsik4/chik) and the landing-page promise 食 tsiah8/chiah (tone 8, -h).
   api->simulate_key_sequence(session, "tsiap");

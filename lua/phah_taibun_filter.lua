@@ -122,10 +122,12 @@ local function apply_hanlo_rules_group(text, roman_group)
     return text, false
   end
 
-  -- Single character: check directly
+  -- Single character: check directly. A lo-type reading only romanizes
+  -- non-CJK text; distinct hanzi sharing that reading (因/𪜶 in1) must stay
+  -- distinct, or the uniquifier collapses them into one romanized candidate.
   if #chars == 1 then
     local roman_is_lo, formatted = roman_syllable_is_lo(roman_group)
-    if is_lo_type(text) or roman_is_lo then
+    if is_lo_type(text) or (roman_is_lo and not is_cjk_char(text)) then
       return formatted, true
     end
     return text, false
@@ -222,7 +224,7 @@ end
 function M.func(input, env)
   local mode = get_output_mode(env)
 
-  for cand in input:iter() do
+  local function emit(cand)
     local text = cand.text or ""
     local comment = cand.comment or ""
 
@@ -358,6 +360,26 @@ function M.func(input, env)
         yield(cand)
       end
     end
+  end
+
+  -- LKK lo reading (in1 → in): the romanized form goes first, once, ahead of
+  -- the first hanzi carrying that reading; the hanzi themselves stay
+  -- selectable. The uniquifier drops the dictionary's own copy of the form.
+  local lo_emitted = {}
+  for cand in input:iter() do
+    local text = cand.text or ""
+    local raw_roman = (cand.comment or ""):match("^%s*%[([^%]]+)%]%s*$") or ""
+    if data_mod and raw_roman ~= "" and utf8_len(text) == 1 and is_cjk_char(text) then
+      local roman_is_lo, formatted = roman_syllable_is_lo(raw_roman)
+      if roman_is_lo and not lo_emitted[formatted] then
+        lo_emitted[formatted] = true
+        local lo_cand = Candidate(cand.type, cand.start, cand._end, formatted, cand.comment)
+        lo_cand.quality = cand.quality
+        lo_cand.preedit = cand.preedit
+        emit(lo_cand)
+      end
+    end
+    emit(cand)
   end
 end
 

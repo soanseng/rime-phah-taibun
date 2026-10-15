@@ -842,6 +842,23 @@ def test_checked_tone_poj_toned_input_visibility(real_rime_states):
         assert target in texts[:10], (label, texts)
 
 
+def test_lo_reading_keeps_hanzi_selectable(real_rime_states):
+    """LKK lo 讀音 (in/nih/kah) 的同音漢字袂使予 filter 改做羅馬字閣去予 uniquifier 合併.
+
+    舊錯誤: in1 干焦賰一个候選 "in"(𪜶 揀袂著), nih4 干焦賰 "nih"(𥍉 揀袂著).
+    LKK 預設仝款: 羅馬字排第一, 而且干焦一擺 (uniquifier 收掉字典本身彼筆).
+    """
+    for label, roman, target in (
+        ("lo_reading_in1", "in", "𪜶"),
+        ("lo_reading_nih4", "nih", "𥍉"),
+        ("lo_reading_kah4", "kah", "佮"),
+    ):
+        texts = [c["text"] for c in real_rime_states[label]["candidates"]]
+        assert texts[0] == roman, (label, texts)
+        assert texts.count(roman) == 1, (label, texts)
+        assert target in texts[:10], (label, texts)
+
+
 def test_telex_x_tone_key_resolves_through_processor(real_rime_states):
     """x 調鍵走完整 processor 路徑(攔截→normalize→數字調查找):
     舒聲 x→1(ix→i1 伊)、促聲尾 x→4(ahx→ah4 鴨)、

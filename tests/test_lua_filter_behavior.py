@@ -22,7 +22,8 @@ def run_lua(script: str) -> str:
     return result.stdout
 
 
-def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
+def test_lo_reading_puts_lkk_roman_form_before_han_candidate():
+    """的 [e5], LKK `ê: lo` → 羅馬字 ê 排頭前, 的 本身原在 (會使揀)."""
     script = textwrap.dedent(
         r"""
         package.path = "lua/?.lua;" .. package.path
@@ -33,6 +34,53 @@ def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
           end,
           format_romanization = function(roman)
             if roman == "e5" then return "ê" end
+            return roman
+          end,
+        }
+        function Candidate(type, start, end_pos, text, comment)
+          return { type = type, start = start, _end = end_pos, text = text, comment = comment, quality = 0 }
+        end
+        local yielded = {}
+        function yield(cand) table.insert(yielded, cand) end
+        local filter = require("phah_taibun_filter")
+        local input = {
+          iter = function()
+            local done = false
+            return function()
+              if done then return nil end
+              done = true
+              return Candidate("table", 0, 1, "的", " [e5]")
+            end
+          end
+        }
+        local env = { engine = { context = { get_option = function(_, _) return false end } } }
+        filter.func(input, env)
+        for _, cand in ipairs(yielded) do
+          print(cand.text .. "\t" .. cand.comment)
+        end
+        """
+    )
+
+    assert run_lua(script).strip().splitlines() == ["ê\t [ê]", "的\t [ê]"]
+
+
+def test_lo_reading_keeps_distinct_hanzi_candidates():
+    """LKK lo 讀音 (in → 他們) 不得把同音漢字攏改成羅馬字.
+
+    舊行為: 因/𪜶 讀 in1, 規則 `in: lo` 令兩个攏變做 "in", uniquifier 合併,
+    候選干焦賰一个 "in"——𪜶 無法度揀 (in1、nih4、tsit4 等 77 碼實測).
+    LKK 預設照舊: 羅馬字 "in" 排第一 (佇第一个同音漢字頭前補一擺).
+    """
+    script = textwrap.dedent(
+        r"""
+        package.path = "lua/?.lua;" .. package.path
+        package.loaded["phah_taibun_data"] = {
+          get_hanlo_type = function(word)
+            if word == "in" then return "lo" end
+            return nil
+          end,
+          format_romanization = function(roman)
+            if roman == "in1" then return "in" end
             return roman
           end,
         }
@@ -52,14 +100,18 @@ def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
           table.insert(yielded, cand)
         end
 
+        local items = {
+          Candidate("table", 0, 3, "因", " [in1]"),
+          Candidate("table", 0, 3, "𪜶", " [in1]"),
+          Candidate("table", 0, 3, "in", " [in1]"),
+        }
+        local pos = 0
         local filter = require("phah_taibun_filter")
         local input = {
           iter = function()
-            local done = false
             return function()
-              if done then return nil end
-              done = true
-              return Candidate("table", 0, 1, "的", " [e5]")
+              pos = pos + 1
+              return items[pos]
             end
           end
         }
@@ -73,12 +125,14 @@ def test_hanlo_rules_can_replace_han_candidate_by_roman_syllable():
 
         filter.func(input, env)
         for _, cand in ipairs(yielded) do
-          print(cand.text .. "\t" .. cand.comment)
+          print(cand.text)
         end
         """
     )
 
-    assert run_lua(script).strip() == "ê\t [ê]"
+    texts = run_lua(script).split()
+    assert texts[0] == "in"
+    assert texts[1:3] == ["因", "𪜶"]
 
 
 def test_toneless_single_token_full_coverage_candidate_ranked_first():
