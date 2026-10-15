@@ -96,6 +96,27 @@ class TestComputeWeightsIdentity:
         alone = compute_weights(entries)
         assert weighted[0]["weight"] > alone[0]["weight"]
 
+    def test_implicit_tone_kip_input_still_gets_identity_boost(self):
+        # ChhoeTaigi KipInput leaves tone 1/4 unmarked (伊 "i"); the identity
+        # TSV and the rime key are numeric (i1). Same reading, same identity.
+        entry = {"hanlo": "伊", "rime_key": "i1", "kip_input": "i", "source": "moe"}
+        rival = {"hanlo": "醫", "rime_key": "i1", "kip_input": "i", "source": "moe"}
+        weighted = compute_weights([entry, rival], identity_freq={("伊", "i1"): 880})
+        by_han = {e["hanlo"]: e["weight"] for e in weighted}
+        assert by_han["伊"] > by_han["醫"], by_han
+
+    def test_implicit_tone_kip_input_still_gets_tl_corpus_boost(self):
+        entry = {"hanlo": "因為", "rime_key": "in1 ui7", "kip_input": "in-ui7", "source": "moe"}
+        weighted = compute_weights([entry], corpus_freq={"in1-ui7": 1000}, identity_freq={})
+        alone = compute_weights([entry])
+        assert weighted[0]["weight"] > alone[0]["weight"]
+
+    def test_light_tone_entry_keyed_with_double_hyphen(self):
+        entry = {"hanlo": "著無", "rime_key": "tioh8  bo5", "kip_input": "tioh8--bo5", "source": "moe"}
+        weighted = compute_weights([entry], corpus_freq={"tioh8--bo5": 300}, identity_freq={})
+        alone = compute_weights([entry])
+        assert weighted[0]["weight"] > alone[0]["weight"]
+
 
 class TestInvariantKeepsHomophoneOrder:
     def test_long_word_raise_keeps_within_code_ordering_strict(self):

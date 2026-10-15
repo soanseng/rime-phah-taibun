@@ -110,6 +110,7 @@ class TestTlToPojCapitalized:
     def test_toned_ing_needs_syllable_boundary(self):
         assert tl_to_poj("sīnga") == "sīnga"
 
+
 class TestTlToPojDiacriticPlacement:
     """Diacritic input must land on the modern-POJ mark position, matching
     lua/phah_taibun_data.lua poj_fix_diacritics (狗公會曉學台語 §21 /
@@ -179,6 +180,19 @@ class TestPojToTl:
 
     def test_oe_to_ue(self):
         assert poj_to_tl("koe") == "kue"
+
+    def test_toned_eng_ek_converted(self):
+        # Numeric-tone POJ (pojbh, NMTL, ChhoeTaigi PojInput) puts the digit
+        # right after the final: seng5 / tek8-pat4 must still map.
+        assert poj_to_tl("seng5") == "sing5"
+        assert poj_to_tl("tek8-pat4") == "tik8-pat4"
+        assert poj_to_tl("chheng5-kheng5") == "tshing5-khing5"
+
+    def test_ascii_capital_n_nasal(self):
+        # ASCII POJ marks nasality with a capital N (khoaN3 = khuànn).
+        assert poj_to_tl("khoaN3") == "khuann3"
+        assert poj_to_tl("chhin-chhiuN7") == "tshin-tshiunn7"
+        assert poj_to_tl("H1N1") == "h1n1"
 
     def test_empty(self):
         assert poj_to_tl("") == ""

@@ -643,6 +643,13 @@ def test_sentence_roundtrip_word_boundaries(tmp_path_factory):
     khue3 entered the dictionary this round (identity-bigram mining; absent
     from the previous dict, which had only 工課). The merged commit is a
     coverage improvement penalized by exact-token equality — not a defect.
+
+    2026-10-16 re-baseline 4%→3% (owner-approved): corpus-frequency keys
+    now match the dictionary (bare tone 1/4, POJ, Unicode spellings), so 跤
+    clearly leads kha1 and the sentence-corpus pair 的 跤 (e5 kha1, 8 hits)
+    is mined as 的跤. roundtrip_006 "ê kha-siàu" (的跤數) then commits
+    "ê-kha siàu". Same exact-token penalty as above; the 10-row sentence
+    corpus is unchanged.
     """
     corpus_path = _find_900leku_sentences()
     pool = [

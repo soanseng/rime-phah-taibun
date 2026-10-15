@@ -11,6 +11,11 @@ from collections import Counter
 from math import log10
 from pathlib import Path
 
+try:
+    from scripts.convert_chhoetaigi import normalize_implicit_tone as _implicit_tone
+except ModuleNotFoundError:
+    from convert_chhoetaigi import normalize_implicit_tone as _implicit_tone
+
 # YAML header lines to skip when parsing dict data
 _YAML_HEADER_PREFIXES = ("---", "name:", "version:", "sort:", "use_preset_vocabulary:", "...")
 
@@ -80,16 +85,46 @@ def extract_bigrams(sentences: list[str], min_count: int = 1) -> Counter:
         min_count: Minimum count threshold (kept for API, filtering done elsewhere).
 
     Returns:
-        Counter mapping ``(word1, word2)`` tuples (tone-stripped) to counts.
+        Counter mapping ``(word1, word2)`` token tuples to counts. Tones are
+        kept: a toned token's reading is part of its word identity.
     """
     bigrams: Counter = Counter()
     for sentence in sentences:
         tokens = sentence.strip().split()
-        stripped = [_strip_tones(t) for t in tokens]
-        for i in range(len(stripped) - 1):
-            if stripped[i] and stripped[i + 1]:
-                bigrams[(stripped[i], stripped[i + 1])] += 1
+        for i in range(len(tokens) - 1):
+            bigrams[(tokens[i], tokens[i + 1])] += 1
     return bigrams
+
+
+# A reading identifies its hanzi only when the top row clearly outweighs the
+# next one (same K as the long-word invariant); otherwise the "heaviest"
+# pick is a coin flip between homophones (衫/三 sann1) and fabricates words.
+_PICK_MARGIN = 1.2
+
+
+def _pick_entry(word: str, reverse_index: dict[str, list[dict]]) -> dict | None:
+    """Dictionary row a single-syllable corpus token unambiguously names.
+
+    A toned token (tso3) only matches rows carrying exactly that reading;
+    the toneless index would hand back a heavier homophone (曹 tso5) and
+    fabricate an unattested word identity. Among the matching rows the top
+    one must outweigh the runner-up by _PICK_MARGIN, else None. Multi-
+    syllable tokens (bin5-kok4) are left to the identity-bigram path:
+    pairing them heuristically yields 民國狗-style junk.
+    """
+    if "-" in word:
+        return None
+    # Bare syllables are the inherent tone 1/4 (pojbh/POJ write "kha" for
+    # kha1), as in the dictionary and the corpus-frequency merge.
+    toned = _implicit_tone(word)
+    candidates = [
+        c for c in reverse_index.get(_normalize_key(word), []) if " ".join(c.get("rime_key", "").split()) == toned
+    ]
+    if not candidates:
+        return None
+    if len(candidates) > 1 and candidates[0]["weight"] < _PICK_MARGIN * candidates[1]["weight"]:
+        return None
+    return candidates[0]
 
 
 def generate_phrase_entries(
@@ -111,25 +146,43 @@ def generate_phrase_entries(
     Returns:
         List of dicts with ``hanlo``, ``rime_key``, ``weight`` keys.
     """
-    entries = []
+    # One phrase per toneless pair (the volume the miner always had: more
+    # phrases merge corpus words and cost word-boundary quality). Each
+    # spelling resolves to an identity (做的/tso3 e5, never 曹的 when the
+    # corpus says tso3); the dominant identity wins and is thresholded and
+    # weighted by its own count — spellings of the same identity (i / i1)
+    # add up, homophones (tso5) never credit it.
+    by_pair: dict[tuple[str, str], Counter] = {}
     for (w1, w2), count in bigrams.items():
-        if count < min_count:
+        by_pair.setdefault((_normalize_key(w1), _normalize_key(w2)), Counter())[(w1, w2)] += count
+
+    entries = []
+    for spellings in by_pair.values():
+        identities: Counter = Counter()
+        tones: dict[tuple[str, str], int] = {}
+        for (w1, w2), count in spellings.items():
+            best1 = _pick_entry(w1, reverse_index)
+            best2 = _pick_entry(w2, reverse_index)
+            if best1 is None or best2 is None:
+                continue
+            # Prefer the toned dict codes so the new entry keeps 詞身份 and
+            # diacritic-able comments; fall back to stripped tokens for
+            # hand-built indexes (tests) that carry no toned form.
+            key1 = best1.get("rime_key") or w1
+            key2 = best2.get("rime_key") or w2
+            identity = (best1["text"] + best2["text"], f"{key1} {key2}")
+            identities[identity] += count
+            tones[identity] = max(tones.get(identity, 0), len(re.findall(r"[1-9]", w1 + w2)))
+        if not identities:
             continue
-        if w1 not in reverse_index or w2 not in reverse_index:
+        # Most attested identity; on ties prefer the one seen with tones.
+        identity, count = max(identities.items(), key=lambda kv: (kv[1], tones[kv[0]]))
+        if count < min_count or identity in existing_keys:
             continue
-        best1 = reverse_index[w1][0]
-        best2 = reverse_index[w2][0]
-        hanlo = best1["text"] + best2["text"]
-        # Prefer the toned dict codes so the new entry keeps 詞身份 and
-        # diacritic-able comments; fall back to stripped tokens for
-        # hand-built indexes (tests) that carry no toned form.
-        key1 = best1.get("rime_key") or w1
-        key2 = best2.get("rime_key") or w2
-        rime_key = f"{key1} {key2}"
-        if (hanlo, rime_key) in existing_keys:
-            continue
-        weight = int(base_weight * (1.0 + log10(1 + count) * 0.3))
-        entries.append({"hanlo": hanlo, "rime_key": rime_key, "weight": weight})
+        hanlo, rime_key = identity
+        entries.append(
+            {"hanlo": hanlo, "rime_key": rime_key, "weight": int(base_weight * (1.0 + log10(1 + count) * 0.3))}
+        )
     return entries
 
 

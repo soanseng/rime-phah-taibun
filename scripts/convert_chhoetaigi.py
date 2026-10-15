@@ -95,12 +95,15 @@ def clean_hanlo_text(text: str) -> str:
 
 
 def has_word_content(text: str) -> bool:
-    """Return whether hanlo text carries at least one letter or CJK ideograph.
+    """Return whether hanlo text carries a letter/ideograph and no PUA glyph.
 
-    Source corpora leak punctuation/placeholder-only rows ("?", "○", "-",
-    private-use codepoints). They match real readings and pollute sentence
-    composition, so they are dropped at import.
+    Source corpora leak punctuation/placeholder-only rows ("?", "○", "-")
+    and font-specific private-use glyphs (無\\ue35c款). They match real
+    readings, render as tofu and pollute composition, so they are dropped at
+    import — including PUA mixed with real hanzi.
     """
+    if any(unicodedata.category(ch) == "Co" for ch in text):
+        return False
     return any(unicodedata.category(ch).startswith("L") for ch in text)
 
 
@@ -629,14 +632,20 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Error: No CSV files found in {data_dir}", file=sys.stderr)
         sys.exit(1)
 
-    # Merge corpus frequency files
+    # Merge corpus frequency files under canonical numeric TL keys, matching
+    # dictionary readings. Sources spell readings as ASCII POJ (NMTL/Ungian:
+    # chhin-chhiuN7), Unicode TL (KipSutian: tshin-tshiūnn) or numeric TL
+    # with bare tone 1/4 ("in"). poj_to_tl leaves TL unchanged (diacritics
+    # become digits), so one chain fits all. Only weighting is keyed this
+    # way; phrase/light-tone miners keep reading the raw tables.
     corpus_freq: dict[str, int] | None = None
     if args.corpus_freq:
         corpus_freq = {}
         for freq_path in args.corpus_freq:
             freqs = load_corpus_frequencies(freq_path)
             for word, count in freqs.items():
-                corpus_freq[word] = corpus_freq.get(word, 0) + count
+                key = normalize_implicit_tone(poj_to_tl(word))
+                corpus_freq[key] = corpus_freq.get(key, 0) + count
 
     identity_freq: dict[tuple[str, str], int] | None = None
     if args.identity_freq:

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import unicodedata
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -131,7 +132,8 @@ def parse_stti_ods(path: Path) -> tuple[list[SttiEntry], dict[str, int]]:
 
         for han, lo in pairs:
             code = romanization_to_rime_key(lo)
-            if code is None:
+            # PUA glyphs are font-specific (render as tofu elsewhere).
+            if code is None or any(unicodedata.category(ch) == "Co" for ch in han):
                 stats["skipped_invalid"] += 1
                 continue
             key = (han, code)

@@ -188,15 +188,19 @@ def compute_weights(
         overlap_bonus = 1.1 ** (len(key_sources[key]) - 1)
 
         # Corpus frequency boost: log-scale boost from observed usage.
+        # Look up by the canonical numeric reading (the rime key, hyphenated;
+        # a light-tone double space becomes "--"), not raw KipInput: ChhoeTaigi
+        # leaves tones 1/4 unmarked ("in-ui7"), corpus tables spell "in1-ui7".
         corpus_boost = 1.0
         kip = entry.get("kip_input", "")
-        identity_count = identity_freq.get((entry["hanlo"], kip), 0)
+        reading = "-".join(entry["rime_key"].split(" "))
+        identity_count = identity_freq.get((entry["hanlo"], reading), 0)
         if identity_count > 0:
             corpus_boost = 1.0 + math.log10(1 + identity_count) * CORPUS_BOOST_COEFF
         elif kip and " ".join(entry["rime_key"].split()) in codes_with_identity:
             corpus_boost = 1.0  # identity data exists for this code; word unseen
-        elif kip and kip in corpus_freq:
-            corpus_boost = 1.0 + math.log10(1 + corpus_freq[kip]) * CORPUS_BOOST_COEFF
+        elif kip and reading in corpus_freq:
+            corpus_boost = 1.0 + math.log10(1 + corpus_freq[reading]) * CORPUS_BOOST_COEFF
 
         entry["weight"] = int(base * length_mod * overlap_bonus * corpus_boost)
         result.append(entry)

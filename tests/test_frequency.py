@@ -124,7 +124,7 @@ class TestComputeWeightsWithCorpus:
 
     def test_corpus_boost(self):
         entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "kip_input": "tsiah8-png7"},
+            {"hanlo": "食飯", "rime_key": "tsiah8 png7", "source": "itaigi", "kip_input": "tsiah8-png7"},
         ]
         corpus_freq = {"tsiah8-png7": 50}
         result = compute_weights(entries, corpus_freq=corpus_freq)

@@ -316,6 +316,20 @@ class TestConvertPipeline:
         assert "𤺪呢" in content
         assert "á無" in content
 
+    def test_drops_rows_with_private_use_characters(self, tmp_path):
+        """PUA glyphs (font-specific, e.g. U+E35C in 無?款) render as tofu;
+        rows containing one are dropped even when mixed with real hanzi."""
+        csv_file = tmp_path / "itaigi.csv"
+        csv_file.write_text(
+            "KipInput,HanLoTaibunKip,HoaBun\nbo5-siang7-khuan2,無\ue35c款,不一樣\nbo5,無,沒有\n",
+            encoding="utf-8",
+        )
+        output = tmp_path / "output.dict.yaml"
+        convert_chhoetaigi(itaigi_paths=[csv_file], taihoa_paths=[], output_path=output)
+        content = output.read_text(encoding="utf-8")
+        assert "\ue35c" not in content
+        assert "無\tbo5\t" in content
+
 
 class TestConvertWithCorpusFreq:
     """Corpus frequency data should boost weights for matching entries."""
@@ -565,6 +579,40 @@ class TestConvertCli:
         out_dir = tmp_path / "output"
         main(["--input", str(tmp_path), "--output", str(out_dir)])
         assert (out_dir / "phah_taibun.dict.yaml").exists()
+
+    def test_cli_corpus_keys_in_any_spelling_match_numeric_entries(self, tmp_path):
+        """Corpus tables spell one reading many ways: bare tone 1/4 ("in"),
+        numeric TL ("in1"), ASCII POJ (chhin-chhiuN7), Unicode TL (tshin-tshiūnn).
+        Each must boost the same dictionary entry, and counts add up."""
+        db_dir = tmp_path / "ChhoeTaigiDatabase"
+        db_dir.mkdir()
+        (db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv").write_text(
+            "KipInput,HanLoTaibunKip,HoaBun\nin,因,因\ntshin-tshiunn7,親像,好像\n", encoding="utf-8"
+        )
+
+        def tsv(name, text):
+            path = tmp_path / f"{name}.tsv"
+            path.write_text(text, encoding="utf-8")
+            return path
+
+        bare, numeric = tsv("bare", "in\t500\n"), tsv("numeric", "in1\t500\n")
+        tl = tsv("tl", "tshin1-tshiunn7\t500\n")
+        poj, uni = tsv("poj", "Chhin-chhiuN7\t500\n"), tsv("uni", "tshin-tshiūnn\t500\n")
+
+        def weight(word, *freq_files):
+            out_dir = tmp_path / f"out{len(list(tmp_path.iterdir()))}"
+            args = ["--input", str(tmp_path), "--output", str(out_dir)]
+            if freq_files:
+                args += ["--corpus-freq", *map(str, freq_files)]
+            main(args)
+            for line in (out_dir / "phah_taibun.dict.yaml").read_text(encoding="utf-8").splitlines():
+                if line.startswith(f"{word}\t"):
+                    return int(line.split("\t")[2])
+            raise AssertionError(f"{word} missing")
+
+        assert weight("因", bare) == weight("因", numeric) > weight("因")
+        assert weight("因", bare, numeric) > weight("因", numeric)
+        assert weight("親像", poj) == weight("親像", uni) == weight("親像", tl) > weight("親像")
 
     def test_cli_auto_discovers_generic_csvs(self, tmp_path):
         """CLI should auto-discover additional ChhoeTaigi CSVs."""

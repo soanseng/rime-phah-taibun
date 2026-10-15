@@ -3,6 +3,7 @@
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 try:
@@ -60,6 +61,8 @@ def validate_dict_format(dict_path: Path) -> list[str]:
             continue
         if EDITORIAL_MARKER_RE.search(parts[0]):
             errors.append(f"Line {i}: source editorial marker in candidate '{parts[0]}'")
+        if any(unicodedata.category(ch) == "Co" for ch in parts[0]):
+            errors.append(f"Line {i}: private-use character in candidate {parts[0]!r}")
         if not RIME_KEY_RE.fullmatch(parts[1]):
             errors.append(f"Line {i}: non-canonical Rime key '{parts[1]}'")
         bare = [syl for syl in parts[1].split() if not TONE_DIGIT_RE.search(syl)]

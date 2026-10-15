@@ -28,7 +28,7 @@ HEADER = [
 
 CONTENT_TMPL = (
     '<?xml version="1.0" encoding="UTF-8"?>'
-    '<office:document-content'
+    "<office:document-content"
     ' xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"'
     ' xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"'
     ' xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">'
@@ -141,6 +141,14 @@ class TestRowFiltering:
         assert entries == []
         assert stats["skipped_invalid"] == 1
 
+    def test_private_use_hanzi_skipped(self, tmp_path):
+        """A font-specific PUA glyph (\\ue705山) renders as tofu: skip, count."""
+        ods = tmp_path / "stti.ods"
+        make_ods(ods, [("100100", "白山", ["\ue705山"], ["pe̍h-suann"])])
+        entries, stats = parse_stti_ods(ods)
+        assert entries == []
+        assert stats["skipped_invalid"] == 1
+
     def test_duplicate_pairs_collapsed_within_source(self, tmp_path):
         ods = tmp_path / "stti.ods"
         row = ("100001", "110", ["110"], ["it it khòng"])
@@ -169,9 +177,7 @@ class TestTsvOutput:
             out,
         )
         assert count == 2
-        assert out.read_text(encoding="utf-8") == (
-            "人權\t人權\tjin5 khuan5\n110\t110\tit4 it4 khong3\n"
-        )
+        assert out.read_text(encoding="utf-8") == ("人權\t人權\tjin5 khuan5\n110\t110\tit4 it4 khong3\n")
 
 
 class TestCli:
@@ -182,6 +188,4 @@ class TestCli:
         make_ods(ods, [("100047", "人權", ["人權"], ["jîn-khuân", "jîn-kuân"])])
         out = tmp_path / "stti.tsv"
         main(["--input", str(ods), "--output", str(out)])
-        assert out.read_text(encoding="utf-8") == (
-            "人權\t人權\tjin5 khuan5\n人權\t人權\tjin5 kuan5\n"
-        )
+        assert out.read_text(encoding="utf-8") == ("人權\t人權\tjin5 khuan5\n人權\t人權\tjin5 kuan5\n")

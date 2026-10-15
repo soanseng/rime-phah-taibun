@@ -141,6 +141,10 @@ def poj_to_tl(poj_text: str) -> str:
         return poj_text
     result = poj_diacritics_to_tone_numbers(poj_text)
 
+    # ASCII POJ nasal: capital N after a lowercase final (khoaN3, chhiuN7);
+    # must run before lowercasing. Acronyms (H1N1) have no lowercase before N.
+    result = re.sub(r"(?<=[a-z])N(?=[1-9]?(?:$|[^A-Za-z]))", "nn", result)
+
     # Normalize to lowercase
     result = result.lower()
 
@@ -156,8 +160,9 @@ def poj_to_tl(poj_text: str) -> str:
     # Order matters: longer patterns first
     result = result.replace("chh", "tsh")
     result = result.replace("ch", "ts")
-    result = re.sub(r"eng\b", "ing", result)
-    result = re.sub(r"ek\b", "ik", result)
+    # Syllable-final eng/ek, with or without a numeric tone (seng5, tek8).
+    result = re.sub(r"eng(?=[1-9]?\b)", "ing", result)
+    result = re.sub(r"ek(?=[1-9]?\b)", "ik", result)
     result = result.replace("oa", "ua")
     result = result.replace("oe", "ue")
     return result

@@ -28,6 +28,16 @@ class TestValidateDictFormat:
         errors = validate_dict_format(dictfile)
         assert any("digitless" in error for error in errors)
 
+    def test_detects_private_use_character_in_candidate(self, tmp_path):
+        """PUA glyphs render as tofu without one specific font; any append
+        path (ChhoeTaigi, STTI, supplement, phrases) must not ship one."""
+        dictfile = tmp_path / "test.dict.yaml"
+        dictfile.write_text(
+            '---\nname: test\nversion: "0.1.0"\nsort: by_weight\n...\n\ue705山\tpeh4 suann1\t100\n', encoding="utf-8"
+        )
+        errors = validate_dict_format(dictfile)
+        assert any("private-use" in error for error in errors)
+
     def test_committed_dictionary_codes_all_toned(self):
         dictfile = Path(__file__).parents[1] / "schema" / "phah_taibun.dict.yaml"
         errors = validate_dict_format(dictfile)

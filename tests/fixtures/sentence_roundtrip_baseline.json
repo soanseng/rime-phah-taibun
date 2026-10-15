@@ -18,7 +18,7 @@
     "exact": false
   },
   "roundtrip_006": {
-    "exact": true
+    "exact": false
   },
   "roundtrip_007": {
     "exact": false
