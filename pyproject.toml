@@ -4,6 +4,7 @@ version = "0.11.0"
 description = "寫台文 — 基於 Rime 的台語輸入法方案，資料前處理工具"
 requires-python = ">=3.10"
 dependencies = [
+    "opencc>=1.4.2",
     "pyyaml>=6.0",
     "ruamel-yaml>=0.18",
 ]

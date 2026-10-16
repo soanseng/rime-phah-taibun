@@ -381,6 +381,71 @@ def test_baked_themes_render_candidates_and_comments_in_iansui(tmp_path: Path) -
         assert style["key_font"] == "symbol.ttf", f"{name} 鍵盤字型維持上游"
 
 
+_DISPLAY_KEYS = {"label", "name", "label_symbol", "preview"}
+
+
+def _display_strings(node: object, path: str = "") -> list[tuple[str, str]]:
+    """主題內使用者看會著的文字: label/name/label_symbol/preview、Enter 鍵文字、符號表分類名."""
+    out: list[tuple[str, str]] = []
+    if isinstance(node, dict):
+        is_symbol = node.get("type") == "SYMBOL"
+        for key, value in node.items():
+            here = f"{path}/{key}"
+            if isinstance(value, str) and (key in _DISPLAY_KEYS or path.endswith("/enter_labels")):
+                out.append((here, value))
+            elif is_symbol and key == "keys" and isinstance(value, list):
+                out += [(f"{here}[]", name) for item in value if isinstance(item, dict) for name in item]
+            else:
+                out += _display_strings(value, here)
+    elif isinstance(node, list):
+        for index, item in enumerate(node):
+            out += _display_strings(item, f"{path}[{index}]")
+    return out
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+@pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
+def test_apk_display_text_is_traditional_taiwan(tmp_path: Path) -> None:
+    """App 看會著的字攏愛台灣繁體 (2026-10-16 使用者要求): 上游主題 tongwenfeng 是簡體.
+
+    干焦換顯示欄位; 鍵 id、click/send/text 指令毋通改, 若無 click: 符号 揣無 preset key.
+    方案開關狀態轉換了後兩態愛猶原分會開 (汉字 → 簡化字, 毋是 漢字).
+    """
+    sys.path.insert(0, str(SCRIPTS))
+    import build_trime_package as btp
+
+    tw = btp.to_zh_tw  # OpenCC s2twp, 「台」保留 (品牌/台灣通行)
+    assert tw("寫台文") == "寫台文" and tw("发送") == "傳送"
+
+    dest = btp.build_apk_assets(tmp_path / "shared", liur_dir=LIUR_DIR, rime_data_dir=RIME_DATA)
+    for name in ("trime.yaml", "tongwenfeng.trime.yaml"):
+        theme = yaml.safe_load((dest / name).read_text(encoding="utf-8"))
+        simplified = [(p, s) for p, s in _display_strings(theme) if tw(s) != s]
+        assert not simplified, f"{name} 猶有簡體/中國用語: {simplified[:10]}"
+    twf = yaml.safe_load((dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8"))
+    assert twf["preset_keys"]["Return2"]["label"] == "回車"
+    assert twf["preset_keys"]["paste_clip"]["label"] == "貼上"
+    assert twf["style"]["enter_labels"]["send"] == "傳送"
+    assert twf["preset_keys"]["符号"] == {"text": "{Escape}/fh", "label": "符號", "functional": False}, (
+        "id 佮指令愛原在"
+    )
+    symbol_tabs = [k for item in twf["liquid_keyboard"]["symbollist"]["keys"] for k in item]
+    assert "符號" in symbol_tabs and "電腦" in symbol_tabs
+
+    # liur.schema.yaml 有 tab 註解 (librime 收, PyYAML 袂收) → 逐行看 name:/states: (含區塊清單)
+    for schema in ("liur.schema.yaml", "bopomofo.schema.yaml"):
+        lines = (dest / schema).read_text(encoding="utf-8").splitlines()
+        labels = [lines[i][start:].split("#")[0].strip() for i, start in btp.schema_display_lines(lines)]
+        assert labels, schema
+        assert all(tw(label) == label for label in labels), f"{schema} {labels}"
+        for label in labels:
+            if label.startswith("["):
+                states = [s.strip() for s in label.strip("[]").split(",")]
+                assert len(set(states)) == len(states), f"{schema} 開關兩態袂使仝款: {states}"
+    bopomofo = (dest / "bopomofo.schema.yaml").read_text(encoding="utf-8")
+    assert "- 簡化字" in bopomofo and "- 傳統漢字" in bopomofo, "區塊清單的開關狀態嘛愛轉"
+
+
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
 @pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
 def test_cli_apk_assets_mode_exits_zero(tmp_path: Path) -> None:

@@ -95,7 +95,7 @@ rime-phah-taibun/
 │   ├── tl_poj_convert.py          # TL↔POJ 轉換器
 │   ├── validate_dict.py           # 字典品質檢查
 │   ├── download_resources.sh      # 18+ 外部資源下載
-│   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）
+│   ├── build_trime_package.py     # ★ Trime 一鍵包：寫台文＋注音＋反查依賴（--with-liur 本機自用）；--apk-assets 烘焙主題時顯示文字轉台灣繁體（OpenCC s2twp，「台」保留）
 │   ├── build_web_playground.py    # ★ 網頁試拍 docs/try/：My RIME wasm＋精簡字典（讀台文公開詞庫×主字典權重）＋寫台文/Telex
 │   ├── build_extension.py        # ★ 瀏覽器擴充功能打包：讀 docs/try/ 產出 → dist/extension/{chrome,firefox}/＋商店 zip（Chrome MV3 offscreen／Firefox MV2 background page）
 │   ├── thak/                      # 網頁工具資料管線（vendored 自舊讀台文，ruff 排除）：build.py 產生 docs/thak/data-public、regress-r2h.mjs 回歸
@@ -153,7 +153,7 @@ rime-phah-taibun/
 | 教育部輸入法詞庫增補 | luke871016/Taigi-Input-method-dictionary-supplement | 待確認 |
 | 教育部學科術語臺灣台語對譯（STTI） | stti.moe.edu.tw（ttg_20241219.ods，僅取台語欄） | 官方明示「提供一般大眾參考運用」，標示來源使用（頁面版權：All rights reserved） |
 | 教育部以本土語言標注臺灣地名 | language.moe.gov.tw 地名計畫成果（*_list.zip，僅取台語欄） | CC BY 3.0 TW |
-| 芫荽字體 | ChhoeTaigi/iansui | SIL OFL 1.1（建議安裝） |
+| 芫荽字體 | ButTaiwan/iansui（ChhoeTaigi/iansui 為 fork） | SIL OFL 1.1（建議安裝；Android App 內附原版 v1.020，候選＋註解字型） |
 | Meta MMS-TTS 台灣台語（白話字 POJ；轉換頁語音） | facebook/mms-tts-nan；ONNX 轉換 willwade/mms-tts-multilingual-models-onnx | CC BY-NC 4.0（非商用） |
 
 **授權原則**：字典資料 per-source 保持分離標示；NC 來源（台日大辭典、甘字典）不得進入商業發佈版本。LICENSE 檔內含 per-source 對照表。

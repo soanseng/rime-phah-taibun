@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -39,10 +40,85 @@ from pathlib import Path
 
 import yaml
 from ruamel.yaml import YAML as _RuamelYAML
+from ruamel.yaml.comments import CommentedMap
+from ruamel.yaml.scalarstring import ScalarString
+
+import opencc
 
 _yaml_rt = _RuamelYAML(typ="rt")
 _yaml_rt.preserve_quotes = True
 _yaml_rt.width = 4096
+_s2twp = opencc.OpenCC("s2twp")
+
+# APK 看會著的主題欄位 (鍵 id、click/send/text 指令毋改, 若無 preset key 揣無)
+DISPLAY_KEYS = {"label", "name", "label_symbol", "preview"}
+_SCHEMA_LABEL_KEY = re.compile(r"^(\s*(?:name|states):)(.*)$")
+_SCHEMA_LIST_ITEM = re.compile(r"^(\s*-\s+)(.*)$")
+
+
+def to_zh_tw(text: str) -> str:
+    """簡體/中國用語 → 台灣繁體 (OpenCC s2twp); 「台」保留 (寫台文品牌, 台灣通行寫法)."""
+    return "台".join(_s2twp.convert(part) for part in text.split("台"))
+
+
+def _traditionalize_display(node: object, parent_key: object = None) -> None:
+    """烘焙主題的顯示文字轉台灣繁體 (上游 tongwenfeng 主題是簡體; 2026-10-16 使用者要求)."""
+    if isinstance(node, dict):
+        is_symbol = node.get("type") == "SYMBOL"
+        for key in list(node):
+            value = node[key]
+            if isinstance(value, str) and (key in DISPLAY_KEYS or parent_key == "enter_labels"):
+                converted = to_zh_tw(value)
+                if converted != value:
+                    node[key] = type(value)(converted) if isinstance(value, ScalarString) else converted
+            elif is_symbol and key == "keys" and isinstance(value, list):
+                # 符號表 keys: [{分類名: '/代碼'}] — 分類名是顯示文字
+                for index, item in enumerate(value):
+                    if isinstance(item, dict):
+                        renamed = CommentedMap((to_zh_tw(k), v) for k, v in item.items())
+                        if isinstance(item, CommentedMap) and item.fa.flow_style():
+                            renamed.fa.set_flow_style()
+                        value[index] = renamed
+            else:
+                _traditionalize_display(value, key)
+    elif isinstance(node, list):
+        for item in node:
+            _traditionalize_display(item)
+
+
+def schema_display_lines(lines: list[str]) -> list[tuple[int, int]]:
+    """方案檔顯示文字: name:/states: 行佮 states: 下底的區塊清單項 → [(行號, 文字起點)]."""
+    found = []
+    in_states_block = False
+    for index, line in enumerate(lines):
+        if in_states_block:
+            item = _SCHEMA_LIST_ITEM.match(line)
+            if item:
+                found.append((index, len(item.group(1))))
+                continue
+            in_states_block = False
+        key = _SCHEMA_LABEL_KEY.match(line)
+        if key:
+            if key.group(2).strip():
+                found.append((index, len(key.group(1))))
+            else:
+                in_states_block = key.group(1).strip() == "states:"
+    return found
+
+
+def _traditionalize_schema_labels(dest: Path) -> list[str]:
+    """方案名佮開關狀態轉台灣繁體 (逐行, 其他內容原封); 回傳有改的檔名 (授權標示用)."""
+    changed = []
+    for path in sorted(dest.glob("*.schema.yaml")):
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        out = list(lines)
+        for index, start in schema_display_lines(lines):
+            out[index] = lines[index][:start] + to_zh_tw(lines[index][start:])
+        if out != lines:
+            path.write_text("".join(out), encoding="utf-8")
+            changed.append(path.name)
+    return changed
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -154,9 +230,9 @@ LIUR_PROVENANCE = "LIUR-PROVENANCE.txt"
 RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
-TRIME_UPSTREAM = "trime.upstream.yaml" #上游基座 (osfans/trime v3.3.12, 釘住)
-TONGWENFENG_UPSTREAM = "tongwenfeng.upstream.yaml" #標準主題基座 (上游 v3.3.12, 釘住)
-TONGWENFENG_PATCH = "tongwenfeng.trime.custom.yaml" #標準主題特化 patch (theme id=tongwenfeng.trime)
+TRIME_UPSTREAM = "trime.upstream.yaml"  # 上游基座 (osfans/trime v3.3.12, 釘住)
+TONGWENFENG_UPSTREAM = "tongwenfeng.upstream.yaml"  # 標準主題基座 (上游 v3.3.12, 釘住)
+TONGWENFENG_PATCH = "tongwenfeng.trime.custom.yaml"  # 標準主題特化 patch (theme id=tongwenfeng.trime)
 APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
@@ -414,6 +490,7 @@ def _bake_theme(dest: Path, base_file: str, patch_file: str, out_name: str) -> N
 
     for dotted, value in patch.items():
         deep_set(base, dotted, value)
+    _traditionalize_display(base)
     with (dest / out_name).open("w", encoding="utf-8") as f:
         _yaml_rt.dump(base, f)
     (dest / "build").mkdir(exist_ok=True)
@@ -453,6 +530,18 @@ def build_apk_assets(
     for name in APK_ASSET_EXCLUDED:
         (tree / name).unlink(missing_ok=True)
     _bake_trime_themes(tree)
+    changed = _traditionalize_schema_labels(tree)
+    if changed:
+        notice = [
+            "",
+            "APK 版修改 / modified in the app build",
+            "-" * 60,
+            "下列方案檔干焦共方案名佮開關狀態 (name:/states:) 轉做台灣繁體 (OpenCC s2twp),",
+            "其他內容無改; 上頁的 sha256 是原檔. 原始碼見上頁 repository.",
+        ]
+        notice += [f"  {name}  sha256 {hashlib.sha256((tree / name).read_bytes()).hexdigest()}" for name in changed]
+        with (tree / THIRD_PARTY_NOTICE).open("a", encoding="utf-8") as f:
+            f.write("\n".join(notice) + "\n")
     return tree
 
 
