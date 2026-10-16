@@ -162,6 +162,15 @@ function tableHtml(t) {
   return `<h3>${esc(t.title)}</h3><div class="pr-table-wrap"><table class="pr-table">${head}${rows}</table></div>`;
 }
 
+function videoHtml(v) {
+  if (!v) return "";
+  const id = encodeURIComponent(v.youtube);
+  return `<section class="pr-section pr-video"><h3>${esc(v.label)}</h3><p>${esc(v.title)}</p>
+    <div class="pr-video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${esc(v.title)}" loading="lazy"
+      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <p class="hint">${esc(v.note)}　<a href="https://www.youtube.com/watch?v=${id}" rel="noopener">佇 YouTube 看</a></p></section>`;
+}
+
 function renderLesson(id) {
   const ls = DATA.lessons.find((l) => l.id === id);
   if (!ls) { $("#pr-lesson").hidden = true; $("#pr-home").hidden = false; renderList(); return; }
@@ -175,7 +184,7 @@ function renderLesson(id) {
     <h2>第 ${idx + 1} 課　${esc(ls.title)}</h2>
     ${ls.intro.map((p) => `<p class="pr-intro">${esc(p)}</p>`).join("")}
     ${lessonDiagram(ls)}
-    ${sections}${(ls.tables || []).map(tableHtml).join("")}
+    ${sections}${(ls.tables || []).map(tableHtml).join("")}${videoHtml(ls.video)}
     <section class="pr-quiz q-card" id="pr-quiz"><h3>練習：聽看覓</h3>
       <p class="hint">手冊的音檔出題，一擺 ${QUIZ_LEN} 題。先按「🔊 聽」，才揀答案。</p>
       <button type="button" class="btn primary pr-start">開始練習</button><div class="pr-q"></div></section>
@@ -227,7 +236,7 @@ document.addEventListener("click", (e) => {
 
 async function main() {
   try {
-    DATA = await (await fetch("./data/lessons.json?v=1")).json();
+    DATA = await (await fetch("./data/lessons.json?v=2")).json();
   } catch {
     $("#pr-status").textContent = "課程資料載入失敗，請重新整理。";
     return;

@@ -194,6 +194,15 @@ def test_syllable_table_tone8_set_is_exactly_what_the_book_shows():
     assert not any(c["audio"].endswith("-jih.mp3") for c in cells)
 
 
+def test_sandhi_lesson_has_the_supplementary_song_video_labelled_honestly():
+    """第 11 課連續變調附〈八音之歌〉影片: 照實標題, 標「補充」, 毋通講是手冊的〈8調ê滋味〉."""
+    sandhi = next(ls for ls in _data()["lessons"] if ls["id"] == "sandhi")
+    video = sandhi["video"]
+    assert video["youtube"] == "2Vgf2NyMOpc"
+    assert "八音之歌" in video["title"] and "補充" in video["label"]
+    assert "8調ê滋味" not in video["title"]
+
+
 def test_page_credits_the_handbook_and_links_tailo():
     """頁面愛標示來源 (手冊 PDF、官方音檔) 佮連教育部台羅拼音學習網."""
     html = PAGE.read_text(encoding="utf-8")
