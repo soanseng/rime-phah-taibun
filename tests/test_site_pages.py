@@ -23,9 +23,10 @@ PAGES = {
     "docs/vocab/index.html": SITE + "vocab/",
     "docs/grammar/index.html": SITE + "grammar/",
     "docs/check/index.html": SITE + "check/",
+    "docs/pronounce/index.html": SITE + "pronounce/",
     "docs/study/index.html": SITE + "study/",
 }
-TOOL_PAGES = ["convert", "vocab", "grammar", "check"]
+TOOL_PAGES = ["convert", "vocab", "grammar", "check", "pronounce"]
 STUDY_PAGES = ["iongji", "hoa2tai", "sandhi", "review", "worksheet"]
 for _s in STUDY_PAGES:
     PAGES[f"docs/study/{_s}/index.html"] = SITE + f"study/{_s}/"

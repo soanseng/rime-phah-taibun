@@ -102,6 +102,7 @@ rime-phah-taibun/
 │   ├── build_study_data.py        # 檢定練習：教育部推薦用字700 異用字 → docs/study/data/iongji.json（用字選擇、寫作檢查）
 │   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
 │   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
+│   ├── build_pronounce_data.py    # 拼音發音教學：教育部《學拼音有撇步》(refs/ PDF，版權所有毋 commit，無就自動下載) → docs/pronounce/data/lessons.json；音檔連官方網址毋轉存；入聲表第 8 調照渲染頁面人工對（uv run --with pdfplumber）
 │   ├── build_check_data.py        # 寫作檢查連字符詞表：教典詞目且例句家己連字號寫的 → docs/check/data/hyphen-words.json（改字典後重跑）
 │   │                               #   規則評估（教典台文/台羅/華語、教會公報、十項管見）：bun scripts/thak/check-eval.mjs
 │   ├── build_tts_model.py         # 轉換頁語音：MMS-TTS nan ONNX（釘 revision＋sha256）→ 細版 int8／原版 fp16 權重 → 切塊 ≤20 MiB → docs/tts/（uv run --with onnx --with 'numpy<2.4'）
@@ -126,6 +127,7 @@ rime-phah-taibun/
     │                               #   含 check-corpus.test.mjs：教典 200 句誤報率／華語檢出率門檻（寫作檢查規則把關）
     ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
     ├── test_tts_assets.py         # 語音模型部署把關：docs/ 逐檔 ≤25 MiB、切塊合起來 sha256 對、parts 檔名含版本
+    ├── test_pronounce_page.py     # 拼音發音教學：課程涵蓋韻母/聲母/聲調/變調/POJ、逐題有音檔、官方網址、第 8 調照書面
     ├── test_site_pages.py         # 全站導覽一致、工具頁 SEO 掛佇主站、舊 /thak/ 轉址
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
