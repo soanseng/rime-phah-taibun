@@ -327,15 +327,24 @@ def test_unknown_phrase_with_hyphen_break_composes_per_syllable(real_rime_states
     assert any("橋" in candidate["text"] for candidate in state["candidates"])
 
 
+def test_toneless_frequent_word_not_buried_by_other_tones(real_rime_states):
+    """無調單音節列出所有聲調: 常用詞 (攏 long2, 路 loo7, 上 siong7) 袂使予
+    無身份語料的第 5 聲同音字 (狼/盧/翔) 壓落去 (2026-10 文章逐詞實測)."""
+    for label, target in (("toneless_long", "攏"), ("toneless_loo", "路"), ("toneless_siong", "上")):
+        texts = [c["text"] for c in real_rime_states[label]["candidates"]]
+        assert target in texts[:3], (label, texts)
+
+
 def test_word_by_word_selection_commits_chosen_hanzi(real_rime_states):
-    """Full OOD journey: pick 橋 for kio, then 鼎 for tiann, commit 橋鼎.
+    """Full OOD journey: pick 橋 for kio, then 鼎 for tiann, output 橋鼎.
 
     Tone is chosen by choosing the word: each syllable is selected
-    individually (Tab + asdf), the composition carries the converted hanzi,
-    and the final Space commits exactly the picked characters.
+    individually (Tab + asdf). Picking the candidate that spans the whole
+    input commits it (standard Rime), so after 橋 the composition holds only
+    tiann, whose menu offers 鼎; the output is exactly the picked characters.
     """
     mid = real_rime_states["word_by_word_mid"]
-    assert "橋" in mid["preedit"]
+    assert mid["preedit"].startswith("tiann"), mid["preedit"]
     assert any(candidate["text"] == "鼎" for candidate in mid["candidates"])
     assert real_rime_states["word_by_word"]["commit"] == "橋鼎"
 

@@ -96,6 +96,28 @@ class TestComputeWeightsIdentity:
         alone = compute_weights(entries)
         assert weighted[0]["weight"] > alone[0]["weight"]
 
+    def test_identity_share_of_tl_count_keeps_codes_on_one_scale(self):
+        # iCorpus identity counts are a small subsample; TL counts cover all
+        # seven corpora. 攏 (long2: 24632 TL, 88 identity) must outrank the
+        # identity-less 狼 (long5: 152 TL): toneless `long` lists both codes.
+        entries = [_entry("攏", "long2"), _entry("狼", "long5")]
+        weighted = compute_weights(
+            entries, corpus_freq={"long2": 24632, "long5": 152}, identity_freq={("攏", "long2"): 88}
+        )
+        by_han = {e["hanlo"]: e["weight"] for e in weighted}
+        assert by_han["攏"] > by_han["狼"], by_han
+
+    def test_identity_share_splits_tl_count_between_homophones(self):
+        entries = [_entry("路", "loo7"), _entry("露", "loo7"), _entry("盧", "loo5")]
+        weighted = compute_weights(
+            entries,
+            corpus_freq={"loo7": 3042, "loo5": 291},
+            identity_freq={("路", "loo7"): 5, ("露", "loo7"): 1},
+        )
+        by_han = {e["hanlo"]: e["weight"] for e in weighted}
+        # 路 takes 5/6 of loo7's 3042 TL hits, 露 1/6 (≈507 > 盧's 291).
+        assert by_han["路"] > by_han["露"] > by_han["盧"], by_han
+
     def test_implicit_tone_kip_input_still_gets_identity_boost(self):
         # ChhoeTaigi KipInput leaves tone 1/4 unmarked (伊 "i"); the identity
         # TSV and the rime key are numeric (i1). Same reading, same identity.

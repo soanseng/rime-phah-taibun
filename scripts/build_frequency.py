@@ -149,10 +149,13 @@ def compute_weights(
     # Codes covered by identity evidence: TL-only counts would attribute
     # homophone mass to unseen words, so they stop applying per code.
     # Identity kips are hyphenated; canonicalize to the space-separated
-    # rime-key form before comparing.
-    codes_with_identity: set[str] = set()
-    for _han, kip in identity_freq:
-        codes_with_identity.add(" ".join(kip.replace("-", " ").split()))
+    # rime-key form before comparing. Per-code identity totals let a word
+    # take its identity share of the code's TL count (see below).
+    identity_totals: dict[str, int] = {}
+    for (_han, kip), count in identity_freq.items():
+        code = " ".join(kip.replace("-", " ").split())
+        identity_totals[code] = identity_totals.get(code, 0) + count
+    codes_with_identity = set(identity_totals)
 
     def dedup_key(entry: dict) -> tuple[str, str, bool]:
         # Whitespace runs are typography, not identity — but the double
@@ -194,10 +197,18 @@ def compute_weights(
         corpus_boost = 1.0
         kip = entry.get("kip_input", "")
         reading = "-".join(entry["rime_key"].split(" "))
+        code = " ".join(entry["rime_key"].split())
         identity_count = identity_freq.get((entry["hanlo"], reading), 0)
         if identity_count > 0:
-            corpus_boost = 1.0 + math.log10(1 + identity_count) * CORPUS_BOOST_COEFF
-        elif kip and " ".join(entry["rime_key"].split()) in codes_with_identity:
+            # iCorpus identity counts are a small subsample, TL counts span
+            # seven corpora: use the word's identity share of its code's TL
+            # count, so codes with and without identity data share one scale
+            # (攏 long2 vs identity-less 狼 long5 under toneless `long`).
+            count = identity_count
+            if reading in corpus_freq:
+                count = max(count, corpus_freq[reading] * identity_count / identity_totals[code])
+            corpus_boost = 1.0 + math.log10(1 + count) * CORPUS_BOOST_COEFF
+        elif kip and code in codes_with_identity:
             corpus_boost = 1.0  # identity data exists for this code; word unseen
         elif kip and reading in corpus_freq:
             corpus_boost = 1.0 + math.log10(1 + corpus_freq[reading]) * CORPUS_BOOST_COEFF

@@ -16,8 +16,8 @@
     "top3": false
   },
   "dopa_p4s2": {
-    "rank": 0,
-    "top3": false
+    "rank": 1,
+    "top3": true
   },
   "dopa_p4s3": {
     "rank": 0,

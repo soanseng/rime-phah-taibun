@@ -313,6 +313,12 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "qxyz");
   print_state(api, session, "origin_after_commit");
   api->clear_composition(session);
+  {
+    // Drain the 食 committed by "tsiah8 " so it does not leak into the
+    // next step's get_commit (the comma probe read "食食，").
+    RIME_STRUCT(RimeCommit, drained);
+    if (api->get_commit(session, &drained)) api->free_commit(&drained);
+  }
 
   // Punctuation during composition (rime-liur style, real keycodes).
   // Comma cascades the top candidate plus full-width ，(works today; the
@@ -898,6 +904,14 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "kah4");
   print_state(api, session, "lo_reading_kah4");
   api->clear_composition(session);
+
+  // Toneless single syllables list every tone; frequent words must not be
+  // buried under identity-less tone-5 homophones (攏 long, 路 loo, 上 siong).
+  for (const char* toneless : {"long", "loo", "siong"}) {
+    api->simulate_key_sequence(session, toneless);
+    print_state(api, session, (std::string("toneless_") + toneless).c_str());
+    api->clear_composition(session);
+  }
 
   // Remaining checked codas at tone 4 (-p: 接 tsiap4/chiap, -k: 積
   // tsik4/chik) and the landing-page promise 食 tsiah8/chiah (tone 8, -h).
