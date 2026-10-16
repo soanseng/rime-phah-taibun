@@ -414,8 +414,10 @@ def test_apk_display_text_is_traditional_taiwan(tmp_path: Path) -> None:
     sys.path.insert(0, str(SCRIPTS))
     import build_trime_package as btp
 
-    tw = btp.to_zh_tw  # OpenCC s2twp, 「台」保留 (品牌/台灣通行)
-    assert tw("寫台文") == "寫台文" and tw("发送") == "傳送"
+    tw = btp.to_zh_tw
+    assert tw("寫台文") == "寫台文" and tw("发送") == "傳送" and tw("菜单") == "選單"
+    assert tw("尸") == "尸", "倉頡字根毋通變 屍"
+    assert tw("詞組") == "詞組", "s2twp 詞彙轉換會錯 (詞組→片語), 袂使用"
 
     dest = btp.build_apk_assets(tmp_path / "shared", liur_dir=LIUR_DIR, rime_data_dir=RIME_DATA)
     for name in ("trime.yaml", "tongwenfeng.trime.yaml"):

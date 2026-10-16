@@ -48,7 +48,30 @@ import opencc
 _yaml_rt = _RuamelYAML(typ="rt")
 _yaml_rt.preserve_quotes = True
 _yaml_rt.width = 4096
-_s2twp = opencc.OpenCC("s2twp")
+# s2tw 干焦換字形 (s2twp 的詞彙轉換會錯: 詞組→片語、項目→專案); 中國用語用下面詞表
+_s2tw = opencc.OpenCC("s2tw")
+_ZH_TW_PHRASES = {
+    "搜索": "搜尋",
+    "粘贴": "貼上",
+    "菜单": "選單",
+    "默认": "預設",
+    "设置": "設定",
+    "发送": "傳送",
+    "半角": "半形",
+    "全角": "全形",
+    "字符": "字元",
+    "界面": "介面",
+    "组件": "元件",
+    "組件": "元件",
+    "程序": "程式",
+    "文档": "文件",
+    "信息": "資訊",
+    "网络": "網路",
+    "视频": "影片",
+    "屏幕": "螢幕",
+}
+# OpenCC 會改、毋過台灣本底按呢寫的字: 台 (寫台文品牌), 尸 (倉頡字根 S 鍵)
+_ZH_TW_KEEP = re.compile("([台尸])")
 
 # APK 看會著的主題欄位 (鍵 id、click/send/text 指令毋改, 若無 preset key 揣無)
 DISPLAY_KEYS = {"label", "name", "label_symbol", "preview"}
@@ -57,8 +80,10 @@ _SCHEMA_LIST_ITEM = re.compile(r"^(\s*-\s+)(.*)$")
 
 
 def to_zh_tw(text: str) -> str:
-    """簡體/中國用語 → 台灣繁體 (OpenCC s2twp); 「台」保留 (寫台文品牌, 台灣通行寫法)."""
-    return "台".join(_s2twp.convert(part) for part in text.split("台"))
+    """簡體/中國用語 → 台灣繁體: 詞表換中國用語, OpenCC s2tw 換字形, 台/尸 保留."""
+    for source, target in _ZH_TW_PHRASES.items():
+        text = text.replace(source, target)
+    return "".join(part if _ZH_TW_KEEP.fullmatch(part) else _s2tw.convert(part) for part in _ZH_TW_KEEP.split(text))
 
 
 def _traditionalize_display(node: object, parent_key: object = None) -> None:
