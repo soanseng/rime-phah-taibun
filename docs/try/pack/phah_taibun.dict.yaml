@@ -1,7 +1,7 @@
 # 網頁精簡字典 (scripts/build_web_playground.py 產生): 讀台文公開詞庫 x 主字典權重 + 主字典單字
 ---
 name: phah_taibun
-version: "0.10.0"
+version: "0.11.0"
 sort: by_weight
 use_preset_vocabulary: false
 ...

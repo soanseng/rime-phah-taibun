@@ -63,7 +63,7 @@
             ],
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Windows, macOS, Linux, Android",
-            "softwareVersion": "0.10.0",
+            "softwareVersion": "0.11.0",
             "softwareRequirements": "Rime（小狼毫 Weasel、鼠鬚管 Squirrel、fcitx5-rime、ibus-rime）與 Android（Trime、fcitx5-android）",
             "url": "https://taigi.anatomind.com/",
             "downloadUrl": "https://github.com/soanseng/rime-phah-taibun/releases",
@@ -709,6 +709,23 @@
           </div>
           <div class="updates-list" aria-label="最近 3 个變更">
             <article>
+              <time datetime="2026-10-16">2026-10-16</time>
+              <h3>0.11.0：同音字袂閣無去、語料加權修正</h3>
+              <ul>
+                <li>
+                  打 <code>in1</code> 揀會著 𪜶、<code>nih4</code> 揀會著 𥍉、<code>kah4</code>
+                  揀會著 佮：LKK 羅馬字讀音（in、nih、kah…）的同音漢字袂閣予候選合併食去，羅馬字猶原排第一。
+                </li>
+                <li>
+                  語料詞頻修正：1／4 聲免標、白話字、調符寫法攏對會著字典，這 <code>tsit4</code>、佮
+                  <code>kah4</code> 排第一；免調打 <code>long</code>、<code>loo</code> 先出 攏、路。
+                </li>
+                <li>
+                  字典提掉私用區字元（無特定字型會變方框）；詞組挖掘保留聲調，袂閣造出「曹的」「衫字」這款假詞。
+                </li>
+              </ul>
+            </article>
+            <article>
               <time datetime="2026-10-07">2026-10-07</time>
               <h3>0.10.0：改名寫台文、Windows 一鍵裝好、POJ 修正</h3>
               <ul>
@@ -742,25 +759,6 @@
                   POJ 調符位置統一做現代規則（張裕宏《白話字基本論》）：音節尾
                   <code>oa</code>／<code>oe</code> 標 <code>o</code>（gōa、hōe）、
                   <code>ui</code> 標 <code>u</code>（tùi）——字典候選佮輸出一致。
-                </li>
-              </ul>
-            </article>
-            <article>
-              <time datetime="2026-09-25">2026-09-25</time>
-              <h3>0.9.3：Telex x 調鍵、標點臨時翻轉</h3>
-              <ul>
-                <li>
-                  Telex 加選配 <code>x</code> 調鍵（第 1／4 調）；<code
-                    >Ctrl+標點</code
-                  >
-                  臨時翻轉標點寬度。
-                </li>
-                <li>
-                  符號選單補半形括號對、移除方音符號；教育部學科術語佮臺灣地名詞條上線。
-                </li>
-                <li>
-                  Emoji／符號選單翻頁修正；POJ <code>o͘</code> 鍵盤打法說明修正做
-                  <code>oo</code>。
                 </li>
               </ul>
             </article>
