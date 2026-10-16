@@ -31,12 +31,18 @@
 #   style/candidate_padding: 8
 patch:
   # ── 主題版本：bump 此值才會觸發 Trime 重新部署主題（升級路徑必備） ──
-  config_version: "3.3.12-ptaibun6"
+  config_version: "3.3.12-ptaibun7"
 
   # ── 候選註解（拼音）：對齊桌面版「漢字＋拼音」雙欄 ──
   style/comment_position: right
   style/comment_text_size: 13
   style/candidate_view_height: 30
+
+  # ── 候選＋註解字型：芫荽（系統字型無 𪜶 等台文用字；芫荽缺的字由系統補）──
+  # 必須寫做清單：Trime 3.3.12 純量字型名會予忽略。檔案佇 fonts/ 揣（fork APK 內附；
+  # 原版 Trime 使用者家己放 rime/fonts/Iansui-Regular.ttf）。
+  style/candidate_font: [Iansui-Regular.ttf]
+  style/comment_font: [Iansui-Regular.ttf]
 
   # ── 退格鍵面（倒退箭頭） ──
   name: 寫台文·數字列

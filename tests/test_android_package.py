@@ -261,9 +261,7 @@ def test_trime_patch_defines_taigi_function_keys(tmp_path: Path) -> None:
     assert pk["Taigi_Hanlo"]["toggle"] == "full_romanization"
     assert pk["Taigi_Hanlo"]["states"] == ["漢羅", "全羅"]
 
-    switches = yaml.safe_load(
-        (REPO / "schema" / "phah_taibun.schema.yaml").read_text(encoding="utf-8")
-    )["switches"]
+    switches = yaml.safe_load((REPO / "schema" / "phah_taibun.schema.yaml").read_text(encoding="utf-8"))["switches"]
     names = {s["name"] for s in switches}
     assert {"poj_mode", "full_romanization"} <= names, "toggle 名稱必須對應 schema switch"
     dc = yaml.safe_load((REPO / "schema" / "default.custom.yaml").read_text(encoding="utf-8"))["patch"]
@@ -341,14 +339,14 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     assert theme["preset_keyboards"]["phah_taibun"]["keys"], "烘焙主題需含寫台文鍵盤"
     assert theme["preset_keys"]["BackSpace"]["label"] == "←"
     assert theme["preset_keys"]["Menu"]["send"] == "MENU", "上游 Menu preset 不動"
-    assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (
-        dest / "trime.yaml"
-    ).read_text(encoding="utf-8"), "prebuilt fallback (shared/build) 須與主題同步"
+    assert (dest / "build" / "trime.yaml").read_text(encoding="utf-8") == (dest / "trime.yaml").read_text(
+        encoding="utf-8"
+    ), "prebuilt fallback (shared/build) 須與主題同步"
     twf = yaml.safe_load((dest / "tongwenfeng.trime.yaml").read_text(encoding="utf-8"))
     assert twf["name"] == "寫台文·精簡", "標準主題名=寫台文·精簡(26鍵)"
-    trime_patch = yaml.safe_load(
-        (REPO / "packaging" / "android" / "trime.custom.yaml").read_text(encoding="utf-8")
-    )["patch"]
+    trime_patch = yaml.safe_load((REPO / "packaging" / "android" / "trime.custom.yaml").read_text(encoding="utf-8"))[
+        "patch"
+    ]
     assert trime_patch["name"] == "寫台文·數字列", "預設主題名=寫台文·數字列(40鍵含數字列)"
     kb40 = trime_patch["preset_keyboards/phah_taibun"]["keys"]
     assert any(k.get("click") == "1" for k in kb40), "預設主題鍵盤含數字列"
@@ -362,6 +360,25 @@ def test_apk_assets_tree_is_full_f2_closure_without_overlay_extras(tmp_path: Pat
     assert "THIRD-PARTY-NOTICES.txt" in names
     assert "licenses/LGPL-3.0.txt" in names
     assert "LIUR-PROVENANCE.txt" in names
+
+
+@pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")
+@pytest.mark.skipif(not LIUR_DIR.exists(), reason="需要本地 rime-liur-arch checkout")
+def test_baked_themes_render_candidates_and_comments_in_iansui(tmp_path: Path) -> None:
+    """候選+註解用芫荽: 系統字型無 𪜶 (U+2A736) 等台文用字, 候選顯示 X (2026-10-16 回報).
+    字型名必須是 YAML 序列 — Trime 3.3.12 GeneralStyle 只讀 `.sequence`, 純量
+    `candidate_font: han.ttf` 會變空清單、整個退回系統字型. 鍵盤字型不換 (按鍵字細).
+    芫荽缺的字由 Trime 字型鏈尾的系統 sans-serif 補.
+    """
+    sys.path.insert(0, str(SCRIPTS))
+    import build_trime_package as btp
+
+    dest = btp.build_apk_assets(tmp_path / "shared", liur_dir=LIUR_DIR, rime_data_dir=RIME_DATA)
+    for name in ("trime.yaml", "tongwenfeng.trime.yaml"):
+        style = yaml.safe_load((dest / name).read_text(encoding="utf-8"))["style"]
+        assert style["candidate_font"] == ["Iansui-Regular.ttf"], f"{name} 候選字型"
+        assert style["comment_font"] == ["Iansui-Regular.ttf"], f"{name} 註解字型"
+        assert style["key_font"] == "symbol.ttf", f"{name} 鍵盤字型維持上游"
 
 
 @pytest.mark.skipif(not RIME_DATA.exists(), reason="需要系統 rime-data (terra_pinyin/bopomofo 反查依賴)")

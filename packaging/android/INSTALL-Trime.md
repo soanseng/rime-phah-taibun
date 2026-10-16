@@ -11,7 +11,7 @@
 
 兩種包的寫台文內容完全相同；差別只在嘸蝦米版多出 `liur.*`、`lua/liu_*.lua`、`opencc/` 與 `LIUR-PROVENANCE.txt`（記錄檔案集來源與 commit）。`~` 反查所需的 `terra_pinyin.dict.yaml` 與 bopomofo 方案檔兩種都附，不需另外下載。
 
-**不含**：字體（要芫荽字體請自行放 `fonts/`，見 [iansui](https://github.com/ButTaiwan/iansui)）、使用者詞庫與學習紀錄。
+**不含**：字體與使用者詞庫、學習紀錄。`trime.custom.yaml` 已經設定候選＋註解用芫荽（系統字型通常無 𪜶 等台文用字，會顯示做 X）：請下載 [芫荽 iansui](https://github.com/ButTaiwan/iansui/releases)，共 `Iansui-Regular.ttf` 囥佇 `rime/fonts/`，然後重新部署。若無放，就用系統字型。（寫台文 App 已經內附芫荽，免家己放。）
 
 ---
 
@@ -98,7 +98,7 @@ Android **不是**桌面的 `F4`，也不要用桌面快捷鍵。
 
 本包附 `trime.custom.yaml`，**預設生效**：
 
-1. **候選註解（拼音）**：對齊桌面版「漢字＋拼音」雙欄，註解 13sp（內建 10sp 太小）、列高 30。
+1. **候選註解（拼音）**：對齊桌面版「漢字＋拼音」雙欄，註解 13sp（內建 10sp 太小）、列高 30；候選佮註解用芫荽字型（`rime/fonts/Iansui-Regular.ttf`，見頂懸「不含」）。
 2. **功能列**：26 鍵 `qwerty` 與 40 鍵 `default` 鍵盤底部各加一列矮列（高 34）：
 
    ```

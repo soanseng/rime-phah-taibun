@@ -12,8 +12,12 @@
 # 鍵盤/面板定義與 trime.custom.yaml 相同（兩主題各自自帶 preset_keys，
 # 引用的上游鍵名兩邊皆有）。
 patch:
-  config_version: "3.3.12-ptaibun6"
+  config_version: "3.3.12-ptaibun7"
   name: 寫台文·精簡
+
+  # 候選＋註解字型：芫荽（見 trime.custom.yaml）
+  style/candidate_font: [Iansui-Regular.ttf]
+  style/comment_font: [Iansui-Regular.ttf]
 
   preset_color_schemes/default/name: 標準配色！
 
