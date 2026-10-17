@@ -6,7 +6,8 @@ import { createRecords } from "./practice-records.js?v=2";
 import {
   loadBank, loadWords, loadDictBundle, refHanFor, fromCustom, CUSTOM_KEY, randomWikipediaFeatured, wikiArticle,
   wikisourceBooks, wikisourceChildren, wikisourcePage, wikisourceChapter, loadListen,
-} from "./practice-sources.js?v=3";
+  loadArticleData, articleSource, articleVocabSource,
+} from "./practice-sources.js?v=4";
 import { createStudy } from "../study/study-store.js?v=1";
 import { pojToTl, addImplicitTones } from "../thak/js/roman.js?v=26";
 
@@ -87,7 +88,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     clearOut();
     tStart = null;
     if (v === "practice" && (!src || src.kind === "listen")) chooseSource($("pr-source").value);
-    if (v === "listen" && src?.kind !== "listen") withLoading("聽寫題庫載入中…", loadListen);
+    if (v === "listen" && src?.kind !== "listen") loadListenSelected();
     if (v === "exam") paintExamIdle();
     if (v === "records") paintRecords();
     paint();
@@ -235,6 +236,17 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   $("pr-slow").onclick = () => { play(0.75); focusEditor(); };
   $("pr-hint-hoa").onchange = () => { paint(); focusEditor(); };
 
+  // 聽寫題庫：教典例句（listen.json）抑是《讀文章蓋趣味》的文章詞彙（/read/ 原音）
+  function loadListenSelected() {
+    const sel = $("pr-listen-src");
+    if (sel.value !== "articles") return withLoading("聽寫題庫載入中…", loadListen);
+    return withLoading("文章詞彙載入中…", () => articleVocabSource(sel.dataset.article || null));
+  }
+  $("pr-listen-src").onchange = () => {
+    $("pr-listen-src").dataset.article = "";
+    loadListenSelected();
+  };
+
   function nextItem() {
     if (!src) return;
     if (isRandom(src)) goTo(Math.floor(Math.random() * src.items.length));
@@ -336,7 +348,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   };
 
   function chooseSource(kind) {
-    for (const id of ["pr-wiki-box", "pr-book-box", "pr-custom-box", "pr-again"]) $(id).classList.add("hidden");
+    for (const id of ["pr-wiki-box", "pr-book-box", "pr-custom-box", "pr-article-box", "pr-again"]) $(id).classList.add("hidden");
     if (kind === "bank") withLoading("例句庫載入中…", loadBank);
     else if (kind === "words") withLoading("詞典載入中…（第一擺約 8 MB）", loadWords);
     else if (kind === "wp-random") {
@@ -348,6 +360,9 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     } else if (kind === "ws-book") {
       $("pr-book-box").classList.remove("hidden");
       loadBooks();
+    } else if (kind === "article") {
+      $("pr-article-box").classList.remove("hidden");
+      initArticlePicker();
     } else if (kind === "custom") {
       $("pr-custom-box").classList.remove("hidden");
       if (!$("pr-custom").value) $("pr-custom").value = localStorage.getItem(CUSTOM_KEY) ?? "";
@@ -365,6 +380,57 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     const v = $("pr-custom").value;
     if (!v.trim()) return msg("請先貼一篇文章。");
     withLoading("分析文章中…", async () => { await needDict(); return fromCustom(v); });
+  };
+
+  // 《讀文章蓋趣味》（教育部 59 篇）：揀篇練習；文章的原音會當聽全文
+  async function initArticlePicker() {
+    const sel = $("pr-article");
+    if (sel.options.length > 1) return;
+    msg("文章清單載入中…");
+    try {
+      const [{ articles }] = await loadArticleData();
+      const groups = new Map();
+      for (const a of articles ?? []) {
+        const g = `第 ${a.book} 冊・${a.category}`;
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(a);
+      }
+      sel.replaceChildren(el("option", null, "— 揀一篇 —"), ...[...groups].map(([label, as]) => {
+        const g = el("optgroup");
+        g.label = label;
+        for (const a of as) {
+          const o = el("option", null, a.title);
+          o.value = a.id;
+          g.append(o);
+        }
+        return g;
+      }));
+      sel.options[0].value = "";
+      msg("");
+    } catch (e) {
+      msg(e.message || String(e), initArticlePicker);
+    }
+  }
+  $("pr-article").onchange = () => {
+    const id = $("pr-article").value;
+    if (id) openArticle(id);
+  };
+  function openArticle(id) {
+    $("pr-article").value = id;
+    return withLoading("文章載入中…", async () => {
+      await needDict();
+      return articleSource(id);
+    }).finally(() => { $("pr-article-play").classList.toggle("hidden", !src?.audio); });
+  }
+  $("pr-article-play").onclick = () => {
+    if (!src?.audio) return;
+    const a = $("pr-audio");
+    if (a.dataset.src !== src.audio) {
+      a.src = src.audio;
+      a.dataset.src = src.audio;
+    }
+    a.currentTime = 0;
+    a.play().then(() => msg(""), () => msg("按「▶ 聽全文」播音檔。"));
   };
 
   // 維基文庫：冊 → （子頁 → …）→ 章
@@ -507,7 +573,7 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
   }
 
   // ---- 記錄 ----
-  const KIND = { bank: "例句庫", words: "詞語", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂", listen: "聽寫" };
+  const KIND = { bank: "例句庫", words: "詞語", article: "讀文章", wikipedia: "維基百科", wikisource: "維基文庫", custom: "自訂", listen: "聽寫" };
   const MODE = { practice: "練習", listen: "聽寫", exam: "考試" };
   function paintRecords() {
     const s = records.summary();
@@ -551,6 +617,21 @@ export function initPractice({ out, clearOut, isPoj, focusEditor }) {
     records.clear();
     paintRecords();
   };
+
+  // 規頁連結：?article=<id> 直接練彼篇；?listen=articles／article:<id> 聽文章詞彙
+  const params = new URLSearchParams(location.search);
+  const listenParam = params.get("listen");
+  if (listenParam === "articles" || listenParam?.startsWith("article:")) {
+    const sel = $("pr-listen-src");
+    sel.value = "articles";
+    sel.dataset.article = listenParam === "articles" ? "" : listenParam.slice("article:".length);
+  }
+  const articleParam = params.get("article");
+  if (articleParam) {
+    $("pr-source").value = "article";
+    initArticlePicker().then(() => openArticle(articleParam))
+      .finally(() => { if (view === "free") setView("practice"); });
+  }
 
   setView(location.hash.slice(1) || "free");
 

@@ -16,7 +16,7 @@ import pytest
 
 from scripts.extract_900leku_freq import unicode_tl_to_numeric
 
-# 真 librime 整合測試: g++ 編譯+部署 220K 字典, 84 條 15+ 分鐘。
+# 真 librime 整合測試 (本檔 84 條 + test_real_rime_articles.py): g++ 編譯+部署 220K 字典, 15+ 分鐘。
 # pyproject addopts 預設 -m 'not real_rime' 跳過; 本檔明走: uv run pytest -m real_rime;
 # 全部測試(日常+本檔): uv run pytest -o addopts=''
 pytestmark = pytest.mark.real_rime

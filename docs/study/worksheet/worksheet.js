@@ -1,6 +1,6 @@
 // 學習單列印：例句庫隨機揀句抑是貼家己的文章，產生四種版型的學習單。
 // 邏輯佇 worksheet-core.js（有 node 測試）；這檔干焦負責畫圖佮事件。
-import { loadBank, fromCustom, CUSTOM_KEY } from "../../try/practice-sources.js?v=3";
+import { loadBank, fromCustom, CUSTOM_KEY } from "../../try/practice-sources.js?v=4";
 import { buildSheet, pickBankItems } from "./worksheet-core.js?v=1";
 
 const $ = (id) => document.getElementById(id);

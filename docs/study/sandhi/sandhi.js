@@ -3,7 +3,7 @@
 // 外部資料（詞典＝分析、listen.json＝測驗）干焦用讀的；畫面一律 textContent，無 innerHTML。
 import { createStudy } from "../study-store.js?v=1";
 import { segment, isHan } from "../../thak/js/dict.js?v=26";
-import { loadDictBundle } from "../../try/practice-sources.js?v=3";
+import { loadDictBundle } from "../../try/practice-sources.js?v=4";
 import {
   analyzeRoman, analyzeHanlo, applySandhi, toggleEnd, romanOf,
   sentencePool, makeRound, TONE_OPTIONS, cardId,

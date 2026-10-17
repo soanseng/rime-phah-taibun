@@ -33,6 +33,7 @@ SOFTWARE.
 | phah_taibun.wordlist | 由主字典抽取漢字詞與讀音（來源同上） | 混合；含 NC 成分 |
 | （併入主字典）教育部學科術語臺灣台語對譯 | [STTI stti.moe.edu.tw](https://stti.moe.edu.tw/)：官方計畫說明「提供一般大眾參考運用」；站點版權標示 All rights reserved | 開放運用、標示來源（非標準開源條款） |
 | （併入主字典）教育部以本土語言標注臺灣地名 | [語言成果網地名計畫成果](https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/mhigeonames/twplacename.html)（第1階段站名清單×4＋第2階段地名清單，僅取臺灣台語欄） | CC BY 3.0 TW |
+| （併入主字典）教育部《咱來學臺灣台語 讀文章蓋趣味》01、02 冊官方讀音 | 手冊內文括號讀音＋詞彙學習詞條（`scripts/parse_moe_articles.py`）；文字經 [OpenFormosa/OpenTaigi](https://github.com/OpenFormosa/OpenTaigi) 版面抽取 | 著作權屬教育部（手冊無授權聲明；專案維護者同意標示來源收錄，2026-10-16） |
 | hanlo_rules.yaml | LKK 李江却基金會用字表 | 待確認 |
 | icorpus_freq.tsv | iCorpus 臺華平行語料 (CC BY 4.0) | CC BY 4.0 |
 | ungian_freq.tsv | 楊允言詞頻 (待確認) | 待確認 |
@@ -44,6 +45,8 @@ SOFTWARE.
 | docs/study/data/iongji.json（推薦用字選擇、寫作檢查） | 教育部《臺灣台語推薦用字700字詞》建議用字、異用字、用例（照原文）；新北市104學年度閩南語字音字形900例句（Taiwanese-Corpus，MIT） | CC BY-NC-ND 2.5 TW（**非商用、禁止改作**）＋MIT |
 | docs/study/data/yongji.json（推薦用字表、寫作檢查 LKK 模式） | 教育部《臺灣台語推薦用字700字詞》（照原文）；李江却台語文教基金會 LKK 漢羅用字表（寫法分類） | CC BY-NC-ND 2.5 TW（**非商用、禁止改作**）＋LKK（標示來源、非商用） |
 | docs/study/data/listen.json、docs/study/audio/*.mp3（聽寫） | 教育部《臺灣台語常用詞辭典》例句文字、華語對譯、例句音檔（原文原音；音檔僅轉檔為單聲道 32 kbps MP3） | CC BY-ND 3.0 TW |
+| docs/read/data/articles.json、docs/read/audio/*.mp3（讀文章、打字練習、聽寫） | 教育部《咱來學臺灣台語 讀文章蓋趣味》01、02 冊（短文出處教育部電子報）；文字取自 OpenFormosa/OpenTaigi 版面抽取、音檔取自 Taiwanese-Corpus/Lan-Lai-Oh-Taigi（原文原音；音檔僅轉檔為單聲道 32 kbps MP3） | 著作權屬教育部（頁面標示出處） |
+| docs/read/data/roman.json（全文台羅／白話字） | 本站轉換工具詞典自動轉換＋手冊官方讀音 | 同 docs/thak/data-public 詞典來源 |
 | docs/tts/（轉換頁「🔊 唸予我聽」語音模型；權重改存 int8（細版）／fp16（原版）、切塊） | Meta MMS-TTS 台灣台語（白話字 POJ；facebook/mms-tts-nan），ONNX 轉換：willwade/mms-tts-multilingual-models-onnx（nan/） | CC BY-NC 4.0（**非商用**） |
 
 > **非商用注意事項**：主字典與 wordlist 含四個 CC BY-NC-SA 3.0 TW 來源

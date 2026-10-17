@@ -4,6 +4,7 @@ data/
 !docs/study/data/
 !docs/check/data/
 !docs/pronounce/data/
+!docs/read/data/
 # 教育部《學拼音有撇步》PDF：版權所有、無再散布授權，干焦本機參考（build_pronounce_data.py 會下載）
 refs/*.pdf
 

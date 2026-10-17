@@ -1,6 +1,6 @@
 // 華語→台語造句的純函式（無 DOM；tests/js/hoa2tai-core.test.mjs 直接試）。
 import { tokenize, readingOf } from "../../try/practice-core.js?v=2";
-import { seededShuffle } from "../../try/practice-sources.js?v=3";
+import { seededShuffle } from "../../try/practice-sources.js?v=4";
 import { pojToTl, addImplicitTones } from "../../thak/js/roman.js?v=26";
 
 // 弱點複習卡：身份＝（漢羅原句, 正規化數字調 TL），華語仝款的無仝台語句袂合做一張

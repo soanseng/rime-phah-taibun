@@ -76,12 +76,32 @@ bool highlight_candidate_by_text(RimeApi* api, RimeSessionId session, const char
   }
   return true;
 }
+// Whether the current menu page already shows `wanted` — the all-pages
+// traversal uses this to stop as soon as the corpus word surfaces, so a
+// 6.8K-row replay does not page to the cap on every row.
+bool menu_contains(RimeApi* api, RimeSessionId session, const char* wanted) {
+  RIME_STRUCT(RimeContext, context);
+  if (!api->get_context(session, &context)) return false;
+  bool found = false;
+  for (int i = 0; i < context.menu.num_candidates; ++i) {
+    if (std::string(context.menu.candidates[i].text) == wanted) {
+      found = true;
+      break;
+    }
+  }
+  api->free_context(&context);
+  return found;
+}
 
-// One sentence-corpus row: label<TAB>hanzi<TAB>keys.
+
+// One sentence-corpus row: label<TAB>hanzi<TAB>keys[TAB]allpages.
+// The optional fourth column asks the harness to page through the whole
+// candidate menu (Requirement A 驗收 needs every page, not just page 1).
 struct CorpusRow {
   std::string label;
   std::string hanzi;
   std::string keys;
+  bool all_pages = false;
 };
 
 bool read_corpus_tsv(const char* path, std::vector<CorpusRow>* rows) {
@@ -95,15 +115,21 @@ bool read_corpus_tsv(const char* path, std::vector<CorpusRow>* rows) {
     if (first == std::string::npos) return false;
     const auto second = line.find('\t', first + 1);
     if (second == std::string::npos) return false;
-    rows->push_back({line.substr(0, first), line.substr(first + 1, second - first - 1),
-                     line.substr(second + 1)});
+    const std::string rest = line.substr(second + 1);
+    const auto third = rest.find('\t');
+    CorpusRow row{line.substr(0, first), line.substr(first + 1, second - first - 1),
+                  third == std::string::npos ? rest : rest.substr(0, third)};
+    row.all_pages = third != std::string::npos && rest.substr(third + 1) == "allpages";
+    rows->push_back(row);
   }
   return !rows->empty();
 }
 
 // Sentence-accuracy harness (optional CORPUS_TSV argument): replay every row
-// through (a) 漢羅 mode, dumping the whole-sentence candidate menu, and
-// (b) 全羅 mode, committing the sentence and printing its word-boundary text.
+// through (a) 漢羅 mode, dumping the whole-sentence candidate menu (rows with
+// the 4th column "allpages" additionally page through the whole menu as
+// label#p2..#pN STATE dumps), and (b) 全羅 mode, committing the sentence and
+// printing its word-boundary text.
 int run_corpus(RimeApi* api, RimeSessionId session, const char* path) {
   std::vector<CorpusRow> rows;
   if (!read_corpus_tsv(path, &rows)) {
@@ -113,7 +139,24 @@ int run_corpus(RimeApi* api, RimeSessionId session, const char* path) {
   for (const CorpusRow& row : rows) {
     api->simulate_key_sequence(session, row.keys.c_str());
     print_state(api, session, row.label.c_str());
+    if (row.all_pages) {
+      // 掠全頁候選: 揣著字面 (candidate == hanzi) 就停, 無就 Page_Down 習到
+      // 上尾頁 (page_no 無進前 = Page_Down no-op), sanity cap 50 頁。
+      for (int page = 1; page < 50 && !menu_contains(api, session, row.hanzi.c_str()); ++page) {
+        api->process_key(session, 0xFF56, 0);  // Page_Down
+        RIME_STRUCT(RimeContext, context);
+        if (!api->get_context(session, &context)) break;
+        const int page_no = context.menu.page_no;
+        api->free_context(&context);
+        if (page_no != page) break;
+        print_state(api, session, (row.label + "#p" + std::to_string(page + 1)).c_str());
+      }
+    }
     api->clear_composition(session);
+
+    // 全羅 commit 半段是 sentence 語料的證據; allpages (文章逐詞) 語料用袂著,
+    // 跳過 — 6.8K 列省一半重放時間。
+    if (row.all_pages) continue;
 
     api->set_option(session, "full_romanization", true);
     api->simulate_key_sequence(session, (row.keys + " ").c_str());

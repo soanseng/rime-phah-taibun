@@ -11,6 +11,7 @@ import {
   buildCharMap, buildWordReadings, buildGlossIndex,
 } from "../../docs/check/check-core.js";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js?v=26";
+import { splitSentences } from "../../docs/try/practice-core.js?v=2";
 
 const J = (p) => JSON.parse(readFileSync(new URL(`../../${p}`, import.meta.url), "utf8"));
 const dict = J("docs/thak/data-public/dict.json");
@@ -47,4 +48,25 @@ test("教典台羅：連字符／拼寫幾乎無受點（教育部寫法就是�
 test("仝批例句的華語翻譯：≥ 85% 有標（華語用字／直譯／句式）", () => {
   const r = rate(leku.map((x) => x.hoa));
   assert.ok(r >= 0.85, `華語檢出率 ${(r * 100).toFixed(1)}%`);
+});
+
+// ---- 讀文章語料（MOE《讀文章蓋趣味》01/02，docs/read/data/articles.json）----
+// 冊內官方台文（漢羅，逐篇段落 text 別做句）＝標準文本：誤報率上界限
+// （2026-10-16 實測 moe 16.4%／lkk 95.8%，加寡寬限）。lkk 模式 hanji 大宗
+// （LKK 漢羅表建議寫羅馬字）是模式設計，毋是誤報——這條護欄顧的是規則變吵。
+const arts = J("docs/read/data/articles.json").articles;
+const artSents = arts
+  .flatMap((a) => a.paragraphs.flatMap((p) => splitSentences(p.text)))
+  .map((s) => s.trim()).filter((s) => s.length > 1);
+const rateMode = (mode) => artSents
+  .filter((t) => runChecks(t, { ...base, mode, segments: segment(t, dict, rev) }).length).length / artSents.length;
+
+test("讀文章台文（教育部模式）：受點的句 ≤ 17%", () => {
+  const r = rateMode("moe");
+  assert.ok(r <= 0.17, `讀文章台文誤報率 ${(r * 100).toFixed(1)}%`);
+});
+
+test("讀文章台文（LKK 漢羅模式）：受點的句 ≤ 96%", () => {
+  const r = rateMode("lkk");
+  assert.ok(r <= 0.96, `讀文章 LKK 模式受點率 ${(r * 100).toFixed(1)}%`);
 });

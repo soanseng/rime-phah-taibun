@@ -103,8 +103,12 @@ rime-phah-taibun/
 │   ├── build_listen_data.py       # 聽寫：教典例句文字＋原音（Range 讀 MOE zip，轉 32 kbps）→ docs/study/data/listen.json、docs/study/audio/
 │   ├── build_grammar_page.py      # 文法筆記：grammar-notes.json → docs/grammar/index.html 靜態 HTML（SEO／LCP；改 JSON 後重跑，--check 測仝步）
 │   ├── build_pronounce_data.py    # 拼音發音教學：教育部《學拼音有撇步》(refs/ PDF，版權所有毋 commit，無就自動下載) → docs/pronounce/data/lessons.json；音檔連官方網址毋轉存；入聲表第 8 調照渲染頁面人工對（uv run --with pdfplumber）
+│   ├── build_article_data.py      # 讀文章：教育部《讀文章蓋趣味》01、02 59 篇 → docs/read/data/articles.json＋docs/read/audio/（32 kbps）；文字用 OpenTaigi 抽好的版面行（毋重抽 PDF）、音檔用 Lan-Lai-Oh-Taigi，兩个攏釘 commit；說明文「閩南語」→「台語」，引用刊名照原文
+│   │                               #   全文羅馬字：bun scripts/thak/article-roman.mjs → docs/read/data/roman.json（括號官方讀音優先，其他轉換詞典自動轉）
+│   ├── parse_moe_articles.py      # 讀文章官方讀音（o:1）＋詞彙學習 → 主字典源 TSV（build_all Step 3e；音節表擋英文夾註）
 │   ├── build_check_data.py        # 寫作檢查連字符詞表：教典詞目且例句家己連字號寫的 → docs/check/data/hyphen-words.json（改字典後重跑）
 │   │                               #   規則評估（教典台文/台羅/華語、教會公報、十項管見）：bun scripts/thak/check-eval.mjs
+│   │                               #   讀文章官方讀音 TL→漢 回歸（exact-match 基準）：bun scripts/thak/article-r2h.mjs
 │   ├── build_tts_model.py         # 轉換頁語音：MMS-TTS nan ONNX（釘 revision＋sha256）→ 細版 int8／原版 fp16 權重 → 切塊 ≤20 MiB → docs/tts/（uv run --with onnx --with 'numpy<2.4'）
 │   └── install_linux.sh / install_macos.sh
 │
@@ -112,6 +116,7 @@ rime-phah-taibun/
 ├── docs/                          # 網站（Cloudflare wrangler 部署 taigi.anatomind.com）+ 使用文件
 │   ├── try/                       # 網頁試拍：引擎＋pack（build_web_playground.py 產生）、練習/考試/記錄（practice*.js）
 │   ├── convert/ vocab/ grammar/   # 網頁工具頁：漢羅⇄羅馬字轉換、詞彙查詢、文法筆記（共用 docs/thak/js/main.js）；轉換頁有「🔊 唸予我聽」（預設關，tts-core.js／tts.js／ui/tts.js）
+│   ├── read/                      # 讀文章：《讀文章蓋趣味》59 篇漢羅／台羅／白話字／對照、全文＋詞彙音檔；連 try 打字練習（?article=）、聽寫（?listen=article:）
 │   ├── tts/                       # 語音模型（build_tts_model.py 產生）：manifest.json＋parts/ 含雜湊切塊（Cloudflare 單檔上限 25 MiB；_headers 永久快取）
 │   ├── thak/                      # 工具共用 JS/CSS/data-public（2026-10 由 soanseng/thak-tai-bun subtree 併入；舊 /thak/ 由 _redirects 301 去 /convert/）
 │   └── _redirects                 # Cloudflare 靜態資產轉址
@@ -128,6 +133,10 @@ rime-phah-taibun/
     ├── test_thak_tools.py         # bun 跑轉換工具羅→漢回歸斷言
     ├── test_tts_assets.py         # 語音模型部署把關：docs/ 逐檔 ≤25 MiB、切塊合起來 sha256 對、parts 檔名含版本
     ├── test_pronounce_page.py     # 拼音發音教學：課程涵蓋韻母/聲母/聲調/變調/POJ、逐題有音檔、官方網址、第 8 調照書面
+    ├── test_build_article_data.py # 讀文章：版面重組（右欄續文、作者、私用區字）、目錄篇數、音檔一對一
+    ├── test_read_page.py          # 讀文章頁：出處標示、資料連結、導覽
+    ├── test_parse_moe_articles.py # 讀文章官方讀音 → 字典源（輕聲 --、英文夾註排除）
+    ├── test_real_rime_articles.py # ★ 真 librime：讀文章語料零「找不到」（全頁候選）＋ top-1 棘輪（tests/fixtures/article_baseline.json；已知例外 KNOWN_MISSES）
     ├── test_site_pages.py         # 全站導覽一致、工具頁 SEO 掛佇主站、舊 /thak/ 轉址
     ├── test_lua_filter*.py        # Lua 模組測試
     ├── test_frequency.py / test_validate.py / test_dict_conversion.py …
@@ -157,6 +166,7 @@ rime-phah-taibun/
 | 教育部以本土語言標注臺灣地名 | language.moe.gov.tw 地名計畫成果（*_list.zip，僅取台語欄） | CC BY 3.0 TW |
 | 芫荽字體 | ButTaiwan/iansui（ChhoeTaigi/iansui 為 fork） | SIL OFL 1.1（建議安裝；Android App 內附原版 v1.020，候選＋註解字型） |
 | Meta MMS-TTS 台灣台語（白話字 POJ；轉換頁語音） | facebook/mms-tts-nan；ONNX 轉換 willwade/mms-tts-multilingual-models-onnx | CC BY-NC 4.0（非商用） |
+| 教育部《讀文章蓋趣味》01、02（文章＋音檔；官方讀音併入主字典） | 文字：OpenFormosa/OpenTaigi（釘 commit）；音檔：Taiwanese-Corpus/Lan-Lai-Oh-Taigi mp3/04 | 著作權屬教育部；使用者同意標示出處後轉 32 kbps 放網站、官方讀音收入主字典（2026-10-16）；頁面標明出處 |
 
 **授權原則**：字典資料 per-source 保持分離標示；NC 來源（台日大辭典、甘字典）不得進入商業發佈版本。LICENSE 檔內含 per-source 對照表。
 
@@ -211,9 +221,9 @@ Red → Green → Refactor：
 # === 環境 ===
 uv sync                                # 安裝所有依賴
 
-uv run pytest                          # 日常全套（addopts 自動跳過 real_rime 真引擎 84 條, 約 1 分鐘）
-uv run pytest -m real_rime             # 干焦真 librime 整合測試 84 條（g++ 編譯+部署 220K 字典, 15+ 分鐘）
-uv run pytest -o addopts=''            # 全部 716 條（日常 632 + real_rime 84; release 前跑）
+uv run pytest                          # 日常全套（addopts 自動跳過 real_rime 真引擎 89 條, 約 1 分鐘）
+uv run pytest -m real_rime             # 干焦真 librime 整合測試 89 條（g++ 編譯+部署 220K 字典, 15+ 分鐘）
+uv run pytest -o addopts=''            # 全部 849 條（日常 759 + real_rime 89 + e2e 1; release 前跑）
 uv run pytest tests/test_xxx.py -x     # 單檔，遇錯即停
 uv run pytest --cov=scripts --cov-report=term-missing
 uv run ruff check scripts/ tests/      # lint
@@ -223,6 +233,10 @@ uv run ruff format scripts/ tests/     # format
 uv run python scripts/build_web_playground.py   # 需 docs/thak/data-public/dict.json 與 data/*_freq.tsv
 #   第一次加 --my-rime-dist <@libreservice/my-rime 0.10.9 的 dist/>（引擎檔 vendor 進 docs/try/）
 python3 -m http.server 8000 --directory docs    # 開 http://localhost:8000/try/ 實測
+
+# === 讀文章（docs/read/；教育部《讀文章蓋趣味》）===
+uv run python scripts/build_article_data.py     # 文章 JSON＋音檔（--skip-audio 干焦重建 JSON）；快取佇 data/article-cache/
+bun scripts/thak/article-roman.mjs             # 全文台羅／白話字（改轉換詞典 dict.json 或文章 JSON 後重跑）
 
 # === 資料前處理（首次需先下載資源）===
 chmod +x scripts/download_resources.sh && ./scripts/download_resources.sh

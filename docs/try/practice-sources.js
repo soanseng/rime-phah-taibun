@@ -1,7 +1,7 @@
 // 練習題目來源：例句庫（轉換工具的 sentences.json）、詞語、維基百科／維基文庫（閩南語，POJ，
 // 瀏覽器即時讀，無存檔）、自訂文章（漢羅或羅馬字）。
 // 每个來源回 {title, url, license, kind, key, items}；item = {text, slots, gloss?}。
-import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys } from "./practice-core.js?v=2";
+import { alignSentence, romanSlots, splitSentences, sylKey, buildCharKeys, tokenize } from "./practice-core.js?v=2";
 import { loadDict, segment, buildReverseIndex, buildLM, decodeTlToHan, practicePool } from "../thak/js/dict.js?v=26";
 import { pojToTl, formatRomanization } from "../thak/js/roman.js?v=26";
 
@@ -72,6 +72,170 @@ export function loadListen() {
     }));
   listenPromise.catch(() => { listenPromise = null; });
   return listenPromise;
+}
+
+// ---- 《咱來學臺灣台語 讀文章蓋趣味》文章（教育部；/read/data/ 的 articles.json＋roman.json）----
+let articleDataPromise = null;
+export function loadArticleData() {
+  const get = (p, err) => fetch(new URL(p, import.meta.url))
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(err))));
+  articleDataPromise ??= Promise.all([
+    get("../read/data/articles.json", "文章資料載入失敗"),
+    get("../read/data/roman.json", "羅馬字資料載入失敗"),
+  ]);
+  articleDataPromise.catch(() => { articleDataPromise = null; });
+  return articleDataPromise;
+}
+
+// 段落文字＋roman.json 的斷詞 w → token 流：詞（{w}）、羅馬字（{r}，漢羅內底的拉丁文）、標點一字一格（{p}）
+function articleTokens(text, words) {
+  const s = String(text ?? "");
+  const toks = [];
+  let k = 0;
+  let j = 0;
+  while (j < s.length) {
+    const w = words[k];
+    if (w && s.startsWith(w.h, j)) {
+      toks.push({ w });
+      j += w.h.length;
+      k++;
+      continue;
+    }
+    // 詞對袂著（標點、數字、拉丁文）：食到下个詞出現的位，才閣對
+    const at = k < words.length ? s.indexOf(words[k].h, j + 1) : -1;
+    const run = s.slice(j, at < 0 ? s.length : at);
+    let pos = 0;
+    for (const t of tokenize(run)) {
+      const i = run.indexOf(t.src, pos);
+      if (i > pos) for (const ch of run.slice(pos, i)) toks.push({ p: ch });
+      toks.push(t.h !== undefined ? { p: t.src } : { r: t });
+      pos = i + t.src.length;
+    }
+    if (pos < run.length) for (const ch of run.slice(pos)) toks.push({ p: ch });
+    j += run.length;
+  }
+  return toks;
+}
+
+const SENT_END = /[。！？!?]/;
+const CLAUSE_PUNCT = /^[，、；：,;:]$/;
+const AFTER_END = /^[」』）〉》"'、，。！？；：…\s]$/;
+const ART_MAX_SLOTS = 30; // 佮 practice-core 的 MAX_SLOTS 仝款：一句上濟 30 格
+const slotCount = (toks) => toks.reduce((n, t) => n + (t.w ? [...t.w.h].length : t.r ? 1 : 0), 0);
+
+// token 流 → 句陣列：句尾 。！？ 收句（後壁的上角引號黏綴）；超過 30 格照逗號貪婪湊段
+function articleSentences(toks) {
+  const sents = [];
+  let cur = [];
+  let ended = false;
+  const flush = () => {
+    if (!cur.length) return;
+    if (slotCount(cur) > ART_MAX_SLOTS) {
+      const clauses = [];
+      let c = [];
+      for (const t of cur) {
+        c.push(t);
+        if (t.p && (CLAUSE_PUNCT.test(t.p) || SENT_END.test(t.p)) && slotCount(c) >= 2) {
+          clauses.push(c);
+          c = [];
+        }
+      }
+      if (c.length) clauses.push(c);
+      for (const cl of clauses) {
+        const last = sents[sents.length - 1];
+        if (last && slotCount(last) + slotCount(cl) <= ART_MAX_SLOTS) sents[sents.length - 1] = last.concat(cl);
+        else sents.push(cl);
+      }
+    } else sents.push(cur);
+    cur = [];
+  };
+  for (const t of toks) {
+    if (t.w || t.r) {
+      if (ended) { flush(); ended = false; }
+      cur.push(t);
+    } else if (SENT_END.test(t.p)) {
+      cur.push(t);
+      ended = true;
+    } else if (ended && AFTER_END.test(t.p)) cur.push(t);
+    else {
+      if (ended) { flush(); ended = false; }
+      cur.push(t);
+    }
+  }
+  flush();
+  return sents.filter((x) => slotCount(x) >= 2);
+}
+
+// 詞（w）→ 逐字格：讀音數＝字數就逐字對位；無讀音（miss）抑是對袂齊 → 逐字無讀音（拍漢字會著）
+function wordSlots({ h, r }) {
+  const chars = [...String(h ?? "")];
+  const syls = r ? String(r).split(" ").filter(Boolean) : [];
+  if (!r || syls.length !== chars.length) return chars.map((c) => ({ h: c, k: null, src: c }));
+  return chars.map((c, i) => ({ h: c, k: sylKey(syls[i]), src: formatRomanization(syls[i]) }));
+}
+
+// 揀一篇 → 逐句練習題：格的讀音是 roman.json 的機器轉換（官方詞有註 o），可能有誤；照文章順序
+export function articleItems(articles, roman, id) {
+  const art = (articles.articles ?? []).find((x) => x.id === id);
+  const paras = roman?.articles?.[id] ?? [];
+  const items = [];
+  art?.paragraphs?.forEach((p, i) => {
+    for (const sent of articleSentences(articleTokens(p.text, paras[i]?.w ?? []))) {
+      const slots = [];
+      let text = "";
+      for (const t of sent) {
+        if (t.w) {
+          text += t.w.h;
+          slots.push(...wordSlots(t.w));
+        } else if (t.r) {
+          text += t.r.src;
+          slots.push({ h: null, k: t.r.k, src: t.r.src });
+        } else text += t.p;
+      }
+      if (slots.length >= 2) items.push({ text: text.trim(), slots, autoReading: true });
+    }
+  });
+  return {
+    kind: "article", key: `article:${id}`, title: `《讀文章蓋趣味》${art?.title ?? id}`,
+    url: `../read/#${id}`, license: "著作權屬教育部",
+    audio: art?.audio ? new URL(`../read/${art.audio}`, import.meta.url).href : null,
+    items,
+  };
+}
+
+export async function articleSource(id) {
+  const [articles, roman] = await loadArticleData();
+  const src = articleItems(articles, roman, id);
+  if (!src.items.length) throw new Error("這篇揣無通練習的句。");
+  return src;
+}
+
+// 文章詞彙 → 聽寫題：台羅有、佮漢字對會齊的才收；音檔佇 /read/（音檔著作權屬教育部）
+export function articleVocabItems(articles, base, id = null) {
+  const items = [];
+  for (const art of articles.articles ?? []) {
+    if (id && art.id !== id) continue;
+    for (const v of art.vocab ?? []) {
+      if (!v.tl) continue;
+      const slots = alignSentence(v.han, v.tl);
+      if (slots) items.push({ id: `${art.id}-${v.n}`, text: v.han, slots, gloss: v.hoa || "", audio: new URL(v.audio, base).href });
+    }
+  }
+  return items;
+}
+
+export async function articleVocabSource(id = null) {
+  const [articles] = await loadArticleData();
+  const art = id ? (articles.articles ?? []).find((x) => x.id === id) : null;
+  const items = seededShuffle(articleVocabItems(articles, new URL("../read/", import.meta.url).href, id), 20261016);
+  if (!items.length) throw new Error("這篇揣無通聽寫的詞。");
+  return {
+    kind: "listen", key: id ? `listen-article:${id}` : "listen-articles",
+    title: art ? `《讀文章蓋趣味》詞彙聽寫・${art.title}` : "《讀文章蓋趣味》詞彙聽寫",
+    url: id ? `../read/#${id}` : "../read/",
+    license: "教育部《咱來學臺灣台語 讀文章蓋趣味》；著作權屬教育部",
+    items,
+  };
 }
 
 // ---- 轉換工具的詞典（詞語、自訂文章、維基用；需要才載）----

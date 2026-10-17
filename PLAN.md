@@ -631,6 +631,12 @@ return M
 - [x] iCorpus 新聞語料：已用 extract_icorpus_freq.py 提取 57K 詞、302K tokens
 - [x] nmtl_2006_dadwt 格式分析：2,169 篇 .tbk 純文字（POJ），含 25M nmtl.json 已對齊版
 - [x] KipSutianDataMirror 詞目、例句與又音已整合進主字典及語料流程；未接線的獨立反查字典產物已移除
+- [ ] 寫作檢查（/check/）待辦——《讀文章蓋趣味》59 篇 1,319 句評估（2026-10-16，`bun scripts/thak/check-eval.mjs` F 段；moe 模式 16.4% 句有標記）。專案維護者裁示先列待辦、毋改規則：
+  - `docs/thak/data-public/hints.json` 輕聲提示有挖錯的項：後來→後--來、總是→總--是、路裡→路--裡、海呢、馬的（九月→九--月 照手冊文法說明是著的，愛留）；建議過濾挖 hint 的腳本。
+  - `grammar-rules.js` gating：「臺灣東西兩地」的方位「東西」予華語「東西→物件」點著；V得 點著台語補語 tit（捌得過大獎、袂比得、認得）；V一V 點著量詞疊字（一條一條、一沿一沿）；「別步」。
+  - 700 字表異用字對專名／多義字誤點：姓「陳」、香 hiunn、水 tsuí、許（愛上下文判斷）。
+  - 詞典缺詞（華語詞嫌疑誤報）：鯤鯓、猴硐、褐頭鷦鶯、饀、鰲、萼、瓠、涅、李庥、偕睿廉。
+  - `FOREIGN_RE` 英語辨識無夠（This／is／land／putting 予當做台羅音節檢查）。
 ---
 
 ## 9. 改進計畫（2026-09 起）

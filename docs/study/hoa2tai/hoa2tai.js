@@ -2,7 +2,7 @@
 // 進度（句長過濾、順序 seed、第幾句、今仔日 tally）存佇 study-store 的 pos.hoa2tai，
 // 重整了後照原順序繼續。參考答案佮華語攏照原句顯示（textContent）。
 import { createStudy } from "../study-store.js?v=1";
-import { loadBank } from "../../try/practice-sources.js?v=3";
+import { loadBank } from "../../try/practice-sources.js?v=4";
 import { readingOf } from "../../try/practice-core.js?v=2";
 import { overlap, seededOrder, matchesLength, cardFor } from "./hoa2tai-core.js?v=2";
 

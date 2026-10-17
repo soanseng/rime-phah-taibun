@@ -11,6 +11,7 @@ import {
   buildCharMap, buildWordReadings, buildGlossIndex,
 } from "../../docs/check/check-core.js?v=5";
 import { segment, buildReverseIndex } from "../../docs/thak/js/dict.js?v=26";
+import { splitSentences } from "../../docs/try/practice-core.js?v=2";
 
 const arg = (k, d) => {
   const i = process.argv.indexOf(k);
@@ -97,3 +98,12 @@ for (let i = 1; i <= 10; i++) {
   paras.push(...raw.split(/\n+/).map((s) => s.trim()).filter((s) => s.length > 20));
 }
 report("D 十項管見 POJ", spread(paras, N), "moe");
+// ---- F 讀文章（MOE《讀文章蓋趣味》01/02，docs/read/data/articles.json）----
+// 冊內官方台文（漢羅，逐篇段落 text）＝標準文本，應該真少受點（誤報）；逐類統計做規則調查。
+const arts = J("docs/read/data/articles.json").articles;
+const artSents = arts
+  .flatMap((a) => a.paragraphs.flatMap((p) => splitSentences(p.text)))
+  .map((s) => s.trim()).filter((s) => s.length > 1);
+console.log(`\n讀文章語料：${arts.length} 篇切做 ${artSents.length} 句（全文，無抽樣）`);
+report("F 讀文章台文", artSents, "moe");
+report("F 讀文章台文", artSents, "lkk");

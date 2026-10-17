@@ -243,7 +243,7 @@
           ><div class="nav-group"
             ><button class="nav-group-btn" type="button" aria-expanded="false" aria-controls="nav-study">檢定</button
             ><div class="nav-menu" id="nav-study"
-              ><a href="../study/">檢定練習總覽</a><a href="../pronounce/">拼音發音教學</a><a href="#practice">打字練習・模擬考</a><a href="#listen">聽寫練習</a><a href="../study/iongji/">推薦用字選擇</a><a href="../study/hoa2tai/">華語→台語造句</a><a href="../study/sandhi/">變調練習</a><a href="../study/review/">弱點複習</a><a href="../study/worksheet/">學習單列印</a></div
+                ><a href="../study/">檢定練習總覽</a><a href="../pronounce/">拼音發音教學</a><a href="../read/">讀文章（全文・羅馬字）</a><a href="#practice">打字練習・模擬考</a><a href="#listen">聽寫練習</a><a href="../study/iongji/">推薦用字選擇</a><a href="../study/hoa2tai/">華語→台語造句</a><a href="../study/sandhi/">變調練習</a><a href="../study/review/">弱點複習</a><a href="../study/worksheet/">學習單列印</a></div
             ></div
           ><a href="../guide.html">使用說明</a
           ><a
@@ -294,7 +294,7 @@
                 <label>題目
                   <select id="pr-source">
                     <option value="bank">例句庫（教典／900 例句）</option>
-                    <option value="words">詞語（2–4 字，看漢字＋讀音）</option>
+                    <option value="article">讀文章蓋趣味（教育部）</option>
                     <option value="wp-random">維基百科・隨機媠氣文章</option>
                     <option value="wp-article">維基百科／維基文庫・指定文章</option>
                     <option value="ws-book">維基文庫・揀冊</option>
@@ -302,6 +302,9 @@
                   </select>
                 </label>
                 <button class="mode hidden" id="pr-again" type="button">換一篇</button>
+                <span id="pr-article-box" class="hidden pr-inline"
+                  ><select id="pr-article"><option value="">— 揀一篇 —</option></select><button class="mode hidden" id="pr-article-play" type="button">▶ 聽全文</button></span
+                >
                 <span id="pr-wiki-box" class="hidden pr-inline"
                   ><input id="pr-wiki" type="text" placeholder="貼維基網址，抑是文章標題（Tâi-oân）" /><button class="mode" id="pr-wiki-go" type="button">載入</button></span
                 >
@@ -320,10 +323,16 @@
                 <span>例句庫隨機 10 句；干焦顯示漢羅佮華語意思，無讀音、無即時對錯，<kbd>Enter</kbd> 交一題，考了才算分。</span>
               </div>
               <div id="pr-listen-bar" class="hidden pr-row">
+                <label class="opt">題目
+                  <select id="pr-listen-src">
+                    <option value="moe">教典例句</option>
+                    <option value="articles">文章詞彙</option>
+                  </select>
+                </label>
                 <button class="mode on" id="pr-play" type="button">▶ 播放</button>
                 <button class="mode" id="pr-slow" type="button">慢速播放</button>
                 <label class="opt"><input type="checkbox" id="pr-hint-hoa" /> 先看華語提示</label>
-                <span>教典例句原音；聽了拍出規句，<kbd>Enter</kbd> 揭曉答案、閣 <kbd>Enter</kbd> 下一句。</span>
+                <span>聽原音拍出規句，<kbd>Enter</kbd> 揭曉答案、閣 <kbd>Enter</kbd> 下一句。</span>
                 <audio id="pr-audio" preload="none"></audio>
               </div>
               <div class="pr-meta"><span id="pr-title"></span><span id="pr-pos"></span><span id="pr-msg"></span></div>
@@ -437,7 +446,7 @@
     </footer>
 <script type="module">
 // 正式站 JS 快取 186 工（Cloudflare）：練習模組改了愛共 ?v= 數字加一（practice*.js 內底嘛愛仝款）
-import { initPractice } from './practice.js?v=3';
+import { initPractice } from './practice.js?v=4';
 const $ = (id) => document.getElementById(id);
 const status = $('status'), app = $('app'), out = $('out'), preedit = $('preedit'), candsEl = $('cands');
 

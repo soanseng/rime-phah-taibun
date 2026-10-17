@@ -99,7 +99,11 @@ def main(argv: list[str] | None = None) -> None:
     stti_entries = data / "stti_entries.tsv"
     placename_odt_dir = data / "moe_placenames" / "odt"
     placename_entries = data / "placename_entries.tsv"
-
+    # MOE《讀文章蓋趣味》01/02 官方讀音 (Step 3e 尾手接入 3d append): 來源是
+    # committed roman.json, 無 data/ 相依; 著作權屬教育部, 佮讀文章頁面
+    # 仝款標示出處 (AGENTS.md 外部資料來源表)。
+    article_roman_json = Path("docs/read/data/roman.json")
+    article_official_entries = data / "moe_article_official_entries.tsv"
     lighttone_output = data / "lighttone_entries.tsv"
     # True only when Step 3 rebuilt the dictionary THIS run. Every tail
     # step that reads or append-writes the dict gates on it, so a failed
@@ -421,6 +425,24 @@ def main(argv: list[str] | None = None) -> None:
         steps_ok &= placename_parsed
     else:
         print(f"SKIP: placename ODT dir not found at {placename_odt_dir}")
+    article_parsed = False
+    if article_roman_json.exists():
+        article_parsed = run_step(
+            "Parse MOE 讀文章蓋趣味 official readings",
+            [
+                python,
+                "scripts/parse_moe_articles.py",
+                "--input",
+                str(article_roman_json),
+                "--output",
+                str(article_official_entries),
+                "--syllabary",
+                str(out / "phah_taibun.dict.yaml"),
+            ],
+        )
+        steps_ok &= article_parsed
+    else:
+        print(f"SKIP: article roman.json not found at {article_roman_json}")
 
     dict_yaml = out / "phah_taibun.dict.yaml"
     if dict_rebuilt and dict_yaml.exists():
@@ -429,6 +451,8 @@ def main(argv: list[str] | None = None) -> None:
             moe_sources.append((stti_entries, 600))
         if placename_parsed and placename_entries.exists() and placename_entries.stat().st_size > 0:
             moe_sources.append((placename_entries, 700))
+        if article_parsed and article_official_entries.exists() and article_official_entries.stat().st_size > 0:
+            moe_sources.append((article_official_entries, 600))
         if moe_sources:
             # Same duplicate-entry gate as the supplement: a (text, code)
             # row already in the dictionary must never be appended twice.
@@ -454,7 +478,10 @@ def main(argv: list[str] | None = None) -> None:
                             weight = int(parts[3]) if len(parts) >= 4 else default_weight
                             out_f.write(f"{han}\t{code}\t{weight}\n")
                             appended += 1
-            print(f"  Appended {appended} MOE terminology/placename entries ({skipped} duplicate rows skipped)")
+            print(
+                f"  Appended {appended} MOE terminology/placename/article-official"
+                f" entries ({skipped} duplicate rows skipped)"
+            )
 
     # Step 4: Parse LKK rules
     lkk_csv = data / "lkk_yongji.csv"
