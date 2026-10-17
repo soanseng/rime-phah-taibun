@@ -284,11 +284,6 @@
               <button class="mode tab" type="button" role="tab" data-view="exam" aria-selected="false">考試</button>
               <button class="mode tab" type="button" role="tab" data-view="records" aria-selected="false">記錄</button>
             </div>
-            <div id="modes">
-              <button class="mode" id="m-scheme">方案：寫台文</button>
-              <button class="mode" id="m-full_romanization">輸出：漢羅</button>
-              <button class="mode" id="m-poj_mode">拼音：TL</button>
-            </div>
             <section id="practice" class="hidden" aria-label="練習">
               <div id="pr-src-row" class="pr-row">
                 <label>題目
@@ -348,6 +343,11 @@
               </div>
               <div id="pr-result"></div>
             </section>
+            <div id="modes">
+              <button class="mode" id="m-scheme">方案：寫台文</button>
+              <button class="mode" id="m-full_romanization">輸出：漢羅</button>
+              <button class="mode" id="m-poj_mode">拼音：TL</button>
+            </div>
             <div id="editor" class="idle" tabindex="0" role="textbox" aria-multiline="true" aria-label="打字區">
               <div id="out"></div><div id="preedit" aria-live="polite"></div>
               <span class="focus-tip">點一下開始拍字</span>
@@ -367,7 +367,7 @@
               <button class="mode" id="copy" type="button">複製</button>
               <button class="mode" id="clear" type="button">清空</button>
             </div>
-            <p id="hint">例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出反白的候選；欲揀別个，按 <kbd>Tab</kbd> 進選字模式，才按候選頭前的鍵（<kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>…），抑是直接點候選。<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<br />練習：看讀音拍出整句，<kbd>Enter</kbd> 跳下一句；聽寫：聽教典原音拍；考試：干焦看漢羅。拍毋著的字會收入<a href="../study/review/">弱點複習</a>。</p>
+            <p id="hint">例：<span id="examples"></span>。<kbd>空白鍵</kbd>送出反白的候選；欲揀別个，按 <kbd>Tab</kbd> 進選字模式，才按候選頭前的鍵（<kbd>a</kbd><kbd>s</kbd><kbd>d</kbd><kbd>f</kbd>…），抑是直接點候選。<kbd>[</kbd><kbd>]</kbd>翻頁、<kbd>Esc</kbd>取消。拍 <code>vvh</code> 看全部按鍵。<br />練習：看讀音拍出整句，<kbd>Enter</kbd> 跳下一句；聽寫：聽教典原音拍；考試：干焦看漢羅。拍毋著的字會收入<a href="../study/review/">弱點複習</a>。<br />干焦欲練讀音？共打字區頂懸的「輸出：漢羅」切做<b>「輸出：全羅」</b>，送出的就是台羅（閣切「拼音：POJ」就出白話字，題目的讀音嘛綴咧換），免揀漢字；練習、聽寫、考試攏收羅馬字作答，比的是音節，聲調無算。</p>
             <section id="records" class="hidden" aria-label="練習記錄">
               <p id="rec-summary"></p>
               <p class="rec-more">檢定練習（推薦用字、造句、變調…）的進度佮備份，請看<a href="../study/">檢定練習總覽</a>；拍毋著的字佇<a href="../study/review/">弱點複習</a>。</p>
