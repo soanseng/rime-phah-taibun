@@ -22,7 +22,7 @@
 |---|------|------|
 | Rime schema | YAML | 輸入法方案定義、speller algebra、字典格式 |
 | Runtime 腳本 | Lua | 候選過濾、輸出模式切換、漢羅轉換、反查、造詞、符號、輕聲、推薦 |
-| 資料前處理 | Python 3.10+（uv 管理） | ChhoeTaigi CSV / KipSutian ODS / 7 語料庫 → Rime dict 轉換、詞頻統計、LKK 用字表解析 |
+| 資料前處理 | Python 3.10+（uv 管理） | ChhoeTaigi CSV / KipSutian ODS / 6 語料庫 → Rime dict 轉換、詞頻統計、LKK 用字表解析 |
 | 發佈 | Shell / PowerShell / Inno Setup | Linux install.sh、macOS install_macos.sh、Windows install_windows.ps1 + .iss |
 
 ## 目錄結構
@@ -48,7 +48,7 @@ rime-phah-taibun/
 │   ├── moe700.yaml                   # 教育部 700 推薦用字
 │   └── default.custom.yaml           # 預設配置（含 switcher/save_options）
 │
-├── lua/                          # 21 個 Lua 模組（一功能一檔）
+├── lua/                          # 20 個 Lua 模組（一功能一檔）
 │   ├── phah_taibun_filter.lua        # 核心：拼音註解 + 輸出模式 + 漢羅轉換
 │   ├── phah_taibun_input.lua         # 輸入前處理 processor
 │   ├── phah_taibun_commit.lua        # 送出 processor
@@ -66,7 +66,6 @@ rime-phah-taibun/
 │   ├── phah_taibun_emoji_menu.lua    # Emoji 分類瀏覽（`e；Unicode 官方清單）
 │   ├── phah_taibun_help.lua          # 按鍵說明 ,,
 │   ├── phah_taibun_date.lua          # 台語日期 ,,
-│   ├── phah_taibun_speedup.lua       # 簡拼提示 ,,
 │   ├── phah_taibun_toneless.lua     # 無調整詞優先（0.8.0）
 │   └── phah_taibun_telex.lua         # Telex 解析
 │
@@ -81,7 +80,6 @@ rime-phah-taibun/
 │   ├── extract_ungian_freq.py     # 楊允言詞頻
 │   ├── extract_icorpus_freq.py    # iCorpus 新聞語料詞頻
 │   ├── extract_nmtl.py            # NMTL 文學語料
-│   ├── extract_pojbh.py           # 白話字文獻館語料（POJ→TL）
 │   ├── extract_kipsutian_sentences.py # 教典例句
 │   ├── extract_kok4hau7_freq.py   # 康軒教科書詞頻
 │   ├── extract_900leku_freq.py    # 900 例句詞頻
@@ -123,7 +121,7 @@ rime-phah-taibun/
 ├── packaging/                     # windows（Inno Setup .iss）/ macos（pkg 腳本）/ android（Trime 包說明＋trime.custom.yaml 排版 patch）/ browser-extension（STORE.md 商店上架資料）
 ├── extension/                     # 瀏覽器擴充功能原始碼（build_extension.py 打包）：content script 浮動候選框、engine-host（worker RPC）、controller、popup
 ├── install.sh / install_windows.ps1
-└── tests/                         # pytest（26 個測試檔＋conftest/rime_smoke.cpp）
+└── tests/                         # pytest（25 個測試檔＋conftest/rime_smoke.cpp）
     ├── test_real_rime.py          # ★ 真 librime 整合測試（無 librime 則 skip）
     ├── test_android_package.py    # ★ Trime 一鍵包內容＋真引擎部署 smoke（無 liur checkout／無系統 rime-data 則 skip）
     ├── test_web_playground.py     # 網頁試拍選詞（詞身份、語料優先、單字門檻）＋元件清單只引用有出貨的模組
@@ -147,14 +145,12 @@ rime-phah-taibun/
 
 | 資料 | 來源 | 授權 |
 |------|------|------|
-| iTaigi 華台對照典 | ChhoeTaigi/ChhoeTaigiDatabase | CC0 |
-| 台華線頂對照典 | 同上 | CC BY-SA 4.0 |
+| 台華線頂對照典 | ChhoeTaigi/ChhoeTaigiDatabase | CC BY-SA 4.0 |
 | 教育部台語辭典（KipSutian） | ChhoeTaigi/KipSutianDataMirror | CC BY-ND 3.0 |
 | 台日大辭典 | ChhoeTaigi/ChhoeTaigiDatabase | CC BY-NC-SA 3.0（非商用） |
-| 甘字典 | ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian | CC BY-NC-SA |
+| 甘字典 | ChhoeTaigi/ChhoeTaigiDatabase（KamJitian.csv） | CC BY-NC-SA |
 | iCorpus 臺華平行新聞語料 | Taiwanese-Corpus/icorpus_ka1_han3-ji7 | CC BY 4.0（README 明載） |
 | NMTL 台語文學 2,169 篇 | Taiwanese-Corpus/nmtl_2006_dadwt | 待確認 |
-| 白話字文獻館 | Taiwanese-Corpus/Khin-hoan_2010_pojbh | 待確認 |
 | 楊允言詞頻 (2009) | Taiwanese-Corpus/Ungian_2009_KIPsupin | 專案維護者確認可用，含網頁試拍字典選詞（2026-10-07）；需註明出處 |
 | LKK 用字表 | 李江却基金會 Google Sheets | 已確認可用，需註明出處 |
 | rime-liur Lua 模組 | ryanwuson/rime-liur | 已確認可使用，需註明出處（PLAN §8） |

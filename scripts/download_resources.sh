@@ -60,9 +60,9 @@ echo " 寫台文 rime-phah-taibun 外部資源下載"
 echo "================================================"
 echo ""
 
-echo "=== 1/20 ChhoeTaigi 台語字詞資料庫 ==="
-echo "  主要字典來源：9 本辭典 CSV，353K 筆"
-echo "  授權：各子資料庫不同（CC0 / CC BY-SA / CC BY-ND / CC BY-NC-SA）"
+echo "=== 1/19 ChhoeTaigi 台語字詞資料庫 ==="
+echo "  主要字典來源：4 本辭典 CSV（台華線頂、教育部、台日大辭典、甘字典）"
+echo "  授權：各子資料庫不同（CC BY-SA / CC BY-ND / CC BY-NC-SA）"
 clone_and_degit \
   "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase.git" \
   "$DATA_DIR/ChhoeTaigiDatabase" \
@@ -70,7 +70,7 @@ clone_and_degit \
   "b33c6a1fcc2d11a2962e76b6055d528d11677c3b"
 
 echo ""
-echo "=== 2/20 glll4678/rime-taigi ==="
+echo "=== 2/19 glll4678/rime-taigi ==="
 echo "  現有 Rime 台語方案，參考 schema 結構和方言碼（EI/EE/OO）"
 clone_and_degit \
   "https://github.com/glll4678/rime-taigi.git" \
@@ -79,7 +79,7 @@ clone_and_degit \
   "28d03225e97ac24924f24b8f1293eb341ecafb83"
 
 echo ""
-echo "=== 3/20 ryanwuson/rime-liur ==="
+echo "=== 3/19 ryanwuson/rime-liur ==="
 echo "  蝦米 Rime 方案，參考 Lua 模組架構（查碼、造詞、符號、日期）"
 clone_and_degit \
   "https://github.com/ryanwuson/rime-liur.git" \
@@ -88,7 +88,7 @@ clone_and_degit \
   "01da8ecdc5cfb64bdba2526d6e75ee1483615e94"
 
 echo ""
-echo "=== 4/20 YuRen-tw/rime-taigi-tps ==="
+echo "=== 4/19 YuRen-tw/rime-taigi-tps ==="
 echo "  方音符號台語方案，參考字典格式和方音鍵盤配置"
 clone_and_degit \
   "https://github.com/YuRen-tw/rime-taigi-tps.git" \
@@ -97,7 +97,7 @@ clone_and_degit \
   "ffa76b465ef2f4442622c38189b63653ff438de3"
 
 echo ""
-echo "=== 5/20 ButTaiwan/taigivs ==="
+echo "=== 5/19 ButTaiwan/taigivs ==="
 echo "  字咍台語字型，IVS 對照表（Phase 2 用）"
 clone_and_degit \
   "https://github.com/ButTaiwan/taigivs.git" \
@@ -106,7 +106,7 @@ clone_and_degit \
   "a2114806be61fc003ce56fcd9663141f8b3e2a24"
 
 echo ""
-echo "=== 6/20 Taiwanese-Corpus/hue7jip8 ==="
+echo "=== 6/19 Taiwanese-Corpus/hue7jip8 ==="
 echo "  台語/族語/客語語料清單彙整，含楊允言詞頻研究路徑"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/hue7jip8.git" \
@@ -116,7 +116,7 @@ clone_and_degit \
 
 
 echo ""
-echo "=== 7/20 i3thuan5/khin1siann1-hun1sik4 ==="
+echo "=== 7/19 i3thuan5/khin1siann1-hun1sik4 ==="
 echo "  輕聲分析器，含詞頻書寫規範（分詞邏輯參考）"
 clone_and_degit \
   "https://github.com/i3thuan5/khin1siann1-hun1sik4.git" \
@@ -125,7 +125,7 @@ clone_and_degit \
   "308fe8aa43ed7ff1d71e4a0c72079a742aad67b4"
 
 echo ""
-echo "=== 8/20 LKK 用字表（Google Sheets CSV 下載）==="
+echo "=== 8/19 LKK 用字表（Google Sheets CSV 下載）==="
 echo "  李江却台語文教基金會漢羅用字規範（雲端版試算表）"
 LKK_SHEET_EXPORT="https://docs.google.com/spreadsheets/d/1ICPcP3PuEdLirax-HBLtewiOz53KzAfpme9sjmoIO-w/export?format=csv"
 download_verified \
@@ -147,7 +147,7 @@ if [ -n "$LKK_HTML" ] && [ ! -f "$DATA_DIR/lkk_yongji.html" ]; then
 fi
 
 echo ""
-echo "=== 9b/21 教育部推薦700字台語漢字 ==="
+echo "=== 9/19 教育部推薦700字台語漢字 ==="
 echo "  教育部公告700字台語漢字推薦用字表"
 MINNAN_700_REVISION="ac77ef59fdf5d0c74eba39a385f67e27ca8742a4"
 download_verified \
@@ -157,7 +157,7 @@ download_verified \
   "教育部700字 CSV"
 
 echo ""
-echo "=== 9/20 Taiwanese-Corpus/Ungian_2009_KIPsupin ==="
+echo "=== 10/19 Taiwanese-Corpus/Ungian_2009_KIPsupin ==="
 echo "  楊允言詞頻資料（教育部臺灣閩南語字詞頻調查）"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/Ungian_2009_KIPsupin.git" \
@@ -166,7 +166,7 @@ clone_and_degit \
   "9dc2c0bc516e731ff2ed7ee56f04b0dcf12bcac3"
 
 echo ""
-echo "=== 10/20 i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7 ==="
+echo "=== 11/19 i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7 ==="
 echo "  意傳臺灣言語工具（音標轉換用，含原始碼及 Python 套件）"
 clone_and_degit \
   "https://github.com/i3thuan5/tai5-uan5_gian5-gi2_kang1-ku7.git" \
@@ -175,7 +175,7 @@ clone_and_degit \
   "69716fafb5cacbc2c2b6f3ac4b6931a8a6ed95b6"
 
 echo ""
-echo "=== 11/20 ChhoeTaigi/KipSutianDataMirror ==="
+echo "=== 12/19 ChhoeTaigi/KipSutianDataMirror ==="
 echo "  教育部台語辭典鏡像（ODS + 音檔）"
 echo "  授權：CC BY-ND 3.0 Taiwan"
 clone_and_degit \
@@ -185,7 +185,7 @@ clone_and_degit \
   "936db276e153886e537aaf425dbdafbc1961faaa"
 
 echo ""
-echo "=== 12/20 i3thuan5/KeSi ==="
+echo "=== 13/19 i3thuan5/KeSi ==="
 echo "  POJ↔TL 轉換 Python 工具，比 tai5-uan5 更輕量"
 echo "  授權：MIT"
 clone_and_degit \
@@ -195,7 +195,7 @@ clone_and_degit \
   "b70d0e411eb1ef9f38c89f6f5291f9c7e0c442fb"
 
 echo ""
-echo "=== 13/20 Taiwanese-Corpus/icorpus_ka1_han3-ji7 ==="
+echo "=== 14/19 Taiwanese-Corpus/icorpus_ka1_han3-ji7 ==="
 echo "  iCorpus 臺華平行新聞語料庫（2008-2014），可算真實詞頻"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7.git" \
@@ -204,7 +204,7 @@ clone_and_degit \
   "f49537f2f446e9c6c024634d8b95dab89b8dab44"
 
 echo ""
-echo "=== 14/20 Taiwanese-Corpus/nmtl_2006_dadwt ==="
+echo "=== 15/19 Taiwanese-Corpus/nmtl_2006_dadwt ==="
 echo "  台語漢羅及全羅文學作品 2,169 篇，漢羅書寫慣例黃金參考"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt.git" \
@@ -213,7 +213,7 @@ clone_and_degit \
   "3afb6a805439546b571fec30452b78e06a942277"
 
 echo ""
-echo "=== 15/20 Taiwanese-Corpus/moe_minkalaok ==="
+echo "=== 16/19 Taiwanese-Corpus/moe_minkalaok ==="
 echo "  閩南語卡拉OK正字字表，教育部用字規範參考"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/moe_minkalaok.git" \
@@ -222,26 +222,7 @@ clone_and_degit \
   "f4af9c9e3caa278a2d9adfe8f5b0a1f217faa2a5"
 
 echo ""
-echo "=== 16/20 Taiwanese-Corpus/Khin-hoan_2010_pojbh ==="
-echo "  白話字文獻館（歷史 POJ 語料，台灣師範大學 2007-2010）"
-clone_and_degit \
-  "https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh.git" \
-  "$DATA_DIR/Khin-hoan_2010_pojbh" \
-  "Taiwanese-Corpus/Khin-hoan_2010_pojbh" \
-  "097a75437a0a150efb25b8790c09bad3c1fa7aee"
-
-echo ""
-echo "=== 17/20 ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian ==="
-echo "  甘字典 CSV 原始版（1913 年甘為霖台語辭典）"
-echo "  授權：CC BY-NC-SA"
-clone_and_degit \
-  "https://github.com/ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian.git" \
-  "$DATA_DIR/Kam-Ui-lim_1913_Kam-Ji-tian" \
-  "ChhoeTaigi/Kam-Ui-lim_1913_Kam-Ji-tian" \
-  "b0b40fcb98972bcf1cc0947d3e6702843ccb00bb"
-
-echo ""
-echo "=== 18/20 Taiwanese-Corpus/kok4hau7-kho3pun2 ==="
+echo "=== 17/19 Taiwanese-Corpus/kok4hau7-kho3pun2 ==="
 echo "  國小台語課本（康軒版），12冊漢字+台羅對照"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2.git" \
@@ -250,7 +231,7 @@ clone_and_degit \
   "08ee4252bf4b177c4ac297c7bfa0e20bd1ffecd0"
 
 echo ""
-echo "=== 19/20 Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3 ==="
+echo "=== 18/19 Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3 ==="
 echo "  常用900例句（詞條漢字+台羅+例句），日常高頻詞彙"
 clone_and_degit \
   "https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3.git" \
@@ -259,7 +240,7 @@ clone_and_degit \
   "55391016e3805f637902ce83dc9767e9744e7448"
 
 echo ""
-echo "=== 20/20 luke871016/Taigi-Input-method-dictionary-supplement ==="
+echo "=== 19/19 luke871016/Taigi-Input-method-dictionary-supplement ==="
 echo "  建中的教育部臺灣台語輸入法詞庫增補檔案，作為人工增補字詞來源"
 clone_and_degit \
   "https://github.com/luke871016/Taigi-Input-method-dictionary-supplement.git" \

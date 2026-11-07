@@ -25,19 +25,15 @@ except ModuleNotFoundError:
 # Source priority: higher = more authoritative
 SOURCE_PRIORITY = {
     "moe": 4,  # 教育部台語辭典
-    "itaigi": 3,  # iTaigi 社群
     "taihoa": 2,  # 台華線頂
-    "maryknoll": 1,  # Maryknoll
     # MOE extra TSV sources (see _read_extra_tsv_rows); STTI and placename
     # TSVs share the stti priority tier.
     "stti": 3,  # 教育部學科術語 + 本土語言標注臺灣地名
 }
 
 CSV_SOURCE_MAP = {
-    "iTaigiHoataiTuichiautian": "itaigi",
     "TaihoaSoanntengTuichiautian": "taihoa",
     "KauiokpooTaigiSutian": "moe",
-    "MaryknollTaiengSutian": "maryknoll",
 }
 
 SENTENCE_PUNCT_RE = re.compile("[\u3002\uff01\uff1f\uff1b\uff1a]")

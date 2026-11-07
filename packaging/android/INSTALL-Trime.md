@@ -82,7 +82,7 @@ Android **不是**桌面的 `F4`，也不要用桌面快捷鍵。
 | 造詞模式 | `;` | `;` |
 | 句首／專名大寫 | `Shift+字母` | Shift 鍵（單按切換、長按鎖定） |
 | 全羅模式直送 | `Enter` | Enter |
-| 按鍵說明／日期／簡拼 | `vvh`／`vvjit`／`vvsp` | 連打 v v h 等 |
+| 按鍵說明／日期 | `vvh`／`vvjit` | 連打 v v h 等 |
 
 **模式開關**（漢羅／全羅、TL／POJ、半形／全形、台文／英文）走 schema 的 `switches`，在 App 的**開關面板**切換（Trime 的 `SwitchOptionWindow`），不是桌面的 `F4`。切過的狀態會記住。
 

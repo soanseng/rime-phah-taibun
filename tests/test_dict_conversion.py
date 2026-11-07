@@ -12,7 +12,6 @@ from scripts.convert_chhoetaigi import (
     dedup_entries,
     main,
     parse_generic_csv,
-    parse_itaigi_csv,
     parse_kipsutian_main_csv,
     parse_taihoa_csv,
     source_name_from_filename,
@@ -79,7 +78,7 @@ class TestCleanKipInput:
 
 
 class TestSyllableLocalSlash:
-    """ChhoeTaigi slashes are sometimes syllable-local (iTaigi 梅子雞
+    """ChhoeTaigi slashes are sometimes syllable-local (梅子雞
     `mue5-a2-ke/kue`), sometimes whole-reading alternatives (Embree
     `ah-tshui3-hong5/ah-tshui3-pue-hong5`). Splitting the former as whole
     readings ships `梅子雞 kue1`, so typing `kue` pops up 梅子雞. The Hanzi
@@ -125,44 +124,11 @@ class TestSyllableLocalSlash:
         assert clean_kip_input("tsing2-thau5-bu2/bo2(漳)", hanlo="指頭拇") == ["tsing2-thau5-bu2"]
 
     def test_slashed_headword_keeps_whole_reading_split(self):
-        # iTaigi row: headword and reading both list two whole forms.
+        # ChhoeTaigi row: headword and reading both list two whole forms.
         assert clean_kip_input("Be2-a2 Ing-kau2/ Ma2 Ing-kau2", hanlo="馬仔英九/馬英九") == [
             "be2-a2-ing-kau2",
             "ma2-ing-kau2",
         ]
-
-
-class TestParseItaigiCsv:
-    """Parse iTaigi CSV into list of dict entries."""
-
-    def test_basic_parse(self, itaigi_csv_content):
-        entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
-        assert len(entries) == 3
-
-    def test_entry_fields(self, itaigi_csv_content):
-        entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
-        first = entries[0]
-        assert first["hanlo"] == "𤺪呢"
-        assert first["kip_input"] == "sian7-neh"
-        assert first["hoabun"] == "討厭"
-
-    def test_rime_key_generated(self, itaigi_csv_content):
-        """Each entry should have a space-separated rime_key with tone numbers."""
-        entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
-        first = entries[0]
-        assert first["rime_key"] == "sian7 neh4"
-
-    def test_source_tagged(self, itaigi_csv_content):
-        entries = parse_itaigi_csv(io.StringIO(itaigi_csv_content))
-        assert all(e["source"] == "itaigi" for e in entries)
-
-    def test_unicode_tone_kip_input_is_normalized_to_numeric_tl(self):
-        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nlí-hó,你好,妳好\nkau5-sí-gín-á,猴死囡仔,小屁孩\n"
-        entries = parse_itaigi_csv(io.StringIO(csv_data))
-        assert entries[0]["kip_input"] == "li2-ho2"
-        assert entries[0]["rime_key"] == "li2 ho2"
-        assert entries[1]["kip_input"] == "kau5-si2-gin2-a2"
-        assert entries[1]["rime_key"] == "kau5 si2 gin2 a2"
 
 
 class TestParseTaihoaCsv:
@@ -204,14 +170,14 @@ class TestDedupEntries:
                 "kip_input": "tsiah8-png7",
                 "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
-                "source": "itaigi",
+                "source": "taihoa",
             },
             {
                 "hanlo": "食飯",
                 "kip_input": "tsiah8-png7",
                 "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
-                "source": "taihoa",
+                "source": "moe",
             },
         ]
         result = dedup_entries(entries)
@@ -219,8 +185,8 @@ class TestDedupEntries:
 
     def test_keeps_different_pronunciations(self):
         entries = [
-            {"hanlo": "食", "kip_input": "tsiah8", "rime_key": "tsiah8", "hoabun": "吃", "source": "itaigi"},
-            {"hanlo": "食", "kip_input": "sit8", "rime_key": "sit8", "hoabun": "吃", "source": "itaigi"},
+            {"hanlo": "食", "kip_input": "tsiah8", "rime_key": "tsiah8", "hoabun": "吃", "source": "taihoa"},
+            {"hanlo": "食", "kip_input": "sit8", "rime_key": "sit8", "hoabun": "吃", "source": "taihoa"},
         ]
         result = dedup_entries(entries)
         assert len(result) == 2
@@ -232,14 +198,14 @@ class TestDedupEntries:
                 "kip_input": "tsiah8-png7",
                 "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
-                "source": "itaigi",
+                "source": "taihoa",
             },
             {
                 "hanlo": "食餐",
                 "kip_input": "tsiah8-png7",
                 "rime_key": "tsiah8 png7",
                 "hoabun": "吃飯",
-                "source": "itaigi",
+                "source": "taihoa",
             },
         ]
         result = dedup_entries(entries)
@@ -296,36 +262,36 @@ class TestWriteRimeDict:
 class TestConvertPipeline:
     """End-to-end conversion: CSV files → dict.yaml."""
 
-    def test_converts_itaigi_file(self, tmp_path, itaigi_csv_content):
-        csv_file = tmp_path / "itaigi.csv"
-        csv_file.write_text(itaigi_csv_content, encoding="utf-8")
+    def test_converts_taihoa_file(self, tmp_path, taihoa_csv_content):
+        csv_file = tmp_path / "taihoa.csv"
+        csv_file.write_text(taihoa_csv_content, encoding="utf-8")
         output = tmp_path / "output.dict.yaml"
-        convert_chhoetaigi(itaigi_paths=[csv_file], taihoa_paths=[], output_path=output)
+        convert_chhoetaigi(taihoa_paths=[csv_file], output_path=output)
         content = output.read_text()
         assert "name: phah_taibun" in content
-        assert "𤺪呢\tsian7 neh" in content
+        assert "á無\ta2 bo5" in content
 
-    def test_merges_multiple_sources(self, tmp_path, itaigi_csv_content, taihoa_csv_content):
-        itaigi_file = tmp_path / "itaigi.csv"
-        itaigi_file.write_text(itaigi_csv_content, encoding="utf-8")
+    def test_merges_multiple_sources(self, tmp_path, taihoa_csv_content):
         taihoa_file = tmp_path / "taihoa.csv"
         taihoa_file.write_text(taihoa_csv_content, encoding="utf-8")
+        generic_file = tmp_path / "kam.csv"
+        generic_file.write_text("KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\n", encoding="utf-8")
         output = tmp_path / "output.dict.yaml"
-        convert_chhoetaigi(itaigi_paths=[itaigi_file], taihoa_paths=[taihoa_file], output_path=output)
+        convert_chhoetaigi(taihoa_paths=[taihoa_file], output_path=output, generic_paths=[(generic_file, "kamjitian")])
         content = output.read_text()
-        assert "𤺪呢" in content
         assert "á無" in content
+        assert "食飯" in content
 
     def test_drops_rows_with_private_use_characters(self, tmp_path):
         """PUA glyphs (font-specific, e.g. U+E35C in 無?款) render as tofu;
         rows containing one are dropped even when mixed with real hanzi."""
-        csv_file = tmp_path / "itaigi.csv"
+        csv_file = tmp_path / "kam.csv"
         csv_file.write_text(
             "KipInput,HanLoTaibunKip,HoaBun\nbo5-siang7-khuan2,無\ue35c款,不一樣\nbo5,無,沒有\n",
             encoding="utf-8",
         )
         output = tmp_path / "output.dict.yaml"
-        convert_chhoetaigi(itaigi_paths=[csv_file], taihoa_paths=[], output_path=output)
+        convert_chhoetaigi(taihoa_paths=[], output_path=output, generic_paths=[(csv_file, "kamjitian")])
         content = output.read_text(encoding="utf-8")
         assert "\ue35c" not in content
         assert "無\tbo5\t" in content
@@ -338,17 +304,17 @@ class TestConvertWithCorpusFreq:
         from scripts.build_frequency import load_corpus_frequencies
 
         csv_content = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\nkhi3,去,去\n"
-        csv_path = tmp_path / "itaigi.csv"
+        csv_path = tmp_path / "kam.csv"
         csv_path.write_text(csv_content, encoding="utf-8-sig")
         freq_path = tmp_path / "corpus_freq.tsv"
         freq_path.write_text("tsiah8-png7\t50\n", encoding="utf-8")
         corpus_freq = load_corpus_frequencies(freq_path)
 
         out_no_freq = tmp_path / "no_freq.yaml"
-        convert_chhoetaigi([csv_path], [], out_no_freq)
+        convert_chhoetaigi([], out_no_freq, generic_paths=[(csv_path, "kamjitian")])
 
         out_with_freq = tmp_path / "with_freq.yaml"
-        convert_chhoetaigi([csv_path], [], out_with_freq, corpus_freq=corpus_freq)
+        convert_chhoetaigi([], out_with_freq, corpus_freq=corpus_freq, generic_paths=[(csv_path, "kamjitian")])
 
         def get_weights(path):
             weights = {}
@@ -370,13 +336,13 @@ class TestParseGenericCsv:
 
     def test_basic_parse_with_kip_columns(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\nkhi3,去,去\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "maryknoll")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert len(entries) == 2
         assert entries[0]["hanlo"] == "食飯"
         assert entries[0]["kip_input"] == "tsiah8-png7"
         assert entries[0]["rime_key"] == "tsiah8 png7"
         assert entries[0]["hoabun"] == "吃飯"
-        assert entries[0]["source"] == "maryknoll"
+        assert entries[0]["source"] == "kamjitian"
 
     def test_fallback_to_poj_columns(self):
         """When KipInput is missing, convert PojInput to canonical TL."""
@@ -398,7 +364,7 @@ class TestParseGenericCsv:
         # corpus: chi̍t + p,o,a,grave,ⁿ (grave AFTER a = historical)
         hanlo_corpus = "chi\u030d" + "-po" + "a\u0300\u207f"
         csv_data = f"KipInput,HanLoTaibunPoj,HoaBun\ntsit8-puann3,{hanlo_corpus},一半年\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         # canonical (NFC composes o+grave → ò): chi̍t-pòaⁿ
         assert entries[0]["hanlo"] == "chi\u030d-p\u00f2a\u207f"
 
@@ -421,24 +387,32 @@ class TestParseGenericCsv:
         csv_data = (
             "KipInput,PojInput,HanLoTaibunKip,HanLoTaibunPoj,HoaBun\ntsiah8-png7,chiah8-png7,食飯kip,食飯poj,吃飯\n"
         )
-        entries = parse_generic_csv(io.StringIO(csv_data), "embree")
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert len(entries) == 1
         assert entries[0]["kip_input"] == "tsiah8-png7"
         assert entries[0]["hanlo"] == "食飯kip"
 
+    def test_unicode_tone_kip_input_is_normalized_to_numeric_tl(self):
+        csv_data = "KipInput,HanLoTaibunKip,HoaBun\nlí-hó,你好,妳好\nkau5-sí-gín-á,猴死囡仔,小屁孩\n"
+        entries = parse_generic_csv(io.StringIO(csv_data), "taihoa")
+        assert entries[0]["kip_input"] == "li2-ho2"
+        assert entries[0]["rime_key"] == "li2 ho2"
+        assert entries[1]["kip_input"] == "kau5-si2-gin2-a2"
+        assert entries[1]["rime_key"] == "kau5 si2 gin2 a2"
+
     def test_skips_rows_without_pronunciation(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\n,食飯,吃飯\nkhi3,去,去\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert len(entries) == 1
 
     def test_skips_rows_without_hanlo(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,,吃飯\nkhi3,去,去\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert len(entries) == 1
 
     def test_handles_slash_variants(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8/sit8,食,吃\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "pehoe")
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert len(entries) == 2
         kips = [e["kip_input"] for e in entries]
         assert "tsiah8" in kips
@@ -446,18 +420,18 @@ class TestParseGenericCsv:
 
     def test_source_name_preserved(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "sitbut")
-        assert entries[0]["source"] == "sitbut"
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        assert entries[0]["source"] == "taijit"
 
     def test_empty_hoabun_is_ok(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "embree")
+        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
         assert len(entries) == 1
         assert entries[0]["hoabun"] == ""
 
     def test_sanitizes_tabs_in_hanlo_text(self):
         csv_data = "KipInput,HanLoTaibunKip,HoaBun\nkai3-tu2-ho2,蓋\tú好,剛好\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         assert entries[0]["hanlo"] == "蓋ú好"
         assert entries[0]["rime_key"] == "kai3 tu2 ho2"
 
@@ -471,7 +445,7 @@ class TestParseGenericCsv:
         assert nfc_hanlo != nfd_hanlo
         assert unicodedata.normalize("NFC", nfd_hanlo) == nfc_hanlo
         csv_data = f"KipInput,HanLoTaibunKip,HoaBun\ntsai3,{nfc_hanlo},知影\ntsai3,{nfd_hanlo},知影\n"
-        entries = parse_generic_csv(io.StringIO(csv_data), "taijit")
+        entries = parse_generic_csv(io.StringIO(csv_data), "kamjitian")
         deduped = dedup_entries(entries)
         assert len(deduped) == 1
         assert deduped[0]["hanlo"] == nfc_hanlo
@@ -512,25 +486,44 @@ class TestParseKipsutianMainCsv:
 
         assert {entry["rime_key"] for entry in entries} == {"tsenn2", "tshing1"}
 
+    def test_alternate_and_colloquial_readings_become_entries(self):
+        """教典「又唸作」「俗唸作」是仝一个詞的讀音 (家己 ka-kī 又唸作 ka-tī): 愛拍會著."""
+        csv_data = (
+            "詞目id,詞目類型,漢字,羅馬字,又唸作,俗唸作\n"
+            '1,主詞目,家己,ka-kī,"[{""詞目id"": ""5899"", ""漢字"": ""家己"", ""羅馬字"": ""ka-tī""}]",\n'
+            '2,主詞目,遮,tsia,,"[{""詞目id"": ""9"", ""漢字"": ""遮"", ""羅馬字"": ""tsiâ""}]"\n'
+        )
+        entries = parse_kipsutian_main_csv(io.StringIO(csv_data), include_roman_outputs=False)
+
+        assert {(e["hanlo"], e["rime_key"]) for e in entries} == {
+            ("家己", "ka1 ki7"),
+            ("家己", "ka1 ti7"),
+            ("遮", "tsia1"),
+            ("遮", "tsia5"),
+        }
+
 
 class TestSourceNameFromFilename:
     """Map ChhoeTaigi CSV filenames to source identifiers."""
 
     def test_known_filenames(self):
         assert source_name_from_filename("ChhoeTaigi_KamJitian.csv") == "kamjitian"
-        assert source_name_from_filename("ChhoeTaigi_MaryknollTaiengSutian.csv") == "maryknoll"
-        assert source_name_from_filename("ChhoeTaigi_EmbreeTaiengSutian.csv") == "embree"
         assert source_name_from_filename("ChhoeTaigi_TaijitToaSutian.csv") == "taijit"
         assert source_name_from_filename("ChhoeTaigi_KauiokpooTaigiSutian.csv") == "moe"
-        assert source_name_from_filename("ChhoeTaigi_TaioanPehoeKichhooGiku.csv") == "pehoe"
-        assert source_name_from_filename("ChhoeTaigi_TaioanSitbutMialui.csv") == "sitbut"
+        assert source_name_from_filename("ChhoeTaigi_TaihoaSoanntengTuichiautian.csv") == "taihoa"
 
     def test_unknown_filename(self):
         assert source_name_from_filename("ChhoeTaigi_SomethingElse.csv") is None
 
-    def test_itaigi_and_taihoa(self):
-        assert source_name_from_filename("ChhoeTaigi_iTaigiHoataiTuichiautian.csv") == "itaigi"
-        assert source_name_from_filename("ChhoeTaigi_TaihoaSoanntengTuichiautian.csv") == "taihoa"
+    def test_removed_sources_not_discovered(self):
+        """iTaigi、台灣植物名彙 left the pipeline; Maryknoll、Embree、台灣白話基礎語句
+        have no 漢羅 column (never produced an entry). Their CSVs must be unmapped
+        so generic auto-discovery never ingests them."""
+        assert source_name_from_filename("ChhoeTaigi_iTaigiHoataiTuichiautian.csv") is None
+        assert source_name_from_filename("ChhoeTaigi_TaioanSitbutMialui.csv") is None
+        assert source_name_from_filename("ChhoeTaigi_MaryknollTaiengSutian.csv") is None
+        assert source_name_from_filename("ChhoeTaigi_EmbreeTaiengSutian.csv") is None
+        assert source_name_from_filename("ChhoeTaigi_TaioanPehoeKichhooGiku.csv") is None
 
 
 class TestConvertWithGenericPaths:
@@ -542,10 +535,9 @@ class TestConvertWithGenericPaths:
         csv_path.write_text(csv_data, encoding="utf-8")
         output = tmp_path / "output.dict.yaml"
         convert_chhoetaigi(
-            itaigi_paths=[],
             taihoa_paths=[],
             output_path=output,
-            generic_paths=[(csv_path, "maryknoll")],
+            generic_paths=[(csv_path, "kamjitian")],
         )
         content = output.read_text()
         assert "去\tkhi3" in content
@@ -556,7 +548,6 @@ class TestConvertWithGenericPaths:
         csv_path.write_text(csv_data, encoding="utf-8")
         output = tmp_path / "output.dict.yaml"
         convert_chhoetaigi(
-            itaigi_paths=[],
             taihoa_paths=[],
             output_path=output,
             kipsutian_paths=[csv_path],
@@ -570,12 +561,12 @@ class TestConvertWithGenericPaths:
 class TestConvertCli:
     """Test CLI entry point."""
 
-    def test_cli_with_csv_files(self, tmp_path, itaigi_csv_content):
+    def test_cli_with_csv_files(self, tmp_path, taihoa_csv_content):
         # Create a mock ChhoeTaigiDatabase structure
         db_dir = tmp_path / "ChhoeTaigiDatabase"
         db_dir.mkdir()
-        itaigi = db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
-        itaigi.write_text(itaigi_csv_content, encoding="utf-8")
+        taihoa = db_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
+        taihoa.write_text(taihoa_csv_content, encoding="utf-8")
         out_dir = tmp_path / "output"
         main(["--input", str(tmp_path), "--output", str(out_dir)])
         assert (out_dir / "phah_taibun.dict.yaml").exists()
@@ -586,7 +577,7 @@ class TestConvertCli:
         Each must boost the same dictionary entry, and counts add up."""
         db_dir = tmp_path / "ChhoeTaigiDatabase"
         db_dir.mkdir()
-        (db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv").write_text(
+        (db_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv").write_text(
             "KipInput,HanLoTaibunKip,HoaBun\nin,因,因\ntshin-tshiunn7,親像,好像\n", encoding="utf-8"
         )
 
@@ -614,29 +605,38 @@ class TestConvertCli:
         assert weight("因", bare, numeric) > weight("因", numeric)
         assert weight("親像", poj) == weight("親像", uni) == weight("親像", tl) > weight("親像")
 
-    def test_cli_auto_discovers_generic_csvs(self, tmp_path):
-        """CLI should auto-discover additional ChhoeTaigi CSVs."""
+    def test_cli_auto_discovers_generic_csvs_and_skips_removed_sources(self, tmp_path):
+        """CLI auto-discovers additional ChhoeTaigi CSVs; CSVs of sources
+        removed from the pipeline (iTaigi, 台灣植物名彙) must be
+        skipped even when present in the data directory."""
         db_dir = tmp_path / "ChhoeTaigiDatabase"
         db_dir.mkdir()
-        # Create an iTaigi CSV (known special)
-        itaigi_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
-        itaigi = db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
-        itaigi.write_text(itaigi_data, encoding="utf-8")
+        # Create a 台華線頂 CSV (known special)
+        taihoa_data = "KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n"
+        taihoa = db_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
+        taihoa.write_text(taihoa_data, encoding="utf-8")
         # Create a generic CSV (should be auto-discovered)
         generic_data = "KipInput,HanLoTaibunKip,HoaBun\ntsiah8-png7,食飯,吃飯\n"
         generic = db_dir / "ChhoeTaigi_KamJitian.csv"
         generic.write_text(generic_data, encoding="utf-8")
+        # Removed-source CSVs present on disk: none of them may enter the dict
+        for name in [
+            "ChhoeTaigi_iTaigiHoataiTuichiautian.csv",
+            "ChhoeTaigi_TaioanSitbutMialui.csv",
+        ]:
+            (db_dir / name).write_text("KipInput,HanLoTaibunKip,HoaBun\nkhun3-tiu7,困擾,困擾\n", encoding="utf-8")
         out_dir = tmp_path / "output"
         main(["--input", str(tmp_path), "--output", str(out_dir)])
         content = (out_dir / "phah_taibun.dict.yaml").read_text()
         assert "去" in content
         assert "食飯" in content
+        assert "困擾" not in content
 
     def test_cli_accepts_kipsutian_csv(self, tmp_path):
         db_dir = tmp_path / "ChhoeTaigiDatabase"
         db_dir.mkdir()
-        itaigi = db_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
-        itaigi.write_text("KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n", encoding="utf-8")
+        taihoa = db_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
+        taihoa.write_text("KipInput,HanLoTaibunKip,HoaBun\nkhi3,去,去\n", encoding="utf-8")
         kipsutian = tmp_path / "kautian.csv"
         kipsutian.write_text("詞目id,詞目類型,漢字,羅馬字\n1,主詞目,食飯,tsia̍h-pn̄g\n", encoding="utf-8")
         out_dir = tmp_path / "output"

@@ -182,7 +182,7 @@ class TestPojToTl:
         assert poj_to_tl("koe") == "kue"
 
     def test_toned_eng_ek_converted(self):
-        # Numeric-tone POJ (pojbh, NMTL, ChhoeTaigi PojInput) puts the digit
+        # Numeric-tone POJ (NMTL, ChhoeTaigi PojInput) puts the digit
         # right after the final: seng5 / tek8-pat4 must still map.
         assert poj_to_tl("seng5") == "sing5"
         assert poj_to_tl("tek8-pat4") == "tik8-pat4"

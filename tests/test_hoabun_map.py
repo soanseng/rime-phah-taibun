@@ -6,7 +6,7 @@ from scripts.build_hoabun_map import extract_hoabun_mappings
 def test_poj_fallback_is_converted_to_tl(tmp_path):
     data_dir = tmp_path / "ChhoeTaigiDatabase"
     data_dir.mkdir()
-    csv_path = data_dir / "ChhoeTaigi_MaryknollTaiengSutian.csv"
+    csv_path = data_dir / "ChhoeTaigi_KauiokpooTaigiSutian.csv"
     csv_path.write_text(
         "PojInput,KipInput,HanLoTaibunPoj,HanLoTaibunKip,HoaBun\nchiah8-png7,,食飯,,吃飯\n",
         encoding="utf-8",
@@ -20,7 +20,7 @@ def test_poj_fallback_is_converted_to_tl(tmp_path):
 def test_unicode_tone_kip_input_is_normalized(tmp_path):
     data_dir = tmp_path / "ChhoeTaigiDatabase"
     data_dir.mkdir()
-    csv_path = data_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
+    csv_path = data_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
     csv_path.write_text(
         "KipInput,HanLoTaibunKip,HoaBun\nlí-hó,你好,妳好\n",
         encoding="utf-8",
@@ -32,11 +32,11 @@ def test_unicode_tone_kip_input_is_normalized(tmp_path):
 
 
 def test_syllable_local_slash_maps_to_full_reading(tmp_path):
-    """iTaigi 阮兜 `guan2/gun2-tau`: the reverse-lookup reading must be the
+    """ChhoeTaigi 阮兜 `guan2/gun2-tau`: the reverse-lookup reading must be the
     whole word, not the bare first segment `guan2`."""
     data_dir = tmp_path / "ChhoeTaigiDatabase"
     data_dir.mkdir()
-    csv_path = data_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
+    csv_path = data_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
     csv_path.write_text(
         "KipInput,HanLoTaibunKip,HoaBun\nguan2/gun2-tau,阮兜,我們家\n",
         encoding="utf-8",

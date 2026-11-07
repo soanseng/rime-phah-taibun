@@ -5,7 +5,7 @@ These tests pin three production properties of the full dictionary build:
 1. A fresh data/ directory must feed ALL wired corpus frequencies into the
    dictionary conversion step on a SINGLE run — corpus extraction steps
    must run BEFORE the ChhoeTaigi conversion that consumes their TSVs.
-   (Before the fix, nmtl/KipSutian/POJBH frequencies only reached the main
+   (Before the fix, nmtl/KipSutian frequencies only reached the main
    dictionary on the second run, via stale TSVs left in data/.)
 2. A run whose light-tone rules source is missing must degrade gracefully
    when corpus sentences exist — no NameError from a conditionally bound
@@ -125,7 +125,6 @@ def make_data_dir(root: Path, *, with_chhoetaigi: bool = True, with_lighttone: b
         "Ungian_2009_KIPsupin",
         "kok4hau7-kho3pun2",
         "nmtl_2006_dadwt",
-        "Khin-hoan_2010_pojbh",
     ]:
         (data / d).mkdir()
     (data / "Sin1pak8tshi7_2015_900-le7ku3").mkdir()
@@ -162,7 +161,7 @@ def run_build(tmp_path, monkeypatch):
 class TestCorpusOrdering:
     """D1: extraction must precede the conversion that consumes it."""
 
-    def test_fresh_run_feeds_all_seven_corpora_into_conversion(self, run_build, tmp_path):
+    def test_fresh_run_feeds_all_six_corpora_into_conversion(self, run_build, tmp_path):
         data = make_data_dir(tmp_path)
         out = tmp_path / "schema"
         runner = run_build(data, out)
@@ -183,11 +182,10 @@ class TestCorpusOrdering:
             "900leku_freq.tsv",
             "nmtl_freq.tsv",
             "kipsutian_sent_freq.tsv",
-            "pojbh_freq.tsv",
         }
 
     def test_late_corpora_extract_before_conversion(self, run_build, tmp_path):
-        """nmtl/KipSutian/POJBH extractors must precede convert_chhoetaigi."""
+        """nmtl/KipSutian extractors must precede convert_chhoetaigi."""
         data = make_data_dir(tmp_path)
         out = tmp_path / "schema"
         runner = run_build(data, out)
@@ -196,7 +194,6 @@ class TestCorpusOrdering:
         for extractor in [
             "extract_nmtl.py",
             "extract_kipsutian_sentences.py",
-            "extract_pojbh.py",
         ]:
             assert runner.index_of(extractor) < convert_i, (
                 f"{extractor} must run before convert_chhoetaigi.py on a fresh run"

@@ -79,6 +79,88 @@ KNOWN_MISSES = frozenset(
     ]
 )
 
+# 2026-11 使用者決定拿掉 iTaigi、台灣植物名彙、白話字文獻館語料 (輸入法字典)。
+# 下面這寡詞干焦對遐來 (iTaigi、植物名彙 CSV 有收, 抑是 Step 8 詞組靠白話字文獻館語料湊夠次數),
+# 拿掉了後字典無這个詞抑讀音: 接受, 列做已知例外。
+REMOVED_SOURCE_MISSES = frozenset(
+    [
+        "一个人",
+        "一列",
+        "一遍",
+        "三寶",
+        "予人欺負",
+        "予你",
+        "予日",
+        "佇厝",
+        "佇水",
+        "便品",
+        "做成",
+        "內海仔",
+        "八田與一",
+        "凍甲",
+        "卡斯",
+        "反倒轉來講",
+        "哪有",
+        "囡仔時",
+        "大大細細",
+        "好得佳哉",
+        "幾个",
+        "廟裡",
+        "徛咧",
+        "想袂到",
+        "揣的",
+        "攏會使",
+        "斷層",
+        "是喙",
+        "是毋是",
+        "欲哭無目屎",
+        "欲按怎",
+        "毋死心",
+        "毋肯",
+        "沖天炮",
+        "海跤",
+        "淹去",
+        "滷卵",
+        "無仝款",
+        "無佇咧",
+        "燃滾水",
+        "牛鬼蛇神",
+        "牢咧",
+        "用的",
+        "看的",
+        "真鬧熱",
+        "硩重",
+        "細隻",
+        "臺北縣",
+        "臺灣人",
+        "臺語",
+        "菊仔",
+        "著癌",
+        "袂少",
+        "袂少人",
+        "袂煞",
+        "袂生",
+        "袂顧得",
+        "袂驚",
+        "誠拚咧",
+        "買物",
+        "較濟",
+        "輸人毋輸陣",
+        "送予",
+        "通敨",
+        "遊山玩水",
+        "遮濟",
+        "阿美族",
+        "食早頓",
+        "食果子拜樹頭",
+        "食甲飽",
+        "食飽換枵",
+        "鱟鉼仔",
+        "鱧魚",
+        "𤆬我去",
+    ]
+)
+
 # 讀音 token: 數字調音節, 輕聲前置 --。(官方讀音解析檢查用)
 _SYLLABLE_RE = re.compile(r"(?:--)?[a-z]+[0-9]?")
 
@@ -176,8 +258,8 @@ def _build_article_corpus(
 
     # 拍袂出來的詞面 (非漢字/羅馬字符閣 IME 字典無詞面): 排除、報告。
     excluded = sorted({word for (word, _) in pairs if not _word_is_typeable(word) and word not in ime_texts})
-    known = sorted({word for (word, _) in pairs if word in KNOWN_MISSES})
-    rows = [row for row in rows if row["word"] not in set(excluded) | KNOWN_MISSES]
+    known = sorted({word for (word, _) in pairs if word in KNOWN_MISSES | REMOVED_SOURCE_MISSES})
+    rows = [row for row in rows if row["word"] not in set(excluded) | KNOWN_MISSES | REMOVED_SOURCE_MISSES]
     return rows, {"parse": artifacts, "nonhan": excluded, "known": known}
 
 
@@ -320,6 +402,9 @@ def test_article_corpus_first_candidate_ratchet(real_rime_articles, article_corp
     sentence ratchet 仝款自舉: 基線檔缺席就共這擺的逐列 rank 寫入基線。
     起基有條件: 這擺 Requirement A 零「找不到」才寫 (非官方詞的別讀音列無中無要緊)
     — 免共一个猶佇補字典的起步率釘死 (欲重新起基: 刪 tests/fixtures/article_baseline.json)。
+
+    2026-11 重新起基 (使用者接受): 拿掉 iTaigi、植物名彙、白話字文獻館, 教育部詞條權重
+    1000→1500 了後, 5,420 列 top-1 失 61 得 56 (0.6756→0.6747)。
     """
     states = real_rime_articles
     rows, _ = article_corpus

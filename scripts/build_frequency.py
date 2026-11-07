@@ -10,17 +10,12 @@ import unicodedata
 from pathlib import Path
 
 SOURCE_WEIGHTS = {
-    "moe": 1000,  # L1: 教育部辭典
+    "moe": 1500,  # L1: 教育部辭典 (官方、第一優先; 2026-11 由 1000 調懸)
     "moe_tl": 700,  # L1b: 教育部辭典全羅 TL 輸出候選
     "moe_poj": 650,  # L1b: 教育部辭典全羅 POJ 輸出候選
-    "itaigi": 800,  # L2: iTaigi (群眾驗證)
     "taihoa": 500,  # L3: 台華線頂
-    "maryknoll": 300,  # L4: Maryknoll 台英辭典
-    "embree": 300,  # L4: Embree 台英辭典
     "kamjitian": 250,  # L4: 甘字典
     "taijit": 200,  # L5: 台日大辭典
-    "pehoe": 200,  # L5: 台灣白話基礎語句
-    "sitbut": 200,  # L5: 台灣實物名彙
     "moe_variant": 550,  # ChhoeTaigi rows self-declined as variants (本辭典使用「X」來表示)
 }
 DEFAULT_WEIGHT = 100
@@ -31,7 +26,7 @@ def assign_source_weight(source: str) -> int:
     """Return base frequency weight for a given data source.
 
     Args:
-        source: Source identifier (moe, itaigi, taihoa, taijit)
+        source: Source identifier (moe, taihoa, taijit, kamjitian)
 
     Returns:
         Integer weight (higher = more frequent/authoritative)

@@ -24,7 +24,6 @@ class TestFullPipeline:
     def test_convert_produces_valid_dict(self, tmp_path):
         output = tmp_path / "phah_taibun.dict.yaml"
         convert_chhoetaigi(
-            itaigi_paths=[CHHOETAIGI_DIR / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"],
             taihoa_paths=[CHHOETAIGI_DIR / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"],
             output_path=output,
         )

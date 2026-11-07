@@ -15,7 +15,7 @@ from scripts.build_frequency import (
 from scripts.extract_identity_freq import extract_identity_counts
 
 
-def _entry(hanlo: str, rime_key: str, source: str = "itaigi") -> dict:
+def _entry(hanlo: str, rime_key: str, source: str = "taihoa") -> dict:
     return {
         "hanlo": hanlo,
         "rime_key": rime_key,

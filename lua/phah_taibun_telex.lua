@@ -158,7 +158,6 @@ end
 local SKIP_EXACT = {
   vvh = true,
   vvjit = true,
-  vvsp = true,
 }
 
 function M.normalize(input)

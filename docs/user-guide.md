@@ -231,6 +231,10 @@ to2 → 只列出第2聲：倒、島...
 3. **入聲一定短**，韻尾是 `-p/-t/-k/-h`：**4** 短低、**8** 短高。舒聲沒有塞音尾。
 4. **輪廓**：1 高平、2 高降、3 低降、5 上升、7 中平。升的是 5（像華語第二聲），平的長音不是 1 就是 7。
 
+### 無調連打照完整音節切
+
+無調連打的時，輸入法照**完整音節**切：`siataibun` 會切做 `sia tai bun`（寫台文），袂切做 `si a`、`s ia` 這款碎片。簡拼（干焦拍聲母，像 `stb`）已經取消。
+
 ### 進階：寫台文(Telex) 調鍵輸入
 
 熟悉台羅、想連續輸入的人，可以在方案選單（`F4`）切到 **「寫台文(Telex)」**。這是**進階方案，不是預設**：「寫台文(台)」仍然用無調、數字調、TL／POJ 混打；不會因為裝了 Telex 就改變新手打法。兩個方案共用同一份詞典、詞頻、使用者詞庫與漢羅／全羅輸出，只換輸入鍵位。
@@ -854,7 +858,7 @@ Step 3: 選字輸出
 
 ### 輕聲候選來源
 
-1. **字典內建**：29,000+ 筆輕聲詞條，從 7 個語料庫自動擷取，涵蓋常見的輕聲搭配
+1. **字典內建**：29,000+ 筆輕聲詞條，從 6 個語料庫自動擷取，涵蓋常見的輕聲搭配
 2. **即時產生**：根據 111 條輕聲規則（教育部資料），動態為候選詞加上輕聲變體
 
 ---
@@ -1151,15 +1155,15 @@ Step 4: 選「掠」→ 輸出
 | **拼音系統** | TL + POJ 雙系統，可混打 | TL + POJ | TL（自動轉換） |
 | **聲調** | **完全可省略** | 需輸入 | 需輸入 |
 | **漢羅混寫** | **自動（LKK 規範）** | 有 | 無（純漢字或純羅馬字） |
-| **字典規模** | 221,792 條目 | 未公開 | ~24K 條目 |
-| **語料庫詞頻** | **7 語料庫加權** | 無 | 基本頻率 |
+| **字典規模** | 210,865 條目 | 未公開 | ~24K 條目 |
+| **語料庫詞頻** | **6 語料庫加權** | 無 | 基本頻率 |
 | **注音反查** | **華→台自動轉換** | 無 | 無 |
 | **萬用查字** | **?（二段式）** | 無 | 無 |
 | **同音選字** | **' 鍵** | 無 | 無 |
 | **Emoji** | 內建詞語附加候選＋分類瀏覽（`` `e ``；含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
 | **輕聲辨識** | **29K 詞條 + 即時產生** | 無 | 無 |
-| **自訂擴充** | Lua 模組(21 個) | 無 | 無 |
+| **自訂擴充** | Lua 模組(20 個) | 無 | 無 |
 
 ### 寫台文的核心差異
 
@@ -1177,7 +1181,7 @@ Step 4: 選「掠」→ 輸出
 
 **4. 語料庫智慧排序**
 
-字典的候選排序不只是靠辭典的基本頻率，而是整合 7 個台語語料庫（新聞、文學、課本、例句、辭典例句、白話字文獻）的實際使用頻率，用對數加權計算。日常用語排更前面。
+字典的候選排序不只是靠辭典的基本頻率，而是整合 6 個台語語料庫（新聞、文學、課本、例句、辭典例句）的實際使用頻率，用對數加權計算。日常用語排更前面。
 
 **5. Linux 原生支援**
 
@@ -1352,8 +1356,8 @@ uv run python scripts/build_all.py
 ```
 
 **建置流程重點**：
-1. 從 7 個語料庫提取詞頻（iCorpus、Ungian、康軒課本、900例句、NMTL 文學、KipSutian、白話字文獻）
-2. 合併 ChhoeTaigi 9 本辭典 CSV 與教育部 KipSutian 詞目，保留原始漢字/漢羅候選，另補 TL/POJ 全羅候選，再加上語料庫頻率加權
+1. 從 6 個語料庫提取詞頻（iCorpus、Ungian、康軒課本、900例句、NMTL 文學、KipSutian）
+2. 合併 ChhoeTaigi 4 本辭典 CSV 與教育部 KipSutian 詞目，保留原始漢字/漢羅候選，另補 TL/POJ 全羅候選，再加上語料庫頻率加權
 3. 納入建中的教育部臺灣台語輸入法詞庫增補檔
 4. 解析 LKK 漢羅規則、輕聲規則、教育部推薦700字
 5. 建置華語對照表，供候選與反查功能使用
@@ -1402,7 +1406,7 @@ ls ~/Library/Rime/lua/phah_taibun_*.lua
 dir %AppData%\Rime\lua\phah_taibun_*.lua
 ```
 
-應該要有 21 個 `phah_taibun_*.lua` 檔案。
+應該要有 20 個 `phah_taibun_*.lua` 檔案。
 
 ### 注音反查 `~` 沒有反應
 
@@ -1471,7 +1475,7 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 
 | 資料 | 用途 |
 |------|------|
-| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（9 本辭典） |
+| [ChhoeTaigi](https://github.com/ChhoeTaigi/ChhoeTaigiDatabase) | 主字典（4 本辭典：台華線頂、教育部、台日大辭典、甘字典） |
 | [LKK 用字表](https://tsbp.tgb.org.tw/p/bong_8.html) | 漢羅轉換規則 |
 | [教育部台語辭典](https://github.com/ChhoeTaigi/KipSutianDataMirror) | 主字典 + TL/POJ 全羅候選 + 注音反查讀音 + 例句語料 |
 | [iCorpus](https://github.com/Taiwanese-Corpus/icorpus_ka1_han3-ji7) | 新聞語料詞頻 |
@@ -1479,7 +1483,6 @@ cat ~/Library/Rime/rime.lua | grep phah_taibun
 | [康軒課本](https://github.com/Taiwanese-Corpus/kok4hau7-kho3pun2) | 國小台語課本詞頻 |
 | [常用900例句](https://github.com/Taiwanese-Corpus/Sin1pak8tshi7_2015_900-le7ku3) | 日常高頻詞彙 |
 | [NMTL 文學作品](https://github.com/Taiwanese-Corpus/nmtl_2006_dadwt) | 台語文學語料 |
-| [白話字文獻](https://github.com/Taiwanese-Corpus/Khin-hoan_2010_pojbh) | 歷史 POJ 語料 |
 | [教育部臺灣台語推薦用字700字詞](https://mhi.moe.edu.tw/resource/TSMhiResource-000933/) | 推薦用字標記（◆ 漢字） |
 | [yiufung/minnan-700](https://github.com/yiufung/minnan-700) | 教育部700字 CSV 格式資料 |
 | [建中的教育部臺灣台語輸入法詞庫增補檔案](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) | 政府機關、行政區、數字時間日期、常見人名、台/臺變體與 LKK 羅馬字詞 |

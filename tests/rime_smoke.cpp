@@ -572,8 +572,8 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "telex_ziahv");
   api->clear_composition(session);
 
-  api->simulate_key_sequence(session, "zhiahv");
-  print_state(api, session, "telex_zhiahv");
+  api->simulate_key_sequence(session, "zhiahx");
+  print_state(api, session, "telex_zhiahx");
   api->clear_composition(session);
 
   api->simulate_key_sequence(session, "tngyflaid");
@@ -598,11 +598,18 @@ int main(int argc, char* argv[]) {
   print_state(api, session, "telex_tsiohv");
   api->clear_composition(session);
 
-  // Digitless POJ in the Telex schema is a documented limitation (the
-  // toneless boost filter is main-schema only); toned POJ works.
+  // Toned POJ in the Telex schema resolves directly.
   api->simulate_key_sequence(session, "chhia1");
   print_state(api, session, "telex_chhia1");
   api->clear_composition(session);
+
+  // 單音節完整拼式 (sia/siav) 袂使予弱拼雙音節切分 (si a → 是仔) 壓過;
+  // 連打帶調長串照音節切 (siav taid bund → 寫台文)。
+  for (const char* keys : {"sia", "siav", "lim", "gua", "siavtaidbund", "siataibun"}) {
+    api->simulate_key_sequence(session, keys);
+    print_state(api, session, (std::string("telex_") + keys).c_str());
+    api->clear_composition(session);
+  }
 
   // Telex schema: period must also cascade word + full-width 。
   api->simulate_key_sequence(session, "ziahv");
@@ -627,6 +634,13 @@ int main(int argc, char* argv[]) {
   api->simulate_key_sequence(session, "taid");
   print_state(api, session, "main_taid");
   api->clear_composition(session);
+
+  // 無調連打愛照完整音節切 (sia|tai|bun), 毋通切做 s|ia、si|a 這款碎片。
+  for (const char* keys : {"siataibun", "sia-tai-bun", "guabehsia", "ianbun", "siasimi"}) {
+    api->simulate_key_sequence(session, keys);
+    print_state(api, session, (std::string("main_seg_") + keys).c_str());
+    api->clear_composition(session);
+  }
 
   // Han-lo copy shown on the landing page (docs/index.html) must be
   // typeable with the IME itself; tests/test_landing_hanlo.py pins the

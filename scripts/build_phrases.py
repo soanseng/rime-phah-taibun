@@ -114,7 +114,7 @@ def _pick_entry(word: str, reverse_index: dict[str, list[dict]]) -> dict | None:
     """
     if "-" in word:
         return None
-    # Bare syllables are the inherent tone 1/4 (pojbh/POJ write "kha" for
+    # Bare syllables are the inherent tone 1/4 (POJ corpora write "kha" for
     # kha1), as in the dictionary and the corpus-frequency merge.
     toned = _implicit_tone(word)
     candidates = [

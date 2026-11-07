@@ -16,12 +16,17 @@
 # Recalibrate after intentional dictionary changes:
 #   uv run python scripts/validate_dict.py schema/phah_taibun.dict.yaml \
 #       --known-keys tests/fixtures/known_keys.yaml
+#
+# 2026-11 recalibration: iTaigi、台灣植物名彙 and the 白話字文獻館 corpus were
+# removed from the pipeline on purpose (owner decision); 台日大辭典 stays and
+# 教典「又唸作／俗唸作」readings were added. Every floor still holds on the
+# rebuilt dictionary except gua2 (60 → 59 rows), reset to ~70% (41).
 
 tsiah8: 400
 png7: 80
 tai5: 240
 uan5: 130
-gua2: 60
+gua2: 41
 beh4: 65
 sui2: 70
 kha1: 380

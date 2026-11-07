@@ -64,7 +64,7 @@
 | 查讀音 TL+POJ 雙標註 | ✅ 已實作 | `phah_taibun_lookup.lua` 為候選加 `[TL:xxx POJ:yyy]` |
 | 萬用查字 `?` | ✅ 已實作 | `phah_taibun_wildcard.lua` 展開所有可能聲母匹配 |
 | 造詞模式 `;` | ✅ 基礎版 | `phah_taibun_phrase.lua` 基礎造詞引導，進階版需 per-syllable lookup |
-| 簡拼提示 `,,sp` | ✅ 已實作 | `phah_taibun_speedup.lua` 17 個聲母對照表 + 用法提示 |
+| 簡拼提示 `,,sp` | ❌ 已移除（2026-11） | 簡拼（首字母縮寫）會共無調連打切碎（siataibun → s ia → 視野台文），連 `phah_taibun_speedup.lua` 做伙拿掉；完整音節優先 |
 | 個人化學習 | ✅ 已啟用 | 主 translator `enable_user_dict: true` + `enable_encoder: false`：學使用者選字偏好但不造臨時詞，保留 c6110d5「不出現臨時候選」設計 |
 | 羅馬字原文候選 | ✅ 已實作 | `phah_taibun_origin.lua` 在候選清單最後附加「照你打的音」羅馬字候選（支援 `-`、`--`、TL/POJ），任何模式皆可選，字典沒有的人名地名新詞也能打 |
 | 文白讀標記 | 🔲 scaffold | `phah_taibun_synonym.lua` 架構就位，需先定義文白讀資料模型 |

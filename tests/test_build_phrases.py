@@ -229,7 +229,7 @@ class TestGeneratePhraseEntries:
         assert generate_phrase_entries(Counter({("sann1", "ji7"): 11}), idx, set(), min_count=5) == []
 
     def test_bare_token_is_implicit_tone_not_any_tone(self):
-        """Corpus 'kha' (tone 1 unmarked, as in pojbh) means kha1: it must
+        """Corpus 'kha' (tone 1 unmarked, as in POJ corpora) means kha1: it must
         not borrow a heavier row of another tone (卡 kha2)."""
         from collections import Counter
 

@@ -20,16 +20,13 @@ class TestAssignSourceWeight:
     """Map data source names to base frequency weights."""
 
     def test_moe_weight(self):
-        assert assign_source_weight("moe") == 1000
-
-    def test_itaigi_weight(self):
-        assert assign_source_weight("itaigi") == 800
+        assert assign_source_weight("moe") == 1500
 
     def test_taihoa_weight(self):
         assert assign_source_weight("taihoa") == 500
 
-    def test_taijit_weight(self):
-        assert assign_source_weight("taijit") == 200
+    def test_moe_variant_weight(self):
+        assert assign_source_weight("moe_variant") == 550
 
     def test_unknown_source(self):
         assert assign_source_weight("unknown") == 100
@@ -63,24 +60,24 @@ class TestComputeWeights:
 
     def test_basic_weight(self):
         entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi"},
-        ]
-        result = compute_weights(entries)
-        # base=800, length_mod=1.2 → 960
-        assert result[0]["weight"] == 960
-
-    def test_cross_source_bonus(self):
-        entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi"},
             {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa"},
         ]
         result = compute_weights(entries)
-        # Higher of (800, 500) = 800, length_mod=1.2 -> 960, overlap bonus x1.1 -> 1056
-        assert result[0]["weight"] == 1056
+        # base=500, length_mod=1.2 → 600
+        assert result[0]["weight"] == 600
+
+    def test_cross_source_bonus(self):
+        entries = [
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "moe"},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa"},
+        ]
+        result = compute_weights(entries)
+        # Higher of (1500, 500) = 1500, length_mod=1.2 -> 1800, overlap bonus x1.1 -> 1980
+        assert result[0]["weight"] == 1980
 
     def test_preserves_all_fields(self):
         entries = [
-            {"hanlo": "我", "rime_key": "gua", "source": "itaigi", "hoabun": "我"},
+            {"hanlo": "我", "rime_key": "gua", "source": "taihoa", "hoabun": "我"},
         ]
         result = compute_weights(entries)
         assert result[0]["hoabun"] == "我"
@@ -91,7 +88,7 @@ class TestComputeWeights:
         (which write normalized keys) can never carry both variants."""
         entries = [
             {"hanlo": "閃著", "rime_key": "siam2  tioh8", "source": "moe"},
-            {"hanlo": "閃著", "rime_key": "siam2 tioh8", "source": "itaigi"},
+            {"hanlo": "閃著", "rime_key": "siam2 tioh8", "source": "taihoa"},
         ]
         result = compute_weights(entries)
         assert len(result) == 1
@@ -124,7 +121,7 @@ class TestComputeWeightsWithCorpus:
 
     def test_corpus_boost(self):
         entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah8 png7", "source": "itaigi", "kip_input": "tsiah8-png7"},
+            {"hanlo": "食飯", "rime_key": "tsiah8 png7", "source": "taihoa", "kip_input": "tsiah8-png7"},
         ]
         corpus_freq = {"tsiah8-png7": 50}
         result = compute_weights(entries, corpus_freq=corpus_freq)
@@ -133,10 +130,10 @@ class TestComputeWeightsWithCorpus:
 
     def test_no_corpus_same_as_before(self):
         entries = [
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi"},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa"},
         ]
         result = compute_weights(entries)
-        assert result[0]["weight"] == 960
+        assert result[0]["weight"] == 600
 
 
 class TestEnforceLongWordInvariant:
@@ -149,9 +146,9 @@ class TestEnforceLongWordInvariant:
 
     def test_long_word_raised_to_threshold(self):
         entries = [
-            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
-            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+            {"hanlo": "食", "rime_key": "tsiah", "source": "taihoa", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "taihoa", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa", "weight": 960},
         ]
         result, raised = enforce_long_word_invariant(entries)
         word = next(e for e in result if e["hanlo"] == "食飯")
@@ -161,9 +158,9 @@ class TestEnforceLongWordInvariant:
 
     def test_no_change_when_already_above(self):
         entries = [
-            {"hanlo": "食", "rime_key": "tsiah", "source": "taijit", "weight": 160},
-            {"hanlo": "飯", "rime_key": "png", "source": "taijit", "weight": 160},
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+            {"hanlo": "食", "rime_key": "tsiah", "source": "kamjitian", "weight": 160},
+            {"hanlo": "飯", "rime_key": "png", "source": "kamjitian", "weight": 160},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa", "weight": 960},
         ]
         result, raised = enforce_long_word_invariant(entries)
         word = next(e for e in result if e["hanlo"] == "食飯")
@@ -172,8 +169,8 @@ class TestEnforceLongWordInvariant:
 
     def test_single_syllable_entries_untouched(self):
         entries = [
-            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
-            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
+            {"hanlo": "食", "rime_key": "tsiah", "source": "taihoa", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "taihoa", "weight": 640},
         ]
         result, raised = enforce_long_word_invariant(entries)
         assert all(e["weight"] == 640 for e in result)
@@ -182,8 +179,8 @@ class TestEnforceLongWordInvariant:
     def test_missing_standalone_syllable_noop(self):
         """No single-syllable competitors means nothing to enforce."""
         entries = [
-            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+            {"hanlo": "食", "rime_key": "tsiah", "source": "taihoa", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa", "weight": 960},
         ]
         # "png" has no standalone entry -> fragmented sum = 640, threshold 768 < 960
         result, raised = enforce_long_word_invariant(entries)
@@ -193,9 +190,9 @@ class TestEnforceLongWordInvariant:
 
     def test_idempotent(self):
         entries = [
-            {"hanlo": "食", "rime_key": "tsiah", "source": "itaigi", "weight": 640},
-            {"hanlo": "飯", "rime_key": "png", "source": "itaigi", "weight": 640},
-            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "itaigi", "weight": 960},
+            {"hanlo": "食", "rime_key": "tsiah", "source": "taihoa", "weight": 640},
+            {"hanlo": "飯", "rime_key": "png", "source": "taihoa", "weight": 640},
+            {"hanlo": "食飯", "rime_key": "tsiah png", "source": "taihoa", "weight": 960},
         ]
         first, raised1 = enforce_long_word_invariant(entries)
         _, raised2 = enforce_long_word_invariant(first)
@@ -210,15 +207,15 @@ class TestEnforceLongWordInvariant:
         floor is max(syllable floor, ceil(k * best two-code split sum)).
         """
         entries = [
-            {"hanlo": "長", "rime_key": "tng5", "source": "itaigi", "weight": 400},
-            {"hanlo": "期", "rime_key": "ki5", "source": "itaigi", "weight": 400},
-            {"hanlo": "時", "rime_key": "si5", "source": "itaigi", "weight": 400},
-            {"hanlo": "間", "rime_key": "kan5", "source": "itaigi", "weight": 400},
-            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "itaigi", "weight": 3000},
-            {"hanlo": "時間", "rime_key": "si5-kan5", "source": "itaigi", "weight": 3000},
+            {"hanlo": "長", "rime_key": "tng5", "source": "taihoa", "weight": 400},
+            {"hanlo": "期", "rime_key": "ki5", "source": "taihoa", "weight": 400},
+            {"hanlo": "時", "rime_key": "si5", "source": "taihoa", "weight": 400},
+            {"hanlo": "間", "rime_key": "kan5", "source": "taihoa", "weight": 400},
+            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "taihoa", "weight": 3000},
+            {"hanlo": "時間", "rime_key": "si5-kan5", "source": "taihoa", "weight": 3000},
             # 3000 > ceil(1.2 * (400*4)) = 1920 syllable floor, but below
             # ceil(1.2 * (3000 + 3000)) = 7200 two-word-split floor.
-            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "itaigi", "weight": 3000},
+            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "taihoa", "weight": 3000},
         ]
         result, raised = enforce_long_word_invariant(entries)
         by_han = {e["hanlo"]: e["weight"] for e in result}
@@ -230,15 +227,15 @@ class TestEnforceLongWordInvariant:
     def test_split_with_missing_half_ignored(self):
         """A split counts only when BOTH halves are existing dict codes."""
         entries = [
-            {"hanlo": "長", "rime_key": "tng5", "source": "itaigi", "weight": 400},
-            {"hanlo": "期", "rime_key": "ki5", "source": "itaigi", "weight": 400},
-            {"hanlo": "時", "rime_key": "si5", "source": "itaigi", "weight": 400},
-            {"hanlo": "間", "rime_key": "kan5", "source": "itaigi", "weight": 400},
+            {"hanlo": "長", "rime_key": "tng5", "source": "taihoa", "weight": 400},
+            {"hanlo": "期", "rime_key": "ki5", "source": "taihoa", "weight": 400},
+            {"hanlo": "時", "rime_key": "si5", "source": "taihoa", "weight": 400},
+            {"hanlo": "間", "rime_key": "kan5", "source": "taihoa", "weight": 400},
             # Only the left half of the natural 2+2 split exists as a dict
             # word; 時間 is absent, so no two-code split applies.
-            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "itaigi", "weight": 3000},
+            {"hanlo": "長期", "rime_key": "tng5-ki5", "source": "taihoa", "weight": 3000},
             # 3000 > ceil(1.2 * 1600) = 1920 syllable floor.
-            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "itaigi", "weight": 3000},
+            {"hanlo": "長期時間", "rime_key": "tng5-ki5 si5-kan5", "source": "taihoa", "weight": 3000},
         ]
         result, raised = enforce_long_word_invariant(entries)
         by_han = {e["hanlo"]: e["weight"] for e in result}
@@ -254,16 +251,16 @@ class TestEnforceLongWordInvariant:
         satisfies the invariant against its own final weights.
         """
         entries = [
-            {"hanlo": "看", "rime_key": "khuann3", "source": "itaigi", "weight": 100},
-            {"hanlo": "民", "rime_key": "bin5", "source": "itaigi", "weight": 100},
-            {"hanlo": "眾", "rime_key": "tsiong3", "source": "itaigi", "weight": 100},
-            {"hanlo": "世", "rime_key": "si7", "source": "itaigi", "weight": 100},
-            {"hanlo": "民眾", "rime_key": "bin5 tsiong3", "source": "itaigi", "weight": 5000},
+            {"hanlo": "看", "rime_key": "khuann3", "source": "taihoa", "weight": 100},
+            {"hanlo": "民", "rime_key": "bin5", "source": "taihoa", "weight": 100},
+            {"hanlo": "眾", "rime_key": "tsiong3", "source": "taihoa", "weight": 100},
+            {"hanlo": "世", "rime_key": "si7", "source": "taihoa", "weight": 100},
+            {"hanlo": "民眾", "rime_key": "bin5 tsiong3", "source": "taihoa", "weight": 5000},
             # 1000 < ceil(1.2 * (100 + 5000)) = 6120 one+two split floor.
-            {"hanlo": "看民眾", "rime_key": "khuann3 bin5 tsiong3", "source": "itaigi", "weight": 1000},
+            {"hanlo": "看民眾", "rime_key": "khuann3 bin5 tsiong3", "source": "taihoa", "weight": 1000},
             # Split floor [看民眾][世] = ceil(1.2 * (6120 + 100)) = 7464,
             # computable only after 看民眾 has been raised.
-            {"hanlo": "看民眾世", "rime_key": "khuann3 bin5 tsiong3 si7", "source": "itaigi", "weight": 2000},
+            {"hanlo": "看民眾世", "rime_key": "khuann3 bin5 tsiong3 si7", "source": "taihoa", "weight": 2000},
         ]
         first, raised1 = enforce_long_word_invariant(entries)
         by_han = {e["hanlo"]: e["weight"] for e in first}

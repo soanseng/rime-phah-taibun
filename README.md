@@ -10,9 +10,9 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/soanseng/rime-phah-taibun?style=flat-square&label=release)](https://github.com/soanseng/rime-phah-taibun/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Dict Entries](https://img.shields.io/badge/dict-228K%20entries-green?style=flat-square)](#)
-[![Lua Modules](https://img.shields.io/badge/lua-21%20modules-orange?style=flat-square)](#)
-[![Corpora](https://img.shields.io/badge/corpora-7%20sources-purple?style=flat-square)](#)
+[![Dict Entries](https://img.shields.io/badge/dict-211K%20entries-green?style=flat-square)](#)
+[![Lua Modules](https://img.shields.io/badge/lua-20%20modules-orange?style=flat-square)](#)
+[![Corpora](https://img.shields.io/badge/corpora-6%20sources-purple?style=flat-square)](#)
 [![Website](https://img.shields.io/badge/web-taigi.anatomind.com-blue?style=flat-square)](https://taigi.anatomind.com/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android-lightgrey?style=flat-square)](#安裝)
 
@@ -120,7 +120,7 @@ ziahv     == tsiah8   → 食 [tsia̍h]
 - **字典外的詞**：候選上尾永遠有一个「羅馬字原文」，人名地名直接用
 - **長詞優先、逐音節組字、個人化學習**：干焦學你揀過的詞，袂共輸入歷史自動變新詞
 - **標點、符號、Emoji**：漢羅模式全形標點；`` ` `` 開 50 類符號，`` `e `` 揣 Emoji，拍「台灣」揀會著 🇹🇼
-- **228,763 詞條**：ChhoeTaigi 9 本辭典、教育部辭典詞目、TL/POJ 全羅候選、7 个語料庫詞頻加權，閣有教育部輸入法詞庫增補、學科術語、臺灣地名
+- **210,865 詞條**：ChhoeTaigi 4 本辭典、教育部辭典詞目、TL/POJ 全羅候選、6 个語料庫詞頻加權，閣有教育部輸入法詞庫增補、學科術語、臺灣地名
 
 ### 輸出模式
 
@@ -147,7 +147,7 @@ ziahv     == tsiah8   → 食 [tsia̍h]
 | `?` | 萬用查字 | 先揀音節閣揀字 |
 | `;` | 造詞模式 | `;拼音` 查字典 |
 | `'` | 同音揀字 | 拍了按 `'` |
-| `vvh` / `vvjit` / `vvsp` | 說明／台語日期／簡拼對照 | |
+| `vvh` / `vvjit` | 說明／台語日期 | |
 | `[` `]` | 翻頁 | 所有候選選單 |
 | `\` | 換輸出 | 漢羅↔全羅 |
 | `Enter` | 直接送出拍的音 | 全羅模式 |
@@ -174,7 +174,7 @@ ziahv     == tsiah8   → 食 [tsia̍h]
 | 拼音 | TL＋POJ 混拍 | TL＋POJ | TL（自動轉 POJ） |
 | 聲調 | 會當攏免拍 | 愛拍 | 愛拍 |
 | 漢羅輸出 | 自動（LKK 規範）＋手動 | 有 | 無 |
-| 字典 | 228,763 條 | 無公開 | 約 2.4 萬條 |
+| 字典 | 210,865 條 | 無公開 | 約 2.4 萬條 |
 | 華→台反查 | 有 | 無 | 無 |
 | 網頁工具 | 試拍、練習、聽寫、轉換、寫作檢查、詞彙、文法、檢定練習 | 無 | 無 |
 
@@ -197,7 +197,7 @@ python3 -m http.server 8000 --directory docs   # 網站本機預覽
 
 ```
 schema/        Rime 方案（主方案、Telex、主字典、LKK 漢羅規則、輕聲規則、教育部 700 字）
-lua/           Lua 擴充模組（21 個）
+lua/           Lua 擴充模組（20 個）
 opencc/        Emoji 詞語候選資料（rime-emoji）
 rime.lua       Lua 模組註冊（舊版 librime 相容）
 scripts/       資料處理腳本；scripts/thak/ 是網頁工具的資料管線
@@ -210,10 +210,10 @@ tests/         pytest 測試（tests/js/ 是網頁練習的 node 測試）
 詞典資料逐來源標示授權，詳細見 [LICENSE](LICENSE) 佮 [AGENTS.md](AGENTS.md)。
 
 - [李江却台語文教基金會](https://www.tgb.org.tw/) — LKK 用字表，漢羅輸出的核心根據
-- [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 9 本辭典的開放資料
+- [ChhoeTaigi 找台語](https://chhoe.taigi.info/) — 6 本辭典的開放資料
 - [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/) — 主字典、注音反查讀音、例句
 - [楊允言教授](http://ip194097.ntcu.edu.tw/Ungian/) — 台語文學語料佮詞頻
-- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900 例句、NMTL 文學、白話字文獻
+- [Taiwanese-Corpus](https://github.com/Taiwanese-Corpus) — iCorpus、康軒課本、900 例句、NMTL 文學
 - [luke871016/Taigi-Input-method-dictionary-supplement](https://github.com/luke871016/Taigi-Input-method-dictionary-supplement) — 教育部輸入法詞庫增補
 - [ryanwuson/rime-liur](https://github.com/ryanwuson/rime-liur) — Lua 模組架構參考
 - [iDvel/rime-ice](https://github.com/iDvel/rime-ice) — 長詞優先等 UX 參考
@@ -313,7 +313,7 @@ tai uan                →  臺灣 / 台灣
 - **輕聲**：自動產生輕聲候選，2.9 萬筆以上輕聲詞＋111 條規則
 - **字典外的詞**：候選最後永遠有「羅馬字原文」候選
 - **標點、符號、Emoji**：漢羅模式全形標點；`` ` `` 開 50 類符號，`` `e `` 瀏覽 Emoji
-- **228,763 詞條**：ChhoeTaigi 9 本辭典、教育部辭典、7 個語料庫詞頻加權，以及教育部輸入法詞庫增補、學科術語、臺灣地名
+- **210,865 詞條**：ChhoeTaigi 4 本辭典、教育部辭典、6 個語料庫詞頻加權，以及教育部輸入法詞庫增補、學科術語、臺灣地名
 
 ### 與其他台語輸入法比較
 
@@ -324,7 +324,7 @@ tai uan                →  臺灣 / 台灣
 | **拼音系統** | TL＋POJ 混打 | TL＋POJ | TL（自動轉換 POJ） |
 | **聲調** | 完全可省略 | 需輸入 | 需輸入 |
 | **漢羅混寫輸出** | 自動（LKK 規範）＋手動 | 有 | 無 |
-| **字典規模** | 228,763 條目 | 未公開 | 約 2.4 萬條目 |
+| **字典規模** | 210,865 條目 | 未公開 | 約 2.4 萬條目 |
 | **注音反查** | 華→台自動轉換 | 無 | 無 |
 | **Emoji** | 內建 [rime-emoji](https://github.com/rime/rime-emoji)（LGPL-3.0）：詞語附加候選＋分類瀏覽（含 🇹🇼） | 無 | 有 |
 | **英文候選** | 未內建；按 `Ctrl+Space` 切至英文模式 | 無 | 無 |
@@ -333,7 +333,7 @@ tai uan                →  臺灣 / 台灣
 ### 疑難排解
 
 - **找不到「寫台文」方案**：確認系統輸入法已切到 Rime、已重新部署，按 `F4` 查看清單。
-- **候選區沒有讀音註解**：Rime 使用者資料夾的 `lua/` 應有 21 個 `phah_taibun_*.lua`（Lua 擴充模組共 21 個）。
+- **候選區沒有讀音註解**：Rime 使用者資料夾的 `lua/` 應有 20 個 `phah_taibun_*.lua`（Lua 擴充模組共 20 個）。
 - **注音反查 `~` 沒反應**：需要 `bopomofo_tw` 方案（Arch：`rime-bopomofo`＋`rime-terra-pinyin`；Debian/Ubuntu：`librime-data-*`）。
 - **重新安裝**：重新執行安裝指令，不會覆蓋自訂詞庫。
 

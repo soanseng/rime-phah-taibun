@@ -1,12 +1,13 @@
 """Convert ChhoeTaigi CSV dictionaries to Rime dict.yaml format.
 
-Reads iTaigi (CC0), 台華線頂 (CC BY-SA), and additional ChhoeTaigi CSVs,
+Reads 台華線頂 (CC BY-SA) and additional ChhoeTaigi CSVs,
 extracts pronunciation and Han-Lo writing data, and outputs Rime-compatible
 dictionary entries.
 """
 
 import argparse
 import csv
+import json
 import re
 import sys
 import unicodedata
@@ -19,15 +20,10 @@ except ModuleNotFoundError:
     from tl_poj_convert import poj_to_tl, tl_to_poj
 
 CSV_SOURCE_MAP = {
-    "iTaigiHoataiTuichiautian": "itaigi",
     "TaihoaSoanntengTuichiautian": "taihoa",
     "KauiokpooTaigiSutian": "moe",
     "TaijitToaSutian": "taijit",
-    "MaryknollTaiengSutian": "maryknoll",
-    "EmbreeTaiengSutian": "embree",
     "KamJitian": "kamjitian",
-    "TaioanPehoeKichhooGiku": "pehoe",
-    "TaioanSitbutMialui": "sitbut",
 }
 
 COMBINING_TONE_TO_NUMBER = {
@@ -216,7 +212,7 @@ def clean_kip_input(kip_input: str, hanlo: str | None = None) -> list[str]:
     Handles:
     - (替) marker removal
     - Slash-separated multiple readings split into separate entries
-    - Syllable-local slashes (iTaigi `mue5-a2-ke/kue` for 梅子雞): when the
+    - Syllable-local slashes (`mue5-a2-ke/kue` for 梅子雞): when the
       whole-reading split contradicts a pure-Hanzi word's character count
       and the syllable-local expansion matches it, the expansion wins.
       Anything the Hanzi count cannot confirm keeps the whole-reading split
@@ -263,6 +259,10 @@ def clean_kip_input(kip_input: str, hanlo: str | None = None) -> list[str]:
 
 def parse_itaigi_csv(csvfile: TextIO) -> list[dict]:
     """Parse iTaigi CSV into structured dictionary entries.
+
+    Only the web tools (scripts/thak/build.py) read iTaigi; the IME
+    dictionary dropped it (2026-11 owner decision), so main() never
+    calls this.
 
     Args:
         csvfile: File-like object containing iTaigi CSV data
@@ -347,7 +347,7 @@ def parse_generic_csv(csvfile: TextIO, source_name: str) -> list[dict]:
 
     Args:
         csvfile: File-like object containing CSV data
-        source_name: Source identifier for the entries (e.g. "maryknoll")
+        source_name: Source identifier for the entries (e.g. "kamjitian")
 
     Returns:
         List of dicts with keys: hanlo, kip_input, rime_key, hoabun, source
@@ -402,12 +402,26 @@ def _clean_kipsutian_reading(reading: str) -> str:
     return reading.strip()
 
 
+def _kipsutian_alternate_readings(row: dict, hanlo: str) -> list[str]:
+    """教典「又唸作」「俗唸作」(JSON 陣列) 內底仝漢字的讀音 (家己 ka-tī)."""
+    readings = []
+    for column in ("又唸作", "俗唸作"):
+        raw = (row.get(column) or "").strip()
+        if not raw:
+            continue
+        for item in json.loads(raw):
+            if clean_hanlo_text(item.get("漢字", "")) == hanlo and item.get("羅馬字", "").strip():
+                readings.append(item["羅馬字"].strip())
+    return readings
+
+
 def parse_kipsutian_main_csv(csvfile: TextIO, include_roman_outputs: bool = True) -> list[dict]:
     """Parse MOE KipSutian CSV into main input dictionary entries.
 
     The upstream ``漢字`` field is kept as the primary candidate, including
     Han-Lo mixed entries when the source uses them. Full romanization TL and
     POJ candidates are added as selectable output forms for the same input key.
+    「又唸作」「俗唸作」 readings of the same headword are added as readings too.
     """
     entries = []
     reader = csv.DictReader(csvfile)
@@ -417,7 +431,10 @@ def parse_kipsutian_main_csv(csvfile: TextIO, include_roman_outputs: bool = True
         if not hanlo or not reading_raw:
             continue
 
-        reading_variants = [_clean_kipsutian_reading(v) for v in reading_raw.split("/") if v.strip()]
+        raw_variants = [v for v in reading_raw.split("/") if v.strip()]
+        for alternate in _kipsutian_alternate_readings(row, hanlo):
+            raw_variants += [v for v in alternate.split("/") if v.strip()]
+        reading_variants = [_clean_kipsutian_reading(v) for v in raw_variants]
         for reading_variant in reading_variants:
             for kip in clean_kip_input(reading_variant):
                 rime_key = normalize_implicit_tone(kip).replace("-", " ")
@@ -513,7 +530,6 @@ def write_rime_dict(entries: list[dict], output_path: Path) -> None:
 
 
 def convert_chhoetaigi(
-    itaigi_paths: list[Path],
     taihoa_paths: list[Path],
     output_path: Path,
     corpus_freq: dict[str, int] | None = None,
@@ -526,7 +542,6 @@ def convert_chhoetaigi(
     Uses heuristic frequency weighting from build_frequency module.
 
     Args:
-        itaigi_paths: Paths to iTaigi CSV files
         taihoa_paths: Paths to 台華線頂 CSV files
         output_path: Path to write output dict.yaml
         corpus_freq: Optional merged corpus frequency dict (kip_input → count)
@@ -546,9 +561,6 @@ def convert_chhoetaigi(
         from validate_dict import verify_poj_integrity
 
     all_entries = []
-    for path in itaigi_paths:
-        with open(path, encoding="utf-8-sig") as f:
-            all_entries.extend(parse_itaigi_csv(f))
     for path in taihoa_paths:
         with open(path, encoding="utf-8-sig") as f:
             all_entries.extend(parse_taihoa_csv(f))
@@ -612,14 +624,12 @@ def main(argv: list[str] | None = None) -> None:
     if not data_dir.exists():
         data_dir = args.input
 
-    itaigi = data_dir / "ChhoeTaigi_iTaigiHoataiTuichiautian.csv"
     taihoa = data_dir / "ChhoeTaigi_TaihoaSoanntengTuichiautian.csv"
-
-    itaigi_paths = [itaigi] if itaigi.exists() else []
     taihoa_paths = [taihoa] if taihoa.exists() else []
 
-    # Auto-discover additional CSVs
-    known_special = {itaigi.name, taihoa.name}
+    # Auto-discover additional CSVs; unmapped files (removed sources
+    # iTaigi/TaioanSitbutMialui) are skipped by the map.
+    known_special = {taihoa.name}
     generic_paths: list[tuple[Path, str]] = []
     for csv_path in sorted(data_dir.glob("ChhoeTaigi_*.csv")):
         if csv_path.name in known_special:
@@ -628,7 +638,7 @@ def main(argv: list[str] | None = None) -> None:
         if source is not None:
             generic_paths.append((csv_path, source))
 
-    if not itaigi_paths and not taihoa_paths and not generic_paths:
+    if not taihoa_paths and not generic_paths:
         print(f"Error: No CSV files found in {data_dir}", file=sys.stderr)
         sys.exit(1)
 
@@ -658,7 +668,6 @@ def main(argv: list[str] | None = None) -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     output_path = args.output / "phah_taibun.dict.yaml"
     convert_chhoetaigi(
-        itaigi_paths,
         taihoa_paths,
         output_path,
         corpus_freq=corpus_freq,

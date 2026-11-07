@@ -33,7 +33,6 @@ function M.func(input, seg, env)
       { "Emoji", "打詞附加候選（F4 可關）；`e 分類瀏覽（`e1 笑臉…）" },
       { "vvh", "本說明" },
       { "vvjit", "台語日期時間" },
-      { "vvsp", "簡拼提示表" },
     }
     for _, item in ipairs(help_items) do
       local cand = Candidate("help", seg.start, seg._end, item[1], item[2])

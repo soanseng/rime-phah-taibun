@@ -66,7 +66,6 @@ engine:
     - lua_translator@*phah_taibun_emoji_menu
     - lua_translator@*phah_taibun_wildcard
     - lua_translator@*phah_taibun_phrase
-    - lua_translator@*phah_taibun_speedup
   filters:
     - lua_filter@*phah_taibun_lighttone
     - lua_filter@*phah_taibun_toneless
@@ -88,7 +87,11 @@ speller:
   delimiter: " '-"
   algebra:
     # === 聲調完全可省略 ===
-    - abbrev/^([a-z]+)[1-9]$/$1/
+    # 無調拼式分兩步 abbrev（中間形有 _，拍袂出來），可信度扣兩擺：
+    # 無調連打 siataibun 愛切做完整音節 sia|tai|bun，毋通切做 si|a|tai|bun
+    # （是仔台文）——音節愈濟扣愈濟，完整音節的切法自然贏。
+    - abbrev/^([a-z]+)[1-9]$/$1_/
+    - abbrev/^([a-z]+)_$/$1/
     # 第1聲在字典中已標為 "to1"（非 "to"），由 build pipeline 處理
 
     # === POJ → TL 對應 ===
@@ -121,9 +124,6 @@ speller:
     - derive/^j/l/
     - derive/nng/ng/
     - derive/h$//
-
-    # === 簡拼 ===
-    - abbrev/^([ptkmnbglsjhiuc]g?s?h?h?).*/$1/
 
 translator:
   dictionary: phah_taibun

@@ -4,24 +4,6 @@ import pytest
 
 
 @pytest.fixture
-def itaigi_csv_content():
-    """Sample iTaigi CSV content (UTF-8 with BOM simulation)."""
-    return (
-        '\ufeff"DictWordID","PojUnicode","PojInput","KipUnicode","KipInput",'
-        '"HanLoTaibunPoj","HanLoTaibunKip","HoaBun","DataProvidedBy"\n'
-        '"1","siān-neh","sian7-neh","siān-neh","sian7-neh",'
-        '"𤺪呢","𤺪呢","討厭","Liz Lin"\n'
-        '"2","sú-sū","su2-su7","sú-sū","su2-su7",'
-        '"死侍","死侍","死侍","Liz Lin"\n'
-        '"4","tōa-lâng chhōa gín-á khì chhit-thô",'
-        '"toa7-lang5 chhoa7 gin2-a2 khi3 chhit-tho5",'
-        '"tuā-lâng tshuā gín-á khì tshit-thô",'
-        '"tua7-lang5 tshua7 gin2-a2 khi3 tshit-tho5",'
-        '"大人𤆬囡仔去𨑨迌","大人𤆬囡仔去𨑨迌","大人帶小孩去玩耍","葉怡萱"\n'
-    )
-
-
-@pytest.fixture
 def taihoa_csv_content():
     """Sample 台華線頂 CSV content."""
     return (

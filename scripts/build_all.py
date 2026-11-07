@@ -8,7 +8,6 @@ Orchestrates the full preprocessing pipeline:
 2c. Extract word frequencies + sentences from 900例句
 2d. Extract nmtl literary corpus sentences + frequencies
 2e. Extract KipSutian example sentences
-2f. Extract Khin-hoan POJ texts (with POJ→TL conversion)
 3. Convert ChhoeTaigi CSVs → Rime dict.yaml (with corpus frequency boost).
    All corpus extraction runs BEFORE this step so a single fresh run
    carries every corpus into the dictionary weights — no dependency on
@@ -79,8 +78,6 @@ def main(argv: list[str] | None = None) -> None:
     nmtl_sentences = data / "nmtl_sentences.txt"
     kipsutian_sent_freq = data / "kipsutian_sent_freq.tsv"
     kipsutian_sentences = data / "kipsutian_sentences.txt"
-    pojbh_freq = data / "pojbh_freq.tsv"
-    pojbh_sentences = data / "pojbh_sentences.txt"
     kok4hau7_freq = data / "kok4hau7_freq.tsv"
     kok4hau7_sentences = data / "kok4hau7_sentences.txt"
     leku900_freq = data / "900leku_freq.tsv"
@@ -259,25 +256,6 @@ def main(argv: list[str] | None = None) -> None:
             ],
         )
 
-    # Step 2f: Extract Khin-hoan POJ texts (with POJ→TL conversion)
-    pojbh_dir = data / "Khin-hoan_2010_pojbh"
-    if pojbh_dir.exists():
-        steps_ok &= run_step(
-            "Extract Khin-hoan POJ texts (with POJ→TL conversion)",
-            [
-                python,
-                "scripts/extract_pojbh.py",
-                "--input",
-                str(pojbh_dir),
-                "--output",
-                str(pojbh_freq),
-                "--sentences",
-                str(pojbh_sentences),
-            ],
-        )
-    else:
-        print(f"SKIP: Khin-hoan POJ data not found at {pojbh_dir}")
-
     # Step 3: Convert ChhoeTaigi → dict.yaml (with corpus frequency boost)
     chhoetaigi_dir = data / "ChhoeTaigiDatabase"
     if chhoetaigi_dir.exists():
@@ -299,7 +277,6 @@ def main(argv: list[str] | None = None) -> None:
                 leku900_freq,
                 nmtl_freq,
                 kipsutian_sent_freq,
-                pojbh_freq,
             ]
             if f.exists()
         ]
@@ -566,7 +543,6 @@ def main(argv: list[str] | None = None) -> None:
             leku900_freq,
             nmtl_freq,
             kipsutian_sent_freq,
-            pojbh_freq,
         ]
         if f.exists()
     ]
@@ -596,7 +572,6 @@ def main(argv: list[str] | None = None) -> None:
             leku900_sentences,
             nmtl_sentences,
             kipsutian_sentences,
-            pojbh_sentences,
         ]
         if f.exists()
     ]

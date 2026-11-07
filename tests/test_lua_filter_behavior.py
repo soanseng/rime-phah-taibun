@@ -679,7 +679,6 @@ def test_help_lists_every_user_facing_shortcut():
         ";",
         "vvh",
         "vvjit",
-        "vvsp",
     } <= keys
 
 

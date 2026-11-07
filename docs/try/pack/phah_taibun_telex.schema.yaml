@@ -69,9 +69,9 @@ engine:
     - lua_translator@*phah_taibun_emoji_menu
     - lua_translator@*phah_taibun_wildcard
     - lua_translator@*phah_taibun_phrase
-    - lua_translator@*phah_taibun_speedup
   filters:
     - lua_filter@*phah_taibun_lighttone
+    - lua_filter@*phah_taibun_toneless
     - lua_filter@*phah_taibun_filter
     - lua_filter@*phah_taibun_lookup
     - lua_filter@*phah_taibun_recommend
@@ -90,7 +90,10 @@ speller:
   delimiter: " '-"
   algebra:
     # === 聲調完全可省略（Telex 調鍵由 Lua 預先轉成數字調） ===
-    - derive/[1-9]$//
+    # 佮主方案仝款：無調拼式分兩步 abbrev（中間形有 _，拍袂出來），可信度扣兩擺，
+    # 無調連打照完整音節切（sia|tai|bun，毋是 si|a 是仔）；toneless filter 保住單音節。
+    - abbrev/^([a-z]+)[1-9]$/$1_/
+    - abbrev/^([a-z]+)_$/$1/
 
     # === POJ → TL 對應 ===
     - derive/^ts/ch/
@@ -122,9 +125,6 @@ speller:
     - derive/^j/l/
     - derive/nng/ng/
     - derive/h$//
-
-    # === 簡拼 ===
-    - abbrev/^([ptkmnbglsjhiuc]g?s?h?h?).*/$1/
 
 translator:
   dictionary: phah_taibun

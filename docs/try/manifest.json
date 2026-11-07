@@ -1,5 +1,5 @@
 {
- "version": "ec4a444097e6c93f",
+ "version": "448e8fe22599df17",
  "dir": "pack",
  "files": [
   "default.yaml",
@@ -18,7 +18,6 @@
   "lua/phah_taibun_origin.lua",
   "lua/phah_taibun_phrase.lua",
   "lua/phah_taibun_recommend.lua",
-  "lua/phah_taibun_speedup.lua",
   "lua/phah_taibun_symbols.lua",
   "lua/phah_taibun_synonym.lua",
   "lua/phah_taibun_telex.lua",
