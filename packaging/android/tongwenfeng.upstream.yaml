@@ -3515,9 +3515,9 @@ preset_keyboards:
     - {click: '「」{Left}'}
     - {click: '【】{Left}'}
     - {click: '～'}
-    - {click: '@{Return}'}
-    - {click: '*{Return}'}
-    - {click: '&{Return}'}
+    - {click: '@'}
+    - {click: '*'}
+    - {click: '&'}
     - {click: '﹏'}
     - {click: '﹋'}
     - {click: '﹌'}
@@ -4234,5 +4234,5 @@ preset_keys:
   竖标点: {text: '{Escape}/bdz', label: 竖标, functional: false}
 
 # ── vendored 基座 provenance ──
-# source: https://github.com/osfans/trime v3.3.12 app/src/main/assets/shared/tongwenfeng.trime.yaml
-# sha256(original): 01e33c34ab057f47d54c41a578182e3562e07f607421a2a57d012405b252d196
+# source: https://github.com/osfans/trime v3.3.13 app/src/main/assets/shared/tongwenfeng.trime.yaml
+# sha256(original): 71c8aa73740d268e674c4f6a8242be1d1c5f191593a4c7401e1e3b4ffa4518e6

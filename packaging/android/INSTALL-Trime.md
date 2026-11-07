@@ -65,7 +65,7 @@ Android **不是**桌面的 `F4`，也不要用桌面快捷鍵。
 
 ## 四、Android 按鍵對照
 
-桌面快捷鍵在手機上不存在。下表是每個功能在**同文內建「拼音」鍵盤**的位置（長按＝按住該鍵）；括號內是 Trime 的設定來源，已對 Trime v3.3.12 內建 `trime.yaml` 核對。
+桌面快捷鍵在手機上不存在。下表是每個功能在**同文內建「拼音」鍵盤**的位置（長按＝按住該鍵）；括號內是 Trime 的設定來源，已對 Trime v3.3.13 內建 `trime.yaml` 核對。
 
 | 功能 | 桌面 | Android（同文） |
 |------|------|-----------------|
@@ -109,7 +109,7 @@ Android **不是**桌面的 `F4`，也不要用桌面快捷鍵。
 
 窄螢幕想讓註解改成**上方整列**（不擠掉候選）：照 `trime.custom.yaml` 內註解範例把 patch 前三行換掉。注意 top 模式下 `comment_height` 是**註解列**高度，`candidate_view_height` 必須同時容納 22sp 候選字與註解列；**48 只是保守起點，不是保證**——實際行高取決於 Trime 的版面與字型，上機看候選列有無裁切再微調。
 
-以上數值以 Trime v3.3.12 的 `style` 參數推導；橫屏與左右分離鍵盤是 App 自己的設定（`keyboard_landscape_mode`、`split_space_percent`），不在本包內。
+以上數值以 Trime v3.3.13 的 `style` 參數推導；橫屏與左右分離鍵盤是 App 自己的設定（`keyboard_landscape_mode`、`split_space_percent`），不在本包內。
 
 ---
 

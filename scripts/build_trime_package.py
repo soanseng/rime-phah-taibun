@@ -255,8 +255,8 @@ LIUR_PROVENANCE = "LIUR-PROVENANCE.txt"
 RIME_LUA_MARKER = "liu_w2c_sorter"
 INSTALL_DOC = "INSTALL-Trime.md"
 TRIME_PATCH = "trime.custom.yaml"
-TRIME_UPSTREAM = "trime.upstream.yaml"  # 上游基座 (osfans/trime v3.3.12, 釘住)
-TONGWENFENG_UPSTREAM = "tongwenfeng.upstream.yaml"  # 標準主題基座 (上游 v3.3.12, 釘住)
+TRIME_UPSTREAM = "trime.upstream.yaml"  # 上游基座 (osfans/trime v3.3.13, 釘住)
+TONGWENFENG_UPSTREAM = "tongwenfeng.upstream.yaml"  # 標準主題基座 (上游 v3.3.13, 釘住)
 TONGWENFENG_PATCH = "tongwenfeng.trime.custom.yaml"  # 標準主題特化 patch (theme id=tongwenfeng.trime)
 APK_ASSET_EXCLUDED = (INSTALL_DOC, TRIME_PATCH, "default.custom.yaml")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)

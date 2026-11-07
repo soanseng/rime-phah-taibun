@@ -1726,7 +1726,7 @@ preset_keyboards:
     - {click: Return, long_click: CommitComment, width: 25.5}
 
 # ── vendored 基座 provenance ──
-# source: https://github.com/osfans/trime v3.3.12 app/src/main/assets/shared/trime.yaml
+# source: https://github.com/osfans/trime v3.3.13 app/src/main/assets/shared/trime.yaml
 # sha256(original): 44d29a6ace16ca9f59b3d6bc32b457a8ce41f8b080d94fdbe67e8d89900983f6
 # 用途: build_apk_assets() 烘焙 fork 的 assets/shared/trime.yaml 的上游基座;
 # 上游升級時換此檔並重跑測試。

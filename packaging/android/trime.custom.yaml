@@ -31,7 +31,7 @@
 #   style/candidate_padding: 8
 patch:
   # ── 主題版本：bump 此值才會觸發 Trime 重新部署主題（升級路徑必備） ──
-  config_version: "3.3.12-ptaibun7"
+  config_version: "3.3.13-ptaibun8"
 
   # ── 候選註解（拼音）：對齊桌面版「漢字＋拼音」雙欄 ──
   style/comment_position: right

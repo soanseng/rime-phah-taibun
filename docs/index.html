@@ -63,7 +63,7 @@
             ],
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Windows, macOS, Linux, Android",
-            "softwareVersion": "0.11.0",
+            "softwareVersion": "0.12.0",
             "softwareRequirements": "Rime（小狼毫 Weasel、鼠鬚管 Squirrel、fcitx5-rime、ibus-rime）與 Android（Trime、fcitx5-android）",
             "url": "https://taigi.anatomind.com/",
             "downloadUrl": "https://github.com/soanseng/rime-phah-taibun/releases",
@@ -709,8 +709,25 @@
           </div>
           <div class="updates-list" aria-label="最近 3 个變更">
             <article>
+              <time datetime="2026-11-07">2026-11-07</time>
+              <h3>0.12.0：連打照完整音節切、Telex 單音節修正、詞庫來源整理</h3>
+              <ul>
+                <li>
+                  無調連打照完整音節切：<code>siataibun</code> 出 寫台文、<code>guabehsia</code>
+                  出 我欲寫，袂閣切做「視野台文」；簡拼（<code>stb</code>、<code>vvsp</code>）取消。
+                </li>
+                <li>
+                  Telex 打 <code>sia</code>、<code>siav</code> 第一个是 寫，袂閣予「是仔」搶頭前。
+                </li>
+                <li>
+                  詞庫：教育部辭典權重調懸、加入「又唸作／俗唸作」（家己 ka-tī）；iTaigi、台灣植物名彙、
+                  白話字文獻館無閣收，賰 4 本辭典、210,865 詞條。
+                </li>
+              </ul>
+            </article>
+            <article>
               <time datetime="2026-10-16">2026-10-16</time>
-              <h3>0.11.0：同音字袂閣無去、語料加權修正</h3>
+              <h3>0.12.0：同音字袂閣無去、語料加權修正</h3>
               <ul>
                 <li>
                   打 <code>in1</code> 揀會著 𪜶、<code>nih4</code> 揀會著 𥍉、<code>kah4</code>
@@ -740,25 +757,6 @@
                   POJ 修正：漢羅 POJ 模式 <code>sīng酒</code> 改出
                   <code>sēng酒</code>，大寫音節嘛會轉；字典修正斜線讀音拆毋著的詞（梅子雞袂閣佔
                   <code>kue</code>）；Telex 方案嘛會學你揀過的詞。
-                </li>
-              </ul>
-            </article>
-            <article>
-              <time datetime="2026-09-29">2026-09-29</time>
-              <h3>0.9.4：字典重建、POJ 字形佮調符位置修正</h3>
-              <ul>
-                <li>
-                  主字典重建到 227,790 詞：教育部詞條的 POJ 候選出正式字形
-                  （khoaⁿ、to͘、O͘…）。
-                </li>
-                <li>
-                  白話字調符補正：<code>mn̂g</code> 標佇 ng 的 n；<code>oo</code>
-                  帶調出 <code>o͘</code>。
-                </li>
-                <li>
-                  POJ 調符位置統一做現代規則（張裕宏《白話字基本論》）：音節尾
-                  <code>oa</code>／<code>oe</code> 標 <code>o</code>（gōa、hōe）、
-                  <code>ui</code> 標 <code>u</code>（tùi）——字典候選佮輸出一致。
                 </li>
               </ul>
             </article>
